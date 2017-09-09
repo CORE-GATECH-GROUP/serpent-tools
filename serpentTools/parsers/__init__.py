@@ -15,6 +15,7 @@ class _BaseReader(object):
 
     def __init__(self, filePath):
         self.filePath = filePath
+        self.metadata = {}
 
     def read(self):
         """
