@@ -1,13 +1,4 @@
 """Package dedicated for reading ``SERPENT`` output files"""
-from serpentTools.parsers.depletion import DepletionReader
-from serpentTools.parsers.detector import DetectorReader
-from serpentTools.parsers.fissionMatrix import FissionMatrixReader
-from serpentTools.parsers.results import ResultsReader
-from serpentTools.parsers.bumat import BumatReader
-from serpentTools.parsers.branching import BranchingReader
-
-__all__ = [DepletionReader, DetectorReader, FissionMatrixReader,
-           ResultsReader, BumatReader, BranchingReader]
 
 
 class _BaseReader(object):

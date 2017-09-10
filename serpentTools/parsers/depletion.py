@@ -34,7 +34,9 @@ class DepletionReader(_MaterialReader):
         for varName, metadataKey in options.items():
             if varName in chunk[0]:
                 if varName in ['ZAI', 'NAMES']:
-                    values = [line.strip() for line in chunk[1:-1]]
+                    values = [line.strip() for line in chunk[1:]]
+                    if varName == 'NAMES':
+                        values = [item.split()[0][1:] for item in values]
                 else:
                     chunk = chunk[0]  # burnup and days stored as single line
                     line = chunk[chunk.index('[') + 1:chunk.index(']')]

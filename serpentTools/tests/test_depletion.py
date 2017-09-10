@@ -16,9 +16,10 @@ class Test_DepletionParser(unittest.TestCase):
         cls.reader.read()
 
     def test_metadata(self):
+        """Test the metadata storage for the reader."""
         expectedMetadata = {
             'zai':
-                ['621490', '541350', '922350', '942490', '50100', '666', '0'],
+                ['621490', '541350', '922350', '942390', '50100', '666', '0'],
             'names':
                 ['Sm149', 'Xe135', 'U235', 'Pu239', 'B10', 'lost', 'total'],
             'burnup': [0.00000E+00, 1.93360E-02, 3.86721E-02, 1.16016E-01,
@@ -30,7 +31,11 @@ class Test_DepletionParser(unittest.TestCase):
                      2.50000E+01, 3.75000E+01, 5.00000E+01, 7.50000E+01,
                      1.00000E+02, 1.25000E+02]
         }
-        self.assertDictEqual(self.reader.metadata, expectedMetadata)
+        for key, expectedValue in expectedMetadata.items():
+            with self.subTest(key=key):
+                self.assertIn(key, self.reader.metadata)
+                self.assertListEqual(self.reader.metadata[key], expectedValue)
+
 
 if __name__ == '__main__':
     unittest.main()
