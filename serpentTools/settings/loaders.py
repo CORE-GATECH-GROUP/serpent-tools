@@ -192,7 +192,7 @@ class UserSettingsLoader(WalkableDictionary):
 
     def getValue(self, name):
         """
-        Return the value of the setting found at ``name``
+        Return the value of the setting found at ``name``.
 
         Parameters
         ----------
@@ -224,3 +224,40 @@ class UserSettingsLoader(WalkableDictionary):
             except (KeyError, IndexError):
                 name = '.'.join(keys)
                 raise KeyError('Setting {} not found in defaults.'.format(name))
+
+    def getReaderSettings(self, readerLevel):
+        """
+        Get all module-wide and reader-specific settings.
+
+        Parameters
+        ----------
+        readerLevel: str
+            Name of the specific reader. Must be a key in the ``readers``
+            settings dictionary
+
+        Returns
+        -------
+        rSettings: dict
+            Single level dictionary with ``settingName: settingValue`` pairs
+
+        Raises
+        ------
+        KeyError:
+            If the reader name is not located in the ``readers`` settings
+            dictionary
+        """
+        if readerLevel not in self['readers']:
+            readerOpts = [key for key, value in self.digItems()
+                          if isinstance(value, dict)]
+            raise KeyError("Could not find reader named {} in settings.\n"
+                           "Options: {}"
+                           .format(readerLevel, ', '.join(readerOpts)))
+        rSettings = {}
+        for fullName, value in self.digItems():
+            nameChunks = self._getPathFromName(fullName)
+            if nameChunks[0] != 'readers':
+                continue
+            if (len(nameChunks) == 2  # settings for all readers
+                    or (len(nameChunks) == 3) and nameChunks[1] == readerLevel):
+                rSettings[nameChunks[-1]] = value
+        return rSettings

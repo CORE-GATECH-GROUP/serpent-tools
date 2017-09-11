@@ -17,3 +17,7 @@ readers:
         name: materials
         description: Names of materials to store. Empty list == all materials
         default: []
+      processTotal: !!python/object:serpentTools.settings.loaders.DefaultSetting
+        name: processTotal
+        description: Option to store the depletion data for the TOT block.
+        default: True

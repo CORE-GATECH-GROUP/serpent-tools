@@ -1,12 +1,13 @@
 from setuptools import setup
 
-_version = '0.1.0rc4'
+_version = '0.1.0rc5'
 
 _classifiers = [
     'License :: OSI Approved :: MIT License',
 ]
 
 _requires = [
+    'numpy==1.12.1',
     'PyYAML>=3.12',
     'dict-digger>=0.2.1',  # for parsing the settings
     'drewtils>=0.1.2',  # file parsing tools

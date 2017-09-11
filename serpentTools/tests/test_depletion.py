@@ -2,16 +2,24 @@
 import os
 import unittest
 
+from serpentTools import rc
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader
 
 
-class Test_DepletionParser(unittest.TestCase):
-    """Class that tests the functionality of the depletion reader."""
+class Test_Depletion(unittest.TestCase):
+    """
+    Class that tests the functionality of the depletion reader and
+    supporting materials.
+    """
 
     @classmethod
     def setUpClass(cls):
         filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
+        cls.rc = rc
+        cls.rc['readers.depletion.materials'] = ['fuel', ]
+        cls.rc['readers.depletion.materialVariables'] = [
+            'BURNUP', 'ADENS', 'ING_TOX']
         cls.reader = DepletionReader(filePath)
         cls.reader.read()
 
@@ -36,6 +44,9 @@ class Test_DepletionParser(unittest.TestCase):
                 self.assertIn(key, self.reader.metadata)
                 self.assertListEqual(self.reader.metadata[key], expectedValue)
 
+    def test_materials(self):
+        """Verify the materials are read in properly."""
+        self.assertIn('fuel', self.reader.materials)
 
 if __name__ == '__main__':
     unittest.main()

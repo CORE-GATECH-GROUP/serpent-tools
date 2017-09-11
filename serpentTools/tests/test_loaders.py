@@ -119,6 +119,17 @@ class UserSettingsTester(unittest.TestCase):
         with self.assertRaises(KeyError):
             UserSettingsLoader(malformedSettings)
 
+    def test_returnReaderSettings(self):
+        """Verify the correct reader settings can be retrieved."""
+        readerName = 'depletion'
+        expected = {
+            'metadataKeys': ['ZAI'],
+            'materialVariables': ['VOLUME', 'ADENS', 'MDENS', 'BURNUP'],
+            'materials': []
+        }
+        actual = self.loader.getReaderSettings(readerName)
+        self.assertDictEqual(expected, actual)
+
 
 class RCTester(unittest.TestCase):
     """Class to test the funcitonality of the scriptable settings manager."""
