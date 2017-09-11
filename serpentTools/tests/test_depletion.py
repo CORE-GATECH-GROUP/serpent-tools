@@ -9,11 +9,8 @@ from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader
 
 
-class Test_Depletion(unittest.TestCase):
-    """
-    Class that tests the functionality of the depletion reader and
-    supporting materials.
-    """
+class _DepletionTestHelper(unittest.TestCase):
+    """Base class to setup the depletion reader and material tests."""
 
     @classmethod
     def setUpClass(cls):
@@ -24,6 +21,10 @@ class Test_Depletion(unittest.TestCase):
             'BURNUP', 'ADENS', 'ING_TOX']
         cls.reader = DepletionReader(filePath)
         cls.reader.read()
+
+
+class Test_Depletion(_DepletionTestHelper):
+    """Class that tests the functionality of the depletion reader."""
 
     def test_metadata(self):
         """Test the metadata storage for the reader."""
@@ -44,7 +45,24 @@ class Test_Depletion(unittest.TestCase):
         for key, expectedValue in expectedMetadata.items():
             with self.subTest(key=key):
                 self.assertIn(key, self.reader.metadata)
-                self.assertListEqual(self.reader.metadata[key], expectedValue)
+                numpy.testing.assert_equal(self.reader.metadata[key],
+                                           expectedValue)
+
+    def test_ReadMaterials(self):
+        """Verify the reader stored the correct materials."""
+        expectedMaterials = ['fuel']
+        for material in expectedMaterials:
+            with self.subTest():
+                self.assertIn(material, self.reader.materials)
+
+
+class DepletedMaterialTester(_DepletionTestHelper):
+    """Class that tests the functionality of the DepletedMaterial class"""
+
+    @classmethod
+    def setUpClass(cls):
+        _DepletionTestHelper.setUpClass()
+        cls.depledMaterial = cls.reader.materials['fuel']
 
     def test_materials(self):
         """Verify the materials are read in properly."""
@@ -95,10 +113,15 @@ class Test_Depletion(unittest.TestCase):
              1.49595E+09, 1.66322E+09, 1.80206E+09, 1.79453E+09, 1.79100E+09,
              1.80188E+09, 1.75346E+09, 1.60021E+09, 1.89771E+09],
         ])
-        fuel = self.reader.materials['fuel']
-        self.assertListEqual(fuel.zai, self.reader.metadata['zai'])
-        numpy.testing.assert_allclose(fuel.adens, expectedAdens)
-        numpy.testing.assert_allclose(fuel.ingTox, expectedIngTox)
+        self.assertListEqual(self.depledMaterial.zai,
+                             self.reader.metadata['zai'])
+        numpy.testing.assert_allclose(self.depledMaterial.adens, expectedAdens)
+        numpy.testing.assert_allclose(self.depledMaterial.ingTox,
+                                      expectedIngTox)
+
+    def test_plotBurnup(self):
+        """Verify the reader can make and save a burnup plot."""
+        self.depledMaterial.plot('days', 'burnup')
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,8 @@
 """Parser responsible for reading the ``*dep.m`` files"""
 import re
 
+import numpy
+
 from drewtils.parsers import KeywordParser
 
 from serpentTools.parsers import _MaterialReader
@@ -73,7 +75,7 @@ class DepletionReader(_MaterialReader):
                         values = [item.split()[0][1:] for item in values]
                 else:
                     line = self._cleanSingleLine(chunk)
-                    values = [float(item) for item in line.split()]
+                    values = numpy.array([float(item) for item in line.split()])
                 self.metadata[metadataKey] = values
                 return
 

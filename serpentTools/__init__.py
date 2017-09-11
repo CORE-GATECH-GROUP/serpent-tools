@@ -31,7 +31,7 @@ from serpentTools import tests
 # TODO: Add specific exceptions and warnings
 # Compatability
 # TODO: Python 2 support
-# TODO: Test compatability with earlier numpy  releases
+# TODO: Test compatability with earlier numpy releases
 # Pythonicness/cleanliness
 # TODO: Better rc importing and usage
 # TODO: Remove need to specify all settings as a default setting object
