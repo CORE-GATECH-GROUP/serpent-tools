@@ -1,3 +1,3 @@
 import os
 
-ROOT_DIR = os.path.dirname(__file__)
+TEST_ROOT = os.path.dirname(__file__)

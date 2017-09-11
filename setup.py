@@ -1,18 +1,21 @@
 from setuptools import setup
 
-_version = '0.1.0rc3'
+_version = '0.1.0rc4'
 
 _classifiers = [
     'License :: OSI Approved :: MIT License',
 ]
 
 _requires = [
+    'PyYAML>=3.12',
+    'dict-digger>=0.2.1',  # for parsing the settings
     'drewtils>=0.1.2',  # file parsing tools
 ]
 
 setupArgs = {
     'name': 'serpentTools',
-    'packages': ['serpentTools'],
+    'packages': ['serpentTools', 'serpentTools.settings', 'serpentTools.tests',
+                 'serpentTools.parsers'],
     'version': _version,
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '

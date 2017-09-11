@@ -2,7 +2,7 @@
 import os
 import unittest
 
-from serpentTools.tests import ROOT_DIR
+from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader
 
 
@@ -11,7 +11,7 @@ class Test_DepletionParser(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        filePath = os.path.join(ROOT_DIR, 'ref_dep.m')
+        filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
         cls.reader = DepletionReader(filePath)
         cls.reader.read()
 
