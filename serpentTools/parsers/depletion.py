@@ -44,19 +44,21 @@ class DepletionReader(_MaterialReader):
 
     def _makeMaterialRegexs(self):
         """Return the patterns by which to find the requested materials."""
-        patterns = self._settings['materials'] or ['.*']
+        patterns = self.settings['materials'] or ['.*']
         # match all materials if nothing given
         return [re.compile(mat) for mat in patterns]
 
     def read(self):
         """Read through the depletion file and store requested data."""
-        keys = self._settings['metadataKeys']
+        keys = self.settings['metadataKeys']
+        keys.extend(['MAT', 'TOT'] if self.settings['processTotal']
+                    else ['MAT'])
         separators = ['\n', '];']
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
-                if 'MAT' not in chunk[0] or 'TOT' not in chunk[0]:
+                if 'MAT' not in chunk[0] and 'TOT' not in chunk[0]:
                     self._addMetadata(chunk)
-                elif (('TOT' in chunk[0] and self._settings['processTotal'])
+                elif (('TOT' in chunk[0] and self.settings['processTotal'])
                       or 'MAT' in chunk[0]):
                     self._addMaterial(chunk)
 
@@ -98,13 +100,16 @@ class DepletionReader(_MaterialReader):
                         '{}'.format(self, ''.join(chunk)))
 
     def _processChunk(self, chunk, name, variable):
-        if variable not in self._settings['materialVariables']:
+        if variable not in self.settings['materialVariables']:
             pass
         if name not in self.materials:
             self.materials[name] = DepletedMaterial(self, name)
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
         else:
-            cleaned = [line for line in chunk if
-                       '[' not in line and ']' not in line]
+            cleaned = []
+            for line in chunk:
+                if '[' in line or ']' in line:
+                    continue
+                cleaned.append(line[:line.index('%')])
         self.materials[name].addData(variable, cleaned)

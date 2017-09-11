@@ -65,12 +65,24 @@ class DepletedMaterial(_SupportingObject):
         Parameters
         ----------
         variable: str
-            Name of the variable
+            Name of the variable directly from ``SERPENT``
         rawData: list
             List of strings corresponding to the raw data from the file
         """
         scratch = []
+        rawData = [rawData] if isinstance(rawData, str) else rawData
         for line in rawData:
             if line:
                 scratch.append([float(item) for item in line.split()])
-        self._varData[variable] = numpy.array(scratch)
+        newName = self._convertVariableName(variable)
+        self._varData[newName] = numpy.array(scratch)
+
+    @staticmethod
+    def _convertVariableName(variable):
+        """Converta a SERPENT variable to camelCase."""
+        lowerSplits = [item.lower() for item in variable.split('_')]
+        if len(lowerSplits) == 1:
+            return lowerSplits[0]
+        else:
+            return lowerSplits[0] + ''.join([item.capitalize()
+                                             for item in lowerSplits[1:]])

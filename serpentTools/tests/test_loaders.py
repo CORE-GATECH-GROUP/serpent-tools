@@ -1,7 +1,6 @@
 """Tests for the settings loaders."""
 import unittest
 
-import serpentTools
 from serpentTools.settings.loaders import (
     DefaultSettingsLoader, UserSettingsLoader, WalkableDictionary)
 
@@ -125,7 +124,8 @@ class UserSettingsTester(unittest.TestCase):
         expected = {
             'metadataKeys': ['ZAI'],
             'materialVariables': ['VOLUME', 'ADENS', 'MDENS', 'BURNUP'],
-            'materials': []
+            'materials': [],
+            'processTotal': True
         }
         actual = self.loader.getReaderSettings(readerName)
         self.assertDictEqual(expected, actual)
@@ -136,7 +136,15 @@ class RCTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.rc = serpentTools.rc
+        from serpentTools import rc
+        cls.rc = rc
+        cls.rc['readers.depletion.metadataKeys'] = ['ZAI']
+
+    def test_readerWithUpdatedSettings(self):
+        """Verify the settings passed to the reader reflect the update."""
+        from serpentTools.parsers.depletion import DepletionReader
+        reader = DepletionReader('None')
+        self.assertTrue(reader.settings['metadataKeys'] == ['ZAI'])
 
 
 if __name__ == '__main__':

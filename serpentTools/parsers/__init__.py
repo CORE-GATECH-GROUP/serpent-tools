@@ -18,7 +18,7 @@ class _BaseReader(object):
     def __init__(self, filePath, readerSettingsLevel):
         self.filePath = filePath
         self.metadata = {}
-        self._settings = rc.getReaderSettings(readerSettingsLevel)
+        self.settings = rc.getReaderSettings(readerSettingsLevel)
 
     def __repr__(self):
         return '<{} reading {}>'.format(self.__class__.__name__, self.filePath)

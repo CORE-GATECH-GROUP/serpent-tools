@@ -1,6 +1,6 @@
 from setuptools import setup
 
-_version = '0.1.0rc5'
+_version = '0.1.0rc6'
 
 _classifiers = [
     'License :: OSI Approved :: MIT License',
