@@ -87,49 +87,114 @@ class DepletedMaterial(_SupportingObject):
         rawData: list
             List of strings corresponding to the raw data from the file
         """
-        scratch = []
-        rawData = [rawData] if isinstance(rawData, str) else rawData
-        for line in rawData:
-            if line:
-                scratch.append([float(item) for item in line.split()])
         newName = self._convertVariableName(variable)
+        if isinstance(rawData, str):
+            scratch = [float(item) for item in rawData.split()]
+        else:
+            scratch = []
+            for line in rawData:
+                if line:
+                    scratch.append([float(item) for item in line.split()])
         self._varData[newName] = numpy.array(scratch)
 
-    def _getXY(self, xUnits, yUnits, timePoints, isotopes):
-        allX = self[xUnits]
+    def getXY(self, xUnits, yUnits, timePoints=None, names=None):
+        """
+        Return x values along time points, and corresponding isotope values.
+
+        Parameters
+        ----------
+        xUnits: str
+            name of x value to obtain, e.g. ``'days'``, ``'burnup'``
+        yUnits: str
+            name of y value to return, e.g. ``'adens'``, ``'burnup'``
+        timePoints: list or None
+            If given, select the time points according to those specified here.
+            Otherwise, select all points
+        names: list or None
+            If given, return y values corresponding to these isotope names.
+            Otherwise, return values for all isotopes.
+
+        Returns
+        -------
+        xVals: :py:class:`numpy.array`
+            Vector of time points
+        yVals: :py:class:`numpy.array`
+            Array of values
+
+        Raises
+        ------
+        AttributeError
+            If the names of the isotopes have not been obtained and specific
+            isotopes have been requested
+        """
+        if names and 'names' not in self._container.metadata:
+            raise AttributeError('Parser {} has not stored the isotope names.'
+                                 .format(self._container))
+        xVals, colIndices = self._getXSlice(xUnits, timePoints)
+        rowIndices = self._getIsoID(names)
         allY = self[yUnits]
+        if allY.shape[0] == 1 or len(allY.shape) == 1:  # vector
+            return xVals, allY[colIndices] if colIndices else allY
+        yVals = numpy.empty((len(rowIndices), len(xVals)), dtype=float)
+        for isoID, rowId in enumerate(rowIndices):
+            yVals[isoID, :] = (allY[rowId][colIndices] if colIndices
+                               else allY[rowId][:])
+        return xVals, yVals
+
+    def _getXSlice(self, xUnits, timePoints):
+        allX = self[xUnits]
         if timePoints:
-            colIndices = numpy.where(allX == timePoints)
+            colIndices = [indx for indx, xx in enumerate(allX)
+                          if xx in timePoints]
             xVals = allX[colIndices]
         else:
             colIndices = None
             xVals = allX
-        if allY.shape[0] == 1:  # vector
-            yVals = allY[colIndices] if colIndices else allY
-            return xVals, yVals
-        rowIndices = self._getIsoID(isotopes)
-        yVals = numpy.empty((len(rowIndices), xVals.size), dtype=float)
-        for yId, rowId in enumerate(rowIndices):
-            yVals[yId, :] = (allY[rowId][colIndices] if colIndices
-                             else allY[rowId, :])
-        return xVals, yVals
+        return xVals, colIndices
 
     def _getIsoID(self, isotopes):
         """Return the row indices that correspond to specfic isotopes."""
+        # TODO: List comprehension to make rowIDs then return array
         if not isotopes:
-            return numpy.array(list(range(len(self.zai))), dtype=int)
+            return numpy.array(list(range(len(self.names))), dtype=int)
         rowIDs = numpy.empty_like(isotopes, dtype=int)
         for indx, isotope in enumerate(isotopes):
-            rowIDs[indx] = self.zai.index(isotope)
+            rowIDs[indx] = self.names.index(isotope)
         return rowIDs
 
-    def plot(self, x, y, xPoints=None, zai=None, ax=None):
-        if 'zai' not in self._container.metadata:
-            raise KeyError('Need zai to be processed by {} in order to make '
-                           'meaningful plots.'.format(self._container))
-        xVals, yVals = self._getXY(x, y, xPoints, zai)
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None):
+        """
+        Plot the data as a function of time for some or all isotopes.
+
+        Parameters
+        ----------
+        xUnits: str
+            name of x value to obtain, e.g. ``'days'``, ``'burnup'``
+        yUnits: str
+            name of y value to return, e.g. ``'adens'``, ``'burnup'``
+        timePoints: list or None
+            If given, select the time points according to those specified here.
+            Otherwise, select all points
+        names: list or None
+            If given, return y values corresponding to these isotope names.
+            Otherwise, return values for all isotopes.
+        ax: None or ``matplotlib axes``
+            If given, add the data to this plot.
+            Otherwise, create a new plot
+
+        Returns
+        -------
+        ax: ``matplotlib axes``
+            Axes corresponding to the figure that was plotted
+
+        See Also
+        --------
+        :py:meth:`getXY`
+
+        """
+        xVals, yVals = self.getXY(xUnits, yUnits, timePoints, names)
         ax = ax or pyplot.subplots(1, 1)[1]
-        labels = zai or [None]
+        labels = names or [None]
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row])
 

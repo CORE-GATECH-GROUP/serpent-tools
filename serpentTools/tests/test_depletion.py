@@ -62,7 +62,9 @@ class DepletedMaterialTester(_DepletionTestHelper):
     @classmethod
     def setUpClass(cls):
         _DepletionTestHelper.setUpClass()
-        cls.depledMaterial = cls.reader.materials['fuel']
+        cls.material = cls.reader.materials['fuel']
+        cls.requestedDays = [0.0, 0.5, 1.0, 5.0, 10.0, 25.0, 50.0]
+        cls.fuelBU = cls.material.burnup
 
     def test_materials(self):
         """Verify the materials are read in properly."""
@@ -113,15 +115,41 @@ class DepletedMaterialTester(_DepletionTestHelper):
              1.49595E+09, 1.66322E+09, 1.80206E+09, 1.79453E+09, 1.79100E+09,
              1.80188E+09, 1.75346E+09, 1.60021E+09, 1.89771E+09],
         ])
-        self.assertListEqual(self.depledMaterial.zai,
+        self.assertListEqual(self.material.zai,
                              self.reader.metadata['zai'])
-        numpy.testing.assert_allclose(self.depledMaterial.adens, expectedAdens)
-        numpy.testing.assert_allclose(self.depledMaterial.ingTox,
-                                      expectedIngTox)
+        numpy.testing.assert_equal(self.material.adens, expectedAdens)
+        numpy.testing.assert_equal(self.material.ingTox, expectedIngTox)
 
-    def test_plotBurnup(self):
-        """Verify the reader can make and save a burnup plot."""
-        self.depledMaterial.plot('days', 'burnup')
+    def test_getXY_burnup_full(self):
+        """
+        Verify the material can produce the full burnup vector through getXY.
+        """
+        _days, actual = self.material.getXY('days', 'burnup', )
+        numpy.testing.assert_equal(actual, self.fuelBU)
+
+    def test_getXY_burnup_slice(self):
+        """Verify depletedMaterial getXY correctly slices a vector."""
+        _days, actual = self.material.getXY('days', 'burnup',
+                                            self.requestedDays)
+        expected = [0.0E0, 1.90317E-2, 3.60163E-2, 1.74880E-1, 3.45353E-01,
+                    8.49693E-01, 1.66071E0]
+        numpy.testing.assert_equal(actual, expected)
+
+    def test_getXY_adens(self):
+        """Verify depletedMaterial getXY can return a requested subsection."""
+        names = ['Xe135', 'U235', 'lost']
+        expected = numpy.array([
+            [0.00000E+00, 3.92719E-09, 5.62744E-09, 6.14629E-09, 6.14402E-09,
+             6.10821E-09, 6.18320E-09],
+            [5.58287E-04, 5.57764E-04, 5.57298E-04, 5.53500E-04, 5.48871E-04,
+             5.35434E-04, 5.14643E-04],
+            [0.00000E+00, 2.90880E-14, 5.57897E-14, 2.75249E-13, 5.46031E-13,
+             1.35027E-12, 2.64702E-12],
+        ], float)
+        _days, actual = self.material.getXY('days', 'adens', names=names,
+                                            timePoints=self.requestedDays)
+        numpy.testing.assert_allclose(actual, expected, rtol=1E-4)
+
 
 if __name__ == '__main__':
     unittest.main()
