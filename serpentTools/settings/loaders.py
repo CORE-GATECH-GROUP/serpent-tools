@@ -5,7 +5,6 @@ import os
 import yaml
 from dict_digger import dig
 
-
 ROOT = os.path.dirname(__file__)
 
 
@@ -223,7 +222,8 @@ class UserSettingsLoader(WalkableDictionary):
                 dig(self._defaults, *keys, fail=True)
             except (KeyError, IndexError):
                 name = '.'.join(keys)
-                raise KeyError('Setting {} not found in defaults.'.format(name))
+                raise KeyError(
+                    'Setting {} not found in defaults.'.format(name))
 
     def getReaderSettings(self, readerLevel):
         """
@@ -258,6 +258,7 @@ class UserSettingsLoader(WalkableDictionary):
             if nameChunks[0] != 'readers':
                 continue
             if (len(nameChunks) == 2  # settings for all readers
-                    or (len(nameChunks) == 3) and nameChunks[1] == readerLevel):
+                or (len(nameChunks) == 3) and
+                    nameChunks[1] == readerLevel):
                 rSettings[nameChunks[-1]] = value
         return rSettings

@@ -10,13 +10,25 @@ from serpentTools.objects import DepletedMaterial
 
 
 class DepletionReader(_MaterialReader):
-    """
-    Parser responsible for reading and working with depletion files.
+    """Parser responsible for reading and working with depletion files.
 
     Parameters
     ----------
     filePath: str
         path to the depletion file
+
+    Attributes
+    ----------
+    materials: dict
+        Dictionary with material names as keys and the corresponding
+        :py:class:`~serpentTools.objects.DepletedMaterial` class
+        for that material as values
+    metadata: dict
+        Dictionary with file-wide data names as keys and the
+        corresponding dataas values, e.g. 'zai': [list of zai numbers]
+    settings: dict
+        names and values of the settings used to control operations
+        of this reader
 
     :note:
 
@@ -30,10 +42,10 @@ class DepletionReader(_MaterialReader):
         self.matchMatNVar = r'[A-Z]{3}_([0-9a-zA-Z]*)_([A-Z]*_?[A-Z]*)'
         """
         Captures material name and variable from string::
-        
+
             MAT_fuel1_ADENS --> ('fuel1', 'ADENS')
             MAT_fUeL1g_ING_TOX --> ('fUeL1', 'ING_TOX')
-    
+
         """
         self.matchTotNVar = r'[A-Z]{3}_([A-Z]*_?[A-Z]*)'
         """
@@ -75,7 +87,8 @@ class DepletionReader(_MaterialReader):
                         values = [item.split()[0][1:] for item in values]
                 else:
                     line = self._cleanSingleLine(chunk)
-                    values = numpy.array([float(item) for item in line.split()])
+                    values = numpy.array([float(item)
+                                          for item in line.split()])
                 self.metadata[metadataKey] = values
                 return
 

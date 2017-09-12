@@ -10,7 +10,7 @@ class _SupportingObject(object):
 
     Parameters
     ----------
-    container: Some parser from :py:mod:`~serpentTools.parsers`
+    container: Some parser from serpentTools.parsers
         Container that created this object
     name: str
         Name of this specific object, e.g. material name, detector name, etc.
@@ -45,8 +45,7 @@ class _SupportingObject(object):
 
 
 class DepletedMaterial(_SupportingObject):
-    """
-    Class for storing material data from ``_dep.m`` files.
+    """Class for storing material data from ``_dep.m`` files.
 
     Parameters
     ----------
@@ -55,6 +54,25 @@ class DepletedMaterial(_SupportingObject):
         Used to obtain file metadata like isotope names and burnup
     name: str
         Name of this material
+
+    Attributes
+    ----------
+    zai: numpy.array
+        Isotope id's
+    names: numpy.array
+        Names of isotopes
+    days: numpy.array
+        Days overwhich the material was depleted
+    adens: numpy.array
+        Atomic density over time for each nuclide
+
+    :note:
+
+        These attributes only exist if the pasers was instructed to
+        read in this data. I.e. if ``readers.depletion.metadataKeys``
+        does not contain ``ZAI``, then this object will not have
+        the ``zai`` data.
+
     """
 
     def __init__(self, parser, name):
@@ -64,7 +82,8 @@ class DepletedMaterial(_SupportingObject):
     def __getattr__(self, item):
         """
         Allows the user to get items like ``zai`` and ``adens``
-        with ``self.zai`` and ``self.adens``, respectively."""
+        with ``self.zai`` and ``self.adens``, respectively.
+        """
         if item in self._varData:
             return self._varData[item]
         return _SupportingObject.__getattr__(self, item)
@@ -77,8 +96,7 @@ class DepletedMaterial(_SupportingObject):
         return self._varData[item]
 
     def addData(self, variable, rawData):
-        """
-        Add data straight from the file onto a variable.
+        """Add data straight from the file onto a variable.
 
         Parameters
         ----------
@@ -98,8 +116,7 @@ class DepletedMaterial(_SupportingObject):
         self._varData[newName] = numpy.array(scratch)
 
     def getXY(self, xUnits, yUnits, timePoints=None, names=None):
-        """
-        Return x values along time points, and corresponding isotope values.
+        """Return x values for given time, and corresponding isotope values.
 
         Parameters
         ----------
@@ -116,9 +133,9 @@ class DepletedMaterial(_SupportingObject):
 
         Returns
         -------
-        xVals: :py:class:`numpy.array`
+        numpy.array
             Vector of time points
-        yVals: :py:class:`numpy.array`
+        numpy.array
             Array of values
 
         Raises
@@ -163,8 +180,7 @@ class DepletedMaterial(_SupportingObject):
         return rowIDs
 
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None):
-        """
-        Plot the data as a function of time for some or all isotopes.
+        """Plot some data as a function of time for some or all isotopes.
 
         Parameters
         ----------
@@ -173,23 +189,23 @@ class DepletedMaterial(_SupportingObject):
         yUnits: str
             name of y value to return, e.g. ``'adens'``, ``'burnup'``
         timePoints: list or None
-            If given, select the time points according to those specified here.
-            Otherwise, select all points
+            If given, select the time points according to those
+            specified here. Otherwise, select all points
         names: list or None
-            If given, return y values corresponding to these isotope names.
-            Otherwise, return values for all isotopes.
+            If given, return y values corresponding to these isotope
+            names. Otherwise, return values for all isotopes.
         ax: None or ``matplotlib axes``
             If given, add the data to this plot.
             Otherwise, create a new plot
 
         Returns
         -------
-        ax: ``matplotlib axes``
+        ``matplotlib axes``
             Axes corresponding to the figure that was plotted
 
         See Also
         --------
-        :py:meth:`getXY`
+        getXY
 
         """
         xVals, yVals = self.getXY(xUnits, yUnits, timePoints, names)

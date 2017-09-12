@@ -111,7 +111,7 @@ class UserSettingsTester(unittest.TestCase):
         malformedSettings = {
             'readers': {
                 'depletion': {
-                    'materialVariables': 'fail on materialVariables'  # bad type
+                    'materialVariables': 'fail on materialVariables'
                 }
             }
         }

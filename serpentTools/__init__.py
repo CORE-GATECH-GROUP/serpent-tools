@@ -6,18 +6,19 @@ class MasterSettingsLoader(UserSettingsLoader):
     """Main settings object that controls all operations."""
 
     def __init__(self):
-        self._loaded = False
+        self.__loaded__ = False
         UserSettingsLoader.__init__(self, None)
-        self._loaded = True
+        self.__loaded__ = True
 
     def __setitem__(self, key, value):
-        if self._loaded:
+        if self.__loaded__:
             self.setValue(key, value)
         else:
             UserSettingsLoader.__setitem__(self, key, value)
 
     def __repr__(self):
         return '<Master settings loader>'
+
 
 rc = MasterSettingsLoader()
 
