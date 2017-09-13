@@ -23,14 +23,17 @@ class _SupportingObject(object):
         self._filePath = container.filePath
 
     def __repr__(self):
-        return '<{} {} from {}>'.format(self.__class__.___name__,
+        return '<{} {} from {}>'.format(self.whatAmI(),
                                         self.name, self._filePath)
+
+    def whatAmI(self):
+        return type(self).__name__
 
     def __getattr__(self, item):
         """Search for the item in the containers metadata."""
         if item in self._container.metadata:
             return self._container.metadata[item]
-        raise AttributeError('{} has object has not atribute \'{}\''
+        raise AttributeError('{} has object has no attribute \'{}\''
                              .format(self, item))
 
     @staticmethod
@@ -160,7 +163,7 @@ class DepletedMaterial(_SupportingObject):
 
     def _getXSlice(self, xUnits, timePoints):
         allX = self[xUnits]
-        if timePoints:
+        if timePoints is not None:
             colIndices = [indx for indx, xx in enumerate(allX)
                           if xx in timePoints]
             xVals = allX[colIndices]

@@ -1,35 +1,10 @@
-from serpentTools import settings
-from serpentTools.settings.loaders import UserSettingsLoader
-
-
-class MasterSettingsLoader(UserSettingsLoader):
-    """Main settings object that controls all operations."""
-
-    def __init__(self):
-        self.__loaded__ = False
-        UserSettingsLoader.__init__(self, None)
-        self.__loaded__ = True
-
-    def __setitem__(self, key, value):
-        if self.__loaded__:
-            self.setValue(key, value)
-        else:
-            UserSettingsLoader.__setitem__(self, key, value)
-
-    def __repr__(self):
-        return '<Master settings loader>'
-
-
-rc = MasterSettingsLoader()
-
 from serpentTools import parsers
-from serpentTools import tests
-
 
 # List TODOS/feature requests here for now
 # Messages/Errors
 # TODO: Add verbosity control
 # TODO: Add specific exceptions and warnings
+# TODO: Add logging module to help with warnings/exceptions/info
 # Compatability
 # TODO: Python 2 support
 # TODO: Test compatability with earlier numpy releases

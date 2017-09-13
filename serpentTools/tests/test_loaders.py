@@ -1,65 +1,31 @@
 """Tests for the settings loaders."""
 import unittest
 
-from serpentTools.settings.loaders import (
-    DefaultSettingsLoader, UserSettingsLoader, WalkableDictionary)
+from serpentTools.settings import DefaultSettingsLoader, UserSettingsLoader
 
 
-class WalkableDictionaryTester(unittest.TestCase):
-    """Class that tests the walkable dictionary"""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.ref = {
-            'item0': {
-                'item0_0': [1, 2, 3],
-                'item0_1': {
-                    'item0_1_0': True
-                },
-            },
-            'item1': 3.14159
-        }
-        cls.walkable = WalkableDictionary(cls.ref)
-
-    def test_len(self):
-        """Verify the number of items in the dictionary is correct"""
-        self.assertEqual(len(self.walkable), 3)
-
-
-class MasterSettingsTester(unittest.TestCase):
+class DefaultSettingsTester(unittest.TestCase):
     """Class to test the functionality of the master loader."""
 
     @classmethod
     def setUpClass(cls):
         cls.defaultLoader = DefaultSettingsLoader()
-        cls.testSetting = 'readers.depletion.metadataKeys'
+        cls.testSetting = 'depletion.metadataKeys'
         cls.testSettingExpected = ['ZAI', 'NAMES', 'DAYS', 'BU']
         cls.testSettingMethod = cls.assertListEqual
 
-    def test_getDefault_listPath(self):
-        """
-        Verify the default settings loader can retrieve settings properly
-        from list of keys.
-        """
-        self.testSettingMethod(
-            self._getLoaderSetting(self.testSetting.split('.')),
-            self.testSettingExpected)
-
-    def test_getDefault_stringPath(self):
-        """
-        Verify the default settings loader can retrieve settings properly
-        from a string path.
-        """
+    def test_getDefault(self):
+        """Verify the default settings loader properly retrives defaults."""
         self.testSettingMethod(self._getLoaderSetting(self.testSetting),
                                self.testSettingExpected)
 
     def test_cannotChangeDefaults(self):
         """Verify the default settings loader is locked after creation."""
-        with self.assertRaises(TypeError):
+        with self.assertRaises(KeyError):
             self.defaultLoader['this'] = 'should fail'
 
     def _getLoaderSetting(self, setting):
-        return self.defaultLoader.getDefault(setting)
+        return self.defaultLoader[setting].default
 
 
 class UserSettingsTester(unittest.TestCase):
@@ -67,63 +33,29 @@ class UserSettingsTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        goodSettings = {
-            'readers':
-                {'depletion': {'metadataKeys': ['ZAI']}
-                 }
-        }
-        cls.loader = UserSettingsLoader(goodSettings)
-
-    def test_getByVariableName(self):
-        """Verify that the loader can access the variable by name."""
-        self.assertListEqual(['ZAI'], self.loader.getValue(
-            'readers.depletion.metadataKeys'))
-
-    def test_getByVariablePath(self):
-        """Verify that the loader can access the variable by path."""
-        self.assertListEqual(['ZAI'], self.loader.getValue(
-            ['readers', 'depletion', 'metadataKeys']))
+        cls.loader = UserSettingsLoader()
 
     def test_failAtNonexistentSetting(self):
         """Verify that the loader will not load a nonexistent setting."""
-        nonExistentSettings = {
-            'readers': {
-                'badParser': False
-            }
-        }
         with self.assertRaises(KeyError):
-            UserSettingsLoader(nonExistentSettings)
+            self.loader['bad setting'] = False
 
     def test_failAtBadSetting_options(self):
         """Verify that the loader will raise an error for bad options."""
-        malformedSettings = {
-            'readers': {
-                'depletion': {
-                    'metadataKeys': ['fail on metadataKeys'],  # not in options
-                }
-            }
-        }
         with self.assertRaises(KeyError):
-            UserSettingsLoader(malformedSettings)
+            self.loader['depletion.metadata'] = ['this should fail']
 
     def test_failAtBadSettings_type(self):
         """Verify that the loader will raise an error for bad type."""
-        malformedSettings = {
-            'readers': {
-                'depletion': {
-                    'materialVariables': 'fail on materialVariables'
-                }
-            }
-        }
-        with self.assertRaises(KeyError):
-            UserSettingsLoader(malformedSettings)
+        with self.assertRaises(TypeError):
+            self.loader['depletion.processTotal'] = 'this should fail'
 
     def test_returnReaderSettings(self):
         """Verify the correct reader settings can be retrieved."""
         readerName = 'depletion'
         expected = {
-            'metadataKeys': ['ZAI'],
-            'materialVariables': ['VOLUME', 'ADENS', 'MDENS', 'BURNUP'],
+            'metadataKeys': ['ZAI', 'NAMES', 'DAYS', 'BU'],
+            'materialVariables': ['ADENS', 'MDENS', 'BURNUP'],
             'materials': [],
             'processTotal': True
         }
@@ -136,9 +68,9 @@ class RCTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        from serpentTools import rc
+        from serpentTools.settings import rc
         cls.rc = rc
-        cls.rc['readers.depletion.metadataKeys'] = ['ZAI']
+        cls.rc['depletion.metadataKeys'] = ['ZAI']
 
     def test_readerWithUpdatedSettings(self):
         """Verify the settings passed to the reader reflect the update."""

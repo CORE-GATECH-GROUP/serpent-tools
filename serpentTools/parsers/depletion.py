@@ -5,11 +5,11 @@ import numpy
 
 from drewtils.parsers import KeywordParser
 
-from serpentTools.parsers import _MaterialReader
+from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects import DepletedMaterial
 
 
-class DepletionReader(_MaterialReader):
+class DepletionReader(MaterialReader):
     """Parser responsible for reading and working with depletion files.
 
     Parameters
@@ -37,7 +37,7 @@ class DepletionReader(_MaterialReader):
     """
 
     def __init__(self, filePath):
-        _MaterialReader.__init__(self, filePath, 'depletion')
+        MaterialReader.__init__(self, filePath, 'depletion')
         self._matPatterns = self._makeMaterialRegexs()
         self.matchMatNVar = r'[A-Z]{3}_([0-9a-zA-Z]*)_([A-Z]*_?[A-Z]*)'
         """
@@ -64,9 +64,8 @@ class DepletionReader(_MaterialReader):
 
     def read(self):
         """Read through the depletion file and store requested data."""
-        keys = self.settings['metadataKeys']
-        keys.extend(['MAT', 'TOT'] if self.settings['processTotal']
-                    else ['MAT'])
+        keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
+        keys.extend(self.settings['metadataKeys'])
         separators = ['\n', '];']
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():

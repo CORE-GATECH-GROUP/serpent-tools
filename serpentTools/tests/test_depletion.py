@@ -4,7 +4,7 @@ import unittest
 
 import numpy
 
-from serpentTools import rc
+from serpentTools.settings import rc
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader
 
@@ -16,8 +16,8 @@ class _DepletionTestHelper(unittest.TestCase):
     def setUpClass(cls):
         filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
         cls.rc = rc
-        cls.rc['readers.depletion.materials'] = ['fuel', ]
-        cls.rc['readers.depletion.materialVariables'] = [
+        cls.rc['depletion.materials'] = ['fuel', ]
+        cls.rc['depletion.materialVariables'] = [
             'BURNUP', 'ADENS', 'ING_TOX']
         cls.reader = DepletionReader(filePath)
         cls.reader.read()
