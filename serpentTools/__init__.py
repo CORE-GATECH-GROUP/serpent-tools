@@ -1,3 +1,4 @@
+from serpentTools import settings
 from serpentTools import parsers
 
 # List TODOS/feature requests here for now

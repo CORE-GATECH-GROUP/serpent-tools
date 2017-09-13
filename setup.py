@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = '0.1.0rc11'
+version = '0.1.0rc13'
 
 classifiers = [
     'License :: OSI Approved :: MIT License',
@@ -18,7 +18,7 @@ setupArgs = {
     'name': 'serpentTools',
     'python_requires': pythonRequires,
     'packages': ['serpentTools', 'serpentTools.parsers',
-                 'serpentTools.objects'],
+                 'serpentTools.objects', 'serpentTools.settings'],
     'version': version,
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
