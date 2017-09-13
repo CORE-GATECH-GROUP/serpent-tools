@@ -1,24 +1,26 @@
 from setuptools import setup
 
-_version = '0.1.0rc7'
+version = '0.1.0rc8'
 
-_classifiers = [
+classifiers = [
     'License :: OSI Approved :: MIT License',
 ]
 
-_requires = [
+installRequires = [
     'numpy>=1.11.1',
     'matplotlib>=1.5.0',
     'PyYAML>=3.12',
     'dict-digger>=0.2.1',  # for parsing the settings
-    'drewtils>=0.1.2',  # file parsing tools
+    'drewtils>=0.1.3',  # file parsing tools
 ]
+
+pythonRequires = '>=3.5'
 
 setupArgs = {
     'name': 'serpentTools',
-    'packages': ['serpentTools', 'serpentTools.settings', 'serpentTools.tests',
-                 'serpentTools.parsers'],
-    'version': _version,
+    'python_requires': pythonRequires,
+    'packages': ['serpentTools', 'serpentTools.parsers'],
+    'version': version,
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),
@@ -27,8 +29,8 @@ setupArgs = {
     'author_email': 'ajohnson400@gatech.edu',
     'maintainer': 'Dan Kotlyar',
     'maintainer_email': 'dan.kotlyar@me.gatech.edu',
-    'classifiers': _classifiers,
-    'install_requires': _requires,
+    'classifiers': classifiers,
+    'install_requires': installRequires,
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT'
 }
