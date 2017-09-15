@@ -177,8 +177,9 @@ class DepletedMaterial(_SupportingObject):
         # TODO: List comprehension to make rowIDs then return array
         if not isotopes:
             return numpy.array(list(range(len(self.names))), dtype=int)
-        rowIDs = numpy.empty_like(isotopes, dtype=int)
-        for indx, isotope in enumerate(isotopes):
+        isoList = [isotopes] if isinstance(isotopes, (str, int)) else isotopes
+        rowIDs = numpy.empty_like(isoList, dtype=int)
+        for indx, isotope in enumerate(isoList):
             rowIDs[indx] = self.names.index(isotope)
         return rowIDs
 

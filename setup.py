@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = '0.1.0rc13'
+version = '0.1.0'
 
 classifiers = [
     'License :: OSI Approved :: MIT License',
@@ -9,7 +9,7 @@ classifiers = [
 installRequires = [
     'numpy>=1.11.1',
     'matplotlib>=1.5.0',
-    'drewtils>=0.1.3',  # file parsing tools
+    'drewtils>=0.1.4',  # file parsing tools
 ]
 
 pythonRequires = '>=3.5'
