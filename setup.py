@@ -1,6 +1,17 @@
+import os
 from setuptools import setup
 
-version = '0.1.0'
+
+def _getVersion():
+    with open(os.path.join('serpentTools', '__init__.py')) as initF:
+        line = initF.readline()
+        while line != '':
+            if 'version' in line:
+                break
+            line = initF.readline()
+    return line.split()[-1].replace('\'', '')
+
+version = _getVersion()
 
 classifiers = [
     'License :: OSI Approved :: MIT License',

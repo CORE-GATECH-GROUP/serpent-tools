@@ -1,6 +1,8 @@
 from serpentTools import settings
 from serpentTools import parsers
 
+__version__ = '0.1.0'
+
 # List TODOS/feature requests here for now
 # Messages/Errors
 # TODO: Add verbosity control
