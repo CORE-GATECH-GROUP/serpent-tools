@@ -1,7 +1,7 @@
 from serpentTools import settings
 from serpentTools import parsers
 
-__version__ = '0.1.1'
+__version__ = '0.2.0rc0'
 
 # List TODOS/feature requests here for now
 # Messages/Errors
@@ -15,3 +15,6 @@ __version__ = '0.1.1'
 # TODO: Update rc with dictionary
 # TODO: Update rc with yaml file into dictionary
 # TODO: Capture materials with underscores for depletion
+# XS Storage
+# TODO: Add expandable keys of XS to preserve
+# TODO: Homogenized universe data container

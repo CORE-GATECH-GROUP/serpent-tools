@@ -1,6 +1,18 @@
 """Settings to yield control to the user."""
 
 defaultSettings = {
+    'branching': {
+        'intVariables': {
+            'default': [],
+            'description': 'Custom variables to convert to integers.',
+            'type': list
+        },
+        'floatVariables': {
+            'default': [],
+            'description': 'Custom variables to convert to floats.',
+            'type': list
+        },
+    },
     'depletion.metadataKeys': {
         'default': ['ZAI', 'NAMES', 'DAYS', 'BU'],
         'options': 'default',
@@ -23,7 +35,24 @@ defaultSettings = {
         'default': True,
         'description': 'Option to store the depletion data from the TOT block',
         'type': bool
-    }
+    },
+
+    'xs.reshapeScatter': {
+        'default': False,
+        'description': 'If true, convert scatter matrices into matrices, not '
+                       'vectors. ',
+        'type': bool
+    },
+    'xs.getInfXS': {
+        'default': True,
+        'description': 'If true, store the infinite medium cross sections.',
+        'type': bool
+    },
+    'xs.getB1XS': {
+        'deault': True,
+        'description': 'If trye, store the critical leakage cross sections.',
+        'type': bool
+    },
 }
 
 

@@ -1,6 +1,6 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
 
-from serpentTools.parsers import _BaseReader
+from serpentTools.objects.readers import BaseReader
 
 
 class DetectorReader(_BaseReader):
