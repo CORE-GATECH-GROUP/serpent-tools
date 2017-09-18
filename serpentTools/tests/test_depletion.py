@@ -23,7 +23,7 @@ class _DepletionTestHelper(unittest.TestCase):
         cls.reader.read()
 
 
-class Test_Depletion(_DepletionTestHelper):
+class DepletionTester(_DepletionTestHelper):
     """Class that tests the functionality of the depletion reader."""
 
     def test_metadata(self):
@@ -146,9 +146,15 @@ class DepletedMaterialTester(_DepletionTestHelper):
             [0.00000E+00, 2.90880E-14, 5.57897E-14, 2.75249E-13, 5.46031E-13,
              1.35027E-12, 2.64702E-12],
         ], float)
-        _days, actual = self.material.getXY('days', 'adens', names=names,
-                                            timePoints=self.requestedDays)
+        actual = self.material.getXY('days', 'adens', names=names,
+                                     timePoints=self.requestedDays)
         numpy.testing.assert_allclose(actual, expected, rtol=1E-4)
+
+    def test_getXY_adensAndTime(self):
+        """Verify correct atomic density and time slice are returned."""
+        actualAdens, actualDays = self.material.getXY('days', 'adens',
+                                                      names=['Xe135'])
+        numpy.testing.assert_equal(actualDays, self.reader.metadata['days'])
 
 
 if __name__ == '__main__':

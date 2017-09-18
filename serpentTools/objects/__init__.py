@@ -137,9 +137,9 @@ class DepletedMaterial(_SupportingObject):
         Returns
         -------
         numpy.array
-            Vector of time points
+            Array of values.
         numpy.array
-            Array of values
+            Vector of time points only if ``timePoints`` is ``None``
 
         Raises
         ------
@@ -147,6 +147,7 @@ class DepletedMaterial(_SupportingObject):
             If the names of the isotopes have not been obtained and specific
             isotopes have been requested
         """
+        returnX = timePoints is None
         if names and 'names' not in self._container.metadata:
             raise AttributeError('Parser {} has not stored the isotope names.'
                                  .format(self._container))
@@ -159,7 +160,9 @@ class DepletedMaterial(_SupportingObject):
         for isoID, rowId in enumerate(rowIndices):
             yVals[isoID, :] = (allY[rowId][colIndices] if colIndices
                                else allY[rowId][:])
-        return xVals, yVals
+        if returnX:
+            return yVals, xVals
+        return yVals
 
     def _getXSlice(self, xUnits, timePoints):
         allX = self[xUnits]
