@@ -1,9 +1,9 @@
 """Parser responsible for reading the ``*res.m`` files"""
 
-from serpentTools.parsers import _BaseReader
+from serpentTools.objects.readers import BaseReader
 
 
-class ResultsReader(_BaseReader):
+class ResultsReader(BaseReader):
     """
     Parser responsible for reading and working with result files.
 
