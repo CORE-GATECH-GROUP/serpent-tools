@@ -146,8 +146,18 @@ class DepletedMaterial(_SupportingObject):
         AttributeError
             If the names of the isotopes have not been obtained and specific
             isotopes have been requested
+        KeyError
+            If at least one of the days requested is not present
         """
-        returnX = timePoints is None
+        if timePoints is not None:
+            returnX = False
+            timeCheck = self._checkTimePoints(xUnits, timePoints)
+            if any(timeCheck):
+                raise KeyError('The following times were not present in file {}'
+                               '\n{}'.format(self._container.filePath,
+                                             ', '.join(timeCheck)))
+        else:
+            returnX = True
         if names and 'names' not in self._container.metadata:
             raise AttributeError('Parser {} has not stored the isotope names.'
                                  .format(self._container))
@@ -163,6 +173,12 @@ class DepletedMaterial(_SupportingObject):
         if returnX:
             return yVals, xVals
         return yVals
+
+    def _checkTimePoints(self, xUnits, timePoints):
+        valid = self[xUnits]
+        badPoints = [str(time) for time in timePoints if time not in valid]
+        return badPoints
+
 
     def _getXSlice(self, xUnits, timePoints):
         allX = self[xUnits]

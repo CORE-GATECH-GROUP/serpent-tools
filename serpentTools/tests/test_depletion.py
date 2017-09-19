@@ -156,6 +156,17 @@ class DepletedMaterialTester(_DepletionTestHelper):
                                                       names=['Xe135'])
         numpy.testing.assert_equal(actualDays, self.reader.metadata['days'])
 
+    def test_getXY_raisesError_badTime(self):
+        """Verify that a ValueError is raised for non-present requested days."""
+        badDays = [-1, 0, 50]
+        with self.assertRaises(KeyError):
+            self.material.getXY('days', 'adens', timePoints=badDays)
+
+    def test_fetchData(self):
+        """Verify that key errors are raised when bad data are requested."""
+        with self.assertRaises(KeyError):
+            _ = self.material['fake units']
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,9 +1,9 @@
 """Parser responsible for reading the ``*coe.m`` files"""
 
-from serpentTools.parsers import _BaseReader
+from serpentTools.objects.readers import BaseReader
 
 
-class BranchingReader(_BaseReader):
+class BranchingReader(BaseReader):
     """
     Parser responsible for reading and working with automated branching files.
 
