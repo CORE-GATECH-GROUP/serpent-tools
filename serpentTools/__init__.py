@@ -1,7 +1,7 @@
 from serpentTools import settings
 from serpentTools import parsers
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 # List TODOS/feature requests here for now
 # Messages/Errors

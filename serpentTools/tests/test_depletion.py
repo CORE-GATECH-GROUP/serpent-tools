@@ -124,7 +124,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
         """
         Verify the material can produce the full burnup vector through getXY.
         """
-        _days, actual = self.material.getXY('days', 'burnup', )
+        actual, _days = self.material.getXY('days', 'burnup', )
         numpy.testing.assert_equal(actual, self.fuelBU)
 
     def test_getXY_burnup_slice(self):
