@@ -6,7 +6,7 @@ import numpy
 from drewtils.parsers import KeywordParser
 
 from serpentTools.objects.readers import MaterialReader
-from serpentTools.objects import DepletedMaterial
+from serpentTools.objects.materials import DepletedMaterial
 
 
 class DepletionReader(MaterialReader):
