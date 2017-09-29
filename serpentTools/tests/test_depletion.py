@@ -129,8 +129,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
 
     def test_getXY_burnup_slice(self):
         """Verify depletedMaterial getXY correctly slices a vector."""
-        _days, actual = self.material.getXY('days', 'burnup',
-                                            self.requestedDays)
+        actual = self.material.getXY('days', 'burnup', self.requestedDays)
         expected = [0.0E0, 1.90317E-2, 3.60163E-2, 1.74880E-1, 3.45353E-01,
                     8.49693E-01, 1.66071E0]
         numpy.testing.assert_equal(actual, expected)
