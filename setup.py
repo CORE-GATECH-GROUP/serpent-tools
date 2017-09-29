@@ -1,17 +1,13 @@
-import os
 from setuptools import setup
+import os
 
-
-def _getVersion():
-    with open(os.path.join('serpentTools', '__init__.py')) as initF:
-        line = initF.readline()
-        while line != '':
-            if 'version' in line:
-                break
-            line = initF.readline()
-    return line.split()[-1].replace('\'', '')
-
-version = _getVersion()
+def getVersion():
+    with open(os.path.join('serpentTools', '__init__.py')) as fObj:
+        for line in fObj.readlines():
+            if '__version__' in line:
+                version = line.split('\'')[-2]
+                return version
+    raise Exception('Could not identify version')
 
 classifiers = [
     'License :: OSI Approved :: MIT License',
@@ -30,7 +26,6 @@ setupArgs = {
     'python_requires': pythonRequires,
     'packages': ['serpentTools', 'serpentTools.parsers',
                  'serpentTools.objects', 'serpentTools.settings'],
-    'version': version,
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),
@@ -42,7 +37,8 @@ setupArgs = {
     'classifiers': classifiers,
     'install_requires': installRequires,
     'keywords': 'SERPENT file parsers transport',
-    'license': 'MIT'
+    'license': 'MIT',
+    'version': getVersion(),
 }
 
 setup(**setupArgs)
