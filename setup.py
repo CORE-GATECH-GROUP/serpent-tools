@@ -1,5 +1,13 @@
 from setuptools import setup
-import versioneer
+import os
+
+def getVersion():
+    with open(os.path.join('serpentTools', '__init__.py')) as fObj:
+        for line in fObj.readlines():
+            if '__version__' in line:
+                version = line.split('\'')[-2]
+                return version
+    raise Exception('Could not identify version')
 
 classifiers = [
     'License :: OSI Approved :: MIT License',
@@ -8,7 +16,6 @@ classifiers = [
 installRequires = [
     'numpy>=1.11.1',
     'matplotlib>=1.5.0',
-    'versioneer',  # version tracking
     'drewtils>=0.1.4',  # file parsing tools
 ]
 
@@ -31,8 +38,7 @@ setupArgs = {
     'install_requires': installRequires,
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',
-    'version': versioneer.get_version(),
-    'cmdclass': versioneer.get_cmdclass()
+    'version': getVersion(),
 }
 
 setup(**setupArgs)
