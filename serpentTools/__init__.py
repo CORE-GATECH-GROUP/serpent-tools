@@ -1,7 +1,6 @@
 from serpentTools import settings
 from serpentTools import parsers
 
-__version__ = '0.1.2'
 
 # List TODOS/feature requests here for now
 # Messages/Errors
@@ -15,3 +14,9 @@ __version__ = '0.1.2'
 # TODO: Update rc with dictionary
 # TODO: Update rc with yaml file into dictionary
 # TODO: Capture materials with underscores for depletion
+# TODO: Better version string management
+
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
