@@ -20,3 +20,5 @@ from serpentTools import parsers
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
+
+settings.messages.info('Using version {}'.format(__version__))

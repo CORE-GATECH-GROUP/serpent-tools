@@ -2,7 +2,7 @@ from setuptools import setup
 import versioneer
 
 with open('README.md') as readme:
-    longDesc = readme.readlines()
+    longDesc = readme.read()
 
 classifiers = [
     'License :: OSI Approved :: MIT License',

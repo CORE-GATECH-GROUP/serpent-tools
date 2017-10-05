@@ -80,6 +80,7 @@ class DepletionReader(MaterialReader):
                       or 'MAT' in chunk[0]):
                     self._addMaterial(chunk)
         messages.info('Done reading depletion file')
+        messages.debug('  found {} materials'.format(len(self.materials)))
 
     def _addMetadata(self, chunk):
         options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
