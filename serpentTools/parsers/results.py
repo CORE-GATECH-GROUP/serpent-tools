@@ -60,7 +60,7 @@ class ResultsReader(BaseReader):
 
 
     def _addMetaXSdata(self, chunk):
-        options = {'INF_SP0': 'sigma_sct0', 'INF_SP1': 'sigma_sct1', 'INF_SP2': 'sigma_sct2',
+        options = {'INF_SP0': 'sigma_sct0', 'INF_SP1': 'sigma_sct1', 'INF_SP2': 'sigma_sct2',   
                    'INF_ABS': 'sigma_abs'}
         for varName, metadataKey in options.items():
             if varName in chunk[0]:
