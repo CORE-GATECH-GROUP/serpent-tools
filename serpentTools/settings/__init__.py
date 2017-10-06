@@ -1,4 +1,5 @@
 """Settings to yield control to the user."""
+from serpentTools.settings import messages
 
 defaultSettings = {
     'depletion.metadataKeys': {
@@ -23,6 +24,13 @@ defaultSettings = {
         'default': True,
         'description': 'Option to store the depletion data from the TOT block',
         'type': bool
+    },
+    'verbosity': {
+        'default': 'warning',
+        'options': messages.LOG_OPTS,
+        'type': str,
+        'description': 'Set the level of errors to be shown.',
+        'updater': messages.updateLevel
     }
 }
 
@@ -30,12 +38,13 @@ defaultSettings = {
 class DefaultSetting(object):
     """Store a single setting."""
 
-    def __init__(self, name, default, varType, description, options):
+    def __init__(self, name, default, varType, description, options, updater):
         self.name = name
         self.description = description
         self.default = default
         self.type = varType
         self.options = options
+        self.updater = updater
 
     def __repr__(self):
         return '<DefaultSetting {}: value: {}>'.format(self.name, self.default)
@@ -82,7 +91,8 @@ class DefaultSettingsLoader(dict):
         dict.__init__(self, self._load())
         self.__locked__ = True
 
-    def _load(self):
+    @staticmethod
+    def _load():
         """Load the default setting objects."""
         defaults = {}
         for name, value in defaultSettings.items():
@@ -95,7 +105,8 @@ class DefaultSettingsLoader(dict):
                                'default': value['default'],
                                'varType': value['type'],
                                'options': options,
-                               'description': value['description']
+                               'description': value['description'],
+                               'updater': value.get('updater', None)
                                }
             defaults[name] = DefaultSetting(**settingsOptions)
         return defaults
@@ -163,14 +174,17 @@ class UserSettingsLoader(dict):
             raise KeyError('Setting {} does not exist'.format(name))
         self._defaultLoader[name].validate(value)
         # if we've made it here, then the value is valid
+        if self._defaultLoader[name].updater is not None:
+            value = self._defaultLoader[name].updater(value)
         dict.__setitem__(self, name, value)
+        messages.debug('Updated setting {} to {}'.format(name, value))
 
     def getReaderSettings(self, readerName):
         """Get all module-wide and reader-specific settings.
 
         Parameters
         ----------
-        readerLevel: str
+        readerName: str
             Name of the specific reader.
             Will look for settings with lead with ``readerName``, e.g.
             ``depletion.metadataKeys``

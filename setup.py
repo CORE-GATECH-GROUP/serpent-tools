@@ -1,6 +1,8 @@
 from setuptools import setup
 import versioneer
 
+with open('README.md') as readme:
+    longDesc = readme.read()
 
 classifiers = [
     'License :: OSI Approved :: MIT License',
@@ -23,6 +25,7 @@ setupArgs = {
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),
+    'long_description': longDesc,
     'test_suite': 'serpentTools.tests',
     'author': 'Andrew Johnson',
     'author_email': 'ajohnson400@gatech.edu',

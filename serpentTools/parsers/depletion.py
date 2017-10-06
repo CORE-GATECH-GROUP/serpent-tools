@@ -8,6 +8,8 @@ from drewtils.parsers import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
+from serpentTools.settings import messages
+
 
 class DepletionReader(MaterialReader):
     """Parser responsible for reading and working with depletion files.
@@ -60,10 +62,13 @@ class DepletionReader(MaterialReader):
         """Return the patterns by which to find the requested materials."""
         patterns = self.settings['materials'] or ['.*']
         # match all materials if nothing given
+        if any(['_' in pat for pat in patterns]):
+            messages.warning('Materials with underscores are not supported.')
         return [re.compile(mat) for mat in patterns]
 
     def read(self):
         """Read through the depletion file and store requested data."""
+        messages.info('Preparing to read {}'.format(self.filePath))
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
         keys.extend(self.settings['metadataKeys'])
         separators = ['\n', '];']
@@ -74,6 +79,8 @@ class DepletionReader(MaterialReader):
                 elif (('TOT' in chunk[0] and self.settings['processTotal'])
                       or 'MAT' in chunk[0]):
                     self._addMaterial(chunk)
+        messages.info('Done reading depletion file')
+        messages.debug('  found {} materials'.format(len(self.materials)))
 
     def _addMetadata(self, chunk):
         options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',

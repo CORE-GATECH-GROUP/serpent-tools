@@ -57,7 +57,8 @@ class UserSettingsTester(unittest.TestCase):
             'metadataKeys': ['ZAI', 'NAMES', 'DAYS', 'BU'],
             'materialVariables': ['ADENS', 'MDENS', 'BURNUP'],
             'materials': [],
-            'processTotal': True
+            'processTotal': True,
+            'verbosity': 'warning'
         }
         actual = self.loader.getReaderSettings(readerName)
         self.assertDictEqual(expected, actual)
