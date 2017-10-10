@@ -8,4 +8,6 @@ API
 
    settings.rst
    messages.rst
+   branching.rst
    depletion.rst
+   support.rst

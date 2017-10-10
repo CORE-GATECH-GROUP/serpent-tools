@@ -32,10 +32,6 @@ class DepletionReader(MaterialReader):
         names and values of the settings used to control operations
         of this reader
 
-    :note:
-
-        Does not support depleted materials with underscores,
-        i.e. ``fuel_1`` will not be matched with the current methods
     """
 
     def __init__(self, filePath):
