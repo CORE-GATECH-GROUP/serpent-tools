@@ -16,10 +16,11 @@ class _DepletionTestHelper(unittest.TestCase):
     def setUpClass(cls):
         filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
         cls.rc = rc
-        cls.rc['depletion.materials'] = ['fuel', ]
-        cls.rc['depletion.materialVariables'] = [
-            'BURNUP', 'ADENS', 'ING_TOX']
-        cls.reader = DepletionReader(filePath)
+        with cls.rc as tempRC:
+            tempRC['depletion.materials'] = ['fuel', ]
+            tempRC['depletion.materialVariables'] = [
+                'BURNUP', 'ADENS', 'ING_TOX']
+            cls.reader = DepletionReader(filePath)
         cls.reader.read()
 
 
