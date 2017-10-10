@@ -3,11 +3,8 @@ System-wide methods for producing status update and errors.
 
 See Also
 --------
-https://docs.python.org/2/library/logging.html
-https://www.python.org/dev/peps/pep-0391/
-http://docs.python-guide.org/en/latest/writing/logging/
-https://docs.python.org/2/howto/logging-cookbook.html#logging-cookbook
-https://fangpenlin.com/posts/2012/08/26/good-logging-practice-in-python/
+* https://docs.python.org/2/library/logging.html
+* https://www.python.org/dev/peps/pep-0391/
 """
 
 
