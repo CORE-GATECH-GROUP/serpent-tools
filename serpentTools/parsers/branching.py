@@ -1,9 +1,10 @@
 """Parser responsible for reading the ``*coe.m`` files"""
 
-from serpentTools.objects.readers import BaseReader
+from serpentTools.objects.readers import XSReader
 from serpentTools.objects.branchContainer import BranchContainer
 
-class BranchingReader(BaseReader):
+
+class BranchingReader(XSReader):
     """
     Parser responsible for reading and working with automated branching files.
 
@@ -13,7 +14,7 @@ class BranchingReader(BaseReader):
         path to the depletion file
     """
     def __init__(self, filePath):
-        BaseReader.__init__(self, filePath, ['branching', 'xs'])
+        XSReader.__init__(self, filePath, 'branching')
         self.__fileObj__ = None
         self.branches = {}
         self._loopLevel = [True, True, True]

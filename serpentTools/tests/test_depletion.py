@@ -124,13 +124,12 @@ class DepletedMaterialTester(_DepletionTestHelper):
         """
         Verify the material can produce the full burnup vector through getXY.
         """
-        _days, actual = self.material.getXY('days', 'burnup', )
+        actual, _days = self.material.getXY('days', 'burnup', )
         numpy.testing.assert_equal(actual, self.fuelBU)
 
     def test_getXY_burnup_slice(self):
         """Verify depletedMaterial getXY correctly slices a vector."""
-        _days, actual = self.material.getXY('days', 'burnup',
-                                            self.requestedDays)
+        actual = self.material.getXY('days', 'burnup', self.requestedDays)
         expected = [0.0E0, 1.90317E-2, 3.60163E-2, 1.74880E-1, 3.45353E-01,
                     8.49693E-01, 1.66071E0]
         numpy.testing.assert_equal(actual, expected)
@@ -155,6 +154,17 @@ class DepletedMaterialTester(_DepletionTestHelper):
         actualAdens, actualDays = self.material.getXY('days', 'adens',
                                                       names=['Xe135'])
         numpy.testing.assert_equal(actualDays, self.reader.metadata['days'])
+
+    def test_getXY_raisesError_badTime(self):
+        """Verify that a ValueError is raised for non-present requested days."""
+        badDays = [-1, 0, 50]
+        with self.assertRaises(KeyError):
+            self.material.getXY('days', 'adens', timePoints=badDays)
+
+    def test_fetchData(self):
+        """Verify that key errors are raised when bad data are requested."""
+        with self.assertRaises(KeyError):
+            _ = self.material['fake units']
 
 
 if __name__ == '__main__':

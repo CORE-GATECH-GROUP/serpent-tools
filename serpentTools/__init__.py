@@ -1,13 +1,8 @@
 from serpentTools import settings
 from serpentTools import parsers
 
-__version__ = '0.2.0rc0'
 
 # List TODOS/feature requests here for now
-# Messages/Errors
-# TODO: Add verbosity control
-# TODO: Add specific exceptions and warnings
-# TODO: Add logging module to help with warnings/exceptions/info
 # Compatability
 # TODO: Python 2 support
 # TODO: Test compatability with earlier numpy releases
@@ -18,3 +13,9 @@ __version__ = '0.2.0rc0'
 # XS Storage
 # TODO: Add expandable keys of XS to preserve
 # TODO: Homogenized universe data container
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
+settings.messages.info('Using version {}'.format(__version__))

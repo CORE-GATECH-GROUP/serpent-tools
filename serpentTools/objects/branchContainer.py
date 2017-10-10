@@ -7,7 +7,8 @@ class BranchContainer(_SupportingObject):
     """Class that stores data for a single branch."""
 
     def __init__(self, parser, branchID, branchNames, stateData):
-        _SupportingObject.__init__(self, parser, branchID)
+        _SupportingObject.__init__(self, parser)
+        self.branchID = branchID
         self.stateData = stateData
         self.universes = {}
         self.branchNames = branchNames

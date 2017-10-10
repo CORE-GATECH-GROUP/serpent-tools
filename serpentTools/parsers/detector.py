@@ -3,7 +3,7 @@
 from serpentTools.objects.readers import BaseReader
 
 
-class DetectorReader(_BaseReader):
+class DetectorReader(BaseReader):
     """
     Parser responsible for reading and working with detector files.
 
