@@ -1,4 +1,9 @@
 """Settings to yield control to the user."""
+import os
+
+import yaml
+
+from serpentTools import ROOT_DIR
 from serpentTools.settings import messages
 
 defaultSettings = {
@@ -31,6 +36,12 @@ defaultSettings = {
         'type': str,
         'description': 'Set the level of errors to be shown.',
         'updater': messages.updateLevel
+    },
+    'serpentVersion': {
+        'default': '2.1.29',
+        'options': ['2.1.29'],
+        'description': 'Version of SERPENT',
+        'type': str
     }
 }
 
@@ -201,16 +212,16 @@ class UserSettingsLoader(dict):
             dictionary
         """
         settings = {}
-        self._validateReaderName(readerName)
+        if not self._validateReaderName(readerName):
+            messages.warning('No settings found for reader {}. Returning empty '
+                             'dictionary'.format(readerName))
+            return settings
         for setting, value in self.items():
             settingPath = setting.split('.')
-            if len(settingPath) == 1:  # high level setting like verbosity
-                name = settingPath[0]
+            if settingPath[0] == readerName:
+                name = settingPath[1]
             else:
-                if settingPath[0] == readerName:
-                    name = settingPath[1]
-                else:
-                    continue
+                continue
             settings[name] = value
         return settings
 
@@ -221,3 +232,39 @@ class UserSettingsLoader(dict):
 
 
 rc = UserSettingsLoader()
+
+
+def extendVariableGroups(serpentVersion, keywords=None, extras=None):
+    """Extend the keyword groups into lists of serpent variables.
+
+    Parameters
+    ----------
+    serpentVersion: str
+        String for the serpent version, e.g. '2.1.29'
+    keywords: None or list
+        List of variable groups from ``'variables.yaml'``
+    extras: List of None
+        List of variables to directly add that may or may not be present
+        in groups covered by keywords
+
+    Returns
+    -------
+    set
+        Names of all variables to be scraped
+    """
+    if not (keywords or extras):  # return empty set and don't read
+        return {}
+    variables = set(extras) if extras else {}
+    if not keywords:
+        return variables
+    varFile = os.path.join(ROOT_DIR, 'settings', 'variables.yaml')
+    with open(varFile) as fObj:
+        groups = yaml.load(fObj)
+    thisVersion = groups[serpentVersion]
+    baseGroups = groups['base']
+    for key in keywords:
+        if key in thisVersion:
+            variables.update(thisVersion[key])
+        elif key in baseGroups:
+            variables.update(baseGroups[key])
+    return variables
