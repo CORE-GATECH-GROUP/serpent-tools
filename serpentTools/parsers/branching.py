@@ -1,9 +1,9 @@
 """Parser responsible for reading the ``*coe.m`` files"""
 
-from serpentTools.objects.readers import BaseReader
+from serpentTools.objects.readers import XSReader
 
 
-class BranchingReader(BaseReader):
+class BranchingReader(XSReader):
     """
     Parser responsible for reading and working with automated branching files.
 
@@ -12,7 +12,9 @@ class BranchingReader(BaseReader):
     filePath: str
         path to the depletion file
     """
-    pass
+
+    def __init__(self, filePath):
+        XSReader.__init__(self, filePath, 'branching')
 
     def write(self, template=None):
         """
@@ -34,3 +36,4 @@ class BranchingReader(BaseReader):
         -------
 
         """
+        raise NotImplementedError
