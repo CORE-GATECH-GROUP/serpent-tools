@@ -15,7 +15,7 @@ installRequires = [
     'matplotlib>=1.5.0',
     'pyyaml>=3.08',
     'versioneer',  # version tracking
-    'drewtils>=0.1.5',  # file parsing tools
+    'drewtils>=0.1.8',  # file parsing tools
 ]
 
 installVarYamlFrom = join('serpentTools', 'settings', 'variables.yaml')
