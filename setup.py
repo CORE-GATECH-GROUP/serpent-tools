@@ -1,4 +1,6 @@
+from os.path import join, dirname
 from setuptools import setup
+
 import versioneer
 
 with open('README.md') as readme:
@@ -15,6 +17,8 @@ installRequires = [
     'versioneer',  # version tracking
     'drewtils>=0.1.5',  # file parsing tools
 ]
+
+installVarYamlFrom = join('serpentTools', 'settings', 'variables.yaml')
 
 pythonRequires = '>=3.5'
 
@@ -37,7 +41,8 @@ setupArgs = {
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',
     'version': versioneer.get_version(),
-    'cmdclass': versioneer.get_cmdclass()
+    'cmdclass': versioneer.get_cmdclass(),
+    'data_files': [(dirname(installVarYamlFrom), [installVarYamlFrom])]
 }
 
 setup(**setupArgs)
