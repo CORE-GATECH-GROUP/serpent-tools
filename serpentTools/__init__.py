@@ -1,18 +1,17 @@
-from serpentTools import settings
-from serpentTools import parsers
+import os
 
+ROOT_DIR = os.path.dirname(__file__)
+
+from serpentTools import settings
 
 # List TODOS/feature requests here for now
 # Compatability
 # TODO: Python 2 support
-# TODO: Test compatability with earlier numpy releases
+# TODO: Test compatibility with earlier numpy releases
 # Usage/scripting
 # TODO: Update rc with dictionary
 # TODO: Update rc with yaml file into dictionary
 # TODO: Capture materials with underscores for depletion
-# XS Storage
-# TODO: Add expandable keys of XS to preserve
-# TODO: Homogenized universe data container
 
 from ._version import get_versions
 __version__ = get_versions()['version']

@@ -93,4 +93,4 @@ class BranchingReader(XSReader):
         -------
 
         """
-        pass
+        raise NotImplementedError

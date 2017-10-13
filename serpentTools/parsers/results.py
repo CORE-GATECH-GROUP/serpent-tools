@@ -1,10 +1,9 @@
 """Parser responsible for reading the ``*res.m`` files"""
 
+from serpentTools.objects.readers import BaseReader
 
-from serpentTools.objects.readers import XSReader
 
-
-class ResultsReader(XSReader):
+class ResultsReader(BaseReader):
     """
     Parser responsible for reading and working with result files.
 
@@ -13,5 +12,4 @@ class ResultsReader(XSReader):
     filePath: str
         path to the depletion file
     """
-    def __init__(self, filePath):
-        XSReader.__init__(self, filePath, ['branching', 'xs'])
+    pass
