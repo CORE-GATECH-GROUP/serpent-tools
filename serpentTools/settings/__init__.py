@@ -9,12 +9,18 @@ from serpentTools.settings import messages
 defaultSettings = {
     'branching.intVariables': {
         'default': [],
-        'description': 'Custom variables to convert to integers.',
+        'description': 'Integer variables to store from each branch.',
         'type': list
     },
     'branching.floatVariables': {
         'default': [],
-        'description': 'Custom variables to convert to floats.',
+        'description': 'Floating point variables to store from each branch.',
+        'type': list
+    },
+    'branching.strVariables': {
+        'default': [],
+        'description': ('Custom variables to store for each branch without '
+                        'conversion.'),
         'type': list
     },
     'depletion.metadataKeys': {
