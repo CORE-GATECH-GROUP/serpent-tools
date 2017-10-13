@@ -2,6 +2,7 @@
 import unittest
 
 from serpentTools import settings
+from serpentTools.settings.messages import DepreciatedFunction, ChangedFunction
 
 
 class DefaultSettingsTester(unittest.TestCase):
@@ -97,6 +98,34 @@ class RCTester(unittest.TestCase):
             tempRC['xs.variableGroups'] = groupNames
             actual = tempRC.expandVariables()
         self.assertSetEqual(expected, actual)
+
+
+class MessagingTester(unittest.TestCase):
+    """Class to test the messaging framework."""
+
+    def test_futureDecorator(self):
+        """Verify that the future decorator doesn't break"""
+
+        @ChangedFunction('This function will be updated in the future, '
+                         'but will still exist')
+        def demoFuture(x, val=5):
+            return x + val
+
+        self._testSuite(demoFuture)
+
+    def test_depreciatedDecorator(self):
+        """Verify that the depreciated decorator doesn't break things"""
+
+        @DepreciatedFunction('demo function', '1.0')
+        def demoFunction(x, val=5):
+            return x + val
+
+        self._testSuite(demoFunction)
+
+    def _testSuite(self, func):
+        self.assertEqual(7, func(2))
+        self.assertEqual(7, func(2, 5))
+        self.assertEqual(7, func(2, val=5))
 
 
 if __name__ == '__main__':

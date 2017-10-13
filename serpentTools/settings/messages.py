@@ -83,31 +83,46 @@ def updateLevel(level):
 
 def depreciatedWarning(message):
     DeprecationWarning(message)
-    warning('DEPRECIATED: ' + message)
+    warning(message)
 
 
 def futureWarning(message):
     FutureWarning(message)
-    warning('FUTURE: ' + message)
+    warning(message)
 
 
-def depreciatedFunc(functionName):
-    """Iindicate that a function/method will be depreciated."""
-    def funcWrapper(f):
+class __functionHerald__(object):
+    """Decorator that raises a message when the decorated function is called."""
+
+    def __call__(self, f):
         def decorated(*args, **kwargs):
-            depreciatedWarning('Function {} will be depreciated'
-                               .format(functionName))
+            self.__notify__()
             return f(*args, **kwargs)
+        decorated.__name__ = f.__name__
+        decorated.__doc__ = f.__doc__
+        decorated.__dict__.update(f.__dict__)
         return decorated
-    return funcWrapper
+
+    def __notify__(self):
+        raise NotImplementedError
 
 
-def functionWillChange(changeMessage):
-    """Indicate that a function/method will change in the future."""
-    def funcWrapper(f):
-        def decorated(*args, **kwargs):
-            futureWarning(changeMessage)
-            return f(*args, **kwargs)
-        return decorated
-    return funcWrapper
+class DepreciatedFunction(__functionHerald__):
+    """Decorator that notifies the user a function will be depreciated."""
+    def __init__(self, functionName, depreciatedVersion):
+        self.functionName = functionName
+        self.depVersion = depreciatedVersion
 
+    def __notify__(self):
+        depreciatedWarning('Function {} will be depreciated as of '
+                           'version {}'
+                           .format(self.functionName, self.depVersion))
+
+
+class ChangedFunction(__functionHerald__):
+    """Decorator that notifies the user a function will be changed."""
+    def __init__(self, message):
+        self.message = message
+
+    def __notify__(self):
+        futureWarning(self.message)
