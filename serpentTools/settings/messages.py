@@ -79,3 +79,35 @@ def updateLevel(level):
     else:
         __logger__.setLevel(level.upper())
         return level
+
+
+def depreciatedWarning(message):
+    DeprecationWarning(message)
+    warning('DEPRECIATED: ' + message)
+
+
+def futureWarning(message):
+    FutureWarning(message)
+    warning('FUTURE: ' + message)
+
+
+def depreciatedFunc(functionName):
+    """Iindicate that a function/method will be depreciated."""
+    def funcWrapper(f):
+        def decorated(*args, **kwargs):
+            depreciatedWarning('Function {} will be depreciated'
+                               .format(functionName))
+            return f(*args, **kwargs)
+        return decorated
+    return funcWrapper
+
+
+def functionWillChange(changeMessage):
+    """Indicate that a function/method will change in the future."""
+    def funcWrapper(f):
+        def decorated(*args, **kwargs):
+            futureWarning(changeMessage)
+            return f(*args, **kwargs)
+        return decorated
+    return funcWrapper
+
