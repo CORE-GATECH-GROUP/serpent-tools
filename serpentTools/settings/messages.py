@@ -7,7 +7,8 @@ See Also
 * https://www.python.org/dev/peps/pep-0391/
 """
 
-
+import functools
+import warnings
 import logging
 from logging.config import dictConfig
 
@@ -19,11 +20,10 @@ class SerpentToolsException(Exception):
 
 LOG_OPTS = ['critical', 'error', 'warning', 'info', 'debug']
 
-
 loggingConfig = {
     'version': 1,
     'formatters': {
-        'brief': {'format': '%(levelname)-8s: %(name)-15s: %(message)s'},
+        'brief': {'format': '%(levelname)-8s: %(name)-12s: %(message)s'},
         'precise': {
             'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
         }
@@ -81,49 +81,35 @@ def updateLevel(level):
         return level
 
 
-def depreciatedWarning(message):
-    DeprecationWarning(message)
-    warning(message)
+def depreciated(f):
+    """Display a warning indicating a function will be depreciated."""
+
+    @functools.wraps(f)
+    def decoratedFunc(*args, **kwargs):
+        msg = 'Call to depreciated function {}'.format(f.__name__)
+        warning(msg)
+        _updateFilterAlert(msg, DeprecationWarning)
+        return f(*args, **kwargs)
+
+    return decoratedFunc
 
 
-def futureWarning(message):
-    FutureWarning(message)
-    warning(message)
+def willChange(changeMsg):
+    """Inform the user that some functionality may change."""
 
-
-class __functionHerald__(object):
-    """Decorator that raises a message when the decorated function is called."""
-
-    def __call__(self, f):
-        def decorated(*args, **kwargs):
-            self.__notify__()
+    def decorate(f):
+        @functools.wraps(f)
+        def decoratedFunc(*args, **kwargs):
+            warning(changeMsg)
+            _updateFilterAlert(changeMsg, FutureWarning)
             return f(*args, **kwargs)
-        decorated.__name__ = f.__name__
-        decorated.__doc__ = f.__doc__
-        decorated.__dict__.update(f.__dict__)
-        decorated.__repr__ = f.__repr__
-        return decorated
 
-    def __notify__(self):
-        raise NotImplementedError
+        return decoratedFunc
+
+    return decorate
 
 
-class DepreciatedFunction(__functionHerald__):
-    """Decorator that notifies the user a function will be depreciated."""
-    def __init__(self, functionName, depreciatedVersion):
-        self.functionName = functionName
-        self.depVersion = depreciatedVersion
-
-    def __notify__(self):
-        depreciatedWarning('Function {} will be depreciated as of '
-                           'version {}'
-                           .format(self.functionName, self.depVersion))
-
-
-class ChangedFunction(__functionHerald__):
-    """Decorator that notifies the user a function will be changed."""
-    def __init__(self, message):
-        self.message = message
-
-    def __notify__(self):
-        futureWarning(self.message)
+def _updateFilterAlert(msg, category):
+    warnings.simplefilter('always', category)
+    warnings.warn(msg, category=category, stacklevel=3)
+    warnings.simplefilter('default', category)

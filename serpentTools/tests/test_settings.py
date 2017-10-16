@@ -2,7 +2,7 @@
 import unittest
 
 from serpentTools import settings
-from serpentTools.settings.messages import DepreciatedFunction, ChangedFunction
+from serpentTools.settings.messages import depreciated, willChange
 
 
 class DefaultSettingsTester(unittest.TestCase):
@@ -106,26 +106,23 @@ class MessagingTester(unittest.TestCase):
     def test_futureDecorator(self):
         """Verify that the future decorator doesn't break"""
 
-        @ChangedFunction('This function will be updated in the future, '
-                         'but will still exist')
+        @willChange('This function will be updated in the future, '
+                    'but will still exist')
         def demoFuture(x, val=5):
             return x + val
 
-        self._testSuite(demoFuture)
+        self.assertEqual(7, demoFuture(2))
+        self.assertEqual(7, demoFuture(2, 5))
 
     def test_depreciatedDecorator(self):
         """Verify that the depreciated decorator doesn't break things"""
 
-        @DepreciatedFunction('demo function', '1.0')
+        @depreciated
         def demoFunction(x, val=5):
             return x + val
 
-        self._testSuite(demoFunction)
-
-    def _testSuite(self, func):
-        self.assertEqual(7, func(2))
-        self.assertEqual(7, func(2, 5))
-        self.assertEqual(7, func(2, val=5))
+        self.assertEqual(7, demoFunction(2))
+        self.assertEqual(7, demoFunction(2, 5))
 
 
 if __name__ == '__main__':
