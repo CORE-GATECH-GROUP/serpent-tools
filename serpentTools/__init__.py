@@ -1,19 +1,21 @@
-from serpentTools import settings
-from serpentTools import parsers
+import os
 
-__version__ = '0.1.4'
+ROOT_DIR = os.path.dirname(__file__)
+
+from serpentTools import settings
 
 # List TODOS/feature requests here for now
-# Messages/Errors
-# TODO: Add verbosity control
-# TODO: Add specific exceptions and warnings
-# TODO: Add logging module to help with warnings/exceptions/info
-# Compatability
+# Compatibility
 # TODO: Python 2 support
-# TODO: Test compatability with earlier numpy releases
+# TODO: Test compatibility with earlier numpy releases
 # Usage/scripting
 # TODO: Update rc with dictionary
 # TODO: Update rc with yaml file into dictionary
 # TODO: Capture materials with underscores for depletion
-# TODO: Better version string management
+# TODO: Find a way to capture some or all of log messages for testing
 
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
+settings.messages.info('Using version {}'.format(__version__))

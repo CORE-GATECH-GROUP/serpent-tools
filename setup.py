@@ -1,13 +1,10 @@
+from os.path import join, dirname
 from setuptools import setup
-import os
 
-def getVersion():
-    with open(os.path.join('serpentTools', '__init__.py')) as fObj:
-        for line in fObj.readlines():
-            if '__version__' in line:
-                version = line.split('\'')[-2]
-                return version
-    raise Exception('Could not identify version')
+import versioneer
+
+with open('README.md') as readme:
+    longDesc = readme.read()
 
 classifiers = [
     'License :: OSI Approved :: MIT License',
@@ -16,8 +13,12 @@ classifiers = [
 installRequires = [
     'numpy>=1.11.1',
     'matplotlib>=1.5.0',
-    'drewtils>=0.1.4',  # file parsing tools
+    'pyyaml>=3.08',
+    'versioneer',  # version tracking
+    'drewtils>=0.1.8',  # file parsing tools
 ]
+
+installVarYamlFrom = join('serpentTools', 'settings', 'variables.yaml')
 
 pythonRequires = '>=3.5'
 
@@ -29,6 +30,7 @@ setupArgs = {
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),
+    'long_description': longDesc,
     'test_suite': 'serpentTools.tests',
     'author': 'Andrew Johnson',
     'author_email': 'ajohnson400@gatech.edu',
@@ -38,7 +40,9 @@ setupArgs = {
     'install_requires': installRequires,
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',
-    'version': getVersion(),
+    'version': versioneer.get_version(),
+    'cmdclass': versioneer.get_cmdclass(),
+    'data_files': [(dirname(installVarYamlFrom), [installVarYamlFrom])]
 }
 
 setup(**setupArgs)

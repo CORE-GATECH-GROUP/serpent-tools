@@ -8,7 +8,7 @@ class BaseReader(object):
     ----------
     filePath: str
         path pointing towards the file to be read
-    readerSettingsLevel: str
+    readerSettingsLevel: str or list
         type of reader. Determines which settings to obtain
     """
 
@@ -37,6 +37,19 @@ class MaterialReader(BaseReader):
     def __init__(self, filePath, readerSettingsLevel):
         BaseReader.__init__(self, filePath, readerSettingsLevel)
         self.materials = {}
+
+    def read(self):
+        raise NotImplementedError
+
+
+class XSReader(BaseReader):
+    """Parent class for the branching and results reader"""
+
+    def __init__(self, filePath, readerSettingsLevel):
+        BaseReader.__init__(self, filePath, ['xs', readerSettingsLevel])
+        self.settings['variables'] = rc.expandVariables()
+        self.settings.pop('variableGroups')
+        self.settings.pop('variableExtras')
 
     def read(self):
         raise NotImplementedError

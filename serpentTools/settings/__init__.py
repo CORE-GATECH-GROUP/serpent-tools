@@ -1,4 +1,10 @@
 """Settings to yield control to the user."""
+import os
+
+import yaml
+
+from serpentTools import ROOT_DIR
+from serpentTools.settings import messages
 
 defaultSettings = {
     'depletion.metadataKeys': {
@@ -23,6 +29,30 @@ defaultSettings = {
         'default': True,
         'description': 'Option to store the depletion data from the TOT block',
         'type': bool
+    },
+    'verbosity': {
+        'default': 'warning',
+        'options': messages.LOG_OPTS,
+        'type': str,
+        'description': 'Set the level of errors to be shown.',
+        'updater': messages.updateLevel
+    },
+    'serpentVersion': {
+        'default': '2.1.29',
+        'options': ['2.1.29'],
+        'description': 'Version of SERPENT',
+        'type': str
+    },
+    'xs.variableGroups': {
+        'default': [],
+        'description': ('Name of variable groups from variables.yaml to be '
+                        'expanded into SERPENT variable to be stored'),
+        'type': list
+    },
+    'xs.variableExtras': {
+        'default': [],
+        'description': 'Full SERPENT name of variables to be read',
+        'type': list
     }
 }
 
@@ -30,12 +60,13 @@ defaultSettings = {
 class DefaultSetting(object):
     """Store a single setting."""
 
-    def __init__(self, name, default, varType, description, options):
+    def __init__(self, name, default, varType, description, options, updater):
         self.name = name
         self.description = description
         self.default = default
         self.type = varType
         self.options = options
+        self.updater = updater
 
     def __repr__(self):
         return '<DefaultSetting {}: value: {}>'.format(self.name, self.default)
@@ -82,7 +113,8 @@ class DefaultSettingsLoader(dict):
         dict.__init__(self, self._load())
         self.__locked__ = True
 
-    def _load(self):
+    @staticmethod
+    def _load():
         """Load the default setting objects."""
         defaults = {}
         for name, value in defaultSettings.items():
@@ -95,7 +127,8 @@ class DefaultSettingsLoader(dict):
                                'default': value['default'],
                                'varType': value['type'],
                                'options': options,
-                               'description': value['description']
+                               'description': value['description'],
+                               'updater': value.get('updater', None)
                                }
             defaults[name] = DefaultSetting(**settingsOptions)
         return defaults
@@ -136,10 +169,27 @@ class UserSettingsLoader(dict):
 
     def __init__(self):
         self._defaultLoader = DefaultSettingsLoader()
+        self.__inside__ = False
+        self.__originals__ = {}
         dict.__init__(self, self._defaultLoader.retrieveDefaults())
 
     def __setitem__(self, key, value):
+        self._checkStoreOriginal(key)
         self.setValue(key, value)
+
+    def __enter__(self):
+        self.__inside__ = True
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.__inside__ = False
+        for key, originalValue in self.__originals__.items():
+            self[key] = originalValue
+        self.__originals__ = {}
+
+    def _checkStoreOriginal(self, key):
+        if self.__inside__:
+            self.__originals__[key] = self[key]
 
     def setValue(self, name, value):
         """Set the value of a specific setting.
@@ -163,17 +213,20 @@ class UserSettingsLoader(dict):
             raise KeyError('Setting {} does not exist'.format(name))
         self._defaultLoader[name].validate(value)
         # if we've made it here, then the value is valid
+        if self._defaultLoader[name].updater is not None:
+            value = self._defaultLoader[name].updater(value)
         dict.__setitem__(self, name, value)
+        messages.debug('Updated setting {} to {}'.format(name, value))
 
-    def getReaderSettings(self, readerName):
+    def getReaderSettings(self, settingsPreffix):
         """Get all module-wide and reader-specific settings.
 
         Parameters
         ----------
-        readerLevel: str
+        settingsPreffix: str or list
             Name of the specific reader.
-            Will look for settings with lead with ``readerName``, e.g.
-            ``depletion.metadataKeys``
+            Will look for settings that lead with ``readerName``, e.g.
+            ``depletion.metadataKeys`` or ``xs.variables``
 
         Returns
         -------
@@ -187,23 +240,48 @@ class UserSettingsLoader(dict):
             dictionary
         """
         settings = {}
-        self._validateReaderName(readerName)
+        settingsPreffix = ([settingsPreffix] if isinstance(settingsPreffix, str)
+                           else settingsPreffix)
         for setting, value in self.items():
             settingPath = setting.split('.')
-            if len(settingPath) == 1:  # high level setting like verbosity
-                name = settingPath[0]
+            if settingPath[0] in settingsPreffix:
+                name = settingPath[1]
             else:
-                if settingPath[0] == readerName:
-                    name = settingPath[1]
-                else:
-                    continue
+                continue
             settings[name] = value
+        if not settings:
+            messages.warning('Could not obtain settings for the following '
+                             'reader names: {}'
+                             .format(', '.join(settingsPreffix)))
         return settings
 
-    def _validateReaderName(self, readerName):
-        """Return True if the reader name has settings."""
-        readers = set([name.split('.')[0] for name in self if '.' in name])
-        return readerName in readers
+    def expandVariables(self):
+        """Extend the keyword groups into lists of serpent variables.
+
+           Returns
+           -------
+           set
+               Names of all variables to be scraped
+           """
+        keywords = self['xs.variableGroups']
+        extras = self['xs.variableExtras']
+        serpentVersion = self['serpentVersion']
+        if not (keywords or extras):  # return empty set and don't read
+            return set()
+        variables = set(extras) if extras else set()
+        if not keywords:
+            return variables
+        varFile = os.path.join(ROOT_DIR, 'settings', 'variables.yaml')
+        with open(varFile) as fObj:
+            groups = yaml.load(fObj)
+        thisVersion = groups[serpentVersion]
+        baseGroups = groups['base']
+        for key in keywords:
+            if key in thisVersion:
+                variables.update(thisVersion[key])
+            elif key in baseGroups:
+                variables.update(baseGroups[key])
+        return variables
 
 
 rc = UserSettingsLoader()

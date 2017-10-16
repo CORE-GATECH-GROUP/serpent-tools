@@ -3,7 +3,7 @@
 import numpy
 from matplotlib import pyplot
 
-
+from serpentTools.settings import messages
 from serpentTools.objects import _NamedObject
 
 
@@ -28,13 +28,6 @@ class DepletedMaterial(_NamedObject):
         Days overwhich the material was depleted
     adens: numpy.array
         Atomic density over time for each nuclide
-
-    :note:
-
-        These attributes only exist if the pasers was instructed to
-        read in this data. I.e. if ``readers.depletion.metadataKeys``
-        does not contain ``ZAI``, then this object will not have
-        the ``zai`` data.
 
     """
 
@@ -69,6 +62,7 @@ class DepletedMaterial(_NamedObject):
             List of strings corresponding to the raw data from the file
         """
         newName = self._convertVariableName(variable)
+        messages.debug('Adding {} data to {}'.format(newName, self.name))
         if isinstance(rawData, str):
             scratch = [float(item) for item in rawData.split()]
         else:
