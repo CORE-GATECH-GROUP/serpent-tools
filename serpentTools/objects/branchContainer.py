@@ -19,7 +19,6 @@ class BranchContainer(_SupportingObject):
 
     def addUniverse(self, univID, burnup=0, burnIndex=0, burnDays=0):
         """Add a universe to this branch"""
-        FutureWarning('This will be updated once issue 11 is closed')
         newUniv = {}
         self.universes[(univID, burnup, burnIndex, burnDays)] = newUniv
         return newUniv

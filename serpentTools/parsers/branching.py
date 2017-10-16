@@ -1,5 +1,6 @@
 """Parser responsible for reading the ``*coe.m`` files"""
 
+from serpentTools.settings.messages import willChange
 from serpentTools.objects.readers import XSReader
 from serpentTools.objects.branchContainer import BranchContainer
 
@@ -20,6 +21,8 @@ class BranchingReader(XSReader):
         self._loopLevel = [True, True, True]
         # looping over branches, universes, and coefficients
 
+    @willChange('Once #11 is closed, universes will not be stored as '
+                'dictionaries')
     def read(self):
         """Read the branching file and store the coefficients."""
         with open(self.filePath) as fObj:
@@ -74,7 +77,6 @@ class BranchingReader(XSReader):
 
     def _processBranchUniverses(self, branch, burnup, burnupIndex):
         """Add universe data to this branch at this burnup."""
-        FutureWarning('This will be updated once issue 11 is closed')
         unvID, numVariables = [int(xx) for xx in self._advance()]
         univ = branch.addUniverse(unvID, burnup, burnupIndex)
         for _step in range(numVariables):
