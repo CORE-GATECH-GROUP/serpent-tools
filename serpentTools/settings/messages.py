@@ -7,7 +7,8 @@ See Also
 * https://www.python.org/dev/peps/pep-0391/
 """
 
-
+import functools
+import warnings
 import logging
 from logging.config import dictConfig
 
@@ -19,11 +20,10 @@ class SerpentToolsException(Exception):
 
 LOG_OPTS = ['critical', 'error', 'warning', 'info', 'debug']
 
-
 loggingConfig = {
     'version': 1,
     'formatters': {
-        'brief': {'format': '%(levelname)-8s: %(name)-15s: %(message)s'},
+        'brief': {'format': '%(levelname)-8s: %(name)-12s: %(message)s'},
         'precise': {
             'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
         }
@@ -74,8 +74,42 @@ def updateLevel(level):
     """Set the level of the logger."""
     if level.lower() not in LOG_OPTS:
         __logger__.setLevel('INFO')
-        warning('Logger option {} not in options. Set to warning.')
-        return 'warning'
+        warning('Logger option {} not in options. Set to info.'.format(level))
+        return 'info'
     else:
         __logger__.setLevel(level.upper())
         return level
+
+
+def depreciated(f):
+    """Display a warning indicating a function will be depreciated."""
+
+    @functools.wraps(f)
+    def decoratedFunc(*args, **kwargs):
+        msg = 'Call to depreciated function {}'.format(f.__name__)
+        warning(msg)
+        _updateFilterAlert(msg, DeprecationWarning)
+        return f(*args, **kwargs)
+
+    return decoratedFunc
+
+
+def willChange(changeMsg):
+    """Inform the user that some functionality may change."""
+
+    def decorate(f):
+        @functools.wraps(f)
+        def decoratedFunc(*args, **kwargs):
+            warning(changeMsg)
+            _updateFilterAlert(changeMsg, FutureWarning)
+            return f(*args, **kwargs)
+
+        return decoratedFunc
+
+    return decorate
+
+
+def _updateFilterAlert(msg, category):
+    warnings.simplefilter('always', category)
+    warnings.warn(msg, category=category, stacklevel=3)
+    warnings.simplefilter('default', category)
