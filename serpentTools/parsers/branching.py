@@ -1,8 +1,8 @@
 """Parser responsible for reading the ``*coe.m`` files"""
 
-from serpentTools.settings.messages import willChange
-from serpentTools.objects.readers import XSReader
 from serpentTools.objects.branchContainer import BranchContainer
+from serpentTools.objects.readers import XSReader
+from serpentTools.settings.messages import willChange, debug
 
 
 class BranchingReader(XSReader):
@@ -14,22 +14,25 @@ class BranchingReader(XSReader):
     filePath: str
         path to the depletion file
     """
+
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'branching')
         self.__fileObj = None
         self.branches = {}
-        self._loopLevel = [True, True, True]
+        self._whereAmI = {key: None for key in
+                          {'runIndx', 'coefIndx', 'buIndx', 'universe'}}
         # looping over branches, universes, and coefficients
 
     @willChange('Once #11 is closed, universes will not be stored as '
                 'dictionaries')
     def read(self):
         """Read the branching file and store the coefficients."""
+        debug('Preparing to read {}'.format(self.filePath))
         with open(self.filePath) as fObj:
             self.__fileObj = fObj
-            while self._loopLevel[0]:
+            while self.__fileObj is not None:
                 self._processBranchBlock()
-        self.__fileObj = None
+        debug('Done reading branching file')
 
     def _advance(self):
         if self.__fileObj is None:
@@ -42,25 +45,37 @@ class BranchingReader(XSReader):
         return line.split()
 
     def _processBranchBlock(self):
-        thisBranch, totUniv = self._processHeader()
+        fromHeader = self._processHeader()
+        if fromHeader is None:
+            return
+        thisBranch, totUniv = fromHeader
         burnup, burnupIndex = self._advance()[:-1]
+        self._whereAmI['buIndx'] = int(burnupIndex)
         for univNum in range(totUniv):
+            self._whereAmI['universe'] = univNum
+            debug(
+                'Reading run {runIndx} of {coefIndx} - universe {universe} at '
+                'burnup step {buIndx}'.format(**self._whereAmI))
             self._processBranchUniverses(thisBranch, float(burnup),
-                                         int(burnupIndex))
+                                         self._whereAmI['buIndx'])
 
     def _processHeader(self):
         """Read over all data up to universe loop."""
-        indx, runTot, branchId, totBranch, totUniv = self._advance()
-        self._loopLevel[0] = indx != runTot
-        if branchId not in self.branches:
+        header = self._advance()
+        if header is None:
+            return
+        indx, runTot, coefIndx, totCoef, totUniv = header
+        self._whereAmI['runIndx'] = int(indx)
+        self._whereAmI['coefIndx'] = int(coefIndx)
+        if coefIndx not in self.branches:
             branchNames = self._advance()[1:]
             branchState = self._processBranchStateData()
-            self.branches[branchId] = (
-                BranchContainer(self, branchId, branchNames, branchState))
+            self.branches[coefIndx] = (
+                BranchContainer(self, coefIndx, branchNames, branchState))
         else:
             self._advance()
             self._advance()
-        return self.branches[branchId], int(totUniv)
+        return self.branches[coefIndx], int(totUniv)
 
     def _processBranchStateData(self):
         keyValueList = self._advance()[1:]
@@ -110,12 +125,11 @@ class BranchingReader(XSReader):
 
 
 if __name__ == '__main__':
-    import os
-    from serpentTools import ROOT_DIR
     from serpentTools.settings import rc
 
-    testFile = os.path.join(ROOT_DIR, 'tests', 'ref_branch.txt')
+    testFile = 'pwrpin100_branching.coe'
     with rc as temprc:
+        rc['verbosity'] = 'debug'
         rc['branching.strVariables'] = ['VERSION', 'TIME']
         rc['xs.variableExtras'] = ['INF_TOT', 'INF_KINF', 'INF_S0']
         branchReader = BranchingReader(testFile)
