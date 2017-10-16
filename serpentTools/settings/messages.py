@@ -88,7 +88,7 @@ def depreciated(f):
     def decoratedFunc(*args, **kwargs):
         msg = 'Call to depreciated function {}'.format(f.__name__)
         warning(msg)
-        _updateFilterAlert(msg, DeprecationWarning)
+        _updateFilterAlert(msg, DeprecationWarning, 3)
         return f(*args, **kwargs)
 
     return decoratedFunc
@@ -101,7 +101,7 @@ def willChange(changeMsg):
         @functools.wraps(f)
         def decoratedFunc(*args, **kwargs):
             warning(changeMsg)
-            _updateFilterAlert(changeMsg, FutureWarning)
+            _updateFilterAlert(changeMsg, FutureWarning, 3)
             return f(*args, **kwargs)
 
         return decoratedFunc
@@ -109,7 +109,7 @@ def willChange(changeMsg):
     return decorate
 
 
-def _updateFilterAlert(msg, category):
+def _updateFilterAlert(msg, category, stackLevel):
     warnings.simplefilter('always', category)
-    warnings.warn(msg, category=category, stacklevel=3)
+    warnings.warn(msg, category=category, stacklevel=stackLevel)
     warnings.simplefilter('default', category)
