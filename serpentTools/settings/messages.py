@@ -101,6 +101,7 @@ class __functionHerald__(object):
         decorated.__name__ = f.__name__
         decorated.__doc__ = f.__doc__
         decorated.__dict__.update(f.__dict__)
+        decorated.__repr__ = f.__repr__
         return decorated
 
     def __notify__(self):
