@@ -13,8 +13,6 @@ class HomogUniv(_SupportingObject):
     ----------
     -set(VariableName,VariableValue,**kwargs)
     -get(VariableName,** kwargs)
-    -inf(VariableName,** kwargs)
-    -b1(VariableName,** kwargs)
 
     Attributes
     ----------
@@ -22,10 +20,11 @@ class HomogUniv(_SupportingObject):
     -bu:   burnup value
     -step: temporal step
     -day:  depletion day
+
     """
 
     def __init__(self, container, name, bu, step, day):
-        """ Constructor of the class. Each universe is defined  uniquely
+        """ Class Initializer. Each universe is defined  uniquely
         in terms of the attributes mentioned in the docstring. The input
         container refers to the name of the parser (branching/results reader).
         """
@@ -34,56 +33,60 @@ class HomogUniv(_SupportingObject):
         self.bu = bu
         self.step = step
         self.day = day
-        # It creates 4 dictionaries:
+        # Dictionaries:
         self.b1Exp = {}
         self.infExp = {}
         self.b1Unc = {}
         self.infUnc = {}
 
-    def set(self, variablename, variablevalue, uncertainty='False'):
+    def set(self, variablename, variablevalue, uncertainty=False):
+        """
+        Parameters
+        ----------
+        variablename:   Variable Name
+        variablevalue:  Variable Expected Value
+        uncertainty:    Boolean Variable- set to True in order to retrieve the
+                        uncertainty associated to the expected values
+        """
 
-        if "inf" in variablename:
-            if uncertainty == 'False':
-                if variablename in self.infExp[variablename]:
-                    messages.warning('The variable will be overwritten')
-                self.infExp[variablename] = variablevalue
-            elif uncertainty == 'True':
-                if variablename in self.infExp[variablename]:
-                    messages.warning('The variable will be overwritten')
-                self.infUnc[variablename] = variablevalue
-        elif "b1" in variablename:
-            if uncertainty == 'False':
-                if variablename in self.infExp[variablename]:
-                    messages.warning('The variable will be overwritten')
-                self.b1Exp[variablename] = variablevalue
-            elif uncertainty == 'True':
-                if variablename in self.infExp[variablename]:
-                    messages.warning('The variable will be overwritten')
-                self.b1Unc[variablename] = variablevalue
+        # 1. Check the input type
+        variablename = _SupportingObject._convertVariableName(variablename)
+        if not isinstance(uncertainty, bool):
+            raise messages.error("Uncertainty must be a boolean variable")
+        # 2. Pointer to the proper dictionary
+        setter = self._lookup(variablename, uncertainty)
+        # 3. Check if variable is already present. Then set the variable.
+        if variablename in setter:
+            messages.warning('The variable will be overwritten')
+        setter[variablename] = variablevalue
 
-    def get(self, variablename, uncertainty='False'):
+    def get(self, variablename, uncertainty=False):
 
         # 1. Check the input values
         variablename = _SupportingObject._convertVariableName(variablename)
         if not isinstance(uncertainty, bool):
             raise messages.error("Uncertainty must be a boolean variable")
+        # 2. Pointer to the proper dictionary
+        setter = self._lookup(variablename, uncertainty)
+        # 3. Return the value of the variable
+        x = setter.get(variablename)
+        if not uncertainty:
+            return x
+        else:
+            dx = setter.get(variablename)
+            return x, dx
 
-        # 2. Retrieve the values from the dictionaries
+    def _lookup(self,variablename, uncertainty):
+
         if "inf" in variablename:
-            if uncertainty == 'False':
-                x = self.infExp.get(variablename)
-                return x
-            elif uncertainty == 'True':
-                x = self.infExp.get(variablename)
-                dx = self.infUnc.get(variablename)
-                return x, dx
+            if not uncertainty:
+                return self.infExp
+            else:
+                return  self.infUnc
         elif "b1" in variablename:
-            if uncertainty == 'False':
-                x = self.b1Exp.get(variablename)
-                return x
+            if not uncertainty:
+                return self.b1Exp
+            else:
+                return self.b1Unc
 
-            elif uncertainty == 'True':
-                x = self.b1Exp.get(variablename)
-                dx = self.b1Unc.get(variablename)
-                return x,dx
-
+        messages.error('Neither inf, nor b1 in the string')
