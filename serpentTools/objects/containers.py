@@ -1,5 +1,6 @@
 import numpy
 from serpentTools.objects import _SupportingObject
+from serpentTools.settings import messages
 
 
 class HomogUniv(_SupportingObject):
@@ -34,84 +35,55 @@ class HomogUniv(_SupportingObject):
         self.step = step
         self.day = day
         # It creates 4 dictionaries:
-        #    (1) For B1-computed expected values
-        #    (2) For the uncertainty associated to B1-computed expected values
-        #    (3) For Inf expected values
-        #    (4) For the uncertainty associated to Inf-computed expected values
-        self.dic_b1_e = {}
-        self.dic_Inf_e = {}
-        self.dic_b1_u = {}
-        self.dic_Inf_u = {}
+        self.b1Exp = {}
+        self.infExp = {}
+        self.b1Unc = {}
+        self.infUnc = {}
 
-    def set(self, variablename, variablevalue, uncertainty):
-        """
-        The function sets the keys in the dictionaries introduced in the
-        contructor.
+    def set(self, variablename, variablevalue, uncertainty='False'):
 
-        Parameters
-        ----------
-        variablename:   variable name
-        variablevalue:  variable expected value
-        uncertainty:    associated uncertainty
+        if "inf" in variablename:
+            if uncertainty == 'False':
+                if variablename in self.infExp[variablename]:
+                    messages.warning('The variable will be overwritten')
+                self.infExp[variablename] = variablevalue
+            elif uncertainty == 'True':
+                if variablename in self.infExp[variablename]:
+                    messages.warning('The variable will be overwritten')
+                self.infUnc[variablename] = variablevalue
+        elif "b1" in variablename:
+            if uncertainty == 'False':
+                if variablename in self.infExp[variablename]:
+                    messages.warning('The variable will be overwritten')
+                self.b1Exp[variablename] = variablevalue
+            elif uncertainty == 'True':
+                if variablename in self.infExp[variablename]:
+                    messages.warning('The variable will be overwritten')
+                self.b1Unc[variablename] = variablevalue
 
-        Returns
-        -------
+    def get(self, variablename, uncertainty='False'):
 
-        """
-
-        # Convert variable name in CamelCase
+        # 1. Check the input values
         variablename = _SupportingObject._convertVariableName(variablename)
-        # Check if it contains the substring "Inf"
-        if "Inf" in variablename:
-            if uncertainty == 'e':
-                self.dic_Inf_e[variablename] = variablevalue
-            elif uncertainty == 'u':
-                self.dic_Inf_u[variablename] = variablevalue
-            else:
-                print('Error')
-        elif "B1" in variablename:
-            if uncertainty == 'e':
-                self.dic_b1_e_e[variablename] = variablevalue
-            elif uncertainty == 'u':
-                self.dic_b1_u[variablename] = variablevalue
-            else:
-                print('Error')
+        if not isinstance(uncertainty, bool):
+            raise messages.error("Uncertainty must be a boolean variable")
 
-    def get(self, variablename, uncertainty):
-        """
-        Parameters
-        ----------
-        variablename:   variable expected value
-        uncertainty:    variable associated uncertainty
-
-        Returns
-        -------
-        - x:      variable expected value
-        and, optionally,
-        - dx:     the associated uncertainty
-        """
-        # Convert variable name in CamelCase
-        variablename = _SupportingObject._convertVariableName(variablename)
-        # Check if it contains the substring "Inf"
-        if "Inf" in variablename:
-            if uncertainty == 'e':
-                x = self.dic_Inf_e.get(variablename)
+        # 2. Retrieve the values from the dictionaries
+        if "inf" in variablename:
+            if uncertainty == 'False':
+                x = self.infExp.get(variablename)
                 return x
-            elif uncertainty == 'u':
-                x = self.dic_Inf_e.get(variablename)
-                dx = self.dic_Inf_u.get(variablename)
+            elif uncertainty == 'True':
+                x = self.infExp.get(variablename)
+                dx = self.infUnc.get(variablename)
                 return x, dx
-            else:
-                print('Error')
-
-        elif "B1" in variablename:
-            if uncertainty == 'e':
-                x = self.dic_b1_e.get(variablename)
+        elif "b1" in variablename:
+            if uncertainty == 'False':
+                x = self.b1Exp.get(variablename)
                 return x
 
-            elif uncertainty == 'u':
-                x = self.dic_b1_e.get(variablename)
-                dx = self.dic_b1_u.get(variablename)
+            elif uncertainty == 'True':
+                x = self.b1Exp.get(variablename)
+                dx = self.b1Unc.get(variablename)
                 return x,dx
-            else:
-                print('Error')
+
