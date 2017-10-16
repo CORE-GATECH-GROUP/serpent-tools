@@ -2,6 +2,7 @@
 import unittest
 
 from serpentTools import settings
+from serpentTools.settings.messages import depreciated, willChange
 
 
 class DefaultSettingsTester(unittest.TestCase):
@@ -97,6 +98,31 @@ class RCTester(unittest.TestCase):
             tempRC['xs.variableGroups'] = groupNames
             actual = tempRC.expandVariables()
         self.assertSetEqual(expected, actual)
+
+
+class MessagingTester(unittest.TestCase):
+    """Class to test the messaging framework."""
+
+    def test_futureDecorator(self):
+        """Verify that the future decorator doesn't break"""
+
+        @willChange('This function will be updated in the future, '
+                    'but will still exist')
+        def demoFuture(x, val=5):
+            return x + val
+
+        self.assertEqual(7, demoFuture(2))
+        self.assertEqual(7, demoFuture(2, 5))
+
+    def test_depreciatedDecorator(self):
+        """Verify that the depreciated decorator doesn't break things"""
+
+        @depreciated
+        def demoFunction(x, val=5):
+            return x + val
+
+        self.assertEqual(7, demoFunction(2))
+        self.assertEqual(7, demoFunction(2, 5))
 
 
 if __name__ == '__main__':
