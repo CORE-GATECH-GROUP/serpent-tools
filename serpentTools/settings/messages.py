@@ -74,8 +74,8 @@ def updateLevel(level):
     """Set the level of the logger."""
     if level.lower() not in LOG_OPTS:
         __logger__.setLevel('INFO')
-        warning('Logger option {} not in options. Set to warning.')
-        return 'warning'
+        warning('Logger option {} not in options. Set to info.'.format(level))
+        return 'info'
     else:
         __logger__.setLevel(level.upper())
         return level
