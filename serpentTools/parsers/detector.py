@@ -1,9 +1,9 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
-import re
 
 import numpy
 from drewtils.parsers import KeywordParser
 
+from serpentTools.objects.containers import Detector
 from serpentTools.settings import messages
 from serpentTools.objects.readers import BaseReader
 
@@ -27,11 +27,6 @@ class DetectorReader(BaseReader):
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'detector')
         self.detectors = {}
-        self._detNames = self._makeDetectorNames()
-
-    def _makeDetectorNames(self):
-        names = self.settings['names'] or ['.*']
-        return [re.compile(name) for name in names]
 
     def read(self):
         """Read the file and store the detectors."""
@@ -40,16 +35,31 @@ class DetectorReader(BaseReader):
         messages.debug('Preparing to read {}'.format(self.filePath))
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
-                valid = any(re.match(pattern, chunk[0])
-                            for pattern in self._detNames)
-                if valid:
-                    self._addDetector(chunk)
+                detString = chunk.pop().split(' ')[0][3:]
+                if detString in self.settings['names']:
+                    detName = detString
+                    binType = None
+                elif detString[:-1] in self.settings['names']:
+                    detName = detString
+                    binType = detString[-1]
+                else:
+                    continue
+                self._addDetector(chunk, detName, binType)
         messages.debug('Done reading detector file')
 
-    def _addDetector(self, chunk):
-        detName = chunk.pop(0)
-        detName = detName[:detName.index(' =')]
-        detBins = numpy.empty(shape=(len(chunk), NUM_COLS))
+    def _addDetector(self, chunk, detName, binType):
+        data = numpy.empty(shape=(len(chunk), NUM_COLS))
         for indx, line in enumerate(chunk):
-            detBins[indx] = [float(xx) for xx in line.split()]
-        self.detectors[detName] = detBins
+            data[indx] = [float(xx) for xx in line.split()]
+        if detName not in self.detectors:
+            # new detector, this data is the tallies
+            detector = Detector(self, detName)
+            detector.addTallyData(data)
+            self.detectors[detName] = detector
+            messages.debug('Adding detector {}'.format(detName))
+            return
+        # detector has already been defined, this must be a mesh
+        detector = self.detectors[detName]
+        detector.grids[binType] = data
+        messages.debug('Added bin data {} to detector {}'
+                       .format(binType, detName))

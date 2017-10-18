@@ -1,5 +1,5 @@
 import numpy
-from serpentTools.objects import _SupportingObject
+from serpentTools.objects import _SupportingObject, _NamedObject
 from serpentTools.settings import messages
 
 
@@ -90,3 +90,40 @@ class HomogUniv(_SupportingObject):
                 return self.b1Unc
 
         messages.error('Neither inf, nor b1 in the string')
+
+
+class Detector(_NamedObject):
+    """
+    Class to store detector data.
+
+    Parameters
+    ----------
+    parser: :py:class:`~serpentTools.parsers.detector.DetectorReader`
+        Detector reader that created this detector
+    name: str
+        Name of this detector
+
+    Attributes
+    ----------
+    bins: numpy.array
+        Tallies from the detector file
+    grids: dict
+        Dictionary with additional data describing energy grids or mesh points
+
+    """
+    def __init__(self, parser, name):
+        _NamedObject.__init__(self, parser, name)
+        self.bins = None
+        self.grids = {}
+
+    def __len__(self):
+        if self.bins is not None:
+            return self.bins.shape[0]
+        return 0
+
+    def __str__(self):
+        return 'Detector {}'.format(self.name)
+
+    def addTallyData(self, bins):
+        """Add and, possibly clean, tally data."""
+        self.bins = bins

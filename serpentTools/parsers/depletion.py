@@ -40,7 +40,7 @@ class DepletionReader(MaterialReader):
         self._matchMatNVar = r'[A-Z]{3}_([0-9a-zA-Z]*)_([A-Z]*_?[A-Z]*)'
         # Captures material name and variable from string
         #  MAT_fuel1_ADENS --> ('fuel1', 'ADENS')
-        #  MAT_fUeL1g_ING_TOX --> ('fUeL1', 'ING_TOX')
+        #  MAT_fUeL1g_ING_TOX --> ('fUeL1g', 'ING_TOX')
 
         self._matchTotNVar = r'[A-Z]{3}_([A-Z]*_?[A-Z]*)'
         # Captures variables for total block from string::
