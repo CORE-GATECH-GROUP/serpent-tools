@@ -7,17 +7,16 @@ from serpentTools.settings import rc
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers import BranchingReader
 
-REF_FILE = os.path.join(TEST_ROOT, 'ref_branch.txt')
-
 
 class BranchTester(unittest.TestCase):
     """Classs for testing the branching coefficient file reader."""
 
     @classmethod
     def setUpClass(cls):
+        cls.file = os.path.join(TEST_ROOT, 'ref_branch.txt')
         rc['serpentVersion'] = '2.1.29'
         rc['xs.variableGroups'] = ['gc-meta', 'xs', 'diffusion']
-        cls.reader = BranchingReader(REF_FILE)
+        cls.reader = BranchingReader(cls.file)
 
     def test_variables(self):
         """Verify that the correct settings and variables are obtained."""
@@ -32,6 +31,17 @@ class BranchTester(unittest.TestCase):
                     'CMM_TRANSPXS_Z', 'CMM_DIFFCOEFF', 'CMM_DIFFCOEFF_X',
                     'CMM_DIFFCOEFF_Y', 'CMM_DIFFCOEFF_Z'}
         self.assertSetEqual(expected, self.reader.settings['variables'])
+
+    def test_raiseError(self):
+        """Verify that the reader raises an error for unexpected EOF"""
+        badFile = os.path.join(TEST_ROOT, 'bad_branching.txt')
+        with open(self.file) as fObj, open(badFile, 'w') as badObj:
+            for _line in range(5):
+                badObj.write(fObj.readline())
+        badReader = BranchingReader(badFile)
+        with self.assertRaises(EOFError):
+            badReader.read()
+        os.remove(badFile)
 
 
 if __name__ == '__main__':
