@@ -7,6 +7,12 @@ from serpentTools import ROOT_DIR
 from serpentTools.settings import messages
 
 defaultSettings = {
+    'detector.names': {
+        'default': [],
+        'type': list,
+        'description': 'Names of detectors to store. '
+                       'Empty list -> store all detectors'
+    },
     'depletion.metadataKeys': {
         'default': ['ZAI', 'NAMES', 'DAYS', 'BU'],
         'options': 'default',
@@ -22,7 +28,7 @@ defaultSettings = {
     'depletion.materials': {
         'default': [],
         'description': 'Names of materials to store. '
-                       'Empty list -> all materials.',
+                       'Empty list -> store all materials.',
         'type': list
     },
     'depletion.processTotal': {
