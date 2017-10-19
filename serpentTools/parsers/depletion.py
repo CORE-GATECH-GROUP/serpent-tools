@@ -68,6 +68,9 @@ class DepletionReader(MaterialReader):
                 elif (('TOT' in chunk[0] and self.settings['processTotal'])
                       or 'MAT' in chunk[0]):
                     self._addMaterial(chunk)
+        if 'days' in self.metadata:
+            for mKey in self.materials:
+                self.materials[mKey].days = self.metadata['days']
         messages.debug('Done reading depletion file')
         messages.debug('  found {} materials'.format(len(self.materials)))
 
