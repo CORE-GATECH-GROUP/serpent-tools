@@ -57,7 +57,7 @@ class RCTester(unittest.TestCase):
         readerName = 'depletion'
         expected = {
             'metadataKeys': ['ZAI'],
-            'materialVariables': ['ADENS', 'MDENS', 'BURNUP'],
+            'materialVariables': [],
             'materials': [],
             'processTotal': True,
         }
