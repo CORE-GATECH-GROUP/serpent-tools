@@ -17,6 +17,7 @@ class _DepletionTestHelper(unittest.TestCase):
         filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
         cls.rc = rc
         with cls.rc as tempRC:
+            tempRC['depletion.processTotal'] = True
             tempRC['depletion.materials'] = ['fuel', ]
             tempRC['depletion.materialVariables'] = [
                 'BURNUP', 'ADENS', 'ING_TOX']
