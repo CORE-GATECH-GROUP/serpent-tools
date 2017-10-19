@@ -17,7 +17,7 @@ class BaseReader(object):
         self.metadata = {}
         self.settings = rc.getReaderSettings(readerSettingsLevel)
 
-    def __repr__(self):
+    def __str__(self):
         return '<{} reading {}>'.format(self.__class__.__name__, self.filePath)
 
     def read(self):

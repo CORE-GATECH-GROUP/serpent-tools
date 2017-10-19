@@ -69,6 +69,9 @@ class DepletionReader(MaterialReader):
                     self._addTotal(chunk)
                 else:
                     self._addMetadata(chunk)
+        if 'days' in self.metadata:
+            for mKey in self.materials:
+                self.materials[mKey].days = self.metadata['days']
         messages.debug('Done reading depletion file')
         messages.debug('  found {} materials'.format(len(self.materials)))
 
