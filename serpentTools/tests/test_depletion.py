@@ -24,6 +24,7 @@ class _DepletionTestHelper(unittest.TestCase):
         if cls.processTotal:
             cls.expectedMaterials.add('total')
         with rc as tempRC:
+            tempRC['verbosity'] = 'debug'
             tempRC['depletion.processTotal'] = True
             tempRC['depletion.materials'] = ['fuel', ]
             tempRC['depletion.materialVariables'] = [
