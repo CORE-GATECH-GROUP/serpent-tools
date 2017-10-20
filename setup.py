@@ -11,10 +11,10 @@ classifiers = [
 ]
 
 installRequires = [
+    'six',
     'numpy>=1.11.1',
     'matplotlib>=1.5.0',
     'pyyaml>=3.08',
-    'versioneer',  # version tracking
     'drewtils>=0.1.8',  # file parsing tools
 ]
 
