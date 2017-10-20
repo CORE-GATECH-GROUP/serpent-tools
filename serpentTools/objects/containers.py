@@ -4,11 +4,11 @@ results reader to store data for a single homogenized universe at a single
 instance in time.
 """
 
-from serpentTools.objects import _SupportingObject
+from serpentTools.objects import SupportingObject
 from serpentTools.settings import messages
 
 
-class HomogUniv(_SupportingObject):
+class HomogUniv(SupportingObject):
     """
     Class for storing homogenized universe specifications and retrieving them
 
@@ -39,7 +39,7 @@ class HomogUniv(_SupportingObject):
     """
 
     def __init__(self, container, name, bu, step, day):
-        _SupportingObject.__init__(self, container)
+        SupportingObject.__init__(self, container)
         self.name = name
         self.bu = bu
         self.step = step
@@ -71,7 +71,7 @@ class HomogUniv(_SupportingObject):
         """
 
         # 1. Check the input type
-        variableName = _SupportingObject._convertVariableName(variableName)
+        variableName = SupportingObject._convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
             raise messages.error('The variable uncertainty has type %s.\n ...'
                                  'It should be boolean.', type(uncertainty))
@@ -103,7 +103,7 @@ class HomogUniv(_SupportingObject):
 
         """
         # 1. Check the input values
-        variableName = _SupportingObject._convertVariableName(variableName)
+        variableName = SupportingObject._convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
             raise messages.error('The variable uncertainty has type %s.\n ...'
                                  'It should be boolean.', type(uncertainty))
