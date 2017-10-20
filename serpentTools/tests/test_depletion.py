@@ -17,6 +17,7 @@ class _DepletionTestHelper(unittest.TestCase):
         filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
         cls.rc = rc
         with cls.rc as tempRC:
+            tempRC['depletion.processTotal'] = True
             tempRC['depletion.materials'] = ['fuel', ]
             tempRC['depletion.materialVariables'] = [
                 'BURNUP', 'ADENS', 'ING_TOX']
@@ -119,18 +120,18 @@ class DepletedMaterialTester(_DepletionTestHelper):
         self.assertListEqual(self.material.zai,
                              self.reader.metadata['zai'])
         numpy.testing.assert_equal(self.material.adens, expectedAdens)
-        numpy.testing.assert_equal(self.material.ingTox, expectedIngTox)
+        numpy.testing.assert_equal(self.material['ingTox'], expectedIngTox)
 
     def test_getXY_burnup_full(self):
         """
         Verify the material can produce the full burnup vector through getXY.
         """
-        actual, _days = self.material.getXY('days', 'burnup', )
+        actual = self.material.getValues('days', 'burnup', )
         numpy.testing.assert_equal(actual, self.fuelBU)
 
     def test_getXY_burnup_slice(self):
         """Verify depletedMaterial getXY correctly slices a vector."""
-        actual = self.material.getXY('days', 'burnup', self.requestedDays)
+        actual = self.material.getValues('days', 'burnup', self.requestedDays)
         expected = [0.0E0, 1.90317E-2, 3.60163E-2, 1.74880E-1, 3.45353E-01,
                     8.49693E-01, 1.66071E0]
         numpy.testing.assert_equal(actual, expected)
@@ -146,26 +147,27 @@ class DepletedMaterialTester(_DepletionTestHelper):
             [0.00000E+00, 2.90880E-14, 5.57897E-14, 2.75249E-13, 5.46031E-13,
              1.35027E-12, 2.64702E-12],
         ], float)
-        actual = self.material.getXY('days', 'adens', names=names,
-                                     timePoints=self.requestedDays)
+        actual = self.material.getValues('days', 'adens', names=names,
+                                         timePoints=self.requestedDays)
         numpy.testing.assert_allclose(actual, expected, rtol=1E-4)
-
-    def test_getXY_adensAndTime(self):
-        """Verify correct atomic density and time slice are returned."""
-        actualAdens, actualDays = self.material.getXY('days', 'adens',
-                                                      names=['Xe135'])
-        numpy.testing.assert_equal(actualDays, self.reader.metadata['days'])
 
     def test_getXY_raisesError_badTime(self):
         """Verify that a ValueError is raised for non-present requested days."""
         badDays = [-1, 0, 50]
         with self.assertRaises(KeyError):
-            self.material.getXY('days', 'adens', timePoints=badDays)
+            self.material.getValues('days', 'adens', timePoints=badDays)
 
     def test_fetchData(self):
         """Verify that key errors are raised when bad data are requested."""
         with self.assertRaises(KeyError):
             _ = self.material['fake units']
+
+    @unittest.skipIf(os.getenv('ONTRAVIS') is not None,
+                     "Plotting doesn't play well with Travis")
+    def test_plotter(self):
+        """Verify the plotting functionality is operational."""
+        self.material.plot('days', 'adens', timePoints=self.requestedDays,
+                           names=['Xe135', 'U235'])
 
 
 if __name__ == '__main__':
