@@ -40,7 +40,7 @@ class DepletionReader(MaterialReader):
         self._matchMatNVar = r'[A-Z]{3}_([0-9a-zA-Z]*)_([A-Z]*_?[A-Z]*)'
         # Captures material name and variable from string
         #  MAT_fuel1_ADENS --> ('fuel1', 'ADENS')
-        #  MAT_fUeL1g_ING_TOX --> ('fUeL1', 'ING_TOX')
+        #  MAT_fUeL1g_ING_TOX --> ('fUeL1g', 'ING_TOX')
 
         self._matchTotNVar = r'[A-Z]{3}_([A-Z]*_?[A-Z]*)'
         # Captures variables for total block from string::
@@ -60,18 +60,14 @@ class DepletionReader(MaterialReader):
         messages.debug('Preparing to read {}'.format(self.filePath))
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
         keys.extend(self.settings['metadataKeys'])
-        separators = ['\n', '];', '\r\n']
+        separators = ['\n', '];']
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
-                if 'MAT' in chunk[0]:
-                    self._addMaterial(chunk)
-                elif 'TOT' in chunk[0]:
-                    self._addTotal(chunk)
-                else:
+                if 'MAT' not in chunk[0] and 'TOT' not in chunk[0]:
                     self._addMetadata(chunk)
-        if 'days' in self.metadata:
-            for mKey in self.materials:
-                self.materials[mKey].days = self.metadata['days']
+                elif (('TOT' in chunk[0] and self.settings['processTotal'])
+                      or 'MAT' in chunk[0]):
+                    self._addMaterial(chunk)
         messages.debug('Done reading depletion file')
         messages.debug('  found {} materials'.format(len(self.materials)))
 
@@ -103,7 +99,7 @@ class DepletionReader(MaterialReader):
 
     def _addTotal(self, chunk):
         """Add data from a TOT chunk"""
-        variable = self._getGroupsFromChunk(self._matchTotNVar, chunk)[0]
+        variable = self._getGroupsFromChunk(self._matchTotNVar, chunk)
         self._processChunk(chunk, 'total', variable)
 
     def _getGroupsFromChunk(self, regex, chunk):
@@ -114,15 +110,12 @@ class DepletionReader(MaterialReader):
                         '{}'.format(self, ''.join(chunk)))
 
     def _processChunk(self, chunk, name, variable):
-        if (self.settings['materialVariables']
-                and variable not in self.settings['materialVariables']):
-            return
+        if variable not in self.settings['materialVariables']:
+            pass
         if name not in self.materials:
             messages.debug('Adding material {}...'.format(name))
             self.materials[name] = DepletedMaterial(self, name)
             messages.debug('  added')
-        messages.debug('Cleaning chunk beginning in {}'
-                       .format(chunk[:15]))
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
         else:
