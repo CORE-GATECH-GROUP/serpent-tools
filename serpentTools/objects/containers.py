@@ -1,9 +1,9 @@
 import numpy
-from serpentTools.objects import _SupportingObject, _NamedObject
+from serpentTools.objects import SupportingObject, NamedObject
 from serpentTools.settings import messages
 
 
-class HomogUniv(_SupportingObject):
+class HomogUniv(SupportingObject):
     """Class for:
     (1) Storing universe number and, optionally,
     burnup, day, bu step provided by results and branching readers
@@ -28,7 +28,7 @@ class HomogUniv(_SupportingObject):
         in terms of the attributes mentioned in the docstring. The input
         container refers to the name of the parser (branching/results reader).
         """
-        _SupportingObject.__init__(self, container)
+        SupportingObject.__init__(self, container)
         self.name = name
         self.bu = bu
         self.step = step
@@ -50,7 +50,7 @@ class HomogUniv(_SupportingObject):
         """
 
         # 1. Check the input type
-        variablename = _SupportingObject._convertVariableName(variablename)
+        variablename = SupportingObject._convertVariableName(variablename)
         if not isinstance(uncertainty, bool):
             raise messages.error("Uncertainty must be a boolean variable")
         # 2. Pointer to the proper dictionary
@@ -63,7 +63,7 @@ class HomogUniv(_SupportingObject):
     def get(self, variablename, uncertainty=False):
 
         # 1. Check the input values
-        variablename = _SupportingObject._convertVariableName(variablename)
+        variablename = SupportingObject._convertVariableName(variablename)
         if not isinstance(uncertainty, bool):
             raise messages.error("Uncertainty must be a boolean variable")
         # 2. Pointer to the proper dictionary
@@ -92,7 +92,7 @@ class HomogUniv(_SupportingObject):
         messages.error('Neither inf, nor b1 in the string')
 
 
-class Detector(_NamedObject):
+class Detector(NamedObject):
     """
     Class to store detector data.
 
@@ -112,7 +112,7 @@ class Detector(_NamedObject):
 
     """
     def __init__(self, parser, name):
-        _NamedObject.__init__(self, parser, name)
+        NamedObject.__init__(self, parser, name)
         self.bins = None
         self.grids = {}
 
