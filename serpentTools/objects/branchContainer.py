@@ -12,10 +12,11 @@ class BranchContainer(SupportingObject):
         self.stateData = stateData
         self.universes = {}
         self.branchNames = branchNames
+        self.metadata = {}
 
     def addMetadata(self, key, value):
         """Add branch metadata to the object."""
-        self._metadata[self._convertVariableName(key)] = value
+        self.metadata[self._convertVariableName(key)] = value
 
     def addUniverse(self, univID, burnup=0, burnIndex=0, burnDays=0):
         """Add a universe to this branch"""

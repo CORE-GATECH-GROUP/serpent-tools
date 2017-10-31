@@ -68,15 +68,14 @@ class BranchingReader(XSReader):
         indx, runTot, coefIndx, totCoef, totUniv = header
         self._whereAmI['runIndx'] = int(indx)
         self._whereAmI['coefIndx'] = int(coefIndx)
+        branchNames = tuple(self._advance()[1:])
         if coefIndx not in self.branches:
-            branchNames = self._advance()[1:]
             branchState = self._processBranchStateData()
-            self.branches[coefIndx] = (
+            self.branches[branchNames] = (
                 BranchContainer(self, coefIndx, branchNames, branchState))
         else:
             self._advance()
-            self._advance()
-        return self.branches[coefIndx], int(totUniv)
+        return self.branches[branchNames], int(totUniv)
 
     def _processBranchStateData(self):
         keyValueList = self._advance()[1:]
@@ -99,7 +98,8 @@ class BranchingReader(XSReader):
             splitList = self._advance(possibleEndOfFile=step == numVariables-1)
             varName = splitList[0]
             varValues = splitList[2:]
-            if varName in self.settings['variables']:
+            if (not any(self.settings['variables'])
+                    or varName in self.settings['variables']):
                 univ[varName] = varValues
 
     def write(self, template=None):
