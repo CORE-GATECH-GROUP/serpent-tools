@@ -22,7 +22,7 @@ class BaseReader(object):
             for level in readerSettingsLevel:
                 self.settings.update(rc.getReaderSettings(level))
 
-    def __repr__(self):
+    def __str__(self):
         return '<{} reading {}>'.format(self.__class__.__name__, self.filePath)
 
     def read(self):

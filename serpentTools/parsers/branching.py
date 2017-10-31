@@ -123,15 +123,3 @@ class BranchingReader(XSReader):
 
         """
         raise NotImplementedError
-
-
-if __name__ == '__main__':
-    from serpentTools.settings import rc
-
-    testFile = 'pwrpin100_branching.coe'
-    with rc as temprc:
-        rc['verbosity'] = 'debug'
-        rc['branching.strVariables'] = ['VERSION', 'TIME']
-        rc['xs.variableExtras'] = ['INF_TOT', 'INF_KINF', 'INF_S0']
-        branchReader = BranchingReader(testFile)
-        branchReader.read()

@@ -1,7 +1,7 @@
 """Objects used to support the parsing."""
 
 
-class _SupportingObject(object):
+class SupportingObject(object):
     """
     Base supporting object.
 
@@ -9,27 +9,15 @@ class _SupportingObject(object):
     ----------
     container: Some parser from serpentTools.parsers
         Container that created this object
-    name: str
-        Name of this specific object, e.g. material name, detector name, etc.
 
     """
 
     def __init__(self, container):
-        self._container = container
-        self._filePath = container.filePath
+        self.origin = container.filePath
 
-    def __repr__(self):
-        return '<{} from {}>'.format(self.whatAmI(), self._filePath)
+    def __str__(self):
+        return '<{} from {}>'.format(self.__class__.__name__, self.origin)
 
-    def whatAmI(self):
-        return type(self).__name__
-
-    def __getattr__(self, item):
-        """Search for the item in the containers metadata."""
-        if item in self._container.metadata:
-            return self._container.metadata[item]
-        raise AttributeError('{} has object has no attribute \'{}\''
-                             .format(self, item))
 
     @staticmethod
     def _convertVariableName(variable):
@@ -42,13 +30,13 @@ class _SupportingObject(object):
                                              for item in lowerSplits[1:]])
 
 
-class _NamedObject(_SupportingObject):
+class NamedObject(SupportingObject):
     """Class for named objects like materials and detectors."""
 
     def __init__(self, container, name):
-        _SupportingObject.__init__(self, container)
+        SupportingObject.__init__(self, container)
         self.name = name
 
-    def __repr__(self):
-        return '<{} {} from {}>'.format(self.whatAmI(),
-                                        self.name, self._filePath)
+    def __str__(self):
+        return '<{} {} from {}>'.format(self.__class__.__name__,
+                                        self.name, self.origin)
