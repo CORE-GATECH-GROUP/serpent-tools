@@ -13,6 +13,11 @@ defaultSettings = {
         'description': 'Names of detectors to store. '
                        'Empty list -> store all detectors'
     },
+    'detector.sigma': {
+        'default': 3,
+        'type': int,
+        'description': 'Confidence interval for detector uncertainties'
+    },
     'depletion.metadataKeys': {
         'default': ['ZAI', 'NAMES', 'DAYS', 'BU'],
         'options': 'default',
@@ -245,7 +250,7 @@ class UserSettingsLoader(dict):
             If the reader name is not located in the ``readers`` settings
             dictionary
         """
-        settings = {}
+        settings = {'serpentVersion': self['serpentVersion']}
         settingsPreffix = ([settingsPreffix] if isinstance(settingsPreffix, str)
                            else settingsPreffix)
         for setting, value in self.items():

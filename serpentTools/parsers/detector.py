@@ -27,6 +27,8 @@ class DetectorReader(BaseReader):
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'detector')
         self.detectors = {}
+        self.__detSettings__ = {'sigma': self.settings['sigma'],
+                                'version': self.settings['serpentVersion']}
         if not self.settings['names']:
             self._loadAll = True
         else:
@@ -60,7 +62,7 @@ class DetectorReader(BaseReader):
             data[indx] = [float(xx) for xx in line.split()]
         if detName not in self.detectors:
             # new detector, this data is the tallies
-            detector = Detector(self, detName)
+            detector = Detector(self, detName, self.__detSettings__)
             detector.addTallyData(data)
             self.detectors[detName] = detector
             messages.debug('Adding detector {}'.format(detName))
