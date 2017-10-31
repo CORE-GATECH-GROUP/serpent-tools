@@ -1,5 +1,6 @@
 import six
 
+from numpy import empty
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
@@ -334,7 +335,7 @@ class Detector(NamedObject):
         ax: pyplot.Axes
             Ax on which the data was plotted
         """
-        patches = self.makeMeshPatches(dim1, dim2)
+        grid1, grid2, patches = self.makeMeshPatches(dim1, dim2)
         if ax is None:
             fig, ax = pyplot.subplots(1, 1)
         else:
@@ -345,6 +346,8 @@ class Detector(NamedObject):
         if addcbar:
             fig.colorbar(patches, ax=ax)
 
+        ax.set_xlim((grid1[:, 0].min(), grid1[:, 1].max()))
+        ax.set_ylim((grid2[:, 0].min(), grid2[:, 1].max()))
         return ax
 
     def makeMeshPatches(self, dim1, dim2):
@@ -381,30 +384,35 @@ class Detector(NamedObject):
                                .format(self.name, d))
         xGrid = self.grids[dim1]
         yGrid = self.grids[dim2]
+        numPatches = xGrid.shape[0] * yGrid.shape[0]
 
-        errMsg = self.__verifyPlotGrid__(xGrid.shape[0] * yGrid.shape[0],
-                                         dim1 + '-' + dim2)
+        errMsg = self.__verifyPlotGrid__(numPatches, dim1 + '-' + dim2)
         if errMsg:
             raise messages.SerpentToolsException(errMsg)
 
+        patches = empty(numPatches, dtype=object)
+        messages.debug('Building {} patches for {} meshPlot'
+                       .format(numPatches, self.name))
         if dim1 in ('X', 'Y', 'Z') and dim2 in ('X', 'Y', 'Z'):
-            return self.__cartPatches__(dim1, xGrid, dim2, yGrid)
-        raise messages.SerpentToolsException(
-            'Could not find easily plot routine for dimensions {} and {}'
-            .format(dim2, dim2))
+            patches = self.__cartPatches__(dim1, xGrid, dim2, yGrid, patches)
+        else:
+            raise messages.SerpentToolsException(
+                'Could not find easily plot routine for dimensions {} and {}'
+                .format(dim2, dim2))
+        messages.debug('done')
+        return xGrid, yGrid, patches
 
-    def __cartPatches__(self, dim1, xgrid, dim2, ygrid):
-        patches = []
+    def __cartPatches__(self, dim1, xgrid, dim2, ygrid, patches):
         dim1Col = self.__indx__[dim1]
         dim2Col = self.__indx__[dim2]
-        for row in self.bins:
-            dim1Indx = row[dim1Col] - 1
-            dim2Indx = row[dim2Col] - 1
+        for indx, row in enumerate(self.bins):
+            dim1Indx = int(row[dim1Col] - 1)
+            dim2Indx = int(row[dim2Col] - 1)
             # bounds are lower, upper, and center coordinates of mesh
             bounds1 = xgrid[dim1Indx]
             bounds2 = ygrid[dim2Indx]
 
-            patches.append(
+            patches[indx] = (
                 Rectangle((bounds1[0], bounds2[0]),
                           width=bounds1[1] - bounds1[0],
                           height=bounds2[1] - bounds2[0])
