@@ -80,10 +80,11 @@ class BranchingReader(XSReader):
     def _processBranchStateData(self):
         keyValueList = self._advance()[1:]
         stateData = {}
-        mappings = {'intVariables': int, 'floatVariables': float,
-                    'strVariables': str}
+        mappings = {'intVariables': int, 'floatVariables': float}
+
         for keyIndex in range(0, len(keyValueList), 2):
             key, value = keyValueList[keyIndex: keyIndex + 2]
+            stateData[key] = value
             for mapKey, mapFunc in mappings.items():
                 if key in self.settings[mapKey]:
                     stateData[key] = mapFunc(value)
