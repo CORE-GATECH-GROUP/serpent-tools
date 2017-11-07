@@ -1,6 +1,6 @@
 import six
 
-from numpy import empty
+from numpy import empty, arange, ceil
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
@@ -107,6 +107,9 @@ DETECTOR_INDICES = {
     'U': (11, 11),
 }
 """Indices for various quantities for serpent 1 and 2 - zero offset"""
+
+MESH_DATA_OPTS = {'T', 'abs', 'rel'}
+"""Make mesh plot of tally data, absolute or relative uncertainty"""
 
 
 class Detector(NamedObject):
@@ -318,7 +321,30 @@ class Detector(NamedObject):
 
         return ax
 
-    def meshPlot(self, dim1, dim2, ax=None, addcbar=True):
+    def plot(self, ax=None, steps=False, yLabel=None, xLabel=None):
+        """
+        Simple plot of tally data over bins.
+
+        Parameters
+        ----------
+        ax: pyplot.Axes or None
+            Ax on which to plot the data
+        steps: bool
+            Plot values as constant inside of bin if True
+        yLabel: str or None
+            Label to add to y axis
+        xLabel: str or None
+            Label to add to x axis
+
+        Returns
+        -------
+        ax: pyplot.Axes
+            Axes on which the figure was plotted
+        """
+        return (self.__errorPlot__(
+            arange(len(self.T)), ax, steps, xLabel or 'Bin', yLabel))
+
+    def meshPlot(self, dim1, dim2, data='T', ax=None, addcbar=True):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -328,6 +354,8 @@ class Detector(NamedObject):
             Primary dimension - will correspond to x-axis on plot
         dim2: str
             Secondary dimension - will correspond to y-axis on plot
+        data: str
+            Color meshes from tally data or uncertainties
         ax: axes or None
 
         Returns
@@ -335,7 +363,13 @@ class Detector(NamedObject):
         ax: pyplot.Axes
             Ax on which the data was plotted
         """
-        grid1, grid2, patches = self.makeMeshPatches(dim1, dim2)
+        if len(data) == 1:
+            data = data.upper()
+        if data not in MESH_DATA_OPTS:
+            raise KeyError('Mesh data type {} not supported. Please select '
+                           'one of the following: {}'
+                           .format(data, ', '.join(MESH_DATA_OPTS)))
+        grid1, grid2, patches = self.makeMeshPatches(dim1, dim2, data)
         if ax is None:
             fig, ax = pyplot.subplots(1, 1)
         else:
@@ -350,7 +384,7 @@ class Detector(NamedObject):
         ax.set_ylim((grid2[:, 0].min(), grid2[:, 1].max()))
         return ax
 
-    def makeMeshPatches(self, dim1, dim2):
+    def makeMeshPatches(self, dim1, dim2, data='T'):
         """
         Create a patch collection of mesh data.
 
@@ -360,6 +394,8 @@ class Detector(NamedObject):
             Primary dimension - will correspond to x-axis on plot
         dim2: str
             Secondary dimension - will correspond to y-axis on plot
+        data: str
+            Color meshes from tally data or uncertainties
 
         Returns
         -------
@@ -394,7 +430,7 @@ class Detector(NamedObject):
         messages.debug('Building {} patches for {} meshPlot'
                        .format(numPatches, self.name))
         if dim1 in ('X', 'Y', 'Z') and dim2 in ('X', 'Y', 'Z'):
-            patches = self.__cartPatches__(dim1, xGrid, dim2, yGrid, patches)
+            patches = self.__cartPatches__(dim1, xGrid, dim2, yGrid, data, patches)
         else:
             raise messages.SerpentToolsException(
                 'Could not find easily plot routine for dimensions {} and {}'
@@ -402,7 +438,13 @@ class Detector(NamedObject):
         messages.debug('done')
         return xGrid, yGrid, patches
 
-    def __cartPatches__(self, dim1, xgrid, dim2, ygrid, patches):
+    def __cartPatches__(self, dim1, xgrid, dim2, ygrid, data, patches):
+        if data == 'T':
+            meshVals = self.T
+        elif data == 'abs':
+            meshVals = self.U
+        else:
+            meshVals = self.U / self.T
         dim1Col = self.__indx__[dim1]
         dim2Col = self.__indx__[dim2]
         for indx, row in enumerate(self.bins):
@@ -418,5 +460,5 @@ class Detector(NamedObject):
                           height=bounds2[1] - bounds2[0])
             )
         collection = PatchCollection(patches)
-        collection.set_array(self.T)
+        collection.set_array(meshVals)
         return collection

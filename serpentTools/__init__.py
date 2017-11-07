@@ -13,6 +13,8 @@ from serpentTools import settings
 # TODO: Update rc with yaml file into dictionary
 # TODO: Capture materials with underscores for depletion
 # TODO: Find a way to capture some or all of log messages for testing
+# Containers
+# TODO: Detector attribute for relative/absolute uncertainty
 
 from ._version import get_versions
 __version__ = get_versions()['version']
