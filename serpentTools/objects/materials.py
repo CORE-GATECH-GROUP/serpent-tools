@@ -103,7 +103,7 @@ class DepletedMaterial(NamedObject):
 
     @messages.depreciated
     def getXY(self, xUnits, yUnits, timePoints=None, names=None):
-        """Depreciated. Use getValues instead"""
+        """Deprecated. Use getValues instead"""
         if timePoints is None:
             timePoints = self.days
             return self.getValues(xUnits, yUnits, timePoints, names), self.days
