@@ -8,7 +8,9 @@ datafile = dir_path + '/nistmasses.txt' # isotopic masses
 
 
 def getIsoMass(zaid):
-    """ grabs an isotopes mass in AMU. zaid should be in serpent format"""
+    """ grabs an isotopes mass in AMU. zaid should be in serpent format
+    Both natural (e.g. 21000) or plain ZAID (e.g. 92235) can be used.
+    """
     zaid = str(zaid) #coerce as string. serves as error checker/conversion
 
     #get z/a value
@@ -29,7 +31,7 @@ def getIsoMass(zaid):
 
     # check if the nuclide is natural
     if '000' in zaid:
-        return getNaturalMass(zaid, z)
+        return __getNaturalMass(zaid, z)
 
     # now search the data file
     # should be the isotope mass one from the NIST website
@@ -72,7 +74,7 @@ def getIsoMass(zaid):
 
     return mass 
 
-def getNaturalMass(zaid, z):
+def __getNaturalMass(zaid, z):
     """gets mass of a natural isotope. this is really meant
     to just be called by getIsoMass, so please use that function
     instead. """

@@ -1,7 +1,6 @@
 """Parser responsible for reading the ``*bumat<n>.m`` files"""
-debugserpentoutput=False
 from serpentTools.objects.readers import MaterialReader
-
+from serpentTools.settings.messages import debug, error
 
 class BumatReader(MaterialReader):
     """
@@ -13,11 +12,11 @@ class BumatReader(MaterialReader):
         path to the depletion file
     """
 
-    def __init__(self, 
+    def __init__(self):
+        raise NotImplementedError
 
     if materialname==None or materialfile==None:
         raise Exception("A material file and material name in that file must be specified in order to read in serpent material data as a salt.")
-    debugserpentoutput=False #debug
     self.materialname=materialname
 
     with open(self.directory+'/'+materialfile, 'r') as bumat_file:
@@ -38,8 +37,7 @@ class BumatReader(MaterialReader):
             #interest.
 
             if (line[:3]=='mat' or line[:3]=='set') and on_correct_material:
-                if debugserpentoutput:
-                    print("finished finding material {0}".format(materialname))
+                debug("finished finding material {0}".format(materialname))
                 break #leave the for loop, material was found
             if line[:3]=='mat':
 
@@ -47,27 +45,26 @@ class BumatReader(MaterialReader):
                 #split the line to read in separate words.
                 splitline=line.split() #now is list data type
                 thismaterialname=splitline[1] #grab material name
-                if debugserpentoutput:
-                    print("found material {0}".format(thismaterialname))
+                debug("found material {0}".format(thismaterialname))
+
                 #if the material here is the one that we want to
                 #read, record the atom density and other data. begin recording isotopics
-                if debugserpentoutput:
-                    print("now comparing:")
-                    print(thismaterialname)
-                    print(materialname)
+                debug("now comparing:")
+                debug(thismaterialname)
+                debug(materialname)
                 if thismaterialname==materialname:
                     on_correct_material=True
                     self.atomdensity=float(splitline[2])
-                    if debugserpentoutput:
-                        print("these two should match: ---------")
-                        print(float(splitline[2]))
-                        print(self.atomdensity)
-                        print("these three should match: --------")
-                        print(thismaterialname)
-                        print(self.materialname)
-                        print(materialname)
-                        print("data from line:")
-                        print(splitline)
+                    debug("these two should match: ---------")
+                    debug(float(splitline[2]))
+                    debug(self.atomdensity)
+                    debug("these three should match: --------")
+                    debug(thismaterialname)
+                    debug(self.materialname)
+                    debug(materialname)
+                    debug("data from line:")
+                    debug(splitline)
+
                     if 'vol' in splitline:
 
                         #now grab the material volume
@@ -108,5 +105,5 @@ class BumatReader(MaterialReader):
                 #now add it on to the material definition within this object.
                 self.isotopic_content[zaid]=float(atomfraction)
     if self.atomdensity == None and self.massdensity ==None:
-        print("unable to read density of material {0}".format(materialname))
-        raise Exception("An error was encountered in reading the material's density.")
+        error("An error was encountered in reading the material {}'s density."
+              .format(materialname) )
