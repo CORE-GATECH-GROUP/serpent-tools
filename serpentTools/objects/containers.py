@@ -49,8 +49,9 @@ class HomogUniv(SupportingObject):
         self.infExp = {}
         self.b1Unc = {}
         self.infUnc = {}
+        self.metaData = {}
 
-    def set(self, variableName, variableValue, uncertainty=False):
+    def addData(self, variableName, variableValue, uncertainty=False):
         """
         Sets the value of the variable and, optionally, the associate s.d.
 
@@ -79,7 +80,8 @@ class HomogUniv(SupportingObject):
         setter = self._lookup(variableName, uncertainty)
         # 3. Check if variable is already present. Then set the variable.
         if variableName in setter:
-            messages.warning('The variable will be overwritten')
+            messages.warning(
+                "The variable {} will be overwritten".format(variableName))
         setter[variableName] = variableValue
 
     def get(self, variableName, uncertainty=False):
@@ -103,17 +105,27 @@ class HomogUniv(SupportingObject):
 
         """
         # 1. Check the input values
-        variableName = SupportingObject._convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
             raise messages.error('The variable uncertainty has type %s.\n ...'
                                  'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, False)
+        if variableName not in setter:
+            raise KeyError(
+                "Variable {} absent from expected value dictionary".format(
+                    variableName))
         x = setter.get(variableName)
         # 3. Return the value of the variable
         if not uncertainty:
             return x
+        if setter is self.metaData:
+            messages.warning('No uncertainty is associated to metadata')
+            return x
         setter = self._lookup(variableName, True)
+        if variableName not in setter:
+            raise KeyError(
+                "Variable {} absent from uncertainty dictionary".format(
+                    variableName))
         dx = setter.get(variableName)
         return x, dx
 
@@ -128,6 +140,5 @@ class HomogUniv(SupportingObject):
                 return self.b1Exp
             else:
                 return self.b1Unc
-
-        messages.error('%s not found.The string must contain either the   ...'
-                       'inf, or b1 substring.', variableName)
+        else:
+            return self.metaData

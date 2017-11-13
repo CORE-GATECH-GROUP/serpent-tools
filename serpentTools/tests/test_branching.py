@@ -11,7 +11,7 @@ REF_FILE = os.path.join(TEST_ROOT, 'ref_branch.txt')
 
 
 class BranchTester(unittest.TestCase):
-    """Classs for testing the branching coefficient file reader."""
+    """Class for testing the branching coefficient file reader."""
 
     @classmethod
     def setUpClass(cls):
