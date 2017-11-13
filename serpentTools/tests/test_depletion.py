@@ -4,6 +4,8 @@ import unittest
 
 import numpy
 
+import six
+
 from serpentTools.settings import rc
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader
@@ -15,12 +17,23 @@ class _DepletionTestHelper(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
-        cls.rc = rc
-        with cls.rc as tempRC:
+        cls.processTotal = True
+        cls.materials = ['fuel']
+        cls.expectedMaterials = set(cls.materials)
+        cls.expectedVariables = {'BURNUP', 'ADENS', 'ING_TOX'}
+        if cls.processTotal:
+            cls.expectedMaterials.add('total')
+        with rc as tempRC:
+            tempRC['verbosity'] = 'debug'
             tempRC['depletion.processTotal'] = True
             tempRC['depletion.materials'] = ['fuel', ]
             tempRC['depletion.materialVariables'] = [
                 'BURNUP', 'ADENS', 'ING_TOX']
+            tempRC['depletion.processTotal'] = cls.processTotal
+            tempRC['depletion.materials'] = cls.materials
+            tempRC['depletion.materialVariables'] = (
+                list(cls.expectedVariables)
+            )
             cls.reader = DepletionReader(filePath)
         cls.reader.read()
 
@@ -44,18 +57,17 @@ class DepletionTester(_DepletionTestHelper):
                      2.50000E+01, 3.75000E+01, 5.00000E+01, 7.50000E+01,
                      1.00000E+02, 1.25000E+02]
         }
-        for key, expectedValue in expectedMetadata.items():
-            with self.subTest(key=key):
-                self.assertIn(key, self.reader.metadata)
-                numpy.testing.assert_equal(self.reader.metadata[key],
-                                           expectedValue)
+        expectedKeys = set(expectedMetadata)
+        actualKeys = set(self.reader.metadata.keys())
+        self.assertSetEqual(expectedKeys, actualKeys)
+        for key, expectedValue in six.iteritems(expectedMetadata):
+            numpy.testing.assert_equal(self.reader.metadata[key],
+                                       expectedValue)
 
     def test_ReadMaterials(self):
         """Verify the reader stored the correct materials."""
-        expectedMaterials = ['fuel']
-        for material in expectedMaterials:
-            with self.subTest():
-                self.assertIn(material, self.reader.materials)
+        self.assertSetEqual(set(self.reader.materials.keys()),
+                            self.expectedMaterials)
 
 
 class DepletedMaterialTester(_DepletionTestHelper):

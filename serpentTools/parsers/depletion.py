@@ -60,7 +60,7 @@ class DepletionReader(MaterialReader):
         messages.debug('Preparing to read {}'.format(self.filePath))
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
         keys.extend(self.settings['metadataKeys'])
-        separators = ['\n', '];']
+        separators = ['\n', '];', '\r\n']
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
                 if 'MAT' in chunk[0]:
@@ -121,6 +121,8 @@ class DepletionReader(MaterialReader):
             messages.debug('Adding material {}...'.format(name))
             self.materials[name] = DepletedMaterial(self, name)
             messages.debug('  added')
+        messages.debug('Cleaning chunk beginning in {}'
+                       .format(chunk[:15]))
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
         else:
