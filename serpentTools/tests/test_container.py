@@ -5,13 +5,12 @@ from serpentTools.objects import containers
 from serpentTools.parsers import DepletionReader
 
 
-class containerTester(unittest.TestCase):
-    """ Class to test the container object """
+class HomogenizedUniverseTester(unittest.TestCase):
+    """ Class to test the Homogenized Universe """
 
     @classmethod
     def setUpClass(cls):
-        container = DepletionReader(None)
-        cls.univ = containers.HomogUniv(container, 'dummy', 0, 0, 0)
+        cls.univ = containers.HomogUniv(DepletionReader(None), 'dummy', 0, 0, 0)
         cls.Exp = {}
         cls.Unc = {}
         # Data definition
@@ -27,11 +26,11 @@ class containerTester(unittest.TestCase):
 
         # Partial dictionaries
         cls.b1Exp = {'b11': 1, 'b12': [1, 2], 'b13': [1, 2, 3]}
-        cls.b1Unc = {'b11': (1, 0.1), 'b12': ([1, 2], [.1,.2]), 'b13':
+        cls.b1Unc = {'b11': (1, 0.1), 'b12': ([1, 2], [.1, .2]), 'b13':
             ([1, 2, 3], [.1, .2, .3])}
         cls.infExp = {'inf1': 3, 'inf2': [4, 5], 'inf3': [6, 7, 8]}
-        cls.infUnc = {'inf1': (3, .3), 'inf2': ([4, 5],[.4, .5]), 'inf3':
-                      ([6, 7, 8], [.6, .7, .8])}
+        cls.infUnc = {'inf1': (3, .3), 'inf2': ([4, 5], [.4, .5]), 'inf3':
+            ([6, 7, 8], [.6, .7, .8])}
         cls.meta = {'macroE': (.1e-1, .2e-1, .3e-1, .1e-1, .2e-1, .3e-1),
                     'test1': 'addio'}
         # Use addData
@@ -40,42 +39,44 @@ class containerTester(unittest.TestCase):
         for kk in cls.Unc:
             cls.univ.addData(kk, cls.Unc[kk], True)
 
-    def test_1(self):
-        """ Test the get function on b1Exp"""
+    def test_getB1Exp(self):
+        """ Get Expected vales from B1 dictionary"""
         d = {}
-        # Compare b1 dictionary
+        # Comparison
         for kk in self.univ.b1Exp:
-            d[kk] = self.univ.get(kk,False)
-        self.assertDictEqual(self.b1Exp,d)
+            d[kk] = self.univ.get(kk, False)
+        self.assertDictEqual(self.b1Exp, d)
 
-    def test_2(self):
-        """ Test the get function on b1Exp and b1Unc"""
+    def test_getB1Unc(self):
+        """ Get Expected vales and associated uncertainties from B1 dictionary
+        """
         d = {}
-        # Compare b1 dictionary with uncertainty
+        # Comparison
         for kk in self.univ.b1Exp:
-            d[kk] = self.univ.get(kk,True)
-        self.assertDictEqual(self.b1Unc,d)
+            d[kk] = self.univ.get(kk, True)
+        self.assertDictEqual(self.b1Unc, d)
 
-    def test_3(self):
-        """ Test the get function on infExp"""
+    def test_getInfExp(self):
+        """ Get Expected vales from Inf dictionary"""
         d = {}
-        # Compare Inf dictionary
+        # Comparison
         for kk in self.univ.infExp:
             d[kk] = self.univ.get(kk, False)
         self.assertDictEqual(self.infExp, d)
 
-    def test_4(self):
-        """ Test the get function on infExp and infUnc"""
+    def test_getInfUnc(self):
+        """ Get Expected vales and associated uncertainties from Inf dictionary
+        """
         d = {}
-        # Compare inf dictionary with uncertainty
+        # Comparison
         for kk in self.univ.infUnc:
             d[kk] = self.univ.get(kk, True)
         self.assertDictEqual(self.infUnc, d)
 
-    def test_5(self):
-        """ Test the get function on metaData"""
+    def test_getMeta(self):
+        """ Get metaData from corresponding dictionary"""
         d = {}
-        # Compare Inf dictionary
+        # Comparison
         for kk in self.univ.metaData:
             d[kk] = self.univ.get(kk, False)
         self.assertDictEqual(self.meta, d)
@@ -83,4 +84,3 @@ class containerTester(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

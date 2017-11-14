@@ -74,7 +74,7 @@ class HomogUniv(SupportingObject):
         # 1. Check the input type
         variableName = SupportingObject._convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
-            raise messages.error('The variable uncertainty has type %s.\n ...'
+            raise TypeError('The variable uncertainty has type %s.\n ...'
                                  'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, uncertainty)
@@ -106,7 +106,7 @@ class HomogUniv(SupportingObject):
         """
         # 1. Check the input values
         if not isinstance(uncertainty, bool):
-            raise messages.error('The variable uncertainty has type %s.\n ...'
+            raise TypeError('The variable uncertainty has type %s.\n ...'
                                  'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, False)
