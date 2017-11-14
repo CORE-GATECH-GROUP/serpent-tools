@@ -1,7 +1,15 @@
+"""
+Custom-built containers for storing data from serpent outputs
 
+Contents
+--------
+:py:class:`~serpentTools.objects.containers.HomogUniv`
+:py:class:`~serpentTools.objects.containers.Detector`
+
+"""
 import six
 
-from numpy import empty, arange, ceil
+from numpy import empty, arange
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
@@ -16,26 +24,26 @@ class HomogUniv(SupportingObject):
 
      Parameters
     ----------
-    -container: str
+    container: str
         name of the parser
-    -name: str
+    name: str
         name of the universe
-    -bu: float
+    bu: float
         burnup value
-    -step: float
+    step: float
         temporal step
-    -day: float
+    day: float
         depletion day
 
     Attributes
     ----------
-    -name: str
+    name: str
         name of the universe
-    -bu: float
+    bu: float
         burnup value
-    -step: float
+    step: float
         temporal step
-    -day: float
+    day: float
         depletion day
 
     """
@@ -67,9 +75,9 @@ class HomogUniv(SupportingObject):
             Boolean Variable- set to True in order to retrieve the
             uncertainty associated to the expected values
 
-        Notes:
-        ---------
-            Raises a warning if the value of the variable is overwritten
+        Notes
+        -----
+        Raises a warning if the value of the variable is overwritten
 
         """
 
@@ -77,7 +85,7 @@ class HomogUniv(SupportingObject):
         variableName = SupportingObject._convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type %s.\n ...'
-                                 'It should be boolean.', type(uncertainty))
+                            'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, uncertainty)
         # 3. Check if variable is already present. Then set the variable.
@@ -105,11 +113,16 @@ class HomogUniv(SupportingObject):
         dx: str/tuple/list
             Associated uncertainty
 
+        Raises
+        ------
+        TypeError: if uncertainty value is not boolean
+        KeyError: if requested variableName is not stored on the object
+
         """
         # 1. Check the input values
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type %s.\n ...'
-                                 'It should be boolean.', type(uncertainty))
+                            'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, False)
         if variableName not in setter:
@@ -405,18 +418,24 @@ class Detector(NamedObject):
         data: str
             Color meshes from tally data or uncertainties
         ax: axes or None
+            Axes on which to plot the data
 
         Returns
         -------
         ax: pyplot.Axes
             Ax on which the data was plotted
+
+        Raises
+        ------
+        SerpentToolsException if the mesh type is not supported
         """
         if len(data) == 1:
             data = data.upper()
         if data not in MESH_DATA_OPTS:
-            raise KeyError('Mesh data type {} not supported. Please select '
-                           'one of the following: {}'
-                           .format(data, ', '.join(MESH_DATA_OPTS)))
+            raise messages.SerpentToolsException(
+                'Mesh data type {} not supported. Please select '
+                'one of the following: {}'
+                    .format(data, ', '.join(MESH_DATA_OPTS)))
         grid1, grid2, patches = self.makeMeshPatches(dim1, dim2, data)
         if ax is None:
             fig, ax = pyplot.subplots(1, 1)
@@ -478,7 +497,8 @@ class Detector(NamedObject):
         messages.debug('Building {} patches for {} meshPlot'
                        .format(numPatches, self.name))
         if dim1 in ('X', 'Y', 'Z') and dim2 in ('X', 'Y', 'Z'):
-            patches = self.__cartPatches__(dim1, xGrid, dim2, yGrid, data, patches)
+            patches = self.__cartPatches__(dim1, xGrid, dim2, yGrid, data,
+                                           patches)
         else:
             raise messages.SerpentToolsException(
                 'Could not find easily plot routine for dimensions {} and {}'
