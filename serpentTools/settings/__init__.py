@@ -26,14 +26,15 @@ defaultSettings = {
         'type': list
     },
     'depletion.materialVariables': {
-        'default': ['ADENS', 'MDENS', 'BURNUP'],
-        'description': 'Variables to store for each depleted material.',
+        'default': [],
+        'description': 'Names of variables to store. '
+                       'Empty list -> all variables.',
         'type': list
     },
     'depletion.materials': {
         'default': [],
         'description': 'Names of materials to store. '
-                       'Empty list -> store all materials.',
+                       'Empty list -> all materials.',
         'type': list
     },
     'depletion.processTotal': {

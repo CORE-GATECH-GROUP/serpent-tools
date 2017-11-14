@@ -35,7 +35,6 @@ class RCTester(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.rc = settings.UserSettingsLoader()
-        cls.rc['depletion.metadataKeys'] = ['ZAI']
 
     def test_failAtNonexistentSetting(self):
         """Verify that the loader will not load a nonexistent setting."""
@@ -56,10 +55,11 @@ class RCTester(unittest.TestCase):
         """Verify the correct reader settings can be retrieved."""
         readerName = 'depletion'
         expected = {
-            'metadataKeys': ['ZAI'],
+            'metadataKeys': ['ZAI', 'NAMES', 'DAYS', 'BU'],
             'materialVariables': [],
             'materials': [],
             'processTotal': True,
+            'serpentVersion': '2.1.29',
         }
         actual = self.rc.getReaderSettings(readerName)
         self.assertDictEqual(expected, actual)
