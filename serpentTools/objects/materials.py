@@ -46,6 +46,13 @@ class DepletedMaterial(NamedObject):
         self.__adens__ = None
         self.__mdens__ = None
 
+        # a series of dictionaries that define material composition over time
+        # from ZAID to density value, and knowledge of one
+        # variable can inform the other through the getIsoMass
+        # function.
+        self.data['adensDicts'] = []
+        self.data['mdensDicts'] = []
+
     def __getitem__(self, item):
         if item not in self.data:
             raise KeyError('Key {} not found on material {}'
