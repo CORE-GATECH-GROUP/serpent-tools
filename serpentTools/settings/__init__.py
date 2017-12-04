@@ -1,7 +1,7 @@
 """Settings to yield control to the user."""
 import os
 
-import yaml
+from ruamel import yaml
 
 from serpentTools import ROOT_DIR
 from serpentTools.settings import messages
@@ -274,7 +274,7 @@ class UserSettingsLoader(dict):
             return variables
         varFile = os.path.join(ROOT_DIR, 'settings', 'variables.yaml')
         with open(varFile) as fObj:
-            groups = yaml.load(fObj)
+            groups = yaml.load(fObj, Loader=yaml.Loader)
         thisVersion = groups[serpentVersion]
         baseGroups = groups['base']
         for key in keywords:
