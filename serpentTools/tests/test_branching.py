@@ -9,7 +9,7 @@ from serpentTools.parsers import BranchingReader
 
 
 class BranchTester(unittest.TestCase):
-    """Classs for testing the branching coefficient file reader."""
+    """Class for testing the branching coefficient file reader."""
 
     @classmethod
     def setUpClass(cls):
