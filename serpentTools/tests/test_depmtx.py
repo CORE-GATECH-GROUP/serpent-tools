@@ -53,12 +53,12 @@ class DepmtxTester(unittest.TestCase):
         assert_array_equal(self.zai[:10], array(
             ['-1', '10010', '10020', '10030', '20030', '20040', '30060',
              '30070', '40090', '50100']), 'first 10 elements of zai')
-        assert_array_equal(self.decMat.A[:3, :2], array(
+        decMat = self.decMat.A if hasattr(self.decMat, 'A') else self.decMat
+        assert_array_equal(decMat[:3, :2], array(
             [[0, 0],
              [0, -1.500972704886488647503396416401E-12],
              [0, 1.500972704886488647503396416401E-12]]
         ), err_msg='dec[:3, :2]')
-        decMat = self.decMat.A if hasattr(self.decMat, 'A') else self.decMat
         assert_array_equal(decMat[-3:, -1], array(
             [2.166500765256806589294628619590E-14,
              8.673595631793918327440743302798E-12,
