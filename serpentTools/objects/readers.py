@@ -58,3 +58,19 @@ class XSReader(BaseReader):
 
     def read(self):
         raise NotImplementedError
+
+    def _checkAddVariable(self, variableName):
+        """Check if the data for the variable should be stored"""
+        # no variables given -> get all
+        if not any(self.settings['variables']):
+            return True
+        # explicitly named
+        if variableName in self.settings['variables']:
+            return True
+        if (self.settings['getB1XS'] and variableName.replace('B1_', '') in
+                self.settings['variables']):
+            return True
+        if (self.settings['getInfXS'] and variableName.replace('INF_', '') in
+                self.settings['variables']):
+            return True
+        return False

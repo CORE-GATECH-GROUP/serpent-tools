@@ -7,14 +7,22 @@ from serpentTools import ROOT_DIR
 from serpentTools.settings import messages
 
 defaultSettings = {
+    'branching.areUncsPresent': {
+        'default': False,
+        'type': bool,
+        'description': "True if the values in the .coe file contain "
+                       "uncertainties"
+    },
     'branching.intVariables': {
         'default': [],
-        'description': 'Integer variables to store from each branch.',
+        'description': 'Name of state data variables to convert to integers '
+                       'for each branch',
         'type': list
     },
     'branching.floatVariables': {
         'default': [],
-        'description': 'Floating point variables to store from each branch.',
+        'description': 'Names of state data variables to convert to floats '
+                       'for each branch',
         'type': list
     },
     'depletion.metadataKeys': {
@@ -41,22 +49,6 @@ defaultSettings = {
         'description': 'Option to store the depletion data from the TOT block',
         'type': bool
     },
-    'xs.reshapeScatter': {
-        'default': False,
-        'description': 'If true, convert scatter matrices into matrices, not '
-                       'vectors. ',
-        'type': bool
-    },
-    'xs.getInfXS': {
-        'default': True,
-        'description': 'If true, store the infinite medium cross sections.',
-        'type': bool
-    },
-    'xs.getB1XS': {
-        'default': True,
-        'description': 'If true, store the critical leakage cross sections.',
-        'type': bool
-    },
     'verbosity': {
         'default': 'warning',
         'options': messages.LOG_OPTS,
@@ -69,6 +61,16 @@ defaultSettings = {
         'options': ['2.1.29'],
         'description': 'Version of SERPENT',
         'type': str
+    },
+    'xs.getInfXS': {
+        'default': True,
+        'description': 'If true, store the infinite medium cross sections.',
+        'type': bool
+    },
+    'xs.getB1XS': {
+        'default': True,
+        'description': 'If true, store the critical leakage cross sections.',
+        'type': bool
     },
     'xs.variableGroups': {
         'default': [],

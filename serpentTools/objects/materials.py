@@ -144,7 +144,7 @@ class DepletedMaterial(NamedObject):
             timeCheck = self._checkTimePoints(xUnits, timePoints)
             if any(timeCheck):
                 raise KeyError('The following times were not present in file {}'
-                               '\n{}'.format(self.origin,
+                               '\n{}'.format(self.filePath,
                                              ', '.join(timeCheck)))
         if names and self.names is None:
             raise AttributeError(

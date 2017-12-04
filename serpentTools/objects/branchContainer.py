@@ -1,6 +1,7 @@
 """Supporting class that stores data for a single branch instance."""
 
 from serpentTools.objects import SupportingObject
+from serpentTools.objects.containers import HomogUniv
 
 
 class BranchContainer(SupportingObject):
@@ -20,6 +21,8 @@ class BranchContainer(SupportingObject):
 
     def addUniverse(self, univID, burnup=0, burnIndex=0, burnDays=0):
         """Add a universe to this branch"""
-        newUniv = {}
+        newUniv = HomogUniv(self, univID, burnup, burnIndex, burnDays)
         self.universes[(univID, burnup, burnIndex, burnDays)] = newUniv
         return newUniv
+
+

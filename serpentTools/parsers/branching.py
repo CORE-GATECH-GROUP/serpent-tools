@@ -1,8 +1,12 @@
 """Parser responsible for reading the ``*coe.m`` files"""
 
+from six import iteritems
+from numpy import array
+
+from serpentTools.objects import splitItems
 from serpentTools.objects.branchContainer import BranchContainer
 from serpentTools.objects.readers import XSReader
-from serpentTools.settings.messages import willChange, debug
+from serpentTools.settings.messages import debug
 
 
 class BranchingReader(XSReader):
@@ -22,8 +26,6 @@ class BranchingReader(XSReader):
         self._whereAmI = {key: None for key in
                           {'runIndx', 'coefIndx', 'buIndx', 'universe'}}
 
-    @willChange('Once #11 is closed, universes will not be stored as '
-                'dictionaries')
     def read(self):
         """Read the branching file and store the coefficients."""
         debug('Preparing to read {}'.format(self.filePath))
@@ -98,10 +100,14 @@ class BranchingReader(XSReader):
         for step in range(numVariables):
             splitList = self._advance(possibleEndOfFile=step == numVariables-1)
             varName = splitList[0]
-            varValues = splitList[2:]
-            if (not any(self.settings['variables'])
-                    or varName in self.settings['variables']):
-                univ[varName] = varValues
+            varValues = [float(xx) for xx in splitList[2:]]
+            if self._checkAddVariable(varName):
+                if self.settings['areUncsPresent']:
+                    vals, uncs = splitItems(varValues)
+                    univ.addData(varName, array(vals), uncertaity=False)
+                    univ.addData(varName, array(uncs), unertainty=True)
+                else:
+                    univ.addData(varName, array(varValues), uncertainty=False)
 
     def write(self, template=None):
         """
@@ -124,3 +130,8 @@ class BranchingReader(XSReader):
 
         """
         raise NotImplementedError
+
+    def iterBranches(self):
+        """Iterate over branches yielding paired branch IDs and containers"""
+        for bID, b in iteritems(self.branches):
+            yield bID, b
