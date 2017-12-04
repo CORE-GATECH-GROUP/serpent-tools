@@ -1,4 +1,5 @@
 from os.path import join, dirname
+from os import getenv
 from setuptools import setup
 
 import versioneer
@@ -17,6 +18,11 @@ installRequires = [
     'pyyaml>=3.08',
     'drewtils>=0.1.8',  # file parsing tools
 ]
+
+if not getenv('ONTRAVIS', False):
+    # hack to install scipy if not on cluster
+    # PR 45/44
+    installRequires.append('scipy')
 
 installVarYamlFrom = join('serpentTools', 'settings', 'variables.yaml')
 
