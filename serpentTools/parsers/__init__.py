@@ -2,8 +2,10 @@
 from os import path
 
 from numpy import zeros, empty, empty_like, array, longfloat
+
 try:
     from scipy.sparse import csr_matrix
+
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
@@ -37,8 +39,7 @@ def depmtx(fileP):
         Final isotopic vector
     """
     if not path.exists(fileP):
-        raise FileNotFoundError('Cannot find depeletion matrix file {}'
-                                .format(fileP))
+        raise IOError('Cannot find depeletion matrix file {}'.format(fileP))
     if not HAS_SCIPY:
         warning('Decay matrix will be returned as full matrix')
     with open(fileP) as f:

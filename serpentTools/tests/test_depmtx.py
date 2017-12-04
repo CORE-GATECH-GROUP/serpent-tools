@@ -22,7 +22,7 @@ class DepmtxTester(unittest.TestCase):
 
     def test_depmtxBadRead(self):
         """Verify the reader will not progress if the file is missing"""
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(IOError):
             depmtx('veryBadFile')
 
     def test_correctSizes(self):
