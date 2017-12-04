@@ -2,7 +2,14 @@
 from os import path
 
 from numpy import zeros, empty, empty_like, array, longfloat
-from scipy.sparse import csr_matrix
+try:
+    from scipy.sparse import csr_matrix
+    HAS_SCIPY = True
+except ImportError:
+    HAS_SCIPY = False
+    csr_matrix = array
+
+from serpentTools.settings.messages import warning
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.parsers.branching import BranchingReader
 
@@ -24,14 +31,16 @@ def depmtx(fileP):
         Initial isotopic vector
     zai: numpy.array
         String identifiers for each isotope in ``n0`` and ``n1``
-    a: numpy.array
-        Decay matrix
+    a: numpy.array or scipy.sparse.csc_matrix
+        Decay matrix. Will be sparse if scipy is installed
     n1: numpy.array
         Final isotopic vector
     """
     if not path.exists(fileP):
         raise FileNotFoundError('Cannot find depeletion matrix file {}'
                                 .format(fileP))
+    if not HAS_SCIPY:
+        warning('Decay matrix will be returned as full matrix')
     with open(fileP) as f:
         t = float(f.readline().split()[-1][:-1])
         line = f.readline()
@@ -70,4 +79,4 @@ def depmtx(fileP):
             indx += 1
             line = f.readline()
 
-        return t, n0, array(zai), csr_matrix(a), n1
+        return t, n0, array(zai), csr_matrix(a) if HAS_SCIPY else a, n1

@@ -58,7 +58,8 @@ class DepmtxTester(unittest.TestCase):
              [0, -1.500972704886488647503396416401E-12],
              [0, 1.500972704886488647503396416401E-12]]
         ), err_msg='dec[:3, :2]')
-        assert_array_equal(self.decMat.A[-3:, -1], array(
+        decMat = self.decMat.A if hasattr(self.decMat, 'A') else self.decMat
+        assert_array_equal(decMat[-3:, -1], array(
             [2.166500765256806589294628619590E-14,
              8.673595631793918327440743302798E-12,
              -3.205752291225075667717126458572E-09]
