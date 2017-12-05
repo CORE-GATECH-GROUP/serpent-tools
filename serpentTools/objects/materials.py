@@ -46,6 +46,13 @@ class DepletedMaterial(NamedObject):
         self.__adens__ = None
         self.__mdens__ = None
 
+        # a series of dictionaries that define material composition over time
+        # from ZAID to density value, and knowledge of one
+        # variable can inform the other through the getIsoMass
+        # function.
+        self.data['adensDicts'] = []
+        self.data['mdensDicts'] = []
+
     def __getitem__(self, item):
         if item not in self.data:
             raise KeyError('Key {} not found on material {}'
@@ -103,7 +110,7 @@ class DepletedMaterial(NamedObject):
 
     @messages.depreciated
     def getXY(self, xUnits, yUnits, timePoints=None, names=None):
-        """Depreciated. Use getValues instead"""
+        """Deprecated. Use getValues instead"""
         if timePoints is None:
             timePoints = self.days
             return self.getValues(xUnits, yUnits, timePoints, names), self.days
