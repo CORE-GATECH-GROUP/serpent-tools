@@ -1,21 +1,21 @@
-from serpentTools import settings
-from serpentTools import parsers
+import os
 
+ROOT_DIR = os.path.dirname(__file__)
+
+from serpentTools.parsers import read
+from serpentTools import messages
 
 # List TODOS/feature requests here for now
-# Compatability
-# TODO: Python 2 support
-# TODO: Test compatability with earlier numpy releases
+# Compatibility
+# TODO: Test compatibility with earlier numpy releases
 # Usage/scripting
 # TODO: Update rc with dictionary
 # TODO: Update rc with yaml file into dictionary
 # TODO: Capture materials with underscores for depletion
-# XS Storage
-# TODO: Add expandable keys of XS to preserve
-# TODO: Homogenized universe data container
+# TODO: Find a way to capture some or all of log messages for testing
 
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
 
-settings.messages.info('Using version {}'.format(__version__))
+messages.info('Using version {}'.format(__version__))

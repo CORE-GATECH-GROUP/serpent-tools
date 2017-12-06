@@ -3,12 +3,13 @@
 import numpy
 from matplotlib import pyplot
 
+from serpentTools import messages
+from serpentTools.objects import NamedObject
 
-from serpentTools.objects import _NamedObject
 
-
-class DepletedMaterial(_NamedObject):
-    """Class for storing material data from ``_dep.m`` files.
+class DepletedMaterial(NamedObject):
+    """
+    Class for storing material data from ``_dep.m`` files.
 
     Parameters
     ----------
@@ -20,46 +21,67 @@ class DepletedMaterial(_NamedObject):
 
     Attributes
     ----------
-    zai: numpy.array
+    zai: numpy.array or None
         Isotope id's
-    names: numpy.array
+    names: numpy.array or None
         Names of isotopes
-    days: numpy.array
+    days: numpy.array or None
         Days overwhich the material was depleted
-    adens: numpy.array
+    adens: numpy.array or None
         Atomic density over time for each nuclide
-
-    :note:
-
-        These attributes only exist if the pasers was instructed to
-        read in this data. I.e. if ``readers.depletion.metadataKeys``
-        does not contain ``ZAI``, then this object will not have
-        the ``zai`` data.
+    mdens: numpy.array or None
+        Mass density over time for each nuclide
+    burnup: numpy.array or None
+        Burnup of the material over time
 
     """
 
     def __init__(self, parser, name):
-        _NamedObject.__init__(self, parser, name)
-        self._varData = {}
-
-    def __getattr__(self, item):
-        """
-        Allows the user to get items like ``zai`` and ``adens``
-        with ``self.zai`` and ``self.adens``, respectively.
-        """
-        if item in self._varData:
-            return self._varData[item]
-        return _NamedObject.__getattr__(self, item)
+        NamedObject.__init__(self, parser, name)
+        self.data = {}
+        self.zai = parser.metadata.get('zai', None)
+        self.names = parser.metadata.get('names', None)
+        self.days = parser.metadata.get('days', None)
+        self.__burnup__ = None
+        self.__adens__ = None
+        self.__mdens__ = None
 
     def __getitem__(self, item):
-        if item not in self._varData:
-            if item not in self._container.metadata:
-                raise KeyError('{} has no item {}'.format(self, item))
-            return self._container.metadata[item]
-        return self._varData[item]
+        if item not in self.data:
+            raise KeyError('Key {} not found on material {}'
+                           .format(item, self.name))
+        return self.data[item]
+
+    @property
+    def burnup(self):
+        if 'burnup' not in self.data:
+            raise AttributeError('Burnup for material {} has not been loaded'
+                                 .format(self.name))
+        if self.__burnup__ is None:
+            self.__burnup__ = self.data['burnup']
+        return self.__burnup__
+
+    @property
+    def adens(self):
+        if 'adens' not in self.data:
+            raise AttributeError('Atomic densities for material {} have not '
+                                 'been loaded'.format(self.name))
+        if self.__adens__ is None:
+            self.__adens__ = self.data['adens']
+        return self.__adens__
+
+    @property
+    def mdens(self):
+        if 'mdens' not in self.data:
+            raise AttributeError('Mass densities for material {} has not been '
+                                 'loaded'.format(self.name))
+        if self.__mdens__ is None:
+            self.__mdens__ = self.data['mdens']
+        return self.__mdens__
 
     def addData(self, variable, rawData):
-        """Add data straight from the file onto a variable.
+        """
+        Add data straight from the file onto a variable.
 
         Parameters
         ----------
@@ -69,6 +91,7 @@ class DepletedMaterial(_NamedObject):
             List of strings corresponding to the raw data from the file
         """
         newName = self._convertVariableName(variable)
+        messages.debug('Adding {} data to {}'.format(newName, self.name))
         if isinstance(rawData, str):
             scratch = [float(item) for item in rawData.split()]
         else:
@@ -76,10 +99,25 @@ class DepletedMaterial(_NamedObject):
             for line in rawData:
                 if line:
                     scratch.append([float(item) for item in line.split()])
-        self._varData[newName] = numpy.array(scratch)
+        self.data[newName] = numpy.array(scratch)
 
+    @messages.deprecated('getValues')
     def getXY(self, xUnits, yUnits, timePoints=None, names=None):
-        """Return x values for given time, and corresponding isotope values.
+        """
+        Return x values for given time, and corresponding isotope values.
+
+        .. deprecated:: 0.1.0
+            Use :meth:`getValues` instead.
+        """
+        if timePoints is None:
+            timePoints = self.days
+            return self.getValues(xUnits, yUnits, timePoints, names), self.days
+        else:
+            return self.getValues(xUnits, yUnits, timePoints, names)
+
+    def getValues(self, xUnits, yUnits, timePoints=None, names=None):
+        """
+        Return x values for given time, and corresponding isotope values.
 
         Parameters
         ----------
@@ -98,8 +136,6 @@ class DepletedMaterial(_NamedObject):
         -------
         numpy.array
             Array of values.
-        numpy.array
-            Vector of time points only if ``timePoints`` is ``None``
 
         Raises
         ------
@@ -110,20 +146,18 @@ class DepletedMaterial(_NamedObject):
             If at least one of the days requested is not present
         """
         if timePoints is not None:
-            returnX = False
             timeCheck = self._checkTimePoints(xUnits, timePoints)
             if any(timeCheck):
                 raise KeyError('The following times were not present in file {}'
-                               '\n{}'.format(self._container.filePath,
+                               '\n{}'.format(self.origin,
                                              ', '.join(timeCheck)))
-        else:
-            returnX = True
-        if names and 'names' not in self._container.metadata:
-            raise AttributeError('Parser {} has not stored the isotope names.'
-                                 .format(self._container))
+        if names and self.names is None:
+            raise AttributeError(
+                'Isotope names not stored on DepletedMaterial {}.'
+                .format(self.name))
         xVals, colIndices = self._getXSlice(xUnits, timePoints)
         rowIndices = self._getIsoID(names)
-        allY = self[yUnits]
+        allY = self.data[yUnits]
         if allY.shape[0] == 1 or len(allY.shape) == 1:  # vector
             yVals = allY[colIndices] if colIndices else allY
         else:
@@ -131,17 +165,15 @@ class DepletedMaterial(_NamedObject):
             for isoID, rowId in enumerate(rowIndices):
                 yVals[isoID, :] = (allY[rowId][colIndices] if colIndices
                                    else allY[rowId][:])
-        if returnX:
-            return yVals, xVals
         return yVals
 
     def _checkTimePoints(self, xUnits, timePoints):
-        valid = self[xUnits]
+        valid = self.days if xUnits == 'days' else self.data[xUnits]
         badPoints = [str(time) for time in timePoints if time not in valid]
         return badPoints
 
     def _getXSlice(self, xUnits, timePoints):
-        allX = self[xUnits]
+        allX = self.days if xUnits == 'days' else self.data[xUnits]
         if timePoints is not None:
             colIndices = [indx for indx, xx in enumerate(allX)
                           if xx in timePoints]
@@ -163,7 +195,8 @@ class DepletedMaterial(_NamedObject):
         return rowIDs
 
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None):
-        """Plot some data as a function of time for some or all isotopes.
+        """
+        Plot some data as a function of time for some or all isotopes.
 
         Parameters
         ----------
@@ -191,9 +224,10 @@ class DepletedMaterial(_NamedObject):
         getXY
 
         """
-        xVals, yVals = self.getXY(xUnits, yUnits, timePoints, names)
-        ax = ax or pyplot.subplots(1, 1)[1]
-        labels = names or [None]
+        xVals = timePoints or self.days
+        yVals = self.getValues(xUnits, yUnits, xVals, names)
+        ax = ax or pyplot.axes()
+        labels = names or ['']
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row])
         return ax

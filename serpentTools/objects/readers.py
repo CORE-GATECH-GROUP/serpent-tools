@@ -22,7 +22,7 @@ class BaseReader(object):
             for level in readerSettingsLevel:
                 self.settings.update(rc.getReaderSettings(level))
 
-    def __repr__(self):
+    def __str__(self):
         return '<{} reading {}>'.format(self.__class__.__name__, self.filePath)
 
     def read(self):
@@ -48,10 +48,13 @@ class MaterialReader(BaseReader):
 
 
 class XSReader(BaseReader):
-    """Parent class for files that store homogenized cross sections."""
+    """Parent class for the branching and results reader"""
 
     def __init__(self, filePath, readerSettingsLevel):
         BaseReader.__init__(self, filePath, ['xs', readerSettingsLevel])
+        self.settings['variables'] = rc.expandVariables()
+        self.settings.pop('variableGroups')
+        self.settings.pop('variableExtras')
 
     def read(self):
         raise NotImplementedError
