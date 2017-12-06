@@ -2,4 +2,4 @@
 Messages
 ========
 
-.. automodule:: serpentTools.settings.messages
+.. automodule:: serpentTools.messages
