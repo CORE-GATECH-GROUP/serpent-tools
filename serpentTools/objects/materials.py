@@ -194,7 +194,8 @@ class DepletedMaterial(NamedObject):
             rowIDs[indx] = self.names.index(isotope)
         return rowIDs
 
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None):
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
+             legend=True, label=True, xlabel=None, ylabel=None):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -213,6 +214,16 @@ class DepletedMaterial(NamedObject):
         ax: None or ``matplotlib axes``
             If given, add the data to this plot.
             Otherwise, create a new plot
+        legend: bool
+            Automatically add the legend
+        label: bool
+            Automatically label the axis
+        xlabel: None or str
+            If given, use this as the label for the x-axis.
+            Otherwise, use xUnits
+        ylabel: None or str
+            If given, use this as the label for the y-axis.
+            Otherwise, use yUnits
 
         Returns
         -------
@@ -230,4 +241,11 @@ class DepletedMaterial(NamedObject):
         labels = names or ['']
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row])
+
+        # format the plot
+        if legend:
+            ax.legend()
+        if label:
+            ax.set_xlabel(xlabel or xUnits)
+            ax.set_ylabel(ylabel or yUnits)
         return ax
