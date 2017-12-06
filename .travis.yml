@@ -8,7 +8,10 @@ python:
 
 # install
 install:
+  - pip install jupyter
   - python setup.py install
 
 # run
-script: pytest
+script:
+  - pytest
+  - for nb in serpentTools/examples/*ipynb; do ;jupyter nbconvert --execute $nb; done
