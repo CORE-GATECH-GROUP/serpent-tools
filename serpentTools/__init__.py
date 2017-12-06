@@ -3,6 +3,7 @@ import os
 ROOT_DIR = os.path.dirname(__file__)
 
 from serpentTools import settings
+from serpentTools.parsers import read
 
 # List TODOS/feature requests here for now
 # Compatibility
