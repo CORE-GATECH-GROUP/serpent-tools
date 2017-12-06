@@ -14,4 +14,4 @@ install:
 # run
 script:
   - pytest
-  - for nb in serpentTools/examples/*ipynb; do ;jupyter nbconvert --execute $nb; done
+  - for nb in serpentTools/examples/*ipynb; do jupyter nbconvert --execute $nb; done
