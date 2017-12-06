@@ -12,9 +12,9 @@ try:
     HAS_SCIPY = True
 except ImportError:
     HAS_SCIPY = False
-    csr_matrix = array
+    csc_matrix = array
 
-from serpentTools.settings.messages import warning, SerpentToolsException, info
+from serpentTools.messages import warning, SerpentToolsException, info
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.parsers.branching import BranchingReader
 from serpentTools.parsers.detector import DetectorReader
@@ -143,6 +143,12 @@ def read(filePath, reader='infer'):
 def depmtx(fileP):
     """
     Read the contents of the ``depmtx`` file and return contents
+
+    .. note::
+
+        If ``scipy`` is not installed, matrix ``A`` will be full.
+        This can cause some warnings or errors if sparse or
+        non-sparse solvers are used.
 
     Parameters
     ----------

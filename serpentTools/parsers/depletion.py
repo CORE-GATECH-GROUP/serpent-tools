@@ -8,7 +8,7 @@ from drewtils.parsers import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools.settings import messages
+from serpentTools import messages
 
 
 class DepletionReader(MaterialReader):

@@ -5,7 +5,7 @@ instance in time.
 """
 
 from serpentTools.objects import SupportingObject
-from serpentTools.settings import messages
+from serpentTools import messages
 
 
 class HomogUniv(SupportingObject):

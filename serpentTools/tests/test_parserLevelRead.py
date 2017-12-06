@@ -7,7 +7,7 @@ import six
 from numpy import array
 from numpy.testing import assert_array_equal
 
-from serpentTools.settings.messages import SerpentToolsException
+from serpentTools.messages import SerpentToolsException
 from serpentTools.parsers import depmtx, inferReader, read
 from serpentTools.tests import TEST_ROOT
 
