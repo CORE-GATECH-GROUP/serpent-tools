@@ -58,16 +58,18 @@ def info(message):
 
 
 def warning(message):
-    """Log a warning that something that could go wrong or be avoided."""
+    """Log a warning that something that could go wrong or should be avoided."""
     __logger__.warning('%s', message)
 
 
-def error(message, fatal=True):
-    """Log that something went wrong."""
-    if fatal:
-        __logger__.critical('%s', message, exc_info=True)
-        raise SerpentToolsException('%s', message)
+def error(message):
+    """Log that something caused an exception but was supressed."""
     __logger__.error('%s', message)
+
+
+def critical(message):
+    """Log that something has gone horribly wrong."""
+    __logger__.critical('%s', message, exc_info=True)
 
 
 def updateLevel(level):
@@ -81,17 +83,19 @@ def updateLevel(level):
         return level
 
 
-def depreciated(f):
-    """Display a warning indicating a function will be depreciated."""
+def deprecated(useInstead):
+    """Display a warning that a different function should be used instead."""
 
-    @functools.wraps(f)
-    def decoratedFunc(*args, **kwargs):
-        msg = 'Call to depreciated function {}'.format(f.__name__)
-        warning(msg)
-        _updateFilterAlert(msg, DeprecationWarning)
-        return f(*args, **kwargs)
-
-    return decoratedFunc
+    def decorate(f):
+        @functools.wraps(f)
+        def decorated(*args, **kwargs):
+            msg = ('Function {} has been deprecated. Use {} instead'
+                   .format(f.__name__, useInstead))
+            warning(msg)
+            _updateFilterAlert(msg, DeprecationWarning)
+            return f(*args, **kwargs)
+        return decorated
+    return decorate
 
 
 def willChange(changeMsg):

@@ -2,7 +2,7 @@
 import unittest
 
 from serpentTools import settings
-from serpentTools.settings.messages import depreciated, willChange
+from serpentTools.messages import deprecated, willChange
 
 
 class DefaultSettingsTester(unittest.TestCase):
@@ -117,7 +117,7 @@ class MessagingTester(unittest.TestCase):
     def test_depreciatedDecorator(self):
         """Verify that the depreciated decorator doesn't break things"""
 
-        @depreciated
+        @deprecated('this nonexistent function')
         def demoFunction(x, val=5):
             return x + val
 

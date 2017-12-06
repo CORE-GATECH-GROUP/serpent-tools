@@ -24,7 +24,7 @@ if not getenv('ONTRAVIS', False):
     # PR 45/44
     installRequires.append('scipy')
 
-installVarYamlFrom = join('serpentTools', 'settings', 'variables.yaml')
+installVarYamlFrom = join('serpentTools', 'variables.yaml')
 
 pythonRequires = '>=3.5'
 
@@ -32,7 +32,7 @@ setupArgs = {
     'name': 'serpentTools',
     'python_requires': pythonRequires,
     'packages': ['serpentTools', 'serpentTools.parsers',
-                 'serpentTools.objects', 'serpentTools.settings'],
+                 'serpentTools.objects'],
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),
