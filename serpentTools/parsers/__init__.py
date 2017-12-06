@@ -4,7 +4,7 @@ from os import path
 from numpy import zeros, empty, empty_like, array, longfloat
 
 try:
-    from scipy.sparse import csr_matrix
+    from scipy.sparse import csc_matrix
 
     HAS_SCIPY = True
 except ImportError:
@@ -80,4 +80,4 @@ def depmtx(fileP):
             indx += 1
             line = f.readline()
 
-        return t, n0, array(zai), csr_matrix(a) if HAS_SCIPY else a, n1
+        return t, n0, array(zai), csc_matrix(a) if HAS_SCIPY else a, n1
