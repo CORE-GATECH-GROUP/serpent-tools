@@ -2,6 +2,7 @@ import os
 
 ROOT_DIR = os.path.dirname(__file__)
 
+from serpentTools.parsers import read
 from serpentTools import messages
 
 # List TODOS/feature requests here for now
