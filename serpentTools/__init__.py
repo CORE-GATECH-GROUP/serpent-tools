@@ -2,8 +2,7 @@ import os
 
 ROOT_DIR = os.path.dirname(__file__)
 
-from . import messages
-from . import settings
+from serpentTools import messages
 
 # List TODOS/feature requests here for now
 # Compatibility
