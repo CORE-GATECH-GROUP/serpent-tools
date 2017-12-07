@@ -109,28 +109,6 @@ class BranchingReader(XSReader):
                 else:
                     univ.addData(varName, array(varValues), uncertainty=False)
 
-    def write(self, template=None):
-        """
-        Write the data from the branching sequence using a specified template.
-
-        Parameters
-        ----------
-        template: str
-            Will attempt to make a template in the following order:
-
-                #. By reading the template from the file pointed to by
-                   ``template``, or
-                #. Making a template directly from the string
-
-            If neither of these succeeds, the method will fail and raise an
-            exception.
-
-        Returns
-        -------
-
-        """
-        raise NotImplementedError
-
     def iterBranches(self):
         """Iterate over branches yielding paired branch IDs and containers"""
         for bID, b in iteritems(self.branches):
