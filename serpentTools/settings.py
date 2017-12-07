@@ -4,7 +4,9 @@ import os
 import yaml
 
 from serpentTools import ROOT_DIR
-from serpentTools.settings import messages
+from serpentTools import messages
+
+__all__ = ['defaultSettings', 'rc']
 
 defaultSettings = {
     'branching.areUncsPresent': {
@@ -50,7 +52,7 @@ defaultSettings = {
         'type': bool
     },
     'verbosity': {
-        'default': 'warning',
+        'default': 'info',
         'options': messages.LOG_OPTS,
         'type': str,
         'description': 'Set the level of errors to be shown.',
@@ -127,9 +129,9 @@ class DefaultSetting(object):
             listVals = [value] if not isinstance(value, list) else value
             inOptions = any([val in self.options for val in listVals])
             if not inOptions:
-                opts = [str(option) for option in self.options]
-                raise KeyError('Setting {} is\n{}\nand not one of the allowed '
-                               'options:\n{}'
+                opts = ', '.join([str(option) for option in self.options])
+                raise KeyError('Setting {} is {} and not one of the allowed '
+                               'options: {}'
                                .format(self.name, value, opts))
         return True
 
@@ -300,7 +302,7 @@ class UserSettingsLoader(dict):
         variables = set(extras) if extras else set()
         if not keywords:
             return variables
-        varFile = os.path.join(ROOT_DIR, 'settings', 'variables.yaml')
+        varFile = os.path.join(ROOT_DIR, 'variables.yaml')
         with open(varFile) as fObj:
             groups = yaml.load(fObj)
         thisVersion = groups[serpentVersion]

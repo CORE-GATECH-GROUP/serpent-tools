@@ -2,11 +2,11 @@ import os
 
 ROOT_DIR = os.path.dirname(__file__)
 
-from serpentTools import settings
+from serpentTools.parsers import read
+from serpentTools import messages
 
 # List TODOS/feature requests here for now
 # Compatibility
-# TODO: Python 2 support
 # TODO: Test compatibility with earlier numpy releases
 # Usage/scripting
 # TODO: Update rc with dictionary
@@ -18,4 +18,4 @@ from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
 
-settings.messages.info('Using version {}'.format(__version__))
+messages.info('Using version {}'.format(__version__))

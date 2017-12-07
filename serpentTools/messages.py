@@ -13,6 +13,11 @@ import logging
 from logging.config import dictConfig
 
 
+class SerpentToolsException(Exception):
+    """Base-class for all exceptions in this project"""
+    pass
+
+
 LOG_OPTS = ['critical', 'error', 'warning', 'info', 'debug']
 
 loggingConfig = {
@@ -53,18 +58,18 @@ def info(message):
 
 
 def warning(message):
-    """Log a warning that something that could go wrong or be avoided."""
+    """Log a warning that something that could go wrong or should be avoided."""
     __logger__.warning('%s', message)
 
 
 def error(message):
-    """Log that something went wrong."""
+    """Log that something caused an exception but was supressed."""
     __logger__.error('%s', message)
 
 
 def critical(message):
-    """Log that something went terribly wrong."""
-    __logger__.critical('%s', message.upper())
+    """Log that something has gone horribly wrong."""
+    __logger__.critical('%s', message, exc_info=True)
 
 
 def updateLevel(level):
@@ -78,17 +83,19 @@ def updateLevel(level):
         return level
 
 
-def depreciated(f):
-    """Display a warning indicating a function will be depreciated."""
+def deprecated(useInstead):
+    """Display a warning that a different function should be used instead."""
 
-    @functools.wraps(f)
-    def decoratedFunc(*args, **kwargs):
-        msg = 'Call to depreciated function {}'.format(f.__name__)
-        warning(msg)
-        _updateFilterAlert(msg, DeprecationWarning, 3)
-        return f(*args, **kwargs)
-
-    return decoratedFunc
+    def decorate(f):
+        @functools.wraps(f)
+        def decorated(*args, **kwargs):
+            msg = ('Function {} has been deprecated. Use {} instead'
+                   .format(f.__name__, useInstead))
+            warning(msg)
+            _updateFilterAlert(msg, DeprecationWarning)
+            return f(*args, **kwargs)
+        return decorated
+    return decorate
 
 
 def willChange(changeMsg):
@@ -98,7 +105,7 @@ def willChange(changeMsg):
         @functools.wraps(f)
         def decoratedFunc(*args, **kwargs):
             warning(changeMsg)
-            _updateFilterAlert(changeMsg, FutureWarning, 3)
+            _updateFilterAlert(changeMsg, FutureWarning)
             return f(*args, **kwargs)
 
         return decoratedFunc
@@ -106,17 +113,7 @@ def willChange(changeMsg):
     return decorate
 
 
-def _updateFilterAlert(msg, category, stackLevel):
+def _updateFilterAlert(msg, category):
     warnings.simplefilter('always', category)
-    warnings.warn(msg, category=category, stacklevel=stackLevel)
+    warnings.warn(msg, category=category, stacklevel=3)
     warnings.simplefilter('default', category)
-
-
-class SerpentToolsException(Exception):
-    """Base-class for all exceptions in this project"""
-    def __init__(self, msg):
-        critical(msg)
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg

@@ -3,7 +3,7 @@
 import numpy
 from matplotlib import pyplot
 
-from serpentTools.settings import messages
+from serpentTools import messages
 from serpentTools.objects import NamedObject
 
 
@@ -101,9 +101,14 @@ class DepletedMaterial(NamedObject):
                     scratch.append([float(item) for item in line.split()])
         self.data[newName] = numpy.array(scratch)
 
-    @messages.depreciated
+    @messages.deprecated('getValues')
     def getXY(self, xUnits, yUnits, timePoints=None, names=None):
-        """Depreciated. Use getValues instead"""
+        """
+        Return x values for given time, and corresponding isotope values.
+
+        .. deprecated:: 0.1.0
+            Use :meth:`getValues` instead.
+        """
         if timePoints is None:
             timePoints = self.days
             return self.getValues(xUnits, yUnits, timePoints, names), self.days

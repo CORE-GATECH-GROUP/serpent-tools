@@ -1,4 +1,5 @@
 from os.path import join, dirname
+from os import getenv
 from setuptools import setup
 
 import versioneer
@@ -18,7 +19,12 @@ installRequires = [
     'drewtils>=0.1.8',  # file parsing tools
 ]
 
-installVarYamlFrom = join('serpentTools', 'settings', 'variables.yaml')
+if not getenv('ONTRAVIS', False):
+    # hack to install scipy if not on cluster
+    # PR 45/44
+    installRequires.append('scipy')
+
+installVarYamlFrom = join('serpentTools', 'variables.yaml')
 
 pythonRequires = '>=3.5'
 
@@ -26,7 +32,7 @@ setupArgs = {
     'name': 'serpentTools',
     'python_requires': pythonRequires,
     'packages': ['serpentTools', 'serpentTools.parsers',
-                 'serpentTools.objects', 'serpentTools.settings'],
+                 'serpentTools.objects'],
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),
