@@ -6,7 +6,7 @@ from numpy import array
 from serpentTools.objects import splitItems
 from serpentTools.objects.branchContainer import BranchContainer
 from serpentTools.objects.readers import XSReader
-from serpentTools.settings.messages import debug
+from serpentTools.messages import debug
 
 
 class BranchingReader(XSReader):
