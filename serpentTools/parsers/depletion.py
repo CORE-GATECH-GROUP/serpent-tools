@@ -57,7 +57,7 @@ class DepletionReader(MaterialReader):
 
     def read(self):
         """Read through the depletion file and store requested data."""
-        messages.debug('Preparing to read {}'.format(self.filePath))
+        messages.info('Preparing to read {}'.format(self.filePath))
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
         keys.extend(self.settings['metadataKeys'])
         separators = ['\n', '];', '\r\n']
@@ -72,7 +72,7 @@ class DepletionReader(MaterialReader):
         if 'days' in self.metadata:
             for mKey in self.materials:
                 self.materials[mKey].days = self.metadata['days']
-        messages.debug('Done reading depletion file')
+        messages.info('Done reading depletion file')
         messages.debug('  found {} materials'.format(len(self.materials)))
 
     def _addMetadata(self, chunk):
@@ -121,8 +121,6 @@ class DepletionReader(MaterialReader):
             messages.debug('Adding material {}...'.format(name))
             self.materials[name] = DepletedMaterial(self, name)
             messages.debug('  added')
-        messages.debug('Cleaning chunk beginning in {}'
-                       .format(chunk[:15]))
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
         else:
