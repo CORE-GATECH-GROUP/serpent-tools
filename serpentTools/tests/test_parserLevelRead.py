@@ -31,7 +31,7 @@ class DepmtxTester(unittest.TestCase):
         N = self.numIso
         self.assertTupleEqual(self.n0.shape, (N, 1), 'initial isotpics')
         self.assertTupleEqual(self.decMat.shape, (N, N), 'decay matrix')
-        self.assertTupleEqual(self.zai.shape, (N,), 'zai vector')
+        self.assertTupleEqual(self.zai.shape, (N, ), 'zai vector')
         self.assertTupleEqual(self.n1.shape, (N, 1), 'final isotopics')
 
     def test_correctSlices(self):
