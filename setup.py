@@ -16,7 +16,6 @@ installRequires = [
     'numpy>=1.11.1',
     'matplotlib>=1.5.0',
     'pyyaml>=3.08',
-    'drewtils>=0.1.8',  # file parsing tools
 ]
 
 if not getenv('ONTRAVIS', False):

@@ -3,8 +3,7 @@ import re
 
 import numpy
 
-from drewtils.parsers import KeywordParser
-
+from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
