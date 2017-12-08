@@ -35,14 +35,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Contributors
-------------
-Here are all the wonderful people that helped make this project happen
-
-* `Andrew Johnson <https://github.com/drewejohnson>`_
-* `Dr. Dan Kotlyar <https://github.com/CORE-GATECH>`_
-* `Stefano Terlizzi <https://github.com/sallustius>`_
-
 
 .. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
