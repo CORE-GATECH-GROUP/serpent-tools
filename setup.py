@@ -26,11 +26,9 @@ if not getenv('ONTRAVIS', False):
 
 installVarYamlFrom = join('serpentTools', 'variables.yaml')
 
-pythonRequires = '>=3.5'
-
 setupArgs = {
     'name': 'serpentTools',
-    'python_requires': pythonRequires,
+    'python_requires': '>=2.7',
     'packages': ['serpentTools', 'serpentTools.parsers',
                  'serpentTools.objects'],
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
