@@ -6,8 +6,9 @@ serpent-tools
     :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
 
 A suite of parsers designed to make interacting with
-``SERPENT`` [1]_
-output files simple and flawless. The ``SERPENT`` Monte Carlo code
+``SERPENT`` [1]_ output files simple and flawless. 
+
+The ``SERPENT`` Monte Carlo code
 is developed by VTT Technical Research Centre of Finland, Ltd.
 More information, including distribution and licensing of ``SERPENT`` can be
 found at `<montecarlo.vtt.fi>`_
@@ -22,6 +23,14 @@ running the install command::
     cd serpent-tools
     python setup.py install
     python setup.py test
+
+Examples
+--------
+
+The ``examples/`` directory contains some Jupyter Notebooks that demonstrate
+some of the basic functionality of the project. These can be viewed through
+GitHub or by entering the links into 
+`nbviewer <https://nbviewer.jupyter.org/>`_.
 
 .. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
