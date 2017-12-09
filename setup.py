@@ -4,7 +4,7 @@ from setuptools import setup
 
 import versioneer
 
-with open('README.md') as readme:
+with open('README.rst') as readme:
     longDesc = readme.read()
 
 classifiers = [
