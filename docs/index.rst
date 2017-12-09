@@ -11,10 +11,10 @@ Welcome to serpentTools's documentation!
    :caption: Contents:
 
    about.rst
-   contributing.rst
-   issue_template.rst
+   contributing/index.rst
    config.rst
    examples/index.rst
+   develop/index.rst
    api/index.rst
 
 
