@@ -7,5 +7,5 @@ Contributing
     :caption: Contents:
 
     contributing.rst
-    issue_template.rst
-    pull_request_template.rst
+    issues.rst
+    pull-requests.rst

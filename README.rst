@@ -13,24 +13,34 @@ is developed by VTT Technical Research Centre of Finland, Ltd.
 More information, including distribution and licensing of ``SERPENT`` can be
 found at `<montecarlo.vtt.fi>`_
 
-Installation
+Issues
+------
+
+If you have issues installing the project, find a bug, or want to add a feature,
+the `GitHub issue page <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues>`_
+is the best place to do that.
+
+Contributors
 ------------
 
-This package can be installed by cloning/downloading the repository, and then
-running the install command::
+Here are all the wonderful people that helped make this project happen
 
-    git clone git@github.com:CORE-GATECH-GROUP/serpent-tools.git
-    cd serpent-tools
-    python setup.py install
-    python setup.py test
+* `Andrew Johnson <https://github.com/drewejohnson>`_
+* `Dr. Dan Kotlyar <https://github.com/CORE-GATECH>`_
+* `Stefano Terlizzi <https://github.com/sallustius>`_
 
-Examples
---------
+References
+----------
 
-The ``examples/`` directory contains some Jupyter Notebooks that demonstrate
-some of the basic functionality of the project. These can be viewed through
-GitHub or by entering the links into 
-`nbviewer <https://nbviewer.jupyter.org/>`_.
+The Annals of Nuclear Energy article should be cited for all work 
+using ``SERPENT``. If you wish to cite this project, please cite as::
+
+    url{@serpentTools
+        author = {Andrew Johnson and Dan Kotlyar},
+        title = {serpentTools: A suite of parsers designed to make interacting with SERPENT outputs simple and flawless},
+        url = {https://github.com/CORE-GATECH-GROUP/serpent-tools},
+        year = {2017}
+    }
 
 .. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150

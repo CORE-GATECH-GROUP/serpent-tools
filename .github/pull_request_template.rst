@@ -1,9 +1,3 @@
-.. _pull-request-template:
-
-=====================
-Pull Request Template
-=====================
-
 Title: Short descriptive title summarizing the request
 
 Body: Directly address the issue that this pull request

@@ -1,9 +1,3 @@
-.. _issue-template:
-
-==============
-Issue Template
-==============
-
 Summary of issue
 
 Code for reproducing the issue
