@@ -23,9 +23,9 @@ class BaseReader(object):
     def read(self):
         """Read the file and store the data.
 
-        :note:
+        :warning:
 
-          This must be overwritten by each subclass of parser
+            This read function has not been implemented yet
 
         """
         raise NotImplementedError

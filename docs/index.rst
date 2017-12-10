@@ -12,7 +12,6 @@ Welcome to serpentTools's documentation!
 
    about.rst
    contributing/index.rst
-   config.rst
    examples/index.rst
    develop/index.rst
    api/index.rst
