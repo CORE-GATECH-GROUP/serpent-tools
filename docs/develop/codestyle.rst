@@ -5,7 +5,7 @@ Coding Style
 ============
 
 For the most part, this project follows the
-Python :pep:`8` standard with a few differences. Some points are included here
+:pep:`8` standard with a few differences. Some points are included here
 
 * 79 characters per line
 * Four spaces per indentation level

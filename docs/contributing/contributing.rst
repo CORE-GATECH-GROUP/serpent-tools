@@ -7,8 +7,8 @@ Contributing
 First, thanks for your interest in contributing to this project!
 This document should help us expedite the process of reviewing issues and pull requests.
 For a quick look at all the issues that are up for grabs, take a look
-at issues tagged with the
-`help wanted label <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues?utf8=%E2%9C%93&q=is%3Aopen+label%3A%22help+wanted%22+no%3Aassignee>`_.
+at the current
+`unclaimed issues <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues?utf8=%E2%9C%93&q=is%3Aopen+no%3Aassignee+>`_.
 If you claim an issue, use the ``Assignees`` setting to let us know that you've got it!
 
 .. _project-scope:
@@ -66,7 +66,7 @@ the ``develop`` and ``master`` branches. If you have code you want to
 contribute, please look at the content in the :ref:`dev-guide`
 for things like :ref:`pr-checklist`, :ref:`code-style`, and more.
 
-When your content is ready for the pull request, follow the template
-in :ref:`pull-request-template` and make a request!
+When your content is ready for the pull request, follow
+the :ref:`pull-request-template` and make a request!
 Someone of the core development team will review the changes according
 to the criteria above and make changes and/or approve for merging!

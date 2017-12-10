@@ -15,5 +15,4 @@ API
    depletion.rst
    detector.rst
    fissionMatrix.rst
-   support.rst
    results.rst

@@ -8,7 +8,7 @@ The ``serpentTools`` package is designed to, without intervention, be able to st
 data contained in each of the various output files. However, the
 :py:mod:`serpentTools.settings` module grants great flexibility to the user
 over what data is obtained through the
-```rc`` <https://unix.stackexchange.com/questions/3467/what-does-rc-in-bashrc-stand-for>`_
+`rc <https://unix.stackexchange.com/questions/3467/what-does-rc-in-bashrc-stand-for>`_
 class. This notebook will provide as an intro into using this class.
 
 Basic Usage
@@ -108,3 +108,4 @@ changes.
     DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI', 'BU']
     DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI', 'NAMES', 'DAYS', 'BU']
     ['ZAI', 'NAMES', 'DAYS', 'BU']
+

@@ -25,15 +25,3 @@ file listed below
 
 .. autofunction:: serpentTools.parsers.depmtx
 
-
-.. _engines:
-
-Parsing Engines
-===============
-
-Included in this file are the two parsing classes that are
-part of the ``drewtils`` package. These help with reading
-structured text files, by yielding regular expressions matches
-and blocks of text separated by keywords. 
-
-.. automodule:: serpentTools.engines

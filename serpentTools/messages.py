@@ -84,7 +84,7 @@ def updateLevel(level):
 
 
 def deprecated(useInstead):
-    """Display a warning that a different function should be used instead."""
+    """Decorator that warns that different function should be used instead."""
 
     def decorate(f):
         @functools.wraps(f)
@@ -99,7 +99,7 @@ def deprecated(useInstead):
 
 
 def willChange(changeMsg):
-    """Inform the user that some functionality may change."""
+    """Decorator that warns that some functionality may change."""
 
     def decorate(f):
         @functools.wraps(f)

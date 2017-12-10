@@ -12,28 +12,28 @@ class HomogUniv(SupportingObject):
     """
     Class for storing homogenized universe specifications and retrieving them
 
-     Parameters
+    Parameters
     ----------
-    -container: str
+    container: str
         name of the parser
-    -name: str
+    name: str
         name of the universe
-    -bu: float
+    bu: float
         burnup value
-    -step: float
+    step: float
         temporal step
-    -day: float
+    day: float
         depletion day
 
     Attributes
     ----------
-    -name: str
+    name: str
         name of the universe
-    -bu: float
+    bu: float
         burnup value
-    -step: float
+    step: float
         temporal step
-    -day: float
+    day: float
         depletion day
 
     """
@@ -55,19 +55,23 @@ class HomogUniv(SupportingObject):
         """
         Sets the value of the variable and, optionally, the associate s.d.
 
+        .. warning::
+            This method will overwrite data for variables that already exist
+
         Parameters
         ----------
         variableName: str
             Variable Name
-        variableValue: str/tuple/list
+        variableValue:
             Variable Value
-        uncertainty:   bool
-            Boolean Variable- set to True in order to retrieve the
+        uncertainty: bool
+            Set to ``True`` in order to retrieve the
             uncertainty associated to the expected values
 
-        Notes:
-        ---------
-            Raises a warning if the value of the variable is overwritten
+        Raises
+        ------
+        TypeError
+            If the uncertainty flag is not boolean
 
         """
 
@@ -75,7 +79,7 @@ class HomogUniv(SupportingObject):
         variableName = SupportingObject._convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type %s.\n ...'
-                                 'It should be boolean.', type(uncertainty))
+                            'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, uncertainty)
         # 3. Check if variable is already present. Then set the variable.
@@ -98,16 +102,24 @@ class HomogUniv(SupportingObject):
 
         Returns
         -------
-        x: str/tuple/list
+        x:
             Variable Value
-        dx: str/tuple/list
+        dx:
             Associated uncertainty
+
+        Raises
+        ------
+        TypeError
+            If the uncertainty flag is not boolean
+        KeyError
+            If the variable requested is not stored on the
+            object
 
         """
         # 1. Check the input values
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type %s.\n ...'
-                                 'It should be boolean.', type(uncertainty))
+                            'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, False)
         if variableName not in setter:

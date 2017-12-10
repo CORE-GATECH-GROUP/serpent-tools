@@ -10,7 +10,7 @@ SERPENT produces a
 `burned material file <http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Burnup_calculation_output>`_,
 containing the evolution of material properties through burnup for all
 burned materials present in the problem. The
-:py:class:`~serpentTools.parsers.DepletionReader` is capable of reading
+:py:class:`~serpentTools.parsers.depletion.DepletionReader` is capable of reading
 this file, and storing the data inside
 :py:class:`~serpentTools.objects.materials.DepletedMaterial` objects.
 Each such object has methods and attributes that should ease analysis.
@@ -45,7 +45,7 @@ present inside the reader
 
     >>> dep.metadata.keys()
     dict_keys(['zai', 'burnup', 'names', 'days'])
-    >>>dep.metadata['burnup']
+    >>> dep.metadata['burnup']
     array([ 0.  ,  0.02,  0.04,  ...,  1.36,  1.38,  1.4 ,  1.42])
     >>> dep.metadata['names']
     ['Xe135', 'I135', 'U234', 'U235', 'U236', 'U238', 'Pu238',

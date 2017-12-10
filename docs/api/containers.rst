@@ -4,10 +4,26 @@
 Containers
 ==========
 
-Many of the readers utilize purpose-built container objects to store 
-data from their representative output files. These containers are listed
-and described here
+Many of the readers utilize custom built objects for storing
+data in a logical and accessible format. These containers are detailed
+here.
 
-.. automodule:: serpentTools.objects.containers
+.. note::
 
-.. automodule:: serpentTools.objects.materials
+    Variables taken from ``SERPENT`` will be converted to mixedCase
+    and stored under those names. for example, ``INF_TOT`` would be 
+    stored as ``infTot``
+
+.. _homog-univ:
+
+Homogenized Universe
+====================
+
+.. autoclass:: serpentTools.objects.containers.HomogUniv
+
+.. _materials:
+
+Material Objects
+================
+
+.. autoclass:: serpentTools.objects.materials.DepletedMaterial
