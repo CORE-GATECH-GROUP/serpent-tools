@@ -232,7 +232,7 @@ class DepletedMaterial(NamedObject):
 
         See Also
         --------
-        getXY
+        :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
 
         """
         xVals = timePoints or self.days

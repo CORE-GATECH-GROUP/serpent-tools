@@ -1,4 +1,6 @@
+.. _depletion:
 
+================
 Depletion Reader
 ================
 
@@ -8,3 +10,4 @@ Depletion Reader
     i.e. ``fuel_1`` will not be matched with the current methods
 
 .. autoclass:: serpentTools.parsers.DepletionReader
+    :inherited-members:

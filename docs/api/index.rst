@@ -8,6 +8,11 @@ API
 
    settings.rst
    messages.rst
+   parsers.rst
+   containers.rst
    branching.rst
+   bumat.rst
    depletion.rst
-   support.rst
+   detector.rst
+   fissionMatrix.rst
+   results.rst
