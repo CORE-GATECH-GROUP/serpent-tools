@@ -12,7 +12,8 @@ from serpentTools import messages
 
 
 class DepletionReader(MaterialReader):
-    """Parser responsible for reading and working with depletion files.
+    """
+    Parser responsible for reading and working with depletion files.
 
     Parameters
     ----------
