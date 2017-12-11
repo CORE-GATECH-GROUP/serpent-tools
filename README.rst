@@ -13,6 +13,11 @@ is developed by VTT Technical Research Centre of Finland, Ltd.
 More information, including distribution and licensing of ``SERPENT`` can be
 found at `<montecarlo.vtt.fi>`_
 
+Documentation
+-------------
+
+A pdf version of the manual can be found in the ``docs`` directory.
+
 Issues
 ------
 
