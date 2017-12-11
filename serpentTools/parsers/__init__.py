@@ -1,4 +1,12 @@
-"""Package dedicated for reading ``SERPENT`` output files"""
+"""
+Package dedicated for reading ``SERPENT`` output files
+
+The :py:func:`serpentTools.parsers.read` function uses
+the following string arguments to infer the type of reader
+to be used.
+
+
+"""
 from os import path
 import re
 
@@ -40,10 +48,9 @@ REGEXES = {
     r'(.*\.bumat\d+)': BumatReader
 }
 
-__all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES']
-
-for key in READERS:
-    __all__.append(READERS[key])
+__all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES', 
+           'DepletionReader', 'BranchingReader', 'DetectorReader',
+           'BumatReader', 'ResultsReader', 'FissionMatrixReader']
 
 
 def inferReader(filePath):
@@ -54,7 +61,7 @@ def inferReader(filePath):
     ----------
     filePath: str
         File to be read.
-
+    
     Raises
     ------
     SerpentToolsException
@@ -92,17 +99,17 @@ def read(filePath, reader='infer'):
         then that function will be used with the file
         path as the first argument.
 
-    =============== ==========================================
-    String argument Action
-    =============== ==========================================
-    infer           Infer the correct reader based on the file
-    dep             ``DepletionReader``
-    branch          ``BranchingReader``
-    det             ``DetectorReader``
-    results         ``ResultsReader``
-    bumat           ``BumatReader``
-    fission         ``FissionMatrixReader``
-    =============== ==========================================
+        =============== ==========================================
+        String argument Action
+        =============== ==========================================
+        infer           Infer the correct reader based on the file
+        dep             ``DepletionReader``
+        branch          ``BranchingReader``
+        det             ``DetectorReader``
+        results         ``ResultsReader``
+        bumat           ``BumatReader``
+        fission         ``FissionMatrixReader``
+        =============== ==========================================
 
     Returns
     -------

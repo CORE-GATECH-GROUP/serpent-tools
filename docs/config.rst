@@ -1,5 +1,0 @@
-
-Configuration and Settings
-==========================
-
-
