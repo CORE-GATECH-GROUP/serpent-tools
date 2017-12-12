@@ -161,6 +161,12 @@ class BranchContainer(SupportingObject):
     """
     Class that stores data for a single branch.
 
+    The :py:class:`~serpentTools.parsers.branching.BranchingReader` stores
+    branch variables and branched group constant data inside these
+    container objects. These are used in turn to create
+    :py:class:`~serpentTools.objects.containers.HomogUniv` objects for storing
+    group constant data.
+
     Parameters
     ----------
     parser: serpentTools.objects.readers.BaseReader
@@ -171,6 +177,16 @@ class BranchContainer(SupportingObject):
         Name of branches provided for this universe
     stateData: dict
         key: value pairs for branch variables
+
+    Attributes
+    ----------
+    stateData: dict
+        Name: value pairs for the variables defined on each
+        branch card
+    universes: dict
+        Dictionary storing the homogenized universe objects.
+        Keys are tuples of
+        ``(universeID, burnup, burnIndex, burnDays)``
     """
 
     def __init__(self, parser, branchID, branchNames, stateData):
