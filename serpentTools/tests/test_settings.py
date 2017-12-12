@@ -86,8 +86,8 @@ class RCTester(unittest.TestCase):
         groupNames = ['times', 'diffusion']
         extras = ['hello']
         expected = {'CMM_TRANSPXS', 'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y',
-                    'CMM_TRANSPXS_Z', 'CMM_DIFFCOEFF', 'CMM_DIFFCOEFF_X',
-                    'CMM_DIFFCOEFF_Y', 'CMM_DIFFCOEFF_Z', 'hello',
+                    'CMM_TRANSPXS_Z', 'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X',
+                    'CMM_DIFFCOEF_Y', 'CMM_DIFFCOEF_Z', 'hello',
                     'TOT_CPU_TIME', 'RUNNING_TIME', 'INIT_TIME', 'PROCESS_TIME',
                     'TRANSPORT_CYCLE_TIME', 'BURNUP_CYCLE_TIME',
                     'BATEMAN_SOLUTION_TIME', 'MPI_OVERHEAD_TIME',

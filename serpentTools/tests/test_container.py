@@ -77,7 +77,7 @@ class HomogenizedUniverseTester(unittest.TestCase):
         """ Get metaData from corresponding dictionary"""
         d = {}
         # Comparison
-        for kk in self.univ.metaData:
+        for kk in self.univ.metadata:
             d[kk] = self.univ.get(kk, False)
         self.assertDictEqual(self.meta, d)
 

@@ -15,7 +15,12 @@ class BaseReader(object):
     def __init__(self, filePath, readerSettingsLevel):
         self.filePath = filePath
         self.metadata = {}
-        self.settings = rc.getReaderSettings(readerSettingsLevel)
+        if isinstance(readerSettingsLevel, str):
+            self.settings = rc.getReaderSettings(readerSettingsLevel)
+        else:
+            self.settings = {}
+            for level in readerSettingsLevel:
+                self.settings.update(rc.getReaderSettings(level))
 
     def __str__(self):
         return '<{} reading {}>'.format(self.__class__.__name__, self.filePath)
@@ -53,3 +58,19 @@ class XSReader(BaseReader):
 
     def read(self):
         raise NotImplementedError
+
+    def _checkAddVariable(self, variableName):
+        """Check if the data for the variable should be stored"""
+        # no variables given -> get all
+        if not any(self.settings['variables']):
+            return True
+        # explicitly named
+        if variableName in self.settings['variables']:
+            return True
+        if (self.settings['getB1XS'] and variableName.replace('B1_', '') in
+                self.settings['variables']):
+            return True
+        if (self.settings['getInfXS'] and variableName.replace('INF_', '') in
+                self.settings['variables']):
+            return True
+        return False

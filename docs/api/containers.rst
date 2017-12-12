@@ -21,6 +21,13 @@ Homogenized Universe
 
 .. autoclass:: serpentTools.objects.containers.HomogUniv
 
+.. _branch-containers:
+
+Branch Containers
+=================
+
+.. autoclass:: serpentTools.objects.containers.BranchContainer
+
 .. _materials:
 
 Material Objects

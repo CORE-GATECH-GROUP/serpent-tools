@@ -18,6 +18,12 @@ Documentation
 
 A pdf version of the manual can be found in the ``docs`` directory.
 
+#. ``serpent-tools``
+#. Contributing
+#. Examples
+#. Developer's Guide
+#. Api
+
 Issues
 ------
 
@@ -38,7 +44,10 @@ References
 ----------
 
 The Annals of Nuclear Energy article should be cited for all work 
-using ``SERPENT``. If you wish to cite this project, please cite as::
+<<<<<<< HEAD
+using ``SERPENT``. If you wish to cite this project, please cite as
+
+.. code:: bibtex
 
     url{@serpentTools
         author = {Andrew Johnson and Dan Kotlyar},
