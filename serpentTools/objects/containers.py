@@ -14,8 +14,9 @@ class HomogUniv(SupportingObject):
 
     Parameters
     ----------
-    container: str
-        name of the parser
+    # container: serpentTools.objects.readers.BaseReader or
+        serpentTools.objects.containers.BranchContainer
+        Object to which this universe is attached
     name: str
         name of the universe
     bu: float
@@ -154,3 +155,59 @@ class HomogUniv(SupportingObject):
                 return self.b1Unc
         else:
             return self.metaData
+
+
+class BranchContainer(SupportingObject):
+    """
+    Class that stores data for a single branch.
+
+    Parameters
+    ----------
+    parser: serpentTools.objects.readers.BaseReader
+        Parser that read the file that created this object
+    branchID: int
+        Index for the run for this branch
+    branchNames: tuple
+        Name of branches provided for this universe
+    stateData: dict
+        key: value pairs for branch variables
+    """
+
+    def __init__(self, parser, branchID, branchNames, stateData):
+        SupportingObject.__init__(self, parser)
+        self.branchID = branchID
+        self.stateData = stateData
+        self.universes = {}
+        self.branchNames = branchNames
+        self.metadata = {}
+
+    def addMetadata(self, key, value):
+        """Add branch metadata to the object."""
+        self.metadata[self._convertVariableName(key)] = value
+
+    def addUniverse(self, univID, burnup=0, burnIndex=0, burnDays=0):
+        """
+        Add a universe to this branch.
+
+        Data for the universes are produced at specific points in time.
+        The additional arguments help track when the data for this
+        universe were created
+
+        Parameters
+        ----------
+        univID: int or str
+            Identifier for this universe
+        burnup: float or int
+            Value of burnup [MWd/kgU]
+        burnIndex: int
+            Point in the depletion schedule
+        burnDays: int or float
+            Point in time
+
+        Returns
+        -------
+        newUniv: serpentTools.objects.containers.HomogUniv
+        """
+        newUniv = HomogUniv(self, univID, burnup, burnIndex, burnDays)
+        self.universes[(univID, burnup, burnIndex, burnDays)] = newUniv
+        return newUniv

@@ -4,9 +4,9 @@ from six import iteritems
 from numpy import array
 
 from serpentTools.objects import splitItems
-from serpentTools.objects.branchContainer import BranchContainer
+from serpentTools.objects.containers import BranchContainer
 from serpentTools.objects.readers import XSReader
-from serpentTools.messages import debug
+from serpentTools.messages import debug, info
 
 
 class BranchingReader(XSReader):
@@ -28,7 +28,7 @@ class BranchingReader(XSReader):
 
     def read(self):
         """Read the branching file and store the coefficients."""
-        debug('Preparing to read {}'.format(self.filePath))
+        info('Preparing to read {}'.format(self.filePath))
         with open(self.filePath) as fObj:
             self.__fileObj = fObj
             while self.__fileObj is not None:
