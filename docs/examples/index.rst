@@ -6,4 +6,5 @@ Examples
    :caption: Contents:
 
    Settings.rst
+   Branching.rst
    DepletionReader.rst

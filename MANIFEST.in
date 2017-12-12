@@ -1,3 +1,3 @@
 include versioneer.py
 include serpentTools/_version.py
-include serpentTools/settings/variables.yaml
+include serpentTools/variables.yaml

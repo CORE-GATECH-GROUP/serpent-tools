@@ -14,7 +14,7 @@ class HomogUniv(SupportingObject):
 
     Parameters
     ----------
-    # container: serpentTools.objects.readers.BaseReader or
+    container: serpentTools.objects.readers.BaseReader or
         serpentTools.objects.containers.BranchContainer
         Object to which this universe is attached
     name: str
@@ -36,7 +36,16 @@ class HomogUniv(SupportingObject):
         temporal step
     day: float
         depletion day
-
+    infExp: dict
+        Expected values for infinite medium group constants
+    infUnc: dict
+        Relative uncertainties for infinite medium group constants
+    b1Exp: dict
+        Expected values for leakage corrected group constants
+    b1Unc: dict
+        Relative uncertainties for leakage-corrected group constants
+    metadata: dict
+        Other values that do not not conform to inf/b1 dictionaries
     """
 
     def __init__(self, container, name, bu, step, day):
@@ -50,7 +59,7 @@ class HomogUniv(SupportingObject):
         self.infExp = {}
         self.b1Unc = {}
         self.infUnc = {}
-        self.metaData = {}
+        self.metadata = {}
 
     def addData(self, variableName, variableValue, uncertainty=False):
         """
@@ -130,7 +139,7 @@ class HomogUniv(SupportingObject):
         # 3. Return the value of the variable
         if not uncertainty:
             return x
-        if setter is self.metaData:
+        if setter is self.metadata:
             warning('No uncertainty is associated to metadata')
             return x
         setter = self._lookup(variableName, True)
@@ -153,7 +162,7 @@ class HomogUniv(SupportingObject):
             else:
                 return self.b1Unc
         else:
-            return self.metaData
+            return self.metadata
 
 
 class BranchContainer(SupportingObject):
@@ -223,7 +232,10 @@ class BranchContainer(SupportingObject):
 
         Data for the universes are produced at specific points in time.
         The additional arguments help track when the data for this
-        universe were created
+        universe were created.
+
+        .. warning::
+            This method will overwrite data for universes that already exist
 
         Parameters
         ----------

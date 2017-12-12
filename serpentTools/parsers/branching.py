@@ -33,7 +33,7 @@ class BranchingReader(XSReader):
             self.__fileObj = fObj
             while self.__fileObj is not None:
                 self._processBranchBlock()
-        debug('Done reading branching file')
+        info('Done reading branching file')
 
     def _advance(self, possibleEndOfFile=False):
         if self.__fileObj is None:
