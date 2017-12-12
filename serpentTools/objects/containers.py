@@ -5,7 +5,7 @@ instance in time.
 """
 
 from serpentTools.objects import SupportingObject
-from serpentTools import messages
+from serpentTools.messages import warning, SerpentToolsException, debug
 
 
 class HomogUniv(SupportingObject):
@@ -85,8 +85,7 @@ class HomogUniv(SupportingObject):
         setter = self._lookup(variableName, uncertainty)
         # 3. Check if variable is already present. Then set the variable.
         if variableName in setter:
-            messages.warning(
-                "The variable {} will be overwritten".format(variableName))
+            warning("The variable {} will be overwritten".format(variableName))
         setter[variableName] = variableValue
 
     def get(self, variableName, uncertainty=False):
@@ -132,7 +131,7 @@ class HomogUniv(SupportingObject):
         if not uncertainty:
             return x
         if setter is self.metaData:
-            messages.warning('No uncertainty is associated to metadata')
+            warning('No uncertainty is associated to metadata')
             return x
         setter = self._lookup(variableName, True)
         if variableName not in setter:
@@ -186,7 +185,7 @@ class BranchContainer(SupportingObject):
     universes: dict
         Dictionary storing the homogenized universe objects.
         Keys are tuples of
-        ``(universeID, burnup, burnIndex, burnDays)``
+        ``(universeID, burnup, burnIndex)``
     """
 
     def __init__(self, parser, branchID, branchNames, stateData):
@@ -195,15 +194,28 @@ class BranchContainer(SupportingObject):
         self.stateData = stateData
         self.universes = {}
         self.branchNames = branchNames
-        self.metadata = {}
+        self.__orderedUniverses = None
+        self.__keys = set()
 
     def __str__(self):
         return '<BranchContainer for {} from {}>'.format(
             ', '.join(self.branchNames), self.filePath)
 
-    def addMetadata(self, key, value):
-        """Add branch metadata to the object."""
-        self.metadata[self._convertVariableName(key)] = value
+    def __contains__(self, item):
+        return item in self.__keys or item in self.stateData
+
+    @property
+    def orderedUniv(self):
+        """Universe keys sorted by ID and by burnup"""
+        if not any(self.universes):
+            raise SerpentToolsException(
+                'No universes stored on branch {}'.format(str(self))
+            )
+        if self.__orderedUniverses is None:
+            self.__orderedUniverses = tuple(sorted(
+                self.__keys, key=lambda tpl: (tpl[0], tpl[2])
+            ))
+        return self.__orderedUniverses
 
     def addUniverse(self, univID, burnup=0, burnIndex=0, burnDays=0):
         """
@@ -229,6 +241,53 @@ class BranchContainer(SupportingObject):
         newUniv: serpentTools.objects.containers.HomogUniv
         """
         newUniv = HomogUniv(self, univID, burnup, burnIndex, burnDays)
-        key = [univID, burnup, burnIndex] + ([burnDays] if burnDays else [])
-        self.universes[tuple(key)] = newUniv
+        key = tuple(
+            [univID, burnup, burnIndex] + ([burnDays] if burnDays else []))
+        if key in self.__keys:
+            warning('Overwriting existing universe {} in {}'
+                    .format(key, str(self)))
+        else:
+            self.__keys.add(key)
+        self.universes[key] = newUniv
         return newUniv
+
+    def getUniv(self, univID, burnup=None, index=None):
+        """
+        Return a specific universe given the ID and time of interest
+
+        If burnup and index are given, burnup is used to search
+
+        Parameters
+        ----------
+        univID: int
+            Unique ID for the desired universe
+        burnup: float or int
+            Burnup [MWd/kgU] of the desired universe
+        index: int
+            Point of interest in the burnup index
+
+        Returns
+        -------
+        univ: serpentTools.objects.containers.HomogUniv
+            Requested Universe
+
+        Raises
+        ------
+        KeyError:
+            If the requested universe could not be found
+        SerpentToolsException:
+            If neither burnup nor index are given
+        """
+        if burnup is None and index is None:
+            raise SerpentToolsException('Burnup or index are required inputs')
+        searchIndex = 2 if index is not None else 1
+        searchValue = index if index is not None else burnup
+        for key in self.__keys:
+            if key[0] == univID and key[searchIndex] == searchValue:
+                debug('Found universe that matches with keys {}'
+                      .format(key))
+                return self.universes[key]
+        searchName = 'burnup' + ('' if index is None else ' index')
+        raise KeyError(
+            'Could not find a universe that matched requested universe {} and '
+            '{} {}'.format(univID, searchName, searchValue))

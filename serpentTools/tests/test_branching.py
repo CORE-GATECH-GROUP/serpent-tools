@@ -10,10 +10,11 @@ from numpy.testing import assert_allclose
 from serpentTools.settings import rc
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers import BranchingReader
+from serpentTools.messages import SerpentToolsException
 
 
-class BranchTester(unittest.TestCase):
-    """Class for testing the branching coefficient file reader."""
+class _BranchTesterHelper(unittest.TestCase):
+    """Test case to share setUpClass for testing Branching Reader"""
 
     @classmethod
     def setUpClass(cls):
@@ -23,8 +24,6 @@ class BranchTester(unittest.TestCase):
             # universe id, burnup, step
             (0, 0, 1),
         }
-        cls.refBranchID = ('nom', 'nom', 'nom')
-        cls.refUnivKey = (0, 0, 1)
         with rc:
             rc['serpentVersion'] = '2.1.29'
             rc['xs.variableGroups'] = ['gc-meta', 'xs', 'diffusion']
@@ -32,6 +31,10 @@ class BranchTester(unittest.TestCase):
             rc['xs.getB1XS'] = False
             cls.reader = BranchingReader(cls.file)
         cls.reader.read()
+
+
+class BranchTester(_BranchTesterHelper):
+    """Class for testing the branching coefficient file reader."""
 
     def test_variables(self):
         """Verify that the correct settings and variables are obtained."""
@@ -65,9 +68,20 @@ class BranchTester(unittest.TestCase):
                 self.expectedUniverses, set(branch.universes),
                 'Branch {}'.format(branchID))
 
+
+class BranchContainerTester(_BranchTesterHelper):
+    """Class to test the branch container"""
+
+    @classmethod
+    def setUpClass(cls):
+        _BranchTesterHelper.setUpClass()
+        cls.refBranchID = ('nom', 'nom', 'nom')
+        cls.refUnivKey = (0, 0, 1)
+        cls.refBranch = cls.reader.branches[cls.refBranchID]
+        cls.refUniv = cls.refBranch.universes[cls.refUnivKey]
+
     def test_loadedUniv(self):
-        actualUniv = (
-            self.reader.branches[self.refBranchID].universes[self.refUnivKey])
+        """Verify the reference universe has the correct data loaded"""
         assortedExpected = {
             'infKinf': [1.36460], 'infChit': [1.0, 0.0],
             'infTot': [5.3147E-1, 1.39411],
@@ -75,8 +89,24 @@ class BranchTester(unittest.TestCase):
             'cmmDiffcoefY': [1.56742E+00, 4.13948E-01]
         }
         for name, valList in iteritems(assortedExpected):
-            assert_allclose(actualUniv.get(name), valList,
+            assert_allclose(self.refUniv.get(name), valList,
                             err_msg='Error in value: {}'.format(name))
+
+    def test_containerGetUniv(self):
+        """Verify the getUniv method returns the reference universe"""
+        key = self.refUnivKey
+        self.assertIs(self.refUniv, self.refBranch.getUniv(*key),
+                      msg='Failed to return the universe given reference key')
+        self.assertIs(self.refUniv,
+                      self.refBranch.getUniv(*key[:2]),
+                      msg='Failed to return the universe given ID and burnup')
+        self.assertIs(self.refUniv,
+                      self.refBranch.getUniv(key[0], index=key[2]),
+                      msg='Failed to return the universe given ID and index')
+        with self.assertRaises(KeyError):
+            self.refBranch.getUniv(key[0], burnup=-1)
+        with self.assertRaises(SerpentToolsException):
+            self.refBranch.getUniv(key[0])
 
 
 if __name__ == '__main__':
