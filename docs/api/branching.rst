@@ -13,5 +13,5 @@ The output format is described at the
 The reader stores homogenized universe data for each universe at each point in time
 for each branch in :py:class:`~serpentTools.objects.containers.HomogUniv` objects.
 
-.. autoclass:: serpentTools.parsers.BranchingReader
+.. autoclass:: serpentTools.parsers.branching.BranchingReader
 

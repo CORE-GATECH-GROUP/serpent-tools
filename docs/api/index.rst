@@ -9,6 +9,7 @@ API
    settings.rst
    messages.rst
    parsers.rst
+   engines.rst
    containers.rst
    branching.rst
    bumat.rst
