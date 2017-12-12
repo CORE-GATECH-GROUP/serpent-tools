@@ -18,7 +18,7 @@ Basic Usage
 
     >>> import serpentTools
     >>> from serpentTools.settings import rc, defaultSettings
-    INFO    : serpentTools: Using version 1.0b0+24.g23e6eac.dirty
+    INFO    : serpentTools: Using version 0.1.0 
 
 Below are the default values for each setting available
 

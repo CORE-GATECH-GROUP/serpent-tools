@@ -20,7 +20,7 @@ Each such object has methods and attributes that should ease analysis.
     >>> import six
     >>> import serpentTools
     >>> from serpentTools.settings import rc
-    INFO    : serpentTools: Using version 1.0b0+24.g23e6eac.dirty
+    INFO    : serpentTools: Using version 0.1.0 
     >>> depFile = 'demo_dep.m'
     >>> dep = serpentTools.read(depFile)
     INFO    : serpentTools: Inferred reader for demo_dep.m: DepletionReader
