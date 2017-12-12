@@ -1,9 +1,9 @@
 """Tests for the settings loaders."""
+import warnings
 import unittest
 
 from serpentTools import settings
 from serpentTools.messages import deprecated, willChange
-
 
 class DefaultSettingsTester(unittest.TestCase):
     """Class to test the functionality of the master loader."""
@@ -111,8 +111,10 @@ class MessagingTester(unittest.TestCase):
         def demoFuture(x, val=5):
             return x + val
 
-        self.assertEqual(7, demoFuture(2))
-        self.assertEqual(7, demoFuture(2, 5))
+        with warnings.catch_warnings(record=True) as record:
+            self.assertEqual(7, demoFuture(2))
+            self.assertEqual(7, demoFuture(2, 5))
+            self.assertEquals(len(record), 2, 'Did not catch two warnings::willChange')
 
     def test_depreciatedDecorator(self):
         """Verify that the depreciated decorator doesn't break things"""
@@ -121,8 +123,10 @@ class MessagingTester(unittest.TestCase):
         def demoFunction(x, val=5):
             return x + val
 
-        self.assertEqual(7, demoFunction(2))
-        self.assertEqual(7, demoFunction(2, 5))
+        with warnings.catch_warnings(record=True) as record:
+            self.assertEqual(7, demoFunction(2))
+            self.assertEqual(7, demoFunction(2, 5))
+            self.assertEquals(len(record), 2, 'Did not catch two warnings::deprecation')
 
 
 if __name__ == '__main__':
