@@ -20,11 +20,11 @@ class BranchTester(unittest.TestCase):
         cls.file = os.path.join(TEST_ROOT, 'ref_branch.txt')
         cls.expectedBranches = {('nom', 'nom', 'nom')}
         cls.expectedUniverses = {
-            # universe id, burnup, step, day
-            (0, 0, 1, 0),
+            # universe id, burnup, step
+            (0, 0, 1),
         }
         cls.refBranchID = ('nom', 'nom', 'nom')
-        cls.refUnivKey = (0, 0, 1, 0)
+        cls.refUnivKey = (0, 0, 1)
         with rc:
             rc['serpentVersion'] = '2.1.29'
             rc['xs.variableGroups'] = ['gc-meta', 'xs', 'diffusion']

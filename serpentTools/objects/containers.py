@@ -197,6 +197,10 @@ class BranchContainer(SupportingObject):
         self.branchNames = branchNames
         self.metadata = {}
 
+    def __str__(self):
+        return '<BranchContainer for {} from {}>'.format(
+            ', '.join(self.branchNames), self.filePath)
+
     def addMetadata(self, key, value):
         """Add branch metadata to the object."""
         self.metadata[self._convertVariableName(key)] = value
@@ -225,5 +229,6 @@ class BranchContainer(SupportingObject):
         newUniv: serpentTools.objects.containers.HomogUniv
         """
         newUniv = HomogUniv(self, univID, burnup, burnIndex, burnDays)
-        self.universes[(univID, burnup, burnIndex, burnDays)] = newUniv
+        key = [univID, burnup, burnIndex] + ([burnDays] if burnDays else [])
+        self.universes[tuple(key)] = newUniv
         return newUniv
