@@ -1,3 +1,7 @@
 import os
 
-TEST_ROOT = os.path.dirname(__file__)
+from serpentTools import ROOT_DIR, settings
+
+TEST_ROOT = os.path.join(ROOT_DIR, 'tests')
+
+settings.rc['verbosity'] = 'critical'
