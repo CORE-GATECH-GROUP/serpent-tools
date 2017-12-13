@@ -44,10 +44,10 @@ References
 ----------
 
 The Annals of Nuclear Energy article should be cited for all work 
-<<<<<<< HEAD
 using ``SERPENT``. If you wish to cite this project, please cite as
 
 .. code:: bibtex
+using ``SERPENT``. If you wish to cite this project, please cite as::
 
     url{@serpentTools
         author = {Andrew Johnson and Dan Kotlyar},
