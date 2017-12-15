@@ -11,6 +11,15 @@ install:
   - pip install jupyter
   - python setup.py install
 
+# use xvfb to give the plot functions something to use
+# PR 70
+# Travis - gui and headless browsers
+
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3
+
 # run
 script:
   - pytest
