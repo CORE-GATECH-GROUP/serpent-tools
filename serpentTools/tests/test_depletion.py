@@ -176,8 +176,6 @@ class DepletedMaterialTester(_DepletionTestHelper):
         with self.assertRaises(KeyError):
             _ = self.material['fake units']
 
-    @unittest.skipIf(os.getenv('ONTRAVIS') is not None,
-                     "Plotting doesn't play well with Travis")
     def test_plotter(self):
         """Verify the plotting functionality is operational."""
         self.material.plot('days', 'adens', timePoints=self.requestedDays,
