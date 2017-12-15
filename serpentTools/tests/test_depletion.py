@@ -6,6 +6,7 @@ import numpy
 
 import six
 
+from serpentTools.parsers import read
 from serpentTools.settings import rc
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader
@@ -16,7 +17,7 @@ class _DepletionTestHelper(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
+        cls.filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
         cls.processTotal = True
         cls.materials = ['fuel']
         cls.expectedMaterials = set(cls.materials)
@@ -34,8 +35,9 @@ class _DepletionTestHelper(unittest.TestCase):
             tempRC['depletion.materialVariables'] = (
                 list(cls.expectedVariables)
             )
-            cls.reader = DepletionReader(filePath)
+            cls.reader = DepletionReader(cls.filePath)
         cls.reader.read()
+        read(cls.filePath, DepletionReader)
 
 
 class DepletionTester(_DepletionTestHelper):

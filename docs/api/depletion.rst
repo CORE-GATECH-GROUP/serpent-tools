@@ -1,4 +1,6 @@
+.. _depletion:
 
+================
 Depletion Reader
 ================
 
@@ -7,4 +9,5 @@ Depletion Reader
     Does not support depleted materials with underscores,
     i.e. ``fuel_1`` will not be matched with the current methods
 
-.. autoclass:: serpentTools.parsers.DepletionReader
+.. autoclass:: serpentTools.parsers.depletion.DepletionReader
+    :inherited-members:
