@@ -29,7 +29,7 @@ for pyFile in *.py; do
 		rm $pyFile $outFile
 	else
 		echo Script $pyFile failed
-		exit $?
+		exit 1
 	fi
 done
 
