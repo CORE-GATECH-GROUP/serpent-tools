@@ -51,6 +51,12 @@ defaultSettings = {
         'description': 'Option to store the depletion data from the TOT block',
         'type': bool
     },
+    'detector.names': {
+        'default': [],
+        'description': 'List of detectors to store. Empty list -> store all '
+                       'detectors',
+        'type': list
+    },
     'verbosity': {
         'default': 'info',
         'options': messages.LOG_OPTS,

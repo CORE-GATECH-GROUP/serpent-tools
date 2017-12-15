@@ -8,16 +8,16 @@ Contents
 :py:class:`~serpentTools.objects.containers.Detector`
 
 """
+from collections import OrderedDict
 import six
 
-from numpy import empty, arange
+from numpy import empty, arange, unique
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 
 from serpentTools.objects import SupportingObject, NamedObject
 from serpentTools.messages import warning, SerpentToolsException, debug
-
 
 
 class HomogUniv(SupportingObject):
@@ -174,22 +174,15 @@ class HomogUniv(SupportingObject):
             else:
                 return self.b1Unc
         else:
-            return self.metaData
+            return self.metadata
 
-
-DETECTOR_INDICES = {
-    'E': (1, 1),
-    'X': (9, 9),
-    'Y': (8, 8),
-    'Z': (7, 7),
-    'T': (10, 10),
-    'U': (11, 11),
-}
-"""Indices for various quantities for serpent 1 and 2 - zero offset"""
 
 MESH_DATA_OPTS = {'T', 'abs', 'rel'}
 """Make mesh plot of tally data, absolute or relative uncertainty"""
 
+DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
+            'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
+"""Name of the columns of the data"""
 
 class Detector(NamedObject):
     """
@@ -205,20 +198,26 @@ class Detector(NamedObject):
     Attributes
     ----------
     bins: numpy.array
-        Tallies from the detector file
+        Tallies straight from the detector file
     grids: dict
         Dictionary with additional data describing energy grids or mesh points
-
+    tallies: None or numpy.array
+        Reshaped tally data to correspond to the bins used
+    errors: None or numpy.array
+        Reshaped relative error data corresponsing to bins used
+    scores: None or numpy.array
+        Reshaped array of tally scores. SERPENT 1 only
     """
 
-    def __init__(self, parser, name, settings):
+    def __init__(self, parser, name):
         NamedObject.__init__(self, parser, name)
-        self.sigma = settings['sigma']
-        versionIndx = 0 if settings['version'][0] == '1' else 1
-        self.__indx__ = {key: value[versionIndx]
-                         for key, value in six.iteritems(DETECTOR_INDICES)}
         self.bins = None
+        self.tallies = None
+        self.errors = None
+        self.scores = None
         self.grids = {}
+        self.__reshaped = False
+        self.indexes = None
 
     def __len__(self):
         if self.bins is not None:
@@ -230,18 +229,95 @@ class Detector(NamedObject):
 
     def addTallyData(self, bins):
         """Add and, possibly clean, tally data."""
+        self.indexes = OrderedDict()
+        self.__reshaped = False
         self.bins = bins
-        self.bins[:, self.__indx__['U']] = (
-            bins[:, self.__indx__['U']] * bins[:, self.__indx__['T']] *
-            self.sigma)
 
+    def reshape(self):
+        """
+        Reshape the tally data into a multidimensional array
+
+        This method reshapes the tally and uncertainty data into arrays
+        where the array axes correspond to specific bin types.
+        If a detector was set up to tally two group flux in a 5 x 5
+        xy mesh, then the resulting tally data would be in a 50 x 12/13
+        matrix in the original ``detN.m`` file.
+        The tally data and relative error would be rebroadcasted into
+        2 x 5 x 5 arrays, and the indexing information is stored in
+        ``self.indexes``
+
+        Returns
+        -------
+        shape: list
+            Dimensionality of the resulting array
+
+        Raises
+        ------
+        SerpentToolsException:
+            If the bin data has not been loaded
+        """
+        if self.bins is None:
+            raise SerpentToolsException('Tally data for detector {} has not '
+                                        'been loaded'.format(self.name))
+        if self.__reshaped:
+            warning('Data has already been reshaped')
+            return
+        debug('Starting to sort tally data...')
+        shape = []
+        for index, indexName in enumerate(DET_COLS):
+            if 0 < index < 10:
+                uniqueVals = unique(self.bins[:, index])
+                if len(uniqueVals) > 1:
+                    self.indexes[indexName] = uniqueVals
+                    shape.append(len(uniqueVals))
+        self.tallies = self.bins[:, 10].reshape(shape)
+        self.errors = self.bins[:, 11].reshape(shape)
+        if self.bins.shape[1] == 13:
+            self.scores = self.bins[:, 12].reshape(shape)
+        debug('Done')
+        self.__reshaped = True
+        return shape
+
+    def slice(self, fixed, data='tally'):
+        """
+        Return a slice of the reshaped array where certain axes are fixed
+
+        Parameters
+        ----------
+        data: {'tally', 'error', 'scores'}
+            Which data set to slice
+        fixed: dict
+            dictionary to aid in the restriction on the multidimensional
+            array. Keys correspond to the various grids present in
+            ``indexes`` while the values are used to
+
+        Returns
+        -------
+        reduced: numpy.array
+            View into the respective data where certain dimensions
+            have been removed
+
+        Raises
+        ------
+        SerpentToolsException
+            If the data has not been reshaped
+        KeyError
+            If the data set to slice not in the allowed selection
+
+        See Also
+        --------
+        https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
+        """
+        #TODO implement this using lists of slice objects
+        pass
+    
     @property
     def E(self):
         """Energy mesh for this detector"""
         if 'E' not in self.grids:
             self.grids['E'] = None
         if self.grids['E'] is None:
-            raise messages.SerpentToolsException(
+            raise SerpentToolsException(
                 'Energy mesh for {} has not been set'.format(self.name))
         return self.grids['E']
 
@@ -251,7 +327,7 @@ class Detector(NamedObject):
         if 'X' not in self.grids:
             self.grids['X'] = None
         if self.grids['X'] is None:
-            raise messages.SerpentToolsException(
+            raise SerpentToolsException(
                 'X mesh for {} has not been set'.format(self.name))
         return self.grids['X']
 
@@ -261,7 +337,7 @@ class Detector(NamedObject):
         if 'Y' not in self.grids:
             self.grids['Y'] = None
         if self.grids['Y'] is None:
-            raise messages.SerpentToolsException(
+            raise SerpentToolsException(
                 'Y mesh for {} has not been set'.format(self.name))
         return self.grids['Y']
 
@@ -271,7 +347,7 @@ class Detector(NamedObject):
         if 'Z' not in self.grids:
             self.grids['Z'] = None
         if self.grids['Z'] is None:
-            raise messages.SerpentToolsException(
+            raise SerpentToolsException(
                 'Z mesh for {} has not been set'.format(self.name))
         return self.grids['Z']
 
@@ -279,19 +355,19 @@ class Detector(NamedObject):
     def T(self):
         """Vector of the detector tallies."""
         if self.bins is None:
-            raise messages.SerpentToolsException(
+            raise SerpentToolsException(
                 'Detector data for {} has not been loaded'.format(self.name)
             )
-        return self.bins[:, self.__indx__['T']]
+        return self.bins[:, 10]
 
     @property
     def U(self):
         """Vector of the tally uncertainties."""
         if self.bins is None:
-            raise messages.SerpentToolsException(
+            raise SerpentToolsException(
                 'Detector data for {} has not been loaded'.format(self.name)
             )
-        return self.bins[:, self.__indx__['U']]
+        return self.bins[:, 11]
 
     def spectrumPlot(self, ax=None, yLabel=None, steps=True):
         """
@@ -334,7 +410,7 @@ class Detector(NamedObject):
             return ('Detector {} has {} bins, not the expected {}. This '
                     'function expects the number of detector bins to '
                     'equal to the number of {} meshes'.
-                    format(self.name, self.bins.shape[0], expected, gridType))
+                format(self.name, self.bins.shape[0], expected, gridType))
 
     def __errorPlot__(self, x, ax, steps, xLabel, yLabel):
         """Shortcut for error bar plotting and labeling"""
@@ -520,7 +596,7 @@ class Detector(NamedObject):
         else:
             raise messages.SerpentToolsException(
                 'Could not find easily plot routine for dimensions {} and {}'
-                .format(dim2, dim2))
+                    .format(dim2, dim2))
         messages.debug('done')
         return xGrid, yGrid, patches
 
@@ -548,7 +624,6 @@ class Detector(NamedObject):
         collection = PatchCollection(patches)
         collection.set_array(meshVals)
         return collection
-            return self.metadata
 
 
 class BranchContainer(SupportingObject):
