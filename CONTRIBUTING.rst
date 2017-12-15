@@ -62,6 +62,6 @@ contribute, please look at the content in the ``Developer's Guide``
 section of the manual.
 
 When your content is ready for the pull request, follow
-the 'pull request template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/pull_request_template.rst>_' and make a request!
+the 'pull request template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/pull_request_template.rst>'_ and make a request!
 Someone of the core development team will review the changes according
 to the criteria above and make changes and/or approve for merging!
