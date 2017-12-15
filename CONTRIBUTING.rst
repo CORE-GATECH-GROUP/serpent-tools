@@ -2,37 +2,66 @@
 Contributing
 ============
 
-First, thanks for your interest in contributing to this project! :snake:
+First, thanks for your interest in contributing to this project!
 This document should help us expedite the process of reviewing issues and pull requests.
+For a quick look at all the issues that are up for grabs, take a look
+at the current
+`unclaimed issues <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues?utf8=%E2%9C%93&q=is%3Aopen+no%3Aassignee+>`_.
+If you claim an issue, use the ``Assignees`` setting to let us know that you've got it!
 
-Pull Requests
--------------
+Scope
+=====
 
-Pull requests are the preferred manner to add features and fix bugs.
-We are in the process of formalizing the process of reviewing contributions.
-**Until this process is completed, we will not be accepting external contributions.**
+The scope of this project is to simplify and expedite analysis
+stemming from ``SERPENT`` outputs. In the future we may expand
+this project to expand to interacting heavily with input files,
+but that is currently beyond the scope of this project. Any and
+all issues, features and pull requests will be examined through
+this scope.
 
-Issues and Features
--------------------
+Issues
+======
 
+The goal for this project is to become the de facto method for processing
+``SERPENT`` outputs and, if you're looking at this, there is some way
+we can improve.
 The `GitHub issue tracker <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues>`_
 is the preferred way to post bug reports and feature requests.
 
-Bugs
-^^^^
+Bug Reports
+-----------
 
-If you have a definite issue, please follow the `matplotlib issue template <https://github.com/matplotlib/matplotlib/blob/master/.github/ISSUE_TEMPLATE.md>`_ 
-so that we can idenfity what version you are using, determine if the issue is replicatable, and communicate 
-either a quick workaround and/or a sustainable solution.
-The development team will apply a `bug label <https://github.com/CORE-GATECH-GROUP/serpent-tools/labels/bug>`_
-and proceed accordingly.
+The more information given, the quicker we can reproduce and hopefully
+resolve the issue. Please see the 
+`issue template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/issue_template.rst>`_ for a template that
+should be used for reporting bugs.
+One of the developers will add a
+`bug label <https://github.com/CORE-GATECH-GROUP/serpent-tools/labels/bug>`_
+and start moving to resolve the issue posthaste.
 
 Feature Requests
-^^^^^^^^^^^^^^^^
+----------------
 
-We are very interested in adding functionality from the SERPENT community! 
-If you find yourself desiring something more out of this package, please let us know! 
-You can create an issue on the issue tracker with Feature or Request in the title. 
-Describe what you would like to add, some expected results, and the purpose behind the feature. 
-The development team will apply an `enhancement label <https://github.com/CORE-GATECH-GROUP/serpent-tools/labels/enhancement>`_
+We are very interested in adding functionality from the SERPENT community!
+Requests can be done through the issue tracker as well.
+You can create an issue on the issue tracker with ``[Feature]``  or
+``[Request]`` in the title.
+Describe what you would like to add, some expected results, and the
+purpose behind the feature.
+The development team will apply an
+`enhancement label <https://github.com/CORE-GATECH-GROUP/serpent-tools/labels/enhancement>`_
 and proceed accordingly.
+
+
+Pull Requests
+=============
+
+Pull requests are how we review, approve, and incorporate changes into
+the ``develop`` and ``master`` branches. If you have code you want to
+contribute, please look at the content in the ``Developer's Guide``
+section of the manual.
+
+When your content is ready for the pull request, follow
+the 'pull request template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/pull_request_template.rst>_' and make a request!
+Someone of the core development team will review the changes according
+to the criteria above and make changes and/or approve for merging!
