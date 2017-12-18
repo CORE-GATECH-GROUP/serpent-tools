@@ -1,5 +1,6 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
 
+import six
 import numpy
 
 from serpentTools.engines import KeywordParser
@@ -49,7 +50,10 @@ class DetectorReader(BaseReader):
                 else:
                     continue
                 self._addDetector(chunk, detName, binType)
-        messages.debug('Done reading detector file')
+        messages.debug('Reshaping detectors')
+        for _detName, det in six.iteritems(self.detectors):
+            det.reshape()
+        messages.info('Done')
 
     def _addDetector(self, chunk, detName, binType):
         if binType is None:

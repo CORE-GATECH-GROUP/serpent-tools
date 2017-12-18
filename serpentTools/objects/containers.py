@@ -11,7 +11,7 @@ Contents
 from collections import OrderedDict
 import six
 
-from numpy import empty, arange, unique
+from numpy import empty, arange, unique, log, divide
 from matplotlib import pyplot
 from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
@@ -278,13 +278,13 @@ class Detector(NamedObject):
         self.__reshaped = True
         return shape
 
-    def slice(self, fixed, data='tally'):
+    def slice(self, fixed, data='tallies'):
         """
         Return a slice of the reshaped array where certain axes are fixed
 
         Parameters
         ----------
-        data: {'tally', 'error', 'scores'}
+        data: {'tallies', 'errors', 'scores'}
             Which data set to slice
         fixed: dict
             dictionary to aid in the restriction on the multidimensional
@@ -300,7 +300,7 @@ class Detector(NamedObject):
         Raises
         ------
         SerpentToolsException
-            If the data has not been reshaped
+            If the data has not been reshaped or is None [e.g. scores]
         KeyError
             If the data set to slice not in the allowed selection
 
@@ -308,8 +308,43 @@ class Detector(NamedObject):
         --------
         https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
         """
-        #TODO implement this using lists of slice objects
-        pass
+        if not self.__reshaped:
+            raise SerpentToolsException(
+                'Slicing requires detector to be reshaped')
+        workMap = {'tallies': self.tallies, 'errors': self.errors,
+                'scores': self.scores}
+        if data not in workMap:
+            raise KeyError(
+                'Slicing function only works with the following data arguments:'
+                '\n{}'.format(', '.join(workMap.keys())))
+        work = workMap[data]
+        if work is None:
+            raise SerpentToolsException(
+                '{} data for detector {} is None. Cannot perform slicing'
+                .format(data, self.name))
+        return work[self.getSlices(fixed)]
+
+    def getSlices(self, fixed):
+        """
+        Return a list of slice operators for each axis in reshaped data
+
+        Parameters
+        ----------
+        fixed: dict
+            Dictionary where keys are strings pointing to dimensions in
+        """
+        keys = set(fixed.keys())
+        slices = []
+        for key in self.indexes:
+            if key in keys:
+                slices.append(fixed[key] - 1)
+                keys.remove(key)
+            else:
+                slices.append(slice(0, len(self.indexes[key])))
+        if any(keys):
+            warning('Could not find arguments in index that match the following'
+                    ' requested slice keys: {}'.format(', '.join(keys)))
+        return slices
     
     @property
     def E(self):
@@ -369,18 +404,29 @@ class Detector(NamedObject):
             )
         return self.bins[:, 11]
 
-    def spectrumPlot(self, ax=None, yLabel=None, steps=True):
+    def spectrumPlot(self, fixed=None, ax=None, normalize=True, yLabel=None,
+                     steps=True, xscale='log', yscale='lin', sigma=3):
         """
         Quick plot of the detector value as a function of energy.
 
         Parameters
         ----------
+        fixed: None or dict
+            Dictionary controlling the reduction in data down to one dimension
         ax: pyplot.Axes or None
             Ax on which to plot the data
+        normalize: bool
+            Normalize quantities per unit lethargy
         yLabel: str or None
             Custom label for y axis. Defaults to 'Tally data +/- sigma'
         steps: bool
             Plot tally as constant inside bin
+        xscale: str
+            Scale to apply to x axis
+        yscale: str
+            Scale to apply to y axis
+        sigma: int
+            Level of confidence to apply to errors. Use for no error bars
 
         Returns
         -------
@@ -392,16 +438,41 @@ class Detector(NamedObject):
         SerpentToolsException
             if number of rows in data not equal to
             number of energy groups
+
+        See Also
+        --------
+        slice
+        getSlices
         """
-        energies = self.E[:, 0] if steps else self.E[:, -1]
-
-        errMsg = self.__verifyPlotGrid__(self.E.shape[0], 'energy')
-        if errMsg:
-            raise messages.SerpentToolsException(errMsg)
-
-        ax = self.__errorPlot__(energies, ax, steps, 'Energy [eV]', yLabel)
-        ax.set_xscale('log')
-        ax.set_yscale('log')
+        if not len(self.tallies.shape) == 1 and fixed is None:
+            raise SerpentToolsException(
+                'Tally data is not a one-dimensional matrix. Need constraining '
+                'aguments in fixed dictionary'
+            )
+        slicedTallies = self.slice(fixed, 'tallies')
+        if not len(slicedTallies.shape) == 1:
+            raise SerpentToolsException(
+                'Sliced data must be one-dimensional for spectrum plot, not {}'
+                .format(slicedTallies.shape)
+            )
+        if errors:
+            slicedErrors = 3 * self.slice(fixed, 'errors') * slicedTallies
+            if normalize:
+                warning('Propagation of uncertainty through normalization not '
+                        'complete yet')
+        if normalize:
+            lethBins = log(divide(self.E[:, -1], self.E[:, 0]))
+            slicedTallies = divide(slicedTallies, lethBins)
+            slicedTallies = slicedTallies / slicedTallies.max()
+        ax = ax or pyplot.axes()
+        drawstyle = 'steps-post' if steps else None
+        if errors:
+            ax.errorbar(self.E[:, 0], slicedTallies, yerr=slicedErrors,
+                        drawstyle=drawstyle)
+        else:
+            ax.plot(self.E[:, 0], slicedTallies, drawstyle=drawstyle)
+        ax.set_xscale(xscale)
+        ax.set_yscale(yscale)
 
         return ax
 
