@@ -319,7 +319,7 @@ class UserSettingsLoader(dict):
         """
         Update the settings based on the contents of the yaml file
 
-        .. versionadded: 0.1.2
+        .. versionadded:: 0.2.0
 
         Parameters
         ----------
