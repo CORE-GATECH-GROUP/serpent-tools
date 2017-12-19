@@ -1,10 +1,12 @@
-Summary of issue
+## Summary of issue
 
-Code for reproducing the issue
+## Code for reproducing the issue
 
-Actual outcome including console output and error traceback if applicable
+## Actual outcome including console output and error traceback if applicable
 
-Expected outcome - why this is an issue
+## Expected outcome
+
+## Versions
 
 * Version  from ``serpentTools.__version__``
 
