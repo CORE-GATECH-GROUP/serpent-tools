@@ -11,13 +11,17 @@ Contents
 from collections import OrderedDict
 import six
 
-from numpy import empty, arange, unique, log, divide
-from matplotlib import pyplot
-from matplotlib.patches import Rectangle
-from matplotlib.collections import PatchCollection
+from numpy import empty, arange, unique, log, divide, ones_like
 
+from matplotlib import pyplot
+
+from serpentTools.plot import cartMeshPlot
 from serpentTools.objects import SupportingObject, NamedObject
 from serpentTools.messages import warning, SerpentToolsException, debug
+
+DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
+            'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
+"""Name of the columns of the data"""
 
 
 class HomogUniv(SupportingObject):
@@ -177,13 +181,6 @@ class HomogUniv(SupportingObject):
             return self.metadata
 
 
-MESH_DATA_OPTS = {'T', 'abs', 'rel'}
-"""Make mesh plot of tally data, absolute or relative uncertainty"""
-
-DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
-            'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
-"""Name of the columns of the data"""
-
 class Detector(NamedObject):
     """
     Class to store detector data.
@@ -218,6 +215,7 @@ class Detector(NamedObject):
         self.grids = {}
         self.__reshaped = False
         self.indexes = None
+        self._map = None
 
     def __len__(self):
         if self.bins is not None:
@@ -226,6 +224,7 @@ class Detector(NamedObject):
 
     def __str__(self):
         return 'Detector {}'.format(self.name)
+
 
     def addTallyData(self, bins):
         """Add and, possibly clean, tally data."""
@@ -274,6 +273,8 @@ class Detector(NamedObject):
         self.errors = self.bins[:, 11].reshape(shape)
         if self.bins.shape[1] == 13:
             self.scores = self.bins[:, 12].reshape(shape)
+        self._map = {'tallies': self.tallies, 'errors': self.errors,
+                     'scores': self.scores}
         debug('Done')
         self.__reshaped = True
         return shape
@@ -311,17 +312,15 @@ class Detector(NamedObject):
         if not self.__reshaped:
             raise SerpentToolsException(
                 'Slicing requires detector to be reshaped')
-        workMap = {'tallies': self.tallies, 'errors': self.errors,
-                'scores': self.scores}
-        if data not in workMap:
+        if data not in self._map:
             raise KeyError(
                 'Slicing function only works with the following data arguments:'
                 '\n{}'.format(', '.join(workMap.keys())))
-        work = workMap[data]
+        work = self._map[data]
         if work is None:
             raise SerpentToolsException(
                 '{} data for detector {} is None. Cannot perform slicing'
-                .format(data, self.name))
+                    .format(data, self.name))
         return work[self.getSlices(fixed)]
 
     def getSlices(self, fixed):
@@ -333,6 +332,7 @@ class Detector(NamedObject):
         fixed: dict
             Dictionary where keys are strings pointing to dimensions in
         """
+        fixed = fixed if fixed is not None else {}
         keys = set(fixed.keys())
         slices = []
         for key in self.indexes:
@@ -345,7 +345,7 @@ class Detector(NamedObject):
             warning('Could not find arguments in index that match the following'
                     ' requested slice keys: {}'.format(', '.join(keys)))
         return slices
-    
+
     @property
     def E(self):
         """Energy mesh for this detector"""
@@ -405,7 +405,7 @@ class Detector(NamedObject):
         return self.bins[:, 11]
 
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, yLabel=None,
-                     steps=True, xscale='log', yscale='lin', sigma=3):
+                     steps=True, xscale='log', yscale='log', sigma=3):
         """
         Quick plot of the detector value as a function of energy.
 
@@ -453,20 +453,19 @@ class Detector(NamedObject):
         if not len(slicedTallies.shape) == 1:
             raise SerpentToolsException(
                 'Sliced data must be one-dimensional for spectrum plot, not {}'
-                .format(slicedTallies.shape)
+                    .format(slicedTallies.shape)
             )
-        if errors:
-            slicedErrors = 3 * self.slice(fixed, 'errors') * slicedTallies
-            if normalize:
-                warning('Propagation of uncertainty through normalization not '
-                        'complete yet')
         if normalize:
             lethBins = log(divide(self.E[:, -1], self.E[:, 0]))
             slicedTallies = divide(slicedTallies, lethBins)
             slicedTallies = slicedTallies / slicedTallies.max()
         ax = ax or pyplot.axes()
         drawstyle = 'steps-post' if steps else None
-        if errors:
+        if sigma:
+            slicedErrors = sigma * self.slice(fixed, 'errors') * slicedTallies
+            if normalize:
+                warning('Propagation of uncertainty through normalization not '
+                        'complete yet')
             ax.errorbar(self.E[:, 0], slicedTallies, yerr=slicedErrors,
                         drawstyle=drawstyle)
         else:
@@ -476,114 +475,27 @@ class Detector(NamedObject):
 
         return ax
 
-    def __verifyPlotGrid__(self, expected, gridType):
-        if self.bins.shape[0] != expected:
-            return ('Detector {} has {} bins, not the expected {}. This '
-                    'function expects the number of detector bins to '
-                    'equal to the number of {} meshes'.
-                format(self.name, self.bins.shape[0], expected, gridType))
-
-    def __errorPlot__(self, x, ax, steps, xLabel, yLabel):
-        """Shortcut for error bar plotting and labeling"""
-        ax = ax or pyplot.axes()
-        drawstyle = 'steps-post' if steps else None
-        yLabel = yLabel or r'Tally data $\pm$ {} $\sigma$'.format(self.sigma)
-        ax.errorbar(x, self.T, self.U, drawstyle=drawstyle, label=self.name)
-        ax.set_xlabel(xLabel)
-        ax.set_ylabel(yLabel)
-        return ax
-
-    def linePlot(self, gridType, ax=None, steps=False, yLabel=None,
-                 xLabel=None):
-        """
-        Plot the tally data for a single mesh.
-
-        Parameters
-        ----------
-        gridType: str
-            Which mesh to plot data against
-        ax: pyplot.Axes or None
-            Ax on which to plot the data
-        yLabel: str or None
-            Custom label for y axis. Defaults to 'Tally data +/- sigma'
-        xLabel: str or None
-            Custom label for x axis. Defaults to 'Bin position [cm]'
-        steps: bool
-            Plot tally as constant inside bin
-
-        Returns
-        -------
-        ax: pyplot.Axes
-            Axes on which the data was plotted
-
-        Raises
-        ------
-        SerpentToolsException
-            if number of rows in data not equal to
-            number of spatial meshes
-
-        See Also
-        --------
-        spectrumPlot
-
-        """
-        if gridType == 'E':
-            return self.spectrumPlot(ax, yLabel, steps)
-
-        if gridType.upper() not in self.grids:
-            raise KeyError('Detector {} does not have mesh data of type {}'
-                           .format(self.name, gridType))
-        gridData = self.grids[gridType.upper()]
-        errMsg = self.__verifyPlotGrid__(gridData.shape[0], gridType)
-        if errMsg:
-            raise messages.SerpentToolsException(errMsg)
-
-        # plot using lower bounds if step plot
-        # otherwise use center value
-        x = gridData[:, 0 if steps else -1]
-
-        xLabel = xLabel or 'Bin position [cm]'
-        ax = self.__errorPlot__(x, ax, steps, xLabel, yLabel)
-
-        return ax
-
-    def plot(self, ax=None, steps=False, yLabel=None, xLabel=None):
-        """
-        Simple plot of tally data over bins.
-
-        Parameters
-        ----------
-        ax: pyplot.Axes or None
-            Ax on which to plot the data
-        steps: bool
-            Plot values as constant inside of bin if True
-        yLabel: str or None
-            Label to add to y axis
-        xLabel: str or None
-            Label to add to x axis
-
-        Returns
-        -------
-        ax: pyplot.Axes
-            Axes on which the figure was plotted
-        """
-        return (self.__errorPlot__(
-            arange(len(self.T)), ax, steps, xLabel or 'Bin', yLabel))
-
-    def meshPlot(self, dim1, dim2, data='T', ax=None, addcbar=True):
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, addcbar=True):
         """
         Plot tally data as a function of two mesh dimensions
 
         Parameters
         ----------
-        dim1: str
+        xdim: str
             Primary dimension - will correspond to x-axis on plot
-        dim2: str
+        ydim: str
             Secondary dimension - will correspond to y-axis on plot
-        data: str
-            Color meshes from tally data or uncertainties
+        what: {'tallies', 'errors', 'scores'}
+            Color meshes from tally data, uncertainties, or scores
+        fixed: None or dict
+            Dictionary controlling the reduction in data down to one dimension
         ax: axes or None
             Axes on which to plot the data
+        cmap: None or str
+            Colormap to apply to the figure. If None, use default colormap
+        addcbar: bool
+            If True, add a colorbar to the figure
 
         Returns
         -------
@@ -592,109 +504,42 @@ class Detector(NamedObject):
 
         Raises
         ------
-        SerpentToolsException if the mesh type is not supported
-        """
-        if len(data) == 1:
-            data = data.upper()
-        if data not in MESH_DATA_OPTS:
-            raise messages.SerpentToolsException(
-                'Mesh data type {} not supported. Please select '
-                'one of the following: {}'
-                    .format(data, ', '.join(MESH_DATA_OPTS)))
-        grid1, grid2, patches = self.makeMeshPatches(dim1, dim2, data)
-        if ax is None:
-            fig, ax = pyplot.subplots(1, 1)
-        else:
-            fig = pyplot.gcf() if addcbar else None
-
-        ax.add_collection(patches)
-
-        if addcbar:
-            fig.colorbar(patches, ax=ax)
-
-        ax.set_xlim((grid1[:, 0].min(), grid1[:, 1].max()))
-        ax.set_ylim((grid2[:, 0].min(), grid2[:, 1].max()))
-        return ax
-
-    def makeMeshPatches(self, dim1, dim2, data='T'):
-        """
-        Create a patch collection of mesh data.
-
-        Parameters
-        ----------
-        dim1: str
-            Primary dimension - will correspond to x-axis on plot
-        dim2: str
-            Secondary dimension - will correspond to y-axis on plot
-        data: str
-            Color meshes from tally data or uncertainties
-
-        Returns
-        -------
-        PatchCollection
-            collection of mesh patches
-
-        Raises
-        ------
-        KeyError
-            If requested dimensions are not in grid
         SerpentToolsException
-            - If the total number of meshes is not equal to the total number of
-            detector bins
-            - If the grids do not easily conform to a plotting routine
+            If data to be plotted, with or without constraints, is 2D
+        KeyError
+            If the data set by ``what`` not in the allowed selection
 
+        See Also
+        --------
+        slice
         """
-        dim1 = dim1.upper()
-        dim2 = dim2.upper()
-        for d in (dim1, dim2):
-            if d not in self.grids:
-                raise KeyError('Detector {} does not have mesh data of type {}'
-                               .format(self.name, d))
-        xGrid = self.grids[dim1]
-        yGrid = self.grids[dim2]
-        numPatches = xGrid.shape[0] * yGrid.shape[0]
-
-        errMsg = self.__verifyPlotGrid__(numPatches, dim1 + '-' + dim2)
-        if errMsg:
-            raise messages.SerpentToolsException(errMsg)
-
-        patches = empty(numPatches, dtype=object)
-        messages.debug('Building {} patches for {} meshPlot'
-                       .format(numPatches, self.name))
-        if dim1 in ('X', 'Y', 'Z') and dim2 in ('X', 'Y', 'Z'):
-            patches = self.__cartPatches__(dim1, xGrid, dim2, yGrid, data,
-                                           patches)
-        else:
-            raise messages.SerpentToolsException(
-                'Could not find easily plot routine for dimensions {} and {}'
-                    .format(dim2, dim2))
-        messages.debug('done')
-        return xGrid, yGrid, patches
-
-    def __cartPatches__(self, dim1, xgrid, dim2, ygrid, data, patches):
-        if data == 'T':
-            meshVals = self.T
-        elif data == 'abs':
-            meshVals = self.U
-        else:
-            meshVals = self.U / self.T
-        dim1Col = self.__indx__[dim1]
-        dim2Col = self.__indx__[dim2]
-        for indx, row in enumerate(self.bins):
-            dim1Indx = int(row[dim1Col] - 1)
-            dim2Indx = int(row[dim2Col] - 1)
-            # bounds are lower, upper, and center coordinates of mesh
-            bounds1 = xgrid[dim1Indx]
-            bounds2 = ygrid[dim2Indx]
-
-            patches[indx] = (
-                Rectangle((bounds1[0], bounds2[0]),
-                          width=bounds1[1] - bounds1[0],
-                          height=bounds2[1] - bounds2[0])
+        data = self.slice(fixed, what)
+        if len(data.shape) != 2:
+            raise SerpentToolsException(
+                'Data must be 2D for mesh plot, currently is {}.\nConstraints:'
+                '{}'.format(data.shape, fixed)
             )
-        collection = PatchCollection(patches)
-        collection.set_array(meshVals)
-        return collection
+        if xdim[0].upper() in self.grids:
+            xgridFull = self.grids[xdim[0].upper()]
+            xgrid = xgridFull[:, 0]
+            widths = xgridFull[:, -1]
+            del xgridFull
+        else:
+            xgrid = self.indexes[xdim] - 1
+            widths = ones_like(xgrid)
+
+        if ydim[0].upper() in self.grids:
+            ygridFull = self.grids[xdim[0].upper()]
+            ygrid = ygridFull[:, 0]
+            heights = ygridFull[:, -1]
+            del ygridFull
+        else:
+            ygrid = self.indexes[ydim] - 1
+            heights = ones_like(ygrid)
+
+        return cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
+                            addcbar)
+
 
 
 class BranchContainer(SupportingObject):
