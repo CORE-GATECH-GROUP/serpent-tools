@@ -1,5 +1,6 @@
 """Settings to yield control to the user."""
 import os
+import six
 
 import yaml
 
@@ -157,7 +158,7 @@ class DefaultSettingsLoader(dict):
         for name, value in defaultSettings.items():
             if 'options' in value:
                 options = (value['default'] if value['options'] == 'default'
-                           else value['options'])
+                else value['options'])
             else:
                 options = None
             settingsOptions = {'name': name,
@@ -278,7 +279,7 @@ class UserSettingsLoader(dict):
         """
         settings = {}
         settingsPreffix = ([settingsPreffix] if isinstance(settingsPreffix, str)
-                           else settingsPreffix)
+        else settingsPreffix)
         for setting, value in self.items():
             settingPath = setting.split('.')
             if settingPath[0] in settingsPreffix:
@@ -319,6 +320,61 @@ class UserSettingsLoader(dict):
             elif key in baseGroups:
                 variables.update(baseGroups[key])
         return variables
+
+    def loadYaml(self, filePath, strict=True):
+        """
+        Update the settings based on the contents of the yaml file
+
+        .. versionadded:: 0.2.0
+
+        Parameters
+        ----------
+        filePath: str
+            Path to config file
+        strict: bool
+            Fail at the first incorrect setting. If false, failed settings
+            will not be loaded and alerts will be raised
+
+        Raises
+        ------
+        KeyError or TypeError
+            If settings found in the config file are not
+            valid
+        FileNotFound or OSError
+            If the file does not exist
+
+        """
+        messages.debug('Attempting to read from {}'.format(filePath))
+        with open(filePath) as yFile:
+            l = yaml.safe_load(yFile)
+        messages.info('Loading settings onto object with strict:{}'
+                      .format(strict))
+
+        for key, value in six.iteritems(l):
+            if isinstance(value, dict):
+                self.__recursiveLoad(value, strict, key)
+            else:
+                self.__safeLoad(key, value, strict)
+        messages.info('Done')
+
+    def __recursiveLoad(self, curLevel, strict, preset):
+        for nextLevelKey, nextLevel in six.iteritems(curLevel):
+            newSettingName = preset + '.' + nextLevelKey
+            if isinstance(nextLevel, dict):
+                self.__recursiveLoad(nextLevel, strict, newSettingName)
+            else:
+                self.__safeLoad(newSettingName, nextLevel, strict)
+
+    def __safeLoad(self, key, value, strict):
+        messages.debug('Attempting to set setting {} to {}'
+                       .format(key, value))
+        try:
+            self.setValue(key, value)
+        except (KeyError, TypeError) as error:
+            if strict:
+                raise error
+            else:
+                messages.error(str(error))
 
 
 rc = UserSettingsLoader()

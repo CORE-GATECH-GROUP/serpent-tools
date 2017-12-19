@@ -1,9 +1,16 @@
 """Tests for the settings loaders."""
+from os.path import join
+from os import remove
 import warnings
 import unittest
 
+import yaml
+import six
+
 from serpentTools import settings
 from serpentTools.messages import deprecated, willChange
+from serpentTools.tests import TEST_ROOT
+
 
 class DefaultSettingsTester(unittest.TestCase):
     """Class to test the functionality of the master loader."""
@@ -100,6 +107,68 @@ class RCTester(unittest.TestCase):
         self.assertSetEqual(expected, actual)
 
 
+class ConfigLoaderTester(unittest.TestCase):
+    """Class to test loading multiple setttings at once, i.e. config files"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.configSettings = {
+            'branching.areUncsPresent': True,
+            'branching.floatVariables': ['Bhi', 'Tlo'],
+            'verbosity': 'warning',
+            'depletion.materials': ['fuel*'],
+            'depletion.materialVariables': ['ADENS', 'MDENS']
+        }
+        cls.nestedSettings = {
+            'branching': {
+                'areUncsPresent':
+                    cls.configSettings['branching.areUncsPresent'],
+                'floatVariables':
+                    cls.configSettings['branching.floatVariables']
+            },
+            'depletion': {
+                'materials': cls.configSettings['depletion.materials'],
+                'materialVariables':
+                    cls.configSettings['depletion.materialVariables']
+            },
+            'verbosity': cls.configSettings['verbosity']
+        }
+        cls.files = {'singleLevel': join(TEST_ROOT, 'singleLevelConf.yaml'),
+                     'nested': join(TEST_ROOT, 'nestedConf.yaml'),
+                     'badNested': join(TEST_ROOT, 'badNestedConf.yaml')}
+        cls.rc = settings.UserSettingsLoader()
+
+    def _writeTestRemoveConfFile(self, settings, filePath, expected, strict):
+        with open(filePath, 'w') as out:
+            yaml.dump(settings, out)
+        with self.rc:
+            self.rc.loadYaml(filePath, strict)
+            for key, value in six.iteritems(expected):
+                if isinstance(value, list):
+                    self.assertListEqual(value, self.rc[key])
+                else:
+                    self.assertEqual(value, self.rc[key])
+        remove(filePath)
+
+    def test_loadSingleLevelConfig(self):
+        """Test loading settings from a non-nested config file"""
+        self._writeTestRemoveConfFile(self.configSettings,
+                                      self.files['singleLevel'],
+self.configSettings, True)
+
+    def test_loadNestedConfig(self):
+        """Test loading settings from a nested config file"""
+        self._writeTestRemoveConfFile(self.nestedSettings, self.files['nested'],
+                                      self.configSettings, True)
+
+    def test_loadNestedNonStrict(self):
+        """Test loading settings with errors but non-strict error handling"""
+        badSettings = {'bad setting': False}
+        badSettings.update(self.nestedSettings)
+        self._writeTestRemoveConfFile(badSettings, self.files['nested'],
+                                      self.configSettings, False)
+
+
 class MessagingTester(unittest.TestCase):
     """Class to test the messaging framework."""
 
@@ -114,7 +183,8 @@ class MessagingTester(unittest.TestCase):
         with warnings.catch_warnings(record=True) as record:
             self.assertEqual(7, demoFuture(2))
             self.assertEqual(7, demoFuture(2, 5))
-            self.assertEquals(len(record), 2, 'Did not catch two warnings::willChange')
+            self.assertEquals(len(record), 2,
+                              'Did not catch two warnings::willChange')
 
     def test_depreciatedDecorator(self):
         """Verify that the depreciated decorator doesn't break things"""
@@ -126,7 +196,8 @@ class MessagingTester(unittest.TestCase):
         with warnings.catch_warnings(record=True) as record:
             self.assertEqual(7, demoFunction(2))
             self.assertEqual(7, demoFunction(2, 5))
-            self.assertEquals(len(record), 2, 'Did not catch two warnings::deprecation')
+            self.assertEquals(len(record), 2,
+                              'Did not catch two warnings::deprecation')
 
 
 if __name__ == '__main__':
