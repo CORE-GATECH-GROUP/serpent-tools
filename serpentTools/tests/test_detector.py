@@ -23,7 +23,7 @@ class DetectorReaderTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.file = os.path.join(TEST_ROOT, 'ref_det.m')
+        cls.file = os.path.join(TEST_ROOT, 'ref_det0.m')
         cls.reader = DetectorReader(cls.file)
         cls.reader.read()
         expected = {'xyFissionCapt'}

@@ -8,7 +8,6 @@ from serpentTools.objects.containers import Detector
 from serpentTools.settings import messages
 from serpentTools.objects.readers import BaseReader
 
-
 NUM_COLS = 12
 # number of columns/bins in a single detector line
 
@@ -37,7 +36,7 @@ class DetectorReader(BaseReader):
         """Read the file and store the detectors."""
         keys = ['DET']
         separators = ['\n', '];']
-        messages.debug('Preparing to read {}'.format(self.filePath))
+        messages.info('Preparing to read {}'.format(self.filePath))
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
                 detString = chunk.pop(0).split(' ')[0][3:]
@@ -50,9 +49,6 @@ class DetectorReader(BaseReader):
                 else:
                     continue
                 self._addDetector(chunk, detName, binType)
-        messages.debug('Reshaping detectors')
-        for _detName, det in six.iteritems(self.detectors):
-            det.reshape()
         messages.info('Done')
 
     def _addDetector(self, chunk, detName, binType):
@@ -74,3 +70,17 @@ class DetectorReader(BaseReader):
         detector.grids[binType] = data
         messages.debug('Added bin data {} to detector {}'
                        .format(binType, detName))
+
+
+if __name__ == '__main__':
+    from os.path import join
+    from matplotlib import pyplot
+    import serpentTools
+
+    det = DetectorReader(join(serpentTools.ROOT_DIR, 'tests', 'ref_det0.m'))
+    det.read()
+    xy = det.detectors['xyFissionCapt']
+    xy.plot(fixed={'reaction': 1, 'ymesh': 2})
+    pyplot.show()
+    xy.plot(fixed={'reaction': 1, 'ymesh': 2}, sigma=1)
+    pyplot.show()

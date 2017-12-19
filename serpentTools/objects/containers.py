@@ -204,6 +204,8 @@ class Detector(NamedObject):
         Reshaped relative error data corresponsing to bins used
     scores: None or numpy.array
         Reshaped array of tally scores. SERPENT 1 only
+    indexes: None or OrderedDict
+        Collection of unique indexes for each requested bin
     """
 
     def __init__(self, parser, name):
@@ -223,14 +225,13 @@ class Detector(NamedObject):
         return 0
 
     def __str__(self):
-        return 'Detector {}'.format(self.name)
-
+        return 'Detector {} from {}'.format(self.name, self.filePath)
 
     def addTallyData(self, bins):
-        """Add and, possibly clean, tally data."""
-        self.indexes = OrderedDict()
+        """Add tally data to this detector"""
         self.__reshaped = False
         self.bins = bins
+        self.reshape()
 
     def reshape(self):
         """
@@ -263,6 +264,7 @@ class Detector(NamedObject):
             return
         debug('Starting to sort tally data...')
         shape = []
+        self.indexes = OrderedDict()
         for index, indexName in enumerate(DET_COLS):
             if 0 < index < 10:
                 uniqueVals = unique(self.bins[:, index])
@@ -346,64 +348,6 @@ class Detector(NamedObject):
                     ' requested slice keys: {}'.format(', '.join(keys)))
         return slices
 
-    @property
-    def E(self):
-        """Energy mesh for this detector"""
-        if 'E' not in self.grids:
-            self.grids['E'] = None
-        if self.grids['E'] is None:
-            raise SerpentToolsException(
-                'Energy mesh for {} has not been set'.format(self.name))
-        return self.grids['E']
-
-    @property
-    def X(self):
-        """X mesh for this detector."""
-        if 'X' not in self.grids:
-            self.grids['X'] = None
-        if self.grids['X'] is None:
-            raise SerpentToolsException(
-                'X mesh for {} has not been set'.format(self.name))
-        return self.grids['X']
-
-    @property
-    def Y(self):
-        """Y grid for this detector."""
-        if 'Y' not in self.grids:
-            self.grids['Y'] = None
-        if self.grids['Y'] is None:
-            raise SerpentToolsException(
-                'Y mesh for {} has not been set'.format(self.name))
-        return self.grids['Y']
-
-    @property
-    def Z(self):
-        """Z grid for this detector."""
-        if 'Z' not in self.grids:
-            self.grids['Z'] = None
-        if self.grids['Z'] is None:
-            raise SerpentToolsException(
-                'Z mesh for {} has not been set'.format(self.name))
-        return self.grids['Z']
-
-    @property
-    def T(self):
-        """Vector of the detector tallies."""
-        if self.bins is None:
-            raise SerpentToolsException(
-                'Detector data for {} has not been loaded'.format(self.name)
-            )
-        return self.bins[:, 10]
-
-    @property
-    def U(self):
-        """Vector of the tally uncertainties."""
-        if self.bins is None:
-            raise SerpentToolsException(
-                'Detector data for {} has not been loaded'.format(self.name)
-            )
-        return self.bins[:, 11]
-
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, yLabel=None,
                      steps=True, xscale='log', yscale='log', sigma=3):
         """
@@ -463,9 +407,6 @@ class Detector(NamedObject):
         drawstyle = 'steps-post' if steps else None
         if sigma:
             slicedErrors = sigma * self.slice(fixed, 'errors') * slicedTallies
-            if normalize:
-                warning('Propagation of uncertainty through normalization not '
-                        'complete yet')
             ax.errorbar(self.E[:, 0], slicedTallies, yerr=slicedErrors,
                         drawstyle=drawstyle)
         else:
@@ -473,6 +414,105 @@ class Detector(NamedObject):
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
 
+        return ax
+
+    def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
+             xlabel=None, ylabel=None, steps=False, **kwargs):
+        """
+        Shortcut routine for plotting 1D data
+
+        Parameters
+        ----------
+        xdim: None or str
+            If not None, use the array under this key in ``indexes`` as
+            the x axis
+        what: {'tallies', 'errors', 'scores'}
+            Primary data to plot
+        sigma: None or int
+            If given, apply this level of confidence to absolute errors.
+            If not given, then error bars will not be used
+        fixed: None or dict
+            Dictionary controlling the reduction in data down to one dimension
+        ax: axes or None
+            Axes on which to plot the data
+        xlabel: None or str
+            If given, apply this label to the x-axis. If ``xdim`` is given
+            and ``xlabel`` is ``None``, then ``xdim`` will be applied to the
+            x-axis
+        ylabel: None or str
+            If given, label to apply to y-axis
+        steps: bool
+            If true, plot the data as constant inside the respective bins.
+            Sets ``drawstyle`` to be ``steps-post`` unless ``drawstyle``
+            given in ``kwargs``
+        kwargs
+            additional arguments to pass to the
+            :py:func:`~matplotlib.pyplot.plot`  of
+            :py:func:`~matplotlib.pyplot.errorbar` function. Commonly
+            used arguments::
+
+                label: apply a label to this plotted data
+                marker: adjust the shape of the plotted data
+                c: color of the plotted data
+                drawstyle: how to connect the data
+
+        Returns
+        -------
+        ax: matplotlib.AxesSubplot
+
+        Raises
+        ------
+        SerpentToolsException:
+            If the data is not constrained to 1D
+
+        See Also
+        --------
+        slice
+        spectrumPlot: better options for plotting energy spectra
+        """
+        data = self.slice(fixed, what)
+        if len(data.shape) != 1:
+            raise SerpentToolsException(
+                'Data must be constrained to 1D, not {}'.format(data.shape))
+        if sigma:
+            if what != 'errors':
+                errors = self.slice(fixed, 'errors') * data * sigma
+            else:
+                warning(
+                    'Will not plot error bars on the error plot. Data to be '
+                    'plotted: {}.  Sigma: {}'.format(what, sigma))
+                errors = None
+        else:
+            errors = None
+        if xdim is not None:
+            if xdim in self.indexes:
+                xdata = self.indexes[xdim]
+                xlabel = xlabel or xdim
+            else:
+                warning('Could not find key {} in indexes: Options: {}'
+                        .format(xdim, ', '.join(self.indexes.keys())))
+                xdata = arange(len(data))
+        else:
+            xdata = arange(len(data))
+
+        ax = ax or pyplot.axes()
+        if steps:
+            if 'drawstyle' in kwargs:
+                debug('Defaulting to drawstyle specified in kwargs as {}'
+                      .format(kwargs['drawstyle']))
+                drawstyle = kwargs.pop('drawstyle')
+            else:
+                drawstyle = 'steps-post' if not sigma else None
+        else:
+            drawstyle = None
+        if errors is None:
+            ax.plot(xdata, data, drawstyle=drawstyle, **kwargs)
+        else:
+            ax.errorbar(xdata, data, yerr=errors, drawstyle=drawstyle, **kwargs)
+        if xlabel is not None:
+            ax.set_xlabel(xlabel)
+        if ylabel is not None:
+            ax.set_ylabel(ylabel)
         return ax
 
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
@@ -522,7 +562,7 @@ class Detector(NamedObject):
         if xdim[0].upper() in self.grids:
             xgridFull = self.grids[xdim[0].upper()]
             xgrid = xgridFull[:, 0]
-            widths = xgridFull[:, -1]
+            widths = xgridFull[:, 1] - xgrid
             del xgridFull
         else:
             xgrid = self.indexes[xdim] - 1
@@ -531,7 +571,7 @@ class Detector(NamedObject):
         if ydim[0].upper() in self.grids:
             ygridFull = self.grids[xdim[0].upper()]
             ygrid = ygridFull[:, 0]
-            heights = ygridFull[:, -1]
+            heights = ygridFull[:, 1] - ygrid
             del ygridFull
         else:
             ygrid = self.indexes[ydim] - 1
@@ -539,7 +579,6 @@ class Detector(NamedObject):
 
         return cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
                             addcbar)
-
 
 
 class BranchContainer(SupportingObject):

@@ -53,14 +53,19 @@ def cartMeshPlot(data, xticks, yticks, widths=1, heights=1, ax=None, cmap=None,
 
     # make the patches
 
-    patches = []
+    patchValues = numpy.empty(data.size)
+    patches = numpy.empty(data.size, dtype=object)
+    pIndex = 0
     for xindx, xbound in enumerate(xticks):
         for yindx, ybound in enumerate(yticks):
-            patches.append(Rectangle(
+            patches[pIndex] = Rectangle(
                 (xbound, ybound), width=widths[xindx], height=heights[yindx]
-            ))
+            )
+            patchValues[pIndex] = data[yindx, xindx]
+            pIndex += 1
     patches = PatchCollection(patches, cmap=cmap)
-    patches.set_array(data.flatten())
+    patches.set_array(patchValues)
+    del patchValues
 
     # make the plot
     ax = ax or pyplot.axes()
