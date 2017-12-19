@@ -18,10 +18,10 @@ Installation
 
 The ``serpentTools`` package can be downloaded either as a git repository or
 as a zipped file. Both can be obtained through the ``Clone or download`` option
-at the 
+at the
 `serpent-tools GitHub <https://github.com/CORE-GATECH-GROUP/serpent-tools>`_.
 
-Once the repository has been downloaded or extracted from zip, the package 
+Once the repository has been downloaded or extracted from zip, the package
 can be installed with::
 
     cd serpentTools

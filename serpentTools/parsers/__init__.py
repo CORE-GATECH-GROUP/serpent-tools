@@ -48,7 +48,7 @@ REGEXES = {
     r'(.*\.bumat\d+)': BumatReader
 }
 
-__all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES', 
+__all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES',
            'DepletionReader', 'BranchingReader', 'DetectorReader',
            'BumatReader', 'ResultsReader', 'FissionMatrixReader']
 
@@ -61,7 +61,7 @@ def inferReader(filePath):
     ----------
     filePath: str
         File to be read.
-    
+
     Raises
     ------
     SerpentToolsException
