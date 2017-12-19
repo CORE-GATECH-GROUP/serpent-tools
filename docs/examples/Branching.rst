@@ -34,7 +34,7 @@ The simplest way to read these files is using the
 
     >>> import serpentTools
     >>> branchFile = 'demo.coe'
-    INFO    : serpentTools: Using version 0.1.0 
+    INFO    : serpentTools: Using version 0.1.0
     >>> r0 = serpentTools.read(branchFile)
     INFO    : serpentTools: Inferred reader for demo.coe: BranchingReader
     INFO    : serpentTools: Preparing to read demo.coe

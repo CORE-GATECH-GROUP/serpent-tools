@@ -44,6 +44,9 @@ References
 ----------
 
 The Annals of Nuclear Energy article should be cited for all work 
+using ``SERPENT``. If you wish to cite this project, please cite as
+
+.. code:: bibtex
 using ``SERPENT``. If you wish to cite this project, please cite as::
 
     url{@serpentTools
