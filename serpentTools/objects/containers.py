@@ -307,9 +307,6 @@ class Detector(NamedObject):
         KeyError
             If the data set to slice not in the allowed selection
 
-        See Also
-        --------
-        https://docs.scipy.org/doc/numpy/reference/arrays.indexing.html
         """
         if not self.__reshaped:
             raise SerpentToolsException(
@@ -323,9 +320,9 @@ class Detector(NamedObject):
             raise SerpentToolsException(
                 '{} data for detector {} is None. Cannot perform slicing'
                     .format(data, self.name))
-        return work[self.getSlices(fixed)]
+        return work[self._getSlices(fixed)]
 
-    def getSlices(self, fixed):
+    def _getSlices(self, fixed):
         """
         Return a list of slice operators for each axis in reshaped data
 
@@ -389,8 +386,7 @@ class Detector(NamedObject):
 
         See Also
         --------
-        slice
-        getSlices
+        :py:meth:`~serpentTools.objects.containers.Detector.slice`
         """
         if not len(self.tallies.shape) == 1 and fixed is None:
             raise SerpentToolsException(
@@ -429,7 +425,7 @@ class Detector(NamedObject):
         ax.set_yscale(yscale)
         ax.set_xlabel(xlabel or 'Energy [MeV]')
         ylabel = ylabel or 'Neutron flux' + (' normalized per unit lethargy'
-                                             if normalize else '')
+        if normalize else '')
         ax.set_ylabel(ylabel)
 
         return ax
@@ -463,16 +459,10 @@ class Detector(NamedObject):
             If true, plot the data as constant inside the respective bins.
             Sets ``drawstyle`` to be ``steps-post`` unless ``drawstyle``
             given in ``kwargs``
-        kwargs
+        kwargs: dict
             additional arguments to pass to the
             :py:func:`~matplotlib.pyplot.plot`  of
-            :py:func:`~matplotlib.pyplot.errorbar` function. Commonly
-            used arguments::
-
-                label: apply a label to this plotted data
-                marker: adjust the shape of the plotted data
-                c: color of the plotted data
-                drawstyle: how to connect the data
+            :py:func:`~matplotlib.pyplot.errorbar` function.
 
         Returns
         -------
@@ -480,13 +470,13 @@ class Detector(NamedObject):
 
         Raises
         ------
-        SerpentToolsException:
-            If the data is not constrained to 1D
+        SerpentToolsException: If the data is not constrained to 1D
 
         See Also
         --------
-        slice
-        spectrumPlot: better options for plotting energy spectra
+        * :py:meth:`~serpentTools.objects.containers.Detector.slice`
+        * :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
+          better options for plotting energy spectra
         """
         data = self.slice(fixed, what)
         if len(data.shape) != 1:
@@ -578,7 +568,7 @@ class Detector(NamedObject):
 
         See Also
         --------
-        slice
+        :py:meth:`~serpentTools.objects.containers.Detector.slice`
         """
         data = self.slice(fixed, what)
         if len(data.shape) != 2:
@@ -604,8 +594,8 @@ class Detector(NamedObject):
             ygrid = self.indexes[ydim] - 1
             heights = ones_like(ygrid)
 
-        ax =  cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
-                           addcbar)
+        ax = cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
+                          addcbar)
 
         ax.set_xlabel(xlabel or xdim)
         ax.set_ylabel(ylabel or ydim)

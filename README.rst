@@ -43,10 +43,7 @@ Here are all the wonderful people that helped make this project happen
 References
 ----------
 
-The Annals of Nuclear Energy article should be cited for all work 
-using ``SERPENT``. If you wish to cite this project, please cite as
-
-.. code:: bibtex
+The Annals of Nuclear Energy article should be cited for all work
 using ``SERPENT``. If you wish to cite this project, please cite as::
 
     url{@serpentTools

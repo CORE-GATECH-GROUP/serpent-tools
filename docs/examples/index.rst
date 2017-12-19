@@ -7,4 +7,5 @@ Examples
 
    Settings.rst
    Branching.rst
+   Detector.rst
    DepletionReader.rst
