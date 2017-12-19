@@ -348,8 +348,9 @@ class Detector(NamedObject):
                     ' requested slice keys: {}'.format(', '.join(keys)))
         return slices
 
-    def spectrumPlot(self, fixed=None, ax=None, normalize=True, yLabel=None,
-                     steps=True, xscale='log', yscale='log', sigma=3):
+    def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
+                     ylabel=None, steps=True, xscale='log', yscale='linear',
+                     sigma=3, **kwargs):
         """
         Quick plot of the detector value as a function of energy.
 
@@ -361,17 +362,20 @@ class Detector(NamedObject):
             Ax on which to plot the data
         normalize: bool
             Normalize quantities per unit lethargy
-        yLabel: str or None
-            Custom label for y axis. Defaults to 'Tally data +/- sigma'
+        xlabel: str or None
+            Label for x-axis. Defaults to 'Energy [MeV]'
+        ylabel: str or None
+            Label for y axis
         steps: bool
             Plot tally as constant inside bin
-        xscale: str
+        xscale: {'log', 'linear'}
             Scale to apply to x axis
-        yscale: str
+        yscale: {'log', 'linear'}
             Scale to apply to y axis
         sigma: int
             Level of confidence to apply to errors. Use for no error bars
-
+        kwargs:
+            Additional arguments to pass to plot command
         Returns
         -------
         ax: pyplot.Axes
@@ -400,19 +404,33 @@ class Detector(NamedObject):
                     .format(slicedTallies.shape)
             )
         if normalize:
-            lethBins = log(divide(self.E[:, -1], self.E[:, 0]))
+            lethBins = log(
+                divide(self.grids['E'][:, -1], self.grids['E'][:, 0]))
             slicedTallies = divide(slicedTallies, lethBins)
             slicedTallies = slicedTallies / slicedTallies.max()
         ax = ax or pyplot.axes()
-        drawstyle = 'steps-post' if steps else None
+        if steps:
+            if 'drawstyle' in kwargs:
+                debug('Defaulting to drawstyle specified in kwargs as {}'
+                      .format(kwargs['drawstyle']))
+                drawstyle = kwargs.pop('drawstyle')
+            else:
+                drawstyle = 'steps-post' if not sigma else None
+        else:
+            drawstyle = None
         if sigma:
             slicedErrors = sigma * self.slice(fixed, 'errors') * slicedTallies
-            ax.errorbar(self.E[:, 0], slicedTallies, yerr=slicedErrors,
-                        drawstyle=drawstyle)
+            ax.errorbar(self.grids['E'][:, 0], slicedTallies, yerr=slicedErrors,
+                        drawstyle=drawstyle, **kwargs)
         else:
-            ax.plot(self.E[:, 0], slicedTallies, drawstyle=drawstyle)
+            ax.plot(self.grids['E'][:, 0], slicedTallies, drawstyle=drawstyle,
+                    **kwargs)
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
+        ax.set_xlabel(xlabel or 'Energy [MeV]')
+        ylabel = ylabel or 'Neutron flux' + (' normalized per unit lethargy'
+                                             if normalize else '')
+        ax.set_ylabel(ylabel)
 
         return ax
 
@@ -516,7 +534,8 @@ class Detector(NamedObject):
         return ax
 
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
-                 cmap=None, addcbar=True):
+                 cmap=None, addcbar=True, xlabel=None, ylabel=None,
+                 xscale='linear', yscale='linear'):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -536,6 +555,14 @@ class Detector(NamedObject):
             Colormap to apply to the figure. If None, use default colormap
         addcbar: bool
             If True, add a colorbar to the figure
+        xlabel: None or str
+            Label to apply to x-axis. If not given, defaults to xdim
+        ylabel: None or str
+            Label to apply to y-axis. If not given, defaults to xdim
+        xscale: {'log', 'linear'}
+            Scale to apply to x-axis
+        yscale: {'log', 'linear'}
+            Scale to apply to y-axis
 
         Returns
         -------
@@ -577,8 +604,15 @@ class Detector(NamedObject):
             ygrid = self.indexes[ydim] - 1
             heights = ones_like(ygrid)
 
-        return cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
-                            addcbar)
+        ax =  cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
+                           addcbar)
+
+        ax.set_xlabel(xlabel or xdim)
+        ax.set_ylabel(ylabel or ydim)
+        ax.set_xscale(xscale)
+        ax.set_yscale(yscale)
+
+        return ax
 
 
 class BranchContainer(SupportingObject):
