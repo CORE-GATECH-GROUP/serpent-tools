@@ -18,16 +18,16 @@ Basic Usage
 
     >>> import serpentTools
     >>> from serpentTools.settings import rc, defaultSettings
-    INFO    : serpentTools: Using version 0.1.0 
+    INFO    : serpentTools: Using version 0.1.0
 
 Below are the default values for each setting available
 
 .. code:: ipython3
 
     >>> for setting in sorted(defaultSettings.keys()):
-    >>>     print(setting)
-    >>>     for key in defaultSettings[setting]:
-    >>>         print('\t', key, '-', defaultSettings[setting][key])
+    ...     print(setting)
+    ...     for key in defaultSettings[setting]:
+    ...         print('\t', key, '-', defaultSettings[setting][key])
     depletion.materialVariables
          default - []
          description - Names of variables to store. Empty list -> all variables.
@@ -83,14 +83,14 @@ correct type, and is an allowable option, if given.
 .. code:: ipython3
 
     >>> try:
-    >>>     rc['depletion.metadataKeys'] = False
-    >>> except TypeError as te:
-    >>>     print(te)
+    ...     rc['depletion.metadataKeys'] = False
+    ... except TypeError as te:
+    ...     print(te)
     Setting depletion.metadataKeys should be of type <class 'list'>, not <class 'bool'>
     >>> try:
-    >>>     rc['serpentVersion'] = '1.2.3'
-    >>> except KeyError as ke:
-    >>>     print(ke)
+    ...     rc['serpentVersion'] = '1.2.3'
+    ... except KeyError as ke:
+    ...     print(ke)
     "Setting serpentVersion is
     1.2.3
     and not one of the allowed options:
@@ -102,7 +102,7 @@ changes.
 .. code:: ipython3
 
     >>> with rc:
-    >>>     rc['depletion.metadataKeys'] = ['ZAI', 'BU']
+    ...     rc['depletion.metadataKeys'] = ['ZAI', 'BU']
     >>>
     >>> rc['depletion.metadataKeys']
     >>> rc['verbosity'] = 'info'
@@ -168,3 +168,28 @@ to obtain all the data present in their respective files.
 
 See the :ref:`branching-ex` example for more information on using these
 settings to control scraped data.
+
+.. _conf-files:
+
+Configuration Files
+-------------------
+
+As of version 0.1.2, the ``rc`` object allows for settings to be updated
+from a yaml configuration file using the
+:py:meth:`~serpentTools.settings.UserSettingsLoader.loadYaml` method.
+The file is structured with the names of settings as keys and the
+desired setting value as the values.
+The loader also attempts to expand nested settings, like reader-specific
+settings, that may be lumped in a second level.
+
+.. code:: yaml
+
+    verbosity: warning
+    xs.getInfXS: False
+    branching:
+        areUncsPresent: False
+        floatVariables: [Fhi, Blo]
+    depletion:
+        materials: [fuel*]
+        materialVariables:
+            [ADENS, MDENS, VOLUME]
