@@ -15,12 +15,12 @@ this file, and storing the data inside
 :py:class:`~serpentTools.objects.materials.DepletedMaterial` objects.
 Each such object has methods and attributes that should ease analysis.
 
-.. code:: ipython3
+.. code:: 
 
     >>> import six
     >>> import serpentTools
     >>> from serpentTools.settings import rc
-    INFO    : serpentTools: Using version 0.1.0
+    INFO    : serpentTools: Using version 0.2.1
     >>> depFile = 'demo_dep.m'
     >>> dep = serpentTools.read(depFile)
     INFO    : serpentTools: Inferred reader for demo_dep.m: DepletionReader
@@ -31,7 +31,7 @@ The materials read in from the file are stored in the ``materials``
 dictionary, where the keys represent the name of specific materials, and
 the corresponding values are the depleted material.
 
-.. code:: ipython3
+.. code:: 
 
     >>> dep.materials
     {'bglass0': <serpentTools.objects.materials.DepletedMaterial at 0x23905154668>,
@@ -41,7 +41,7 @@ the corresponding values are the depleted material.
 Metadata, such as the isotopic vector and depletion schedule are also
 present inside the reader
 
-.. code:: ipython3
+.. code:: 
 
     >>> dep.metadata.keys()
     dict_keys(['zai', 'burnup', 'names', 'days'])
@@ -58,7 +58,7 @@ As mentioned before, all the material data is stored inside these
 :py:class:`~serpentTools.objects.materials.DepletedMaterial` objects.
 These objects share access to the metadata of the reader as well.
 
-.. code:: ipython3
+.. code:: 
 
     >>> fuel = dep.materials['fuel0']
     >>> fuel.burnup
@@ -70,7 +70,7 @@ All of the variables present in the depletion file for this material are
 present, stored in the ``data`` dictionary. A few properties commonly
 used are accessible as attributes as well.
 
-.. code:: ipython3
+.. code:: 
 
     >>> fuel.data.keys()
     dict_keys(['a', 'adens', 'burnup', 'gsrc', ..., 'volume'])
@@ -93,7 +93,7 @@ Similar to the original file, the rows of the matrix correspond to
 positions in the isotopic vector, and the columns correspond to
 positions in burnup/day vectors.
 
-.. code:: ipython3
+.. code:: 
 
     >>> fuel.mdens.shape  # rows, columns
     (34, 72)
@@ -111,7 +111,7 @@ is the
 This method acts as an slicing mechanism that returns data for a select
 number of isotopes at select points in time.
 
-.. code:: ipython3
+.. code:: 
 
     >>> dayPoints = [0, 5, 10, 30]
     >>> iso = ['Xe135', 'U235']
@@ -127,7 +127,7 @@ The :py:class:`~serpentTools.objects.materials.DepletedMaterial` uses
 this slicing for the built-in
 :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot` method
 
-.. code:: ipython3
+.. code:: 
 
     >>> fuel.plot('days', 'ingTox', dayPoints, iso,
                   ylabel='Ingenstion Toxicity');
@@ -151,7 +151,7 @@ also has a collection of settings to control
 what data is stored. If none of these settings are modified, the default
 is to store all the data from the output file.
 
-.. code:: ipython3
+.. code:: 
 
     >>> from serpentTools.settings import rc, defaultSettings
     >>> for setting in defaultSettings:
@@ -186,7 +186,7 @@ with ``bglass`` followed by at least one integer.
     Creating the ``DepletionReader`` in this manner is functionally
     equivalent to ``serpentTools.read(depFile)``
 
-.. code:: ipython3
+.. code:: 
 
     >>> rc['depletion.processTotal'] = False
     >>> rc['depletion.metadataKeys'] = ['BU']

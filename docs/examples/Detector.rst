@@ -21,9 +21,10 @@ Here, all energy and spatial grid data are stored,
 including other binning information such as reaction, universe, and
 lattice bins.
 
-.. code:: ipython3
+.. code:: 
 
     >>> import serpentTools
+    INFO    : serpentTools: Using version 0.2.1
     >>> detFile = 'demo_det0.m'
     >>> det = serpentTools.read(detFile)
     INFO    : serpentTools: Inferred reader for demo_det0.m: DetectorReader
@@ -53,7 +54,7 @@ For each :py:class:`~serpentTools.objects.containers.Detector` object,
 the full tally matrix is stored in the
 :py:attr:`~serpentTools.objects.containers.Detector.bins` array.
 
-.. code:: ipython3
+.. code:: 
 
     >>> nodeFlx = det.detectors['nodeFlx']
     >>> print(nodeFlx.bins.shape)
@@ -90,7 +91,7 @@ Here, only three columns are changing:
     For SERPENT-1, there would be an additional column 12 that
     contained the scores for each bin
 
-.. code:: ipython3
+.. code:: 
 
     >>> nodeFlx.bins[:, 0]
     array([  1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.,   9.,  10.,  11.,
@@ -106,7 +107,7 @@ individual, multidimensional arrays. For this case,
 since the only variable bin quantity is that of the universe, these
 will all be 1D arrays.
 
-.. code:: ipython3
+.. code:: 
 
     >>> assert nodeFlx.tallies.shape == (16, )
     >>> assert nodeFlx.errors.shape == (16, )
@@ -127,7 +128,7 @@ position. These postions can be found in the SERPENT Manual, and are
 provided in the 
 :py:data:`~serpentTools.objects.containers.DET_COLS` tuple
 
-.. code:: ipython3
+.. code:: 
 
     >>> from serpentTools.objects.containers import DET_COLS
     >>> print(DET_COLS)
@@ -146,7 +147,7 @@ unique values of that bin in the original
 ``universe`` is the first item and contains an equal number of elements
 to the size of the first (and only) axis in the nodeFlx tally matrix
 
-.. code:: ipython3
+.. code:: 
 
     >>> assert nodeFlx.indexes['universe'].size == nodeFlx.tallies.size
 
@@ -177,39 +178,39 @@ The plot routine also accepts various options, which can be found in the
 `matplotlib.pyplot.plot
 documentation <https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html>`_
 
-.. code:: ipython3
+.. code:: 
 
     >>> nodeFlx.plot()
 
 
 
-.. image:: images\Detector_21_0.png
+.. image:: images/Detector_21_0.png
 
 
-.. code:: ipython3
+.. code:: 
 
     >>> ax = nodeFlx.plot(steps=True, label='steps')
     >>> nodeFlx.plot(sigma=100, ax=ax, marker='x', label='sigma')
     >>> ax.legend()
 
-.. image:: images\Detector_22_0.png
+.. image:: images/Detector_22_0.png
 
 Passing ``what='errors'`` to the plot method plots the associated
 relative errors, rather than the tally data on the y-axis. Similarly,
 passing a key from :py:attr:`~serpentTools.objects.containers.Detector.indexes`
 sets the x-axis to be that specific index.
 
-.. code:: ipython3
+.. code:: 
 
     >>> nodeFlx.plot(xdim='universe', what='errors');
 
-.. image:: images\Detector_24_0.png
+.. image:: images/Detector_24_0.png
 
 For detectors that include some grid matrices, such as spatial or energy
 meshes ``DET<name>E``, these arrays are stored in the
 :py:attr:`~serpentTools.objects.containers.Detector.grids` dictionary
 
-.. code:: ipython3
+.. code:: 
 
     >>> spectrum = det.detectors['spectrum']
     >>> print(spectrum.grids['E'][:5, :])
@@ -235,11 +236,11 @@ Supported keyword arguments method include
 | ``yscale``      | ``'linear'``   | Set the y scale to be log or linear          |
 +-----------------+----------------+----------------------------------------------+
 
-.. code:: ipython3
+.. code:: 
 
     >>> spectrum.spectrumPlot()
 
-.. image:: images\Detector_28_0.png
+.. image:: images/Detector_28_0.png
 
 Multi-dimensional Detectors
 ---------------------------
@@ -251,7 +252,7 @@ because the detectors only tallied data against one bin, universe and energy.
 In the following example, the detector has been configured to tally the
 fission and capture rates (two ``dr`` arguments) in an XY mesh.
 
-.. code:: ipython3
+.. code:: 
 
     >>> xy = det.detectors['xyFissionCapt']
     >>> for key in xy.indexes:
@@ -266,7 +267,7 @@ changing the value of the ``reaction``. The second axis corresponds to
 changing ``ymesh`` values, and the final axis reflects changes in
 ``xmesh``.
 
-.. code:: ipython3
+.. code:: 
 
     >>> print(xy.bins.shape)
     (50, 12)
@@ -291,7 +292,7 @@ to fix at what position.
 If we want to retrieve the tally data for the XY mesh for the fission
 reactions
 
-.. code:: ipython3
+.. code:: 
 
     >>> xy.slice({'reaction': 1})
     array([[ 0.255119,  0.255077,  0.253685,  0.255592,  0.25845 ],
@@ -305,7 +306,7 @@ matrix.
 
 This method also works for slicing the error, or score, matrix
 
-.. code:: ipython3
+.. code:: 
 
     >>> xy.slice({'reaction': 2, 'ymesh': 4}, 'errors')
     array([ 0.01576,  0.01299,  0.01811,  0.01367,  0.01632])
@@ -320,33 +321,33 @@ For data with dimensionality greater than one, the
 :py:meth:`~serpentTools.objects.containers.Detector.meshPlot` method
 can be used to plot some 2D slice of the data.
 
-.. code:: ipython3
+.. code:: 
 
     >>> xy.meshPlot('x', 'y',fixed={'reaction':1})
 
-.. image:: images\Detector_41_0.png
+.. image:: images/Detector_41_0.png
 
 
 The :py:meth:`~serpentTools.objects.containers.Detector.meshPlot` also
 supports a range of labeling options
 
-.. code:: ipython3
+.. code:: 
 
     >>> xy.meshPlot('x', 'reaction', what='errors',
     ...            fixed={'ymesh': 4}, ylabel='Reaction type')
 
-.. image:: images\Detector_43_0.png
+.. image:: images/Detector_43_0.png
 
 Using the ``fixed`` argument allows access to the 1D plot methods
 from before
 
-.. code:: ipython3
+.. code:: 
 
     >>> xy.plot(fixed={'reaction': 2, 'xmesh': 2},
     ...        xlabel='Y position',
     ...        ylabel=r'$\left(n,\gamma\right)$ rate');
 
-.. image:: images\Detector_45_0.png
+.. image:: images/Detector_45_0.png
 
 Conclusion
 ----------
