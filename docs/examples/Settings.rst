@@ -14,15 +14,15 @@ class. This notebook will provide as an intro into using this class.
 Basic Usage
 ===========
 
-.. code:: ipython3
+.. code:: 
 
     >>> import serpentTools
+    INFO    : serpentTools: Using version 0.2.1
     >>> from serpentTools.settings import rc, defaultSettings
-    INFO    : serpentTools: Using version 0.1.0
 
 Below are the default values for each setting available
 
-.. code:: ipython3
+.. code:: 
 
     >>> for setting in sorted(defaultSettings.keys()):
     ...     print(setting)
@@ -71,7 +71,7 @@ the ``ResultsReader`` and ``BranchingReader``, as well as their specific
 settings. The ``rc`` class acts as a dictionary, and updating a value is
 as simple as
 
-.. code:: ipython3
+.. code:: 
 
     >> rc['verbosity'] = 'debug'
     DEBUG   : serpentTools: Updated setting verbosity to debug
@@ -80,7 +80,7 @@ as simple as
 The ``rc`` object automatically checks to make sure the value is of the
 correct type, and is an allowable option, if given.
 
-.. code:: ipython3
+.. code:: 
 
     >>> try:
     ...     rc['depletion.metadataKeys'] = False
@@ -99,7 +99,7 @@ correct type, and is an allowable option, if given.
 The ``rc`` object can also be used inside a context manager to revert
 changes.
 
-.. code:: ipython3
+.. code:: 
 
     >>> with rc:
     ...     rc['depletion.metadataKeys'] = ['ZAI', 'BU']
@@ -126,7 +126,7 @@ extracted from the results and coefficient files.
 These variable groups are stored in ``serpentTools/variables.yaml`` and
 rely upon the ``SERPENT`` version to properly expand the groups.
 
-.. code:: ipython3
+.. code:: 
 
     >>> rc['serpentVersion']
     '2.1.29'
@@ -152,7 +152,7 @@ rely upon the ``SERPENT`` version to properly expand the groups.
 However, one might see that the full group constant cross sections are
 not present in this set
 
-.. code:: ipython3
+.. code:: 
 
     >>> assert 'INF_SCATT3' not in varSet
 

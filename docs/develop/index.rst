@@ -8,6 +8,7 @@ Developer's Guide
     :maxdepth: 2
     :caption: Contents:
 
+    contributing.rst
     codestyle.rst
     documentation.rst
     datamodel.rst

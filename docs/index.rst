@@ -11,7 +11,6 @@ Welcome to serpentTools's documentation!
    :caption: Contents:
 
    welcome/index.rst
-   contributing/index.rst
    examples/index.rst
    develop/index.rst
    api/index.rst

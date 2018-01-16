@@ -38,8 +38,9 @@ Bug Reports
 -----------
 
 The more information given, the quicker we can reproduce and hopefully
-resolve the issue. Please see :ref:`issue-template` for a template that
-should be used for reporting bugs.
+resolve the issue. Please see
+`issue-template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/issue_template.md>`_
+for a template that should be used for reporting bugs.
 One of the developers will add a
 `bug label <https://github.com/CORE-GATECH-GROUP/serpent-tools/labels/bug>`_
 and start moving to resolve the issue posthaste.
@@ -62,11 +63,13 @@ Pull Requests
 =============
 
 Pull requests are how we review, approve, and incorporate changes into
-the ``develop`` and ``master`` branches. If you have code you want to
+the ``master`` branch. If you have code you want to
 contribute, please look at the content in the :ref:`dev-guide`
 for things like :ref:`pr-checklist`, :ref:`code-style`, and more.
 
 When your content is ready for the pull request, follow
-the :ref:`pull-request-template` and make a request!
+the
+`pull-request-template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/pull_request_template.md>`_
+and make a request!
 Someone of the core development team will review the changes according
 to the criteria above and make changes and/or approve for merging!

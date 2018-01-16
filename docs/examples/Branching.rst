@@ -30,11 +30,11 @@ The simplest way to read these files is using the
     See :ref:`branching-settings` for examples on the various ways to
     control operation
 
-.. code:: ipython3
+.. code:: 
 
     >>> import serpentTools
     >>> branchFile = 'demo.coe'
-    INFO    : serpentTools: Using version 0.1.0
+    INFO    : serpentTools: Using version 0.2.1
     >>> r0 = serpentTools.read(branchFile)
     INFO    : serpentTools: Inferred reader for demo.coe: BranchingReader
     INFO    : serpentTools: Preparing to read demo.coe
@@ -44,7 +44,7 @@ The branches are stored in custom
 :py:class:`~serpentTools.objects.containers.BranchContainer` objects in the
 ``branches`` dictionary
 
-.. code:: ipython3
+.. code:: 
 
     >>> r0.branches
     {('B1000', 'FT1200'):
@@ -70,7 +70,7 @@ Here, the keys are tuples of strings indicating what
 perturbations/branch states were applied for each ``SERPENT`` solution.
 Examining a particular case
 
-.. code:: ipython3
+.. code:: 
 
     >>> b0 = r0.branches['B1000', 'FT600']
     >>> print(b0)
@@ -85,7 +85,7 @@ Examining a particular case
 
 cards. These are stored in the ``stateData`` attribute
 
-.. code:: ipython3
+.. code:: 
 
     >>> b0.stateData
     {'BOR': '1000',
@@ -110,7 +110,7 @@ The :py:class:`~serpentTools.objects.containers.BranchContainer` stores group
 constant data in :py:class:`~serpentTools.objects.containers.HomogUniv`
 objects in the ``universes`` dictionary
 
-.. code:: ipython3
+.. code:: 
 
     >>> b0.universes
     {(0, 0.0, 1): <serpentTools.objects.containers.HomogUniv at 0x2220c781ac8>,
@@ -134,7 +134,7 @@ and burnup index corresponding to the point in the burnup schedule.
 These universes can be obtained by indexing this dictionary, or by using
 the :py:meth:`~serpentTools.objects.containers.BranchContainer.getUniv` method
 
-.. code:: ipython3
+.. code:: 
 
     >>> univ0 = b0.universes[0, 1, 2]
     >>> print(univ0)
@@ -166,7 +166,7 @@ Group constant data is stored in five dictionaries:
    constants
 5. ``metaData``: items that do not fit the in the above categories
 
-.. code:: ipython3
+.. code:: 
 
     >>> univ0.infExp
     {'infDiffcoef': array([ 1.83961 ,  0.682022]),
@@ -190,7 +190,7 @@ Group constant data is stored in five dictionaries:
 Group constants and their associated uncertainties can be obtained using
 the :py:meth:`~serpentTools.objects.containers.HomogUniv.get` method.
 
-.. code:: ipython3
+.. code:: 
 
     >>> univ0.get('infFiss')
     array([ 0.00286484,  0.0577559 ])
@@ -209,7 +209,7 @@ method that works to yield branch names and their associated
 :py:class:`~serpentTools.objects.containers.BranchContainer` objects. This can
 be used to efficiently iterate over all the branches presented in the file.
 
-.. code:: ipython3
+.. code:: 
 
     >>> for names, branch in r0.iterBranches():
     >>>    print(names, branch)
@@ -236,7 +236,7 @@ includes similar control. Below are the various settings that the
 :py:class:`~serpentTools.parsers.branching.BranchingReader` uses to read and
 process coefficient files.
 
-.. code:: ipython3
+.. code:: 
 
     >>> import six
     >>> from serpentTools.settings import rc
@@ -284,7 +284,7 @@ numeric values using the ``branching.intVariables`` and
 ``brancing.floatVariables`` settings. From the previous example, we see
 that the default action is to store all state data variables as strings.
 
-.. code:: ipython3
+.. code:: 
 
     >>> assert isinstance(b0.stateData['BOR'], str)
 
@@ -293,7 +293,7 @@ As demonstrated in the :ref:`group-const-variables` example, use of
 stored on the :py:class:`~serpentTools.objects.containers.HomogUniv`
 objects. By default, all variables present in the coefficient file are stored.
 
-.. code:: ipython3
+.. code:: 
 
     >>> rc['branching.floatVariables'] = ['BOR']
     >>> rc['branching.intVariables'] = ['TFU']
@@ -316,7 +316,7 @@ objects. By default, all variables present in the coefficient file are stored.
 Inspecting the data stored on the homogenized universes reveals only the
 variables explicitly requested are present
 
-.. code:: ipython3
+.. code:: 
 
     >>> univ4 = b1.getUniv(0, 0)
     >>> univ4.infExp
