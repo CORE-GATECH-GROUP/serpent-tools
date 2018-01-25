@@ -6,7 +6,7 @@ import numpy
 
 import six
 
-from serpentTools import read
+from serpentTools.parsers import read
 from serpentTools.settings import rc
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader

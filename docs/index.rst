@@ -10,8 +10,10 @@ Welcome to serpentTools's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-   about.rst
-   config.rst
+   welcome/index.rst
+   contributing/index.rst
+   examples/index.rst
+   develop/index.rst
    api/index.rst
 
 

@@ -1,9 +1,9 @@
 """Tests for the settings loaders."""
+import warnings
 import unittest
 
 from serpentTools import settings
 from serpentTools.messages import deprecated, willChange
-
 
 class DefaultSettingsTester(unittest.TestCase):
     """Class to test the functionality of the master loader."""
@@ -86,8 +86,8 @@ class RCTester(unittest.TestCase):
         groupNames = ['times', 'diffusion']
         extras = ['hello']
         expected = {'CMM_TRANSPXS', 'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y',
-                    'CMM_TRANSPXS_Z', 'CMM_DIFFCOEFF', 'CMM_DIFFCOEFF_X',
-                    'CMM_DIFFCOEFF_Y', 'CMM_DIFFCOEFF_Z', 'hello',
+                    'CMM_TRANSPXS_Z', 'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X',
+                    'CMM_DIFFCOEF_Y', 'CMM_DIFFCOEF_Z', 'hello',
                     'TOT_CPU_TIME', 'RUNNING_TIME', 'INIT_TIME', 'PROCESS_TIME',
                     'TRANSPORT_CYCLE_TIME', 'BURNUP_CYCLE_TIME',
                     'BATEMAN_SOLUTION_TIME', 'MPI_OVERHEAD_TIME',
@@ -111,8 +111,10 @@ class MessagingTester(unittest.TestCase):
         def demoFuture(x, val=5):
             return x + val
 
-        self.assertEqual(7, demoFuture(2))
-        self.assertEqual(7, demoFuture(2, 5))
+        with warnings.catch_warnings(record=True) as record:
+            self.assertEqual(7, demoFuture(2))
+            self.assertEqual(7, demoFuture(2, 5))
+            self.assertEquals(len(record), 2, 'Did not catch two warnings::willChange')
 
     def test_depreciatedDecorator(self):
         """Verify that the depreciated decorator doesn't break things"""
@@ -121,8 +123,10 @@ class MessagingTester(unittest.TestCase):
         def demoFunction(x, val=5):
             return x + val
 
-        self.assertEqual(7, demoFunction(2))
-        self.assertEqual(7, demoFunction(2, 5))
+        with warnings.catch_warnings(record=True) as record:
+            self.assertEqual(7, demoFunction(2))
+            self.assertEqual(7, demoFunction(2, 5))
+            self.assertEquals(len(record), 2, 'Did not catch two warnings::deprecation')
 
 
 if __name__ == '__main__':
