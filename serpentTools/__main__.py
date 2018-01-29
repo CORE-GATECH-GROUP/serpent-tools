@@ -16,8 +16,9 @@ from serpentTools import settings
 
 _VERB_MAP = {'v': {1: 'info', 2: 'debug'},
              'q': {1: 'error', 2: 'critical'}}
+_VERB_MSG = {}
 for key, items in six.iteritems(_VERB_MAP):
-    _VERB_MAP[key]['msg'] = ', '.join(
+    _VERB_MSG[key] = ', '.join(
         ['{}: {}'.format(key * num, value)
          for num, value in six.iteritems(items)])
 
@@ -30,10 +31,10 @@ def __buildParser():
     noiseLevel = mainParser.add_mutually_exclusive_group()
     noiseLevel.add_argument('-v', action='count',
                             help='increase verbosity {}'
-                            .format(_VERB_MAP['v']['msg']))
+                            .format(_VERB_MSG['v']))
     noiseLevel.add_argument('-q', action='count',
                             help='suppress warnings and errors {}'
-                            .format(_VERB_MAP['q']['msg']))
+                            .format(_VERB_MSG['q']))
 
     mainParser.add_argument('-c', '--config-file', type=str,
                             help='path to settings file')
@@ -96,9 +97,11 @@ def __process(args):
         settings.rc.loadYaml(args['config_file'])
 
     if args.v:
-        settings.rc.setValue('verbosity', _VERB_MAP['v'][args.v])
+        level = min(args.v, max(_VERB_MAP['v'].keys()))
+        settings.rc.setValue('verbosity', _VERB_MAP['v'][level])
     elif args.q:
-        settings.rc.setValue('verbosity', _VERB_MAP['q'][args.q])
+        level = min(args.q, max(_VERB_MAP['q'].keys()))
+        settings.rc.setValue('verbosity', _VERB_MAP['q'][level])
 
 
 def main():
@@ -106,7 +109,7 @@ def main():
     parser = __buildParser()
     args = parser.parse_args()
     __process(args)
-    if args.func is not None:
+    if 'func' in args:
         args.func(args)
 
 
