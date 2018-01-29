@@ -9,7 +9,9 @@ import random
 
 from six.moves import range
 
-from serpentTools.messages import critical, debug
+from serpentTools.messages import error, debug
+
+__all__ = ['seedFiles']
 
 
 def _writeSeed(stream):
@@ -44,7 +46,7 @@ def _copy(inputFile, numSeeds, fileFmt):
             _writeSeed(stream)
 
 
-def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, rewrite=True):
+def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False):
     """
     Copy input file multiple times with unique seeds.
 
@@ -61,8 +63,8 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, rewrite=True):
         Path to desired output directory. Files will be copied here.
         If the folder does not exist, try to make the directory. Assumes path
         relative to directory that contains the input file
-    rewrite: bool
-        If False, do not copy the full file. Instead, create a new file
+    link: bool
+        If True, do not copy the full file. Instead, create a new file
         with 'include <inputFile>' and the new seed declaration.
 
     See Also
@@ -75,7 +77,11 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, rewrite=True):
         inputFile = os.path.expanduser(inputFile)
 
     if not path.exists(inputFile):
-        critical('Input file {} does not exist'.format(inputFile))
+        error('Input file {} does not exist'.format(inputFile))
+        return
+
+    if numSeeds < 1:
+        error('Require positive number of files to create')
         return
 
     random.seed(seed)
@@ -93,7 +99,7 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, rewrite=True):
 
     fileFmt = path.join(fPrefix, _makeFileFmt(inputFile))
 
-    writeFunc = _copy if rewrite else _include
+    writeFunc = _include if link else _copy
     writeFunc(inputPath, numSeeds, fileFmt)
 
     return

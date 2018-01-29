@@ -38,25 +38,55 @@ def __buildParser():
     mainParser.add_argument('-c', '--config-file', type=str,
                             help='path to settings file')
 
+    subParsers = mainParser.add_subparsers(title='sub-commands',
+                                           help='sub-command help')
+
+    # Add file seeding subcommand
+    # see seed.py
+    seedParser = subParsers.add_parser('seed',
+                                       help='copy an input file with unique '
+                                            'random number seeds')
+    seedParser.add_argument('file', type=str,
+                            help='input file to copy')
+    seedParser.add_argument('N', type=int,
+                            help='integer number of files to create')
+    seedParser.add_argument('--seed', type=int, default=None,
+                            help='Seed to start with the builtin random '
+                                 'generator')
+    seedParser.add_argument('--output-dir', type=str, default=None,
+                            help='Copy files into this directory')
+    seedParser.add_argument('-l', '--link', action='store_true',
+                            help='Reference input file with include statement,'
+                                 ' rather than copying the whole file')
+    seedParser.set_defaults(func=_seedInterface)
+
     return mainParser
+
+
+def _seedInterface(args):
+    """Interface to launch the uniquely-seeded file generation"""
+    from serpentTools.seed import seedFiles
+    seedFiles(args.file, args.N, seed=args.seed, outputDir=args.output_dir,
+              link=args.link)
 
 
 def __process(args):
     if 'config_file' in args and args.config_file is not None:
         settings.rc.loadYaml(args['config_file'])
-        
-    if 'v' in args:
+
+    if args.v:
         settings.rc.setValue('verbosity', _VERB_MAP['v'][args.v])
-    elif 'q' in args:
+    elif args.q:
         settings.rc.setValue('verbosity', _VERB_MAP['q'][args.q])
+
 
 def main():
     """Driver function for CLI"""
     parser = __buildParser()
     args = parser.parse_args()
-    print(args)
     __process(args)
-
+    if args.func is not None:
+        args.func(args)
 
 
 if __name__ == '__main__':
