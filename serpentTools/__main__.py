@@ -6,7 +6,7 @@ Called with::
     $ python -m serpentTools
 
 """
-
+import re
 import argparse
 
 import six
@@ -41,8 +41,7 @@ def __buildParser():
     subParsers = mainParser.add_subparsers(title='sub-commands',
                                            help='sub-command help')
 
-    # Add file seeding subcommand
-    # see seed.py
+    # Add file seeding sub-command
     seedParser = subParsers.add_parser('seed',
                                        help='copy an input file with unique '
                                             'random number seeds')
@@ -60,6 +59,13 @@ def __buildParser():
                                  ' rather than copying the whole file')
     seedParser.set_defaults(func=_seedInterface)
 
+    # print the default settings to stdout
+    listSettingsP = subParsers.add_parser('list',
+                                          help='show the default settings')
+    listSettingsP.add_argument('-p', '--pattern', type=str, default='.*',
+                               help='show settings that match this pattern')
+    listSettingsP.set_defaults(func=_listDefaults)
+
     return mainParser
 
 
@@ -68,6 +74,21 @@ def _seedInterface(args):
     from serpentTools.seed import seedFiles
     seedFiles(args.file, args.N, seed=args.seed, outputDir=args.output_dir,
               link=args.link)
+
+
+def _listDefaults(args):
+    """List the default settings"""
+    from serpentTools.settings import defaultSettings
+    pattern = re.compile(args.pattern)
+    for name in sorted(defaultSettings.keys()):
+        if re.match(pattern, name):
+            values = defaultSettings[name]
+            print('{}: {}'.format(name, values[
+                'default' if args.q else 'description']))
+            if not args.q:
+                print('  default: {}'.format(values['default']))
+            if args.v and values.get('options', 'default') != 'default':
+                print('  options: {}'.format(values['options']))
 
 
 def __process(args):
