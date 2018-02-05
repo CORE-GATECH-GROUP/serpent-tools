@@ -9,9 +9,8 @@ Contents
 
 """
 from collections import OrderedDict
-import six
 
-from numpy import empty, arange, unique, log, divide, ones_like
+from numpy import array, arange, unique, log, divide, ones_like
 
 from matplotlib import pyplot
 
@@ -269,7 +268,7 @@ class Detector(NamedObject):
             if 0 < index < 10:
                 uniqueVals = unique(self.bins[:, index])
                 if len(uniqueVals) > 1:
-                    self.indexes[indexName] = uniqueVals
+                    self.indexes[indexName] = array(uniqueVals, dtype=int)
                     shape.append(len(uniqueVals))
         self.tallies = self.bins[:, 10].reshape(shape)
         self.errors = self.bins[:, 11].reshape(shape)
@@ -314,7 +313,7 @@ class Detector(NamedObject):
         if data not in self._map:
             raise KeyError(
                 'Slicing function only works with the following data arguments:'
-                '\n{}'.format(', '.join(workMap.keys())))
+                '\n{}'.format(', '.join(self._map.keys())))
         work = self._map[data]
         if work is None:
             raise SerpentToolsException(
@@ -341,8 +340,9 @@ class Detector(NamedObject):
             else:
                 slices.append(slice(0, len(self.indexes[key])))
         if any(keys):
-            warning('Could not find arguments in index that match the following'
-                    ' requested slice keys: {}'.format(', '.join(keys)))
+            warning(
+                'Could not find arguments in index that match the following'
+                ' requested slice keys: {}'.format(', '.join(keys)))
         return slices
 
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
@@ -390,8 +390,8 @@ class Detector(NamedObject):
         """
         if not len(self.tallies.shape) == 1 and fixed is None:
             raise SerpentToolsException(
-                'Tally data is not a one-dimensional matrix. Need constraining '
-                'aguments in fixed dictionary'
+                'Tally data is not a one-dimensional matrix. '
+                'Need constraining aguments in fixed dictionary'
             )
         slicedTallies = self.slice(fixed, 'tallies')
         if not len(slicedTallies.shape) == 1:
@@ -411,12 +411,13 @@ class Detector(NamedObject):
                       .format(kwargs['drawstyle']))
                 drawstyle = kwargs.pop('drawstyle')
             else:
-                drawstyle = 'steps-post' if not sigma else None
+                drawstyle = 'steps-post'
         else:
             drawstyle = None
         if sigma:
             slicedErrors = sigma * self.slice(fixed, 'errors') * slicedTallies
-            ax.errorbar(self.grids['E'][:, 0], slicedTallies, yerr=slicedErrors,
+            ax.errorbar(self.grids['E'][:, 0], slicedTallies,
+                        yerr=slicedErrors,
                         drawstyle=drawstyle, **kwargs)
         else:
             ax.plot(self.grids['E'][:, 0], slicedTallies, drawstyle=drawstyle,
@@ -425,7 +426,7 @@ class Detector(NamedObject):
         ax.set_yscale(yscale)
         ax.set_xlabel(xlabel or 'Energy [MeV]')
         ylabel = ylabel or 'Neutron flux' + (' normalized per unit lethargy'
-        if normalize else '')
+                                             if normalize else '')
         ax.set_ylabel(ylabel)
 
         return ax
@@ -510,13 +511,14 @@ class Detector(NamedObject):
                       .format(kwargs['drawstyle']))
                 drawstyle = kwargs.pop('drawstyle')
             else:
-                drawstyle = 'steps-post' if not sigma else None
+                drawstyle = 'steps-post'
         else:
             drawstyle = None
         if errors is None:
             ax.plot(xdata, data, drawstyle=drawstyle, **kwargs)
         else:
-            ax.errorbar(xdata, data, yerr=errors, drawstyle=drawstyle, **kwargs)
+            ax.errorbar(xdata, data, yerr=errors, drawstyle=drawstyle,
+                        **kwargs)
         if xlabel is not None:
             ax.set_xlabel(xlabel)
         if ylabel is not None:
@@ -593,6 +595,8 @@ class Detector(NamedObject):
         else:
             ygrid = self.indexes[ydim] - 1
             heights = ones_like(ygrid)
+        if data.shape != (ygrid.size, xgrid.size):
+            data = data.T
 
         ax = cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
                           addcbar)
@@ -743,3 +747,16 @@ class BranchContainer(SupportingObject):
         raise KeyError(
             'Could not find a universe that matched requested universe {} and '
             '{} {}'.format(univID, searchName, searchValue))
+
+
+if __name__ == '__main__':
+    import os
+    from matplotlib import pyplot
+
+    from serpentTools import ROOT_DIR, read
+
+    bwrF = os.path.join(ROOT_DIR, '..', 'examples', 'bwr_det0.m')
+    bwr = read(bwrF)
+    s = bwr.detectors['spectrum']
+    s.meshPlot('e', 'reaction', xscale='log')
+    pyplot.show()
