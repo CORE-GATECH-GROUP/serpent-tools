@@ -69,17 +69,3 @@ class DetectorReader(BaseReader):
         detector.grids[binType] = data
         messages.debug('Added bin data {} to detector {}'
                        .format(binType, detName))
-
-
-if __name__ == '__main__':
-    from os.path import join
-    from matplotlib import pyplot
-    import serpentTools
-
-    det = DetectorReader(join(serpentTools.ROOT_DIR, 'tests', 'ref_det0.m'))
-    det.read()
-    xy = det.detectors['xyFissionCapt']
-    xy.plot(fixed={'reaction': 1, 'ymesh': 2})
-    pyplot.show()
-    xy.plot(fixed={'reaction': 1, 'ymesh': 2}, sigma=1)
-    pyplot.show()
