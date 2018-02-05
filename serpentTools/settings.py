@@ -65,6 +65,25 @@ defaultSettings = {
         'description': 'Set the level of errors to be shown.',
         'updater': messages.updateLevel
     },
+    'sampler.allExist': {
+        'default': True,
+        'description': 'True if all the files should exist. Suppresses '
+                       'errors if a file does not exist',
+        'type': bool
+    },
+    'sampler.raiseErrors': {
+        'default': True,
+        'description': 'If True, stop at the first error. Otherwise, '
+                       'continue reading but make a note about the error',
+        'type': bool
+    },
+    'sampler.skipPrecheck': {
+        'default': False,
+        'description': 'If True, no checks are performed prior to preparing '
+                       'data. Set this to be True only if you know all files '
+                       'contain the same data as errors may arise',
+        'type': bool
+    },
     'serpentVersion': {
         'default': '2.1.29',
         'options': ['2.1.29'],
