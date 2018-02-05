@@ -58,7 +58,7 @@ def info(message):
 
 
 def warning(message):
-    """Log a warning that something that could go wrong or should be avoided."""
+    """Log a warning that something could go wrong or should be avoided."""
     __logger__.warning('%s', message)
 
 

@@ -10,12 +10,12 @@ Contents
 """
 from collections import OrderedDict
 
-from numpy import array, arange, unique, log, divide, ones_like
-
 from matplotlib import pyplot
 
+from numpy import array, arange, unique, log, divide, ones_like
+
 from serpentTools.plot import cartMeshPlot
-from serpentTools.objects import SupportingObject, NamedObject
+from serpentTools.objects import NamedObject, convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug
 
 DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
@@ -23,15 +23,12 @@ DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
 """Name of the columns of the data"""
 
 
-class HomogUniv(SupportingObject):
+class HomogUniv(NamedObject):
     """
     Class for storing homogenized universe specifications and retrieving them
 
     Parameters
     ----------
-    container: serpentTools.objects.readers.BaseReader or
-        serpentTools.objects.containers.BranchContainer
-        Object to which this universe is attached
     name: str
         name of the universe
     bu: float
@@ -63,9 +60,8 @@ class HomogUniv(SupportingObject):
         Other values that do not not conform to inf/b1 dictionaries
     """
 
-    def __init__(self, container, name, bu, step, day):
-        SupportingObject.__init__(self, container)
-        self.name = name
+    def __init__(self, name, bu, step, day):
+        NamedObject.__init__(self, name)
         self.bu = bu
         self.step = step
         self.day = day
@@ -81,6 +77,7 @@ class HomogUniv(SupportingObject):
         Sets the value of the variable and, optionally, the associate s.d.
 
         .. warning::
+
             This method will overwrite data for variables that already exist
 
         Parameters
@@ -101,10 +98,10 @@ class HomogUniv(SupportingObject):
         """
 
         # 1. Check the input type
-        variableName = SupportingObject._convertVariableName(variableName)
+        variableName = convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
-            raise TypeError('The variable uncertainty has type %s.\n ...'
-                            'It should be boolean.', type(uncertainty))
+            raise TypeError('The variable uncertainty has type {}, '
+                            'should be boolean.'.format(type(uncertainty)))
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, uncertainty)
         # 3. Check if variable is already present. Then set the variable.
@@ -186,8 +183,6 @@ class Detector(NamedObject):
 
     Parameters
     ----------
-    parser: :py:class:`~serpentTools.parsers.detector.DetectorReader`
-        Detector reader that created this detector
     name: str
         Name of this detector
 
@@ -207,8 +202,8 @@ class Detector(NamedObject):
         Collection of unique indexes for each requested bin
     """
 
-    def __init__(self, parser, name):
-        NamedObject.__init__(self, parser, name)
+    def __init__(self, name):
+        NamedObject.__init__(self, name)
         self.bins = None
         self.tallies = None
         self.errors = None
@@ -222,9 +217,6 @@ class Detector(NamedObject):
         if self.bins is not None:
             return self.bins.shape[0]
         return 0
-
-    def __str__(self):
-        return 'Detector {} from {}'.format(self.name, self.filePath)
 
     def addTallyData(self, bins):
         """Add tally data to this detector"""
@@ -312,13 +304,13 @@ class Detector(NamedObject):
                 'Slicing requires detector to be reshaped')
         if data not in self._map:
             raise KeyError(
-                'Slicing function only works with the following data arguments:'
-                '\n{}'.format(', '.join(self._map.keys())))
+                'Data argument {} not in allowed options'
+                '\n{}'.format(', '.join(data, self._map.keys())))
         work = self._map[data]
         if work is None:
             raise SerpentToolsException(
                 '{} data for detector {} is None. Cannot perform slicing'
-                    .format(data, self.name))
+                .format(data, self.name))
         return work[self._getSlices(fixed)]
 
     def _getSlices(self, fixed):
@@ -397,7 +389,7 @@ class Detector(NamedObject):
         if not len(slicedTallies.shape) == 1:
             raise SerpentToolsException(
                 'Sliced data must be one-dimensional for spectrum plot, not {}'
-                    .format(slicedTallies.shape)
+                .format(slicedTallies.shape)
             )
         if normalize:
             lethBins = log(
@@ -609,7 +601,7 @@ class Detector(NamedObject):
         return ax
 
 
-class BranchContainer(SupportingObject):
+class BranchContainer(object):
     """
     Class that stores data for a single branch.
 
@@ -621,8 +613,8 @@ class BranchContainer(SupportingObject):
 
     Parameters
     ----------
-    parser: serpentTools.objects.readers.BaseReader
-        Parser that read the file that created this object
+    filePath: str
+        Path to input file from which this container was connected
     branchID: int
         Index for the run for this branch
     branchNames: tuple
@@ -641,8 +633,8 @@ class BranchContainer(SupportingObject):
         ``(universeID, burnup, burnIndex)``
     """
 
-    def __init__(self, parser, branchID, branchNames, stateData):
-        SupportingObject.__init__(self, parser)
+    def __init__(self, filePath, branchID, branchNames, stateData):
+        self.filePath = filePath
         self.branchID = branchID
         self.stateData = stateData
         self.universes = {}
@@ -696,7 +688,7 @@ class BranchContainer(SupportingObject):
         -------
         newUniv: serpentTools.objects.containers.HomogUniv
         """
-        newUniv = HomogUniv(self, univID, burnup, burnIndex, burnDays)
+        newUniv = HomogUniv(univID, burnup, burnIndex, burnDays)
         key = tuple(
             [univID, burnup, burnIndex] + ([burnDays] if burnDays else []))
         if key in self.__keys:
@@ -747,16 +739,3 @@ class BranchContainer(SupportingObject):
         raise KeyError(
             'Could not find a universe that matched requested universe {} and '
             '{} {}'.format(univID, searchName, searchValue))
-
-
-if __name__ == '__main__':
-    import os
-    from matplotlib import pyplot
-
-    from serpentTools import ROOT_DIR, read
-
-    bwrF = os.path.join(ROOT_DIR, '..', 'examples', 'bwr_det0.m')
-    bwr = read(bwrF)
-    s = bwr.detectors['spectrum']
-    s.meshPlot('e', 'reaction', xscale='log')
-    pyplot.show()

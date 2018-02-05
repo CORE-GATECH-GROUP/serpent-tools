@@ -1,6 +1,5 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
 
-import six
 import numpy
 
 from serpentTools.engines import KeywordParser
@@ -60,7 +59,7 @@ class DetectorReader(BaseReader):
             data[indx] = [float(xx) for xx in line.split()]
         if detName not in self.detectors:
             # new detector, this data is the tallies
-            detector = Detector(self, detName)
+            detector = Detector(detName)
             detector.addTallyData(data)
             self.detectors[detName] = detector
             messages.debug('Adding detector {}'.format(detName))
