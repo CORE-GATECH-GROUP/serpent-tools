@@ -74,7 +74,8 @@ class BranchingReader(XSReader):
         if branchNames not in self.branches:
             branchState = self._processBranchStateData()
             self.branches[branchNames] = (
-                BranchContainer(self, coefIndx, branchNames, branchState))
+                BranchContainer(self.filePath, coefIndx, branchNames,
+                                branchState))
         else:
             self._advance()
         return self.branches[branchNames], int(totUniv)
@@ -98,7 +99,8 @@ class BranchingReader(XSReader):
         unvID, numVariables = [int(xx) for xx in self._advance()]
         univ = branch.addUniverse(unvID, burnup, burnupIndex)
         for step in range(numVariables):
-            splitList = self._advance(possibleEndOfFile=step == numVariables-1)
+            splitList = self._advance(
+                possibleEndOfFile=step == numVariables - 1)
             varName = splitList[0]
             varValues = [float(xx) for xx in splitList[2:]]
             if self._checkAddVariable(varName):

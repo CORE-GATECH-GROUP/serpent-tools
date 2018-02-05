@@ -10,7 +10,7 @@ class HomogenizedUniverseTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.univ = containers.HomogUniv(DepletionReader(None), 'dummy', 0, 0, 0)
+        cls.univ = containers.HomogUniv('dummy', 0, 0, 0)
         cls.Exp = {}
         cls.Unc = {}
         # Data definition

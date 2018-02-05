@@ -158,7 +158,7 @@ class DefaultSettingsLoader(dict):
         for name, value in defaultSettings.items():
             if 'options' in value:
                 options = (value['default'] if value['options'] == 'default'
-                else value['options'])
+                           else value['options'])
             else:
                 options = None
             settingsOptions = {'name': name,
@@ -278,8 +278,9 @@ class UserSettingsLoader(dict):
             dictionary
         """
         settings = {}
-        settingsPreffix = ([settingsPreffix] if isinstance(settingsPreffix, str)
-        else settingsPreffix)
+        settingsPreffix = (
+                [settingsPreffix] if isinstance(settingsPreffix, str)
+                else settingsPreffix)
         for setting, value in self.items():
             settingPath = setting.split('.')
             if settingPath[0] in settingsPreffix:
@@ -346,11 +347,11 @@ class UserSettingsLoader(dict):
         """
         messages.debug('Attempting to read from {}'.format(filePath))
         with open(filePath) as yFile:
-            l = yaml.safe_load(yFile)
+            loaded = yaml.safe_load(yFile)
         messages.info('Loading settings onto object with strict:{}'
                       .format(strict))
 
-        for key, value in six.iteritems(l):
+        for key, value in six.iteritems(loaded):
             if isinstance(value, dict):
                 self.__recursiveLoad(value, strict, key)
             else:
