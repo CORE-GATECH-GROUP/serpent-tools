@@ -12,10 +12,11 @@ from six.moves import range
 from serpentTools.messages import error, debug
 
 __all__ = ['seedFiles']
+SLOPE = 0.3010142116935483
+OFFSET = 0.0701126088709696
 
-
-def _writeSeed(stream):
-    stream.write('\nset seed {}'.format(random.getrandbits(32)))
+def _writeSeed(stream, bits):
+    stream.write('\nset seed {}'.format(random.getrandbits(bits)))
 
 
 def _makeFileFmt(inputFile):
@@ -30,23 +31,24 @@ def _makeFileFmt(inputFile):
     return base + '_{}' + ext
 
 
-def _include(inputFile, numSeeds, fileFmt):
+def _include(inputFile, numSeeds, fileFmt, bits):
     for N in range(numSeeds):
         name = fileFmt.format(N)
         with open(name, 'w') as stream:
             stream.write('include \"{}\"\n'.format(inputFile))
-            _writeSeed(stream)
+            _writeSeed(stream, bits)
 
 
-def _copy(inputFile, numSeeds, fileFmt):
+def _copy(inputFile, numSeeds, fileFmt, bits):
     for N in range(numSeeds):
         name = fileFmt.format(N)
         copy(inputFile, name)
         with open(name, 'a') as stream:
-            _writeSeed(stream)
+            _writeSeed(stream, bits)
 
 
-def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False):
+def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
+              digits=10):
     """
     Copy input file multiple times with unique seeds.
 
@@ -66,11 +68,14 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False):
     link: bool
         If True, do not copy the full file. Instead, create a new file
         with 'include <inputFile>' and the new seed declaration.
+    digits: int
+        Average number of digits for random seeds
 
     See Also
     --------
     :py:mod:`random`
     :py:func:`random.seed()`
+    :py:func:`random.getrandbits()`
 
     """
     if '~' in inputFile:
@@ -83,6 +88,10 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False):
     if numSeeds < 1:
         error('Require positive number of files to create')
         return
+
+    if digits < 1:
+        error('Require positive number of digits in random seeds')
+    bits = int((digits - OFFSET) / SLOPE)
 
     random.seed(seed)
 
@@ -100,6 +109,6 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False):
     fileFmt = path.join(fPrefix, _makeFileFmt(inputFile))
 
     writeFunc = _include if link else _copy
-    writeFunc(inputPath, numSeeds, fileFmt)
+    writeFunc(inputPath, numSeeds, fileFmt, bits)
 
     return
