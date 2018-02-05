@@ -12,10 +12,8 @@ Welcome to serpentTools's documentation!
 
    welcome/index.rst
    examples/index.rst
-   develop/index.rst
    api/index.rst
-
-
+   develop/index.rst
 
 Indices and tables
 ==================

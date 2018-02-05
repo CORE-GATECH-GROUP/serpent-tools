@@ -21,34 +21,53 @@ Here, all energy and spatial grid data are stored,
 including other binning information such as reaction, universe, and
 lattice bins.
 
-.. code:: 
+.. code::
 
+    >>> from matplotlib import pyplot
     >>> import serpentTools
     INFO    : serpentTools: Using version 0.2.1
-    >>> detFile = 'demo_det0.m'
-    >>> det = serpentTools.read(detFile)
-    INFO    : serpentTools: Inferred reader for demo_det0.m: DetectorReader
-    INFO    : serpentTools: Preparing to read demo_det0.m
+    >>> pinFile = 'fuelPin_det0.m'
+    >>> bwrFile = 'bwr_det0.m'
+    >>> pin = serpentTools.read(pinFile)
+    >>> bwr = serpentTools.read(bwrFile)
+    INFO    : serpentTools: Inferred reader for fuelPin_det0.m: DetectorReader
+    INFO    : serpentTools: Preparing to read fuelPin_det0.m
     INFO    : serpentTools: Done
-    >>> det.detectors
-    {'nodeFlx': <serpentTools.objects.containers.Detector at 0x19e3c4f6b70>,
-     'spectrum': <serpentTools.objects.containers.Detector at 0x19e3c4f6ba8>,
-     'xyFissionCapt': 
-        <serpentTools.objects.containers.Detector at 0x19e3c4f6470>}
+    INFO    : serpentTools: Inferred reader for bwr_det0.m: DetectorReader
+    INFO    : serpentTools: Preparing to read bwr_det0.m
+    INFO    : serpentTools: Done
+    >>> print(pin.detectors)
+    >>> print(bwr.detectors)
+    {'nodeFlx':
+        <serpentTools.objects.containers.Detector object at 0x7fb3ae1db978>}
+    {'spectrum':
+        <serpentTools.objects.containers.Detector object at 0x7fb3ae1db9e8>,
+     'xymesh':
+         <serpentTools.objects.containers.Detector object at 0x7fb3ae1dba20>}
 
-These detectors were defined to a single fuel pin, divided into 16 axial
-segments by unique materials. A description of the detectors provided in
-the output:
+These detectors were defined for a single fuel pin with 16 axial layers
+and a separate BWR assembly, with a description of the detectors provided in
+below:
 
-+---------------------+--------------------------------------------------------+
-| Name                | Description                                            |
-+=====================+========================================================+
-| ``nodeFlx``         | Flux-share in each axial universe                      |
-+---------------------+--------------------------------------------------------+
-| ``spectrum``        | 1968 group flux in fuel pin                            |
-+---------------------+--------------------------------------------------------+
-| ``xyFissionCapt``   | One-group fission and capture rate for a 5x5 xy grid   |
-+---------------------+--------------------------------------------------------+
++--------------+---------------+
+| Name         | Description   |
++==============+===============+
+| ``nodeFlx``  | One-group     |
+|              | flux tallied  |
+|              | in each axial |
+|              | layer         |
++--------------+---------------+
+| ``spectrum`` | CSEWG 239     |
+|              | group         |
+|              | stucture for  |
+|              | flux and      |
+|              | U-235 fission |
+|              | cross section |
++--------------+---------------+
+| ``xymesh``   | Two-group     |
+|              | flux for a    |
+|              | 20x20 xy grid |
++--------------+---------------+
 
 For each :py:class:`~serpentTools.objects.containers.Detector` object,
 the full tally matrix is stored in the
@@ -56,10 +75,10 @@ the full tally matrix is stored in the
 
 .. code:: 
 
-    >>> nodeFlx = det.detectors['nodeFlx']
+    >>> nodeFlx = pin.detectors['nodeFlx']
     >>> print(nodeFlx.bins.shape)
     (16, 12)
-    >>> nodeFlx.bins[:5,:]
+    >>> nodeFlx.bins[:5, :]
     array([[  1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
               1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
               1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
@@ -88,6 +107,7 @@ Here, only three columns are changing:
 -  column 11: errors
 
 .. note::
+
     For SERPENT-1, there would be an additional column 12 that
     contained the scores for each bin
 
@@ -198,7 +218,7 @@ documentation <https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html>`_
 Passing ``what='errors'`` to the plot method plots the associated
 relative errors, rather than the tally data on the y-axis. Similarly,
 passing a key from :py:attr:`~serpentTools.objects.containers.Detector.indexes`
-sets the x-axis to be that specific index.
+as the ``xdim`` argument sets the x-axis to be that specific index.
 
 .. code:: 
 
@@ -212,13 +232,13 @@ meshes ``DET<name>E``, these arrays are stored in the
 
 .. code:: 
 
-    >>> spectrum = det.detectors['spectrum']
+    >>> spectrum = bwr.detectors['spectrum']
     >>> print(spectrum.grids['E'][:5, :])
-    [[  1.00001000e-11   3.00000000e-09   1.50500000e-09]
-     [  3.00000000e-09   5.00000000e-09   4.00000000e-09]
-     [  5.00000000e-09   6.90000000e-09   5.95000000e-09]
-     [  6.90000000e-09   1.00000000e-08   8.45000000e-09]
-     [  1.00000000e-08   1.50000000e-08   1.25000000e-08]]
+    [[  1.00002000e-11   4.13994000e-07   2.07002000e-07]
+     [  4.13994000e-07   5.31579000e-07   4.72786000e-07]
+     [  5.31579000e-07   6.25062000e-07   5.78320000e-07]
+     [  6.25062000e-07   6.82560000e-07   6.53811000e-07]
+     [  6.82560000e-07   8.33681000e-07   7.58121000e-07]]
 
 The :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot` method is
 designed to prepare plots of energy spectra.
@@ -236,9 +256,14 @@ Supported keyword arguments method include
 | ``yscale``      | ``'linear'``   | Set the y scale to be log or linear          |
 +-----------------+----------------+----------------------------------------------+
 
-.. code:: 
+Since our detector has energy bins and reaction bins, we need to reduce
+down to one-dimension with the ``fixed`` command. More on this in the
+next section. Here, the spectrum is plotted for the first reaction type,
+total flux for this detector.
 
-    >>> spectrum.spectrumPlot()
+.. code::
+
+    >>> spectrum.spectrumPlot(fixed={'reaction': 1})
 
 .. image:: images/Detector_28_0.png
 
@@ -254,12 +279,12 @@ fission and capture rates (two ``dr`` arguments) in an XY mesh.
 
 .. code:: 
 
-    >>> xy = det.detectors['xyFissionCapt']
+    >>> xy = bwr.detectors['xymesh']
     >>> for key in xy.indexes:
-    ...    print(key, xy.indexes[key])
-    reaction [ 1.  2.]
-    ymesh [ 1.  2.  3.  4.  5.]
-    xmesh [ 1.  2.  3.  4.  5.]
+    >>>     print(key, xy.indexes[key])
+    energy [1 2]
+    ymesh [ 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20]
+    xmesh [ 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20]
 
 Traversing the first axis in the
 :py:attr:`~serpentTools.objects.containers.Detector.tallies` array corresponds to
@@ -270,13 +295,13 @@ changing ``ymesh`` values, and the final axis reflects changes in
 .. code:: 
 
     >>> print(xy.bins.shape)
-    (50, 12)
+    (800, 12)
     >>> print(xy.tallies.shape)
-    (2, 5, 5)
+    (2, 20, 20)
     >>> print(xy.bins[:5, 10])
-    [ 0.255119  0.255077  0.253685  0.255592  0.25845 ]
+    [ 0.0401505  0.0352695  0.0330053  0.0292071  0.0267413]
     >>> print(xy.tallies[0, 0, :5])
-    [ 0.255119  0.255077  0.253685  0.255592  0.25845 ]
+    [ 0.0401505  0.0352695  0.0330053  0.0292071  0.0267413]
 
 Slicing
 ~~~~~~~
@@ -289,43 +314,57 @@ method. This method takes an argument indicating what bins (keys in
 :py:attr:`~serpentTools.objects.containers.Detector.indexes`)
 to fix at what position.
 
-If we want to retrieve the tally data for the XY mesh for the fission
-reactions
+If we want to retrive the tally data for the fission reaction in the
+``spectrum`` detector, you would instruct the
+:py:meth:`~serpentTools.objects.containers.Detector.slice` method to use
+column 2 along the axis that corresponds to the reaction bin
 
 .. code:: 
 
-    >>> xy.slice({'reaction': 1})
-    array([[ 0.255119,  0.255077,  0.253685,  0.255592,  0.25845 ],
-           [ 0.254101,  0.253408,  0.256666,  0.255375,  0.252936],
-           [ 0.256006,  0.251002,  0.255479,  0.252002,  0.254708],
-           [ 0.254957,  0.253399,  0.24818 ,  0.252915,  0.253914],
-           [ 0.258394,  0.250217,  0.259642,  0.254025,  0.257076]])
+    >>> print(spectrum.indexes['reaction'])
+    [1 2]
+    >>> spectrum.slice({'reaction': 2})[:20]
+    array([  1.84253000e+03,   3.27275000e+01,   1.65728000e+01,
+             7.78628000e+00,   1.56444000e+01,   3.88358000e+00,
+             2.43967000e+01,   1.42860000e+01,   5.06925000e+00,
+             5.08734000e+00,   4.62725000e+00,   1.03671000e+01,
+             1.76183000e+00,   7.40425000e+00,   3.71261000e+00,
+             3.10994000e+01,   1.45352000e+01,   1.13481000e+01,
+             1.80058000e+01,   1.57873000e+01])
 
 As the fission reaction corresponded to reaction tally 1 in the original
 matrix.
 
-This method also works for slicing the error, or score, matrix
+This method also works for slicing the error and score matrices by using
+``what='errors'`` or ``'scores'``, respectively.
 
 .. code:: 
 
-    >>> xy.slice({'reaction': 2, 'ymesh': 4}, 'errors')
-    array([ 0.01576,  0.01299,  0.01811,  0.01367,  0.01632])
+    >>> spectrum.slice({'reaction': 2}, 'errors')[:20]
+    array([ 0.0061 ,  0.01354,  0.01527,  0.01992,  0.01574,  0.02734,
+            0.01549,  0.01713,  0.01376,  0.01549,  0.01491,  0.01391,
+            0.01632,  0.01631,  0.02035,  0.02192,  0.01766,  0.01279,
+            0.02488,  0.01606])
 
-The method returned the relative error in the capture rate, along the
-fourth y-mesh,index 3 in the grid, for all x mesh points.
+This call returns the relative error in the fission rate, reaction 2.
 
 Plotting
 ~~~~~~~~
 
 For data with dimensionality greater than one, the
 :py:meth:`~serpentTools.objects.containers.Detector.meshPlot` method
-can be used to plot some 2D slice of the data.
+can be used to plot some 2D slice of the data. Passing a dictionary as
+the ``fixed`` argument restricts the tally data down to two dimensions.
+Since the ``xymesh`` detector is three dimensions, (energy, x, and y),
+we must pick an energy group to plot.
 
 .. code:: 
 
-    >>> xy.meshPlot('x', 'y',fixed={'reaction':1})
+    >>> xy.meshPlot('x', 'y', fixed={'energy': 1});
+    # plot the fast spectrum flux
 
-.. image:: images/Detector_41_0.png
+.. image:: images/Detector_40_0.png
+
 
 
 The :py:meth:`~serpentTools.objects.containers.Detector.meshPlot` also
@@ -333,21 +372,44 @@ supports a range of labeling options
 
 .. code:: 
 
-    >>> xy.meshPlot('x', 'reaction', what='errors',
-    ...            fixed={'ymesh': 4}, ylabel='Reaction type')
+    >>> spectrum.meshPlot('e', 'reaction', what='errors',
+    ...                   ylabel='Reaction type',
+    ...                   xlabel='Energy [MeV]');
 
-.. image:: images/Detector_43_0.png
+.. image:: images/Detector_42_0.png
 
-Using the ``fixed`` argument allows access to the 1D plot methods
+Using the ``slicing`` arguments allows access to the 1D plot methods
 from before
 
-.. code:: 
+.. code::
 
-    >>> xy.plot(fixed={'reaction': 2, 'xmesh': 2},
-    ...        xlabel='Y position',
-    ...        ylabel=r'$\left(n,\gamma\right)$ rate');
+    >>> xy.plot(fixed={'energy': 2, 'xmesh': 2},
+    ...         xlabel='Y position',
+    ...         ylabel='Thermal flux along x={}'
+    ...         .format(xy.grids['X'][2, 0]));
 
-.. image:: images/Detector_45_0.png
+
+
+.. image:: images/Detector_44_0.png
+
+
+The underlying matplotlib plot routines can be used to plot multiple
+data sets on the same plot.
+
+.. code::
+
+    >>> ax = pyplot.axes()
+    >>> labels = (
+    ... 'flux',
+    ... r'$\sigma_f^{u235}\psi$')  # render as mathtype
+    >>> reactions = spectrum.indexes['reaction']
+    >>> for reac, label in zip(reactions, labels):
+    ... spectrum.spectrumPlot({'reaction': reac}, steps=True, sigma=3,
+    ....                      ax=ax, label=label)
+    >>> ax.set_ylabel('Normalized tally per unit lethargy')
+    >>> ax.legend()
+
+.. image:: images/Detector_46_0.png
 
 Conclusion
 ----------
