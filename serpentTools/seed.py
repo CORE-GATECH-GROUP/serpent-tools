@@ -15,8 +15,12 @@ __all__ = ['seedFiles']
 SLOPE = 0.3010142116935483
 OFFSET = 0.0701126088709696
 
-def _writeSeed(stream, bits):
-    stream.write('\nset seed {}'.format(random.getrandbits(bits)))
+
+def _writeSeed(stream, bits, length):
+    seed = random.getrandbits(bits)
+    while len(str(seed)) != length:
+        seed = random.getrandbits(bits)
+    stream.write('\nset seed {}'.format(seed))
 
 
 def _makeFileFmt(inputFile):
@@ -31,20 +35,20 @@ def _makeFileFmt(inputFile):
     return base + '_{}' + ext
 
 
-def _include(inputFile, numSeeds, fileFmt, bits):
+def _include(inputFile, numSeeds, fileFmt, bits, length):
     for N in range(numSeeds):
         name = fileFmt.format(N)
         with open(name, 'w') as stream:
             stream.write('include \"{}\"\n'.format(inputFile))
-            _writeSeed(stream, bits)
+            _writeSeed(stream, bits, length)
 
 
-def _copy(inputFile, numSeeds, fileFmt, bits):
+def _copy(inputFile, numSeeds, fileFmt, bits, length):
     for N in range(numSeeds):
         name = fileFmt.format(N)
         copy(inputFile, name)
         with open(name, 'a') as stream:
-            _writeSeed(stream, bits)
+            _writeSeed(stream, bits, length)
 
 
 def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
@@ -109,6 +113,6 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
     fileFmt = path.join(fPrefix, _makeFileFmt(inputFile))
 
     writeFunc = _include if link else _copy
-    writeFunc(inputPath, numSeeds, fileFmt, bits)
+    writeFunc(inputPath, numSeeds, fileFmt, bits, digits)
 
     return
