@@ -4,7 +4,7 @@ import numpy
 from matplotlib import pyplot
 
 from serpentTools import messages
-from serpentTools.objects import NamedObject
+from serpentTools.objects import NamedObject, convertVariableName
 
 
 class DepletedMaterial(NamedObject):
@@ -26,7 +26,7 @@ class DepletedMaterial(NamedObject):
     names: numpy.array or None
         Names of isotopes
     days: numpy.array or None
-        Days overwhich the material was depleted
+        Days over which the material was depleted
     adens: numpy.array or None
         Atomic density over time for each nuclide
     mdens: numpy.array or None
@@ -37,14 +37,15 @@ class DepletedMaterial(NamedObject):
     """
 
     def __init__(self, parser, name):
-        NamedObject.__init__(self, parser, name)
+        NamedObject.__init__(self, name)
         self.data = {}
         self.zai = parser.metadata.get('zai', None)
         self.names = parser.metadata.get('names', None)
         self.days = parser.metadata.get('days', None)
-        self.__burnup__ = None
-        self.__adens__ = None
-        self.__mdens__ = None
+        self.filePath = parser.filePath
+        self.__burnup = None
+        self.__adens = None
+        self.__mdens = None
 
     def __getitem__(self, item):
         if item not in self.data:
@@ -57,27 +58,27 @@ class DepletedMaterial(NamedObject):
         if 'burnup' not in self.data:
             raise AttributeError('Burnup for material {} has not been loaded'
                                  .format(self.name))
-        if self.__burnup__ is None:
-            self.__burnup__ = self.data['burnup']
-        return self.__burnup__
+        if self.__burnup is None:
+            self.__burnup = self.data['burnup']
+        return self.__burnup
 
     @property
     def adens(self):
         if 'adens' not in self.data:
             raise AttributeError('Atomic densities for material {} have not '
                                  'been loaded'.format(self.name))
-        if self.__adens__ is None:
-            self.__adens__ = self.data['adens']
-        return self.__adens__
+        if self.__adens is None:
+            self.__adens = self.data['adens']
+        return self.__adens
 
     @property
     def mdens(self):
         if 'mdens' not in self.data:
             raise AttributeError('Mass densities for material {} has not been '
                                  'loaded'.format(self.name))
-        if self.__mdens__ is None:
-            self.__mdens__ = self.data['mdens']
-        return self.__mdens__
+        if self.__mdens is None:
+            self.__mdens = self.data['mdens']
+        return self.__mdens
 
     def addData(self, variable, rawData):
         """
@@ -90,7 +91,7 @@ class DepletedMaterial(NamedObject):
         rawData: list
             List of strings corresponding to the raw data from the file
         """
-        newName = self._convertVariableName(variable)
+        newName = convertVariableName(variable)
         messages.debug('Adding {} data to {}'.format(newName, self.name))
         if isinstance(rawData, str):
             scratch = [float(item) for item in rawData.split()]
@@ -148,8 +149,8 @@ class DepletedMaterial(NamedObject):
         if timePoints is not None:
             timeCheck = self._checkTimePoints(xUnits, timePoints)
             if any(timeCheck):
-                raise KeyError('The following times were not present in file {}'
-                               '\n{}'.format(self.filePath,
+                raise KeyError('The following times were not present in file'
+                               '{}\n{}'.format(self.filePath,
                                              ', '.join(timeCheck)))
         if names and self.names is None:
             raise AttributeError(
