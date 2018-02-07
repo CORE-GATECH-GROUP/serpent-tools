@@ -19,21 +19,21 @@ class DetectorSampler(Sampler):
         Sampler.__init__(self, files, DetectorReader)
 
     def _precheck(self):
-        self._checkPresentDetectors()
+        self._checkParserDict('detectors', 'detectrs')
         self._checkSizes()
 
-    def _checkPresentDetectors(self):
-        matches = {}
-        for parser in self.parsers:
-            keys = tuple(sorted(parser.detectors.keys()))
-            if keys not in matches:
-                matches[keys] = 1
-            else:
-                matches[keys] += 1
-        if len(matches) > 1:
-            msg = _makeErrorMsgFromDict(
-                matches, 'Detectors')
-            raise MismatchedContainersError(msg)
+    # def _checkPresentDetectors(self):
+    #     matches = {}
+    #     for parser in self.parsers:
+    #         keys = tuple(sorted(parser.detectors.keys()))
+    #         if keys not in matches:
+    #             matches[keys] = 1
+    #         else:
+    #             matches[keys] += 1
+    #     if len(matches) > 1:
+    #         msg = _makeErrorMsgFromDict(
+    #             matches, 'Detectors')
+    #         raise MismatchedContainersError(msg)
 
     def _checkSizes(self):
         sizes = None

@@ -5,8 +5,10 @@ of the same type and obtaining true standard deviations
 from glob import glob
 from os.path import exists
 
+from six import iteritems
+
 from serpentTools.settings import rc
-from serpentTools.messages import warning, debug
+from serpentTools.messages import warning, debug, MismatchedContainersError
 
 
 def extendFiles(files):
@@ -68,6 +70,30 @@ class Sampler(object):
         if missing:
             warning('The following files did not exist and were not processed '
                     '\n\t{}'.format(', '.join(missing)))
+
+    def _checkParserDict(self, attrName, objName, sort=True):
+        matches = {}
+        for parser in self.parsers:
+            d = getattr(parser, attrName)
+            keys = tuple(d.keys())
+            if sort:
+                keys = tuple(sorted(keys))
+            if keys not in matches:
+                matches[keys] = 1
+            else:
+                matches[keys] += 1
+        if len(matches) > 1:
+            msg = self._makeErrorMsgFromDict(matches, attrName, objName)
+            raise MismatchedContainersError(msg)
+
+    @staticmethod
+    def _makeErrorMsgFromDict(misMatches, header, objName):
+        msg = 'Files do not contain a consistent set of {}\n'.format(objName)
+        msg += header + ': number of files'
+        for key, values in iteritems(misMatches):
+            numMismatch = values if isinstance(values, int) else len(values)
+            msg += '\n{}: {}'.format(key, numMismatch)
+        return msg
 
     def __iter__(self):
         for parser in self.parsers:
