@@ -125,19 +125,6 @@ def willChange(changeMsg):
     return decorate
 
 
-def debugWrapper(f):
-    """Decorator that logs a debug message before/after a function executes"""
-
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        debug("Preparing to execute {}".format(f.__name__))
-        out = f(*args, **kwargs)
-        debug("Done")
-        return out
-
-    return decorated
-
-
 def _updateFilterAlert(msg, category):
     warnings.simplefilter('always', category)
     warnings.warn(msg, category=category, stacklevel=3)

@@ -6,7 +6,7 @@ from glob import glob
 from os.path import exists
 
 from serpentTools.settings import rc
-from serpentTools.messages import warning, debug, debugWrapper
+from serpentTools.messages import warning, debug
 
 
 def extendFiles(files):
@@ -38,7 +38,6 @@ class Sampler(object):
             debug('Skipping pre-check')
         self.process()
 
-    @debugWrapper
     def read(self):
         """Read all the files and create parser objects"""
         self.map = {}
@@ -74,7 +73,6 @@ class Sampler(object):
         for parser in self.parsers:
             yield parser
 
-    @debugWrapper
     def process(self):
         """Process the repeated files to obtain true uncertainties"""
         self._process()

@@ -177,7 +177,7 @@ class HomogUniv(NamedObject):
             return self.metadata
 
 
-class Detector(NamedObject):
+class DetectorBase(NamedObject):
     """
     Class to store detector data.
 
@@ -204,73 +204,15 @@ class Detector(NamedObject):
 
     def __init__(self, name):
         NamedObject.__init__(self, name)
-        self.bins = None
         self.tallies = None
         self.errors = None
         self.scores = None
         self.grids = {}
-        self.__reshaped = False
         self.indexes = None
         self._map = None
 
-    def __len__(self):
-        if self.bins is not None:
-            return self.bins.shape[0]
-        return 0
-
-    def addTallyData(self, bins):
-        """Add tally data to this detector"""
-        self.__reshaped = False
-        self.bins = bins
-        self.reshape()
-
-    def reshape(self):
-        """
-        Reshape the tally data into a multidimensional array
-
-        This method reshapes the tally and uncertainty data into arrays
-        where the array axes correspond to specific bin types.
-        If a detector was set up to tally two group flux in a 5 x 5
-        xy mesh, then the resulting tally data would be in a 50 x 12/13
-        matrix in the original ``detN.m`` file.
-        The tally data and relative error would be rebroadcasted into
-        2 x 5 x 5 arrays, and the indexing information is stored in
-        ``self.indexes``
-
-        Returns
-        -------
-        shape: list
-            Dimensionality of the resulting array
-
-        Raises
-        ------
-        SerpentToolsException:
-            If the bin data has not been loaded
-        """
-        if self.bins is None:
-            raise SerpentToolsException('Tally data for detector {} has not '
-                                        'been loaded'.format(self.name))
-        if self.__reshaped:
-            warning('Data has already been reshaped')
-            return
-        debug('Starting to sort tally data...')
-        shape = []
-        self.indexes = OrderedDict()
-        for index, indexName in enumerate(DET_COLS):
-            if 0 < index < 10:
-                uniqueVals = unique(self.bins[:, index])
-                if len(uniqueVals) > 1:
-                    self.indexes[indexName] = array(uniqueVals, dtype=int)
-                    shape.append(len(uniqueVals))
-        self.tallies = self.bins[:, 10].reshape(shape)
-        self.errors = self.bins[:, 11].reshape(shape)
-        if self.bins.shape[1] == 13:
-            self.scores = self.bins[:, 12].reshape(shape)
-        self._map = {'tallies': self.tallies, 'errors': self.errors,
-                     'scores': self.scores}
-        debug('Done')
-        self.__reshaped = True
-        return shape
+    def _isReshaped(self):
+        raise NotImplementedError
 
     def slice(self, fixed, data='tallies'):
         """
@@ -299,7 +241,7 @@ class Detector(NamedObject):
             If the data set to slice not in the allowed selection
 
         """
-        if not self.__reshaped:
+        if not self._isReshaped():
             raise SerpentToolsException(
                 'Slicing requires detector to be reshaped')
         if data not in self._map:
@@ -309,8 +251,8 @@ class Detector(NamedObject):
         work = self._map[data]
         if work is None:
             raise SerpentToolsException(
-                '{} data for detector {} is None. Cannot perform slicing'
-                .format(data, self.name))
+                '{} data for detector {} is None. '
+                'Cannot perform slicing'.format(data, self.name))
         return work[self._getSlices(fixed)]
 
     def _getSlices(self, fixed):
@@ -383,13 +325,13 @@ class Detector(NamedObject):
         if not len(self.tallies.shape) == 1 and fixed is None:
             raise SerpentToolsException(
                 'Tally data is not a one-dimensional matrix. '
-                'Need constraining aguments in fixed dictionary'
+                'Need constraining arguments in fixed dictionary'
             )
         slicedTallies = self.slice(fixed, 'tallies')
         if not len(slicedTallies.shape) == 1:
             raise SerpentToolsException(
-                'Sliced data must be one-dimensional for spectrum plot, not {}'
-                .format(slicedTallies.shape)
+                'Sliced data must be one-dimensional for spectrum plot, not '
+                '{}'.format(slicedTallies.shape)
             )
         if normalize:
             lethBins = log(
@@ -599,6 +541,71 @@ class Detector(NamedObject):
         ax.set_yscale(yscale)
 
         return ax
+
+
+class Detector(DetectorBase):
+
+    def __init__(self, name):
+        DetectorBase.__init__(self, name)
+        self.bins = None
+        self.__reshaped = False
+
+    def _isReshaped(self):
+        return self.__reshaped
+
+    def addTallyData(self, bins):
+        """Add tally data to this detector"""
+        self.__reshaped = False
+        self.bins = bins
+        self.reshape()
+
+    def reshape(self):
+        """
+        Reshape the tally data into a multidimensional array
+
+        This method reshapes the tally and uncertainty data into arrays
+        where the array axes correspond to specific bin types.
+        If a detector was set up to tally two group flux in a 5 x 5
+        xy mesh, then the resulting tally data would be in a 50 x 12/13
+        matrix in the original ``detN.m`` file.
+        The tally data and relative error would be rebroadcasted into
+        2 x 5 x 5 arrays, and the indexing information is stored in
+        ``self.indexes``
+
+        Returns
+        -------
+        shape: list
+            Dimensionality of the resulting array
+
+        Raises
+        ------
+        SerpentToolsException:
+            If the bin data has not been loaded
+        """
+        if self.bins is None:
+            raise SerpentToolsException('Tally data for detector {} has not '
+                                        'been loaded'.format(self.name))
+        if self.__reshaped:
+            warning('Data has already been reshaped')
+            return
+        debug('Starting to sort tally data...')
+        shape = []
+        self.indexes = OrderedDict()
+        for index, indexName in enumerate(DET_COLS):
+            if 0 < index < 10:
+                uniqueVals = unique(self.bins[:, index])
+                if len(uniqueVals) > 1:
+                    self.indexes[indexName] = array(uniqueVals, dtype=int)
+                    shape.append(len(uniqueVals))
+        self.tallies = self.bins[:, 10].reshape(shape)
+        self.errors = self.bins[:, 11].reshape(shape)
+        if self.bins.shape[1] == 13:
+            self.scores = self.bins[:, 12].reshape(shape)
+        self._map = {'tallies': self.tallies, 'errors': self.errors,
+                     'scores': self.scores}
+        debug('Done')
+        self.__reshaped = True
+        return shape
 
 
 class BranchContainer(object):
