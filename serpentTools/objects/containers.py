@@ -195,7 +195,7 @@ class Detector(NamedObject):
     tallies: None or numpy.array
         Reshaped tally data to correspond to the bins used
     errors: None or numpy.array
-        Reshaped relative error data corresponsing to bins used
+        Reshaped relative error data corresponding to bins used
     scores: None or numpy.array
         Reshaped array of tally scores. SERPENT 1 only
     indexes: None or OrderedDict
@@ -305,7 +305,7 @@ class Detector(NamedObject):
         if data not in self._map:
             raise KeyError(
                 'Data argument {} not in allowed options'
-                '\n{}'.format(', '.join(data, self._map.keys())))
+                '\n{}'.format(data, ', '.join(self._map.keys())))
         work = self._map[data]
         if work is None:
             raise SerpentToolsException(

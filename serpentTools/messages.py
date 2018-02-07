@@ -18,6 +18,16 @@ class SerpentToolsException(Exception):
     pass
 
 
+class SamplerError(SerpentToolsException):
+    """Base-class for errors in sampling process"""
+    pass
+
+
+class MismatchedContainersError(SamplerError):
+    """Attempting to sample from dissimilar containers"""
+    pass
+
+
 LOG_OPTS = ['critical', 'error', 'warning', 'info', 'debug']
 
 loggingConfig = {
@@ -63,7 +73,7 @@ def warning(message):
 
 
 def error(message):
-    """Log that something caused an exception but was supressed."""
+    """Log that something caused an exception but was suppressed."""
     __logger__.error('%s', message)
 
 
@@ -94,7 +104,9 @@ def deprecated(useInstead):
             warning(msg)
             _updateFilterAlert(msg, DeprecationWarning)
             return f(*args, **kwargs)
+
         return decorated
+
     return decorate
 
 
@@ -111,6 +123,19 @@ def willChange(changeMsg):
         return decoratedFunc
 
     return decorate
+
+
+def debugWrapper(f):
+    """Decorator that logs a debug message before/after a function executes"""
+
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        debug("Preparing to execute {}".format(f.__name__))
+        out = f(*args, **kwargs)
+        debug("Done")
+        return out
+
+    return decorated
 
 
 def _updateFilterAlert(msg, category):
