@@ -19,21 +19,8 @@ class DetectorSampler(Sampler):
         Sampler.__init__(self, files, DetectorReader)
 
     def _precheck(self):
-        self._checkParserDict('detectors', 'detectrs')
+        self._checkParserDictKeys('detectors')
         self._checkSizes()
-
-    # def _checkPresentDetectors(self):
-    #     matches = {}
-    #     for parser in self.parsers:
-    #         keys = tuple(sorted(parser.detectors.keys()))
-    #         if keys not in matches:
-    #             matches[keys] = 1
-    #         else:
-    #             matches[keys] += 1
-    #     if len(matches) > 1:
-    #         msg = _makeErrorMsgFromDict(
-    #             matches, 'Detectors')
-    #         raise MismatchedContainersError(msg)
 
     def _checkSizes(self):
         sizes = None
@@ -47,12 +34,9 @@ class DetectorSampler(Sampler):
                     level[shape] = {parser}
                 else:
                     level[shape].add(parser)
-        for detName, det in iteritems(sizes):
-            if len(det) > 1:
-                msg = _makeErrorMsgFromDict(
-                    det, '{} shape'.format(detName)
-                )
-                raise MismatchedContainersError(msg)
+        for detName, misMatches in iteritems(sizes):
+            if len(misMatches) > 1:
+                self._raiseErrorMsgFromDict(misMatches, 'shape', 'detector')
 
     def _process(self):
         numParsers = len(self.parsers)
@@ -69,15 +53,6 @@ class DetectorSampler(Sampler):
     def iterDets(self):
         for name, detector in iteritems(self.detectors):
             yield name, detector
-
-
-def _makeErrorMsgFromDict(misMatches, header):
-    msg = 'Files do not contain a consistent set of detectors\n'
-    msg += header + ': number of files'
-    for key, values in iteritems(misMatches):
-        numMismatch = values if isinstance(values, int) else len(values)
-        msg += '\n{}: {}'.format(key, numMismatch)
-    return msg
 
 
 class SampledDetector(DetectorBase):

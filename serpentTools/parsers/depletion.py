@@ -27,7 +27,7 @@ class DepletionReader(MaterialReader):
         for that material as values
     metadata: dict
         Dictionary with file-wide data names as keys and the
-        corresponding dataas values, e.g. 'zai': [list of zai numbers]
+        corresponding data, e.g. 'zai': [list of zai numbers]
     settings: dict
         names and values of the settings used to control operations
         of this reader

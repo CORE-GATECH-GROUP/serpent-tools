@@ -71,9 +71,16 @@ class Sampler(object):
             warning('The following files did not exist and were not processed '
                     '\n\t{}'.format(', '.join(missing)))
 
-    def _checkParserDict(self, attrName, objName, sort=True):
+    def _checkParserDictKeys(self, attrName, objName=None, sort=True):
+        objName = objName or attrName
         matches = {}
         for parser in self.parsers:
+            if not hasattr(parser, attrName):
+                if 'missing' not in matches:
+                    matches['missing'] = 1
+                else:
+                    matches['missing'] += 1
+                continue
             d = getattr(parser, attrName)
             keys = tuple(d.keys())
             if sort:
@@ -83,17 +90,16 @@ class Sampler(object):
             else:
                 matches[keys] += 1
         if len(matches) > 1:
-            msg = self._makeErrorMsgFromDict(matches, attrName, objName)
-            raise MismatchedContainersError(msg)
+            self._raiseErrorMsgFromDict(matches, attrName, objName)
 
     @staticmethod
-    def _makeErrorMsgFromDict(misMatches, header, objName):
+    def _raiseErrorMsgFromDict(misMatches, header, objName):
         msg = 'Files do not contain a consistent set of {}\n'.format(objName)
-        msg += header + ': number of files'
+        msg += 'Number of files: ' + header
         for key, values in iteritems(misMatches):
             numMismatch = values if isinstance(values, int) else len(values)
-            msg += '\n{}: {}'.format(key, numMismatch)
-        return msg
+            msg += '\n{}: {}'.format(numMismatch, key)
+        raise MismatchedContainersError(msg)
 
     def __iter__(self):
         for parser in self.parsers:
@@ -101,7 +107,9 @@ class Sampler(object):
 
     def process(self):
         """Process the repeated files to obtain true uncertainties"""
+        debug('Processing data from {} parsers'.format(len(self.parsers)))
         self._process()
+        debug('Done')
 
     def _process(self):
         raise NotImplementedError
