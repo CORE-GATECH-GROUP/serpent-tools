@@ -4,23 +4,24 @@ Class for testing the detector sampler
 File Descriptions
 -----------------
 
-*. `bwr_0_det0.m` and `bwr_1_det0.m` are identical input files with
+*. ``bwr_0_det0.m`` and ``bwr_1_det0.m`` are identical input files with
     different seeds. The detectors are defined exactly the same.
-*. `bwr_noxy_det0.m` is the same file as `bwr_0_det0.m` with the
-    `xymesh` detector completely removed. All spatial and energy grid
+*. ``bwr_noxy_det0.m`` is the same file as ``bwr_0_det0.m`` with the
+    ``xymesh`` detector completely removed. All spatial and energy grid
     data is removed from this file as well
-*. `bwr_smallxy_det0.m` has the same detector definitions as
-    `bwr_0_det0.m`, except the spatial grid for `xymesh` is smaller.
+*. ``bwr_smallxy_det0.m`` has the same detector definitions as
+    ``bwr_0_det0.m``, except the spatial grid for ``xymesh`` is smaller.
 
 .. note::
 
-    The relative error tolerances must be low, $O(1)$, because the
+    The relative error tolerances must be low, :math:`O(1)`, because the
     error values themselves are incredibly low. In writing these tests,
     a relative error of 1E-2 resulted in a 5% difference between
-    error quantities, which are all $O(1E-3)$. A tight absolute
+    error quantities, which are all :math:`O(1E-3)`. A tight absolute
     tolerance can still be achieved.
 
 """
+from math import sqrt
 from os import path
 import unittest
 
@@ -30,7 +31,7 @@ from numpy import square, sqrt
 from numpy.testing import assert_allclose
 
 from serpentTools.messages import MismatchedContainersError
-from serpentTools.tests import TEST_ROOT, SamplerMixin
+from serpentTools.tests import TEST_ROOT, copyTestFiles, removeTestFiles
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.samplers.detector import DetectorSampler
 
@@ -48,11 +49,11 @@ TOLERANCES = {
     'tallies': {'atol': 0, 'rtol': 1E-7}
 }
 
-SQRT2 = 2 ** 0.5
+SQRT2 = sqrt(2)
 
 
-class DetectorMixin(SamplerMixin):
-    """Simple mixing that compares keys between single and sampled readers"""
+class DetectorMixin(object):
+    """Simple mixin that compares keys between single and sampled readers"""
 
     def _checkContents(self):
         single = set(self.singleReader.detectors.keys())
@@ -83,8 +84,8 @@ class DetSamplerEquivTester(DetectorMixin, unittest.TestCase):
         """
         Verify that the tallies and errors for equivalent files are accurate
         """
-        self._copyTestFiles('equivalent', DET_FILES['bwr0'], 2)
-        self.sampler = DetectorSampler(self.fileMap['equivalent'])
+        files = copyTestFiles('equivalent', DET_FILES['bwr0'], 2)
+        self.sampler = DetectorSampler(files)
         self._checkContents()
         for detName, detector in self.singleReader.iterDets():
             sampledDet = self.sampler.detectors[detName]
@@ -97,7 +98,7 @@ class DetSamplerEquivTester(DetectorMixin, unittest.TestCase):
                 assert_allclose(
                     sampled, single, err_msg='{} {}'.format(detName, attr),
                     **tolerances)
-        self._removeTestFiles('equivalent')
+        removeTestFiles(files)
 
 
 class DetSamplerTester(DetectorMixin, unittest.TestCase):

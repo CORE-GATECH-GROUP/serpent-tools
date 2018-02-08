@@ -137,7 +137,7 @@ class SampledDetector(DetectorBase):
             warning("Attempting to read from detector with dissimilar names: "
                     "Base: {}, incoming: {}".format(self.name, detector.name))
         if not self.__index:
-            self.__shape = (self.N, *detector.tallies.shape)
+            self.__shape = tuple([self.N] + list(detector.tallies.shape))
             self.__allocate(detector.scores is not None)
         if self.__shape[1:] != detector.tallies.shape:
             raise MismatchedContainersError(

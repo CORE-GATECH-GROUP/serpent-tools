@@ -6,36 +6,52 @@ from serpentTools import ROOT_DIR
 TEST_ROOT = path.join(ROOT_DIR, 'tests')
 
 
-class SamplerMixin(object):
-    """Helper class that copies files and retains them for deletion"""
+def copyTestFiles(test, src, numFiles):
+    """
+    Copy a single file into multiple files with identifiable names
 
-    def __init__(self):
-        self.fileMap = {}
+    Copied file format will be ``base_test_cp{n}.ext`` for source
+    file ``base.ext``. No extension -> no ``.ext`` for copied files
 
-    def _copyTestFiles(self, test, src, numFiles):
-        if '.' in src:
-            dotIndx = src.index('.')
-            base = src[:dotIndx]
-            ext = src[dotIndx:]
-        else:
-            base = src
-            ext = ''
-        fileFmt = base + '_{}'.format(test) + '_cp{}' + ext
-        if test not in self.fileMap:
-            self.fileMap[test] = set()
+    Parameters
+    ----------
+    test: str
+        Name of test
+    src: str
+        Path to source file. Must exist
+    numFiles: int
+        Number of files to generate
 
-        for n in range(numFiles):
-            thisF = fileFmt.format(n)
-            copy(src, thisF)
-            self.fileMap[test].add(thisF)
+    Returns
+    -------
+    set
+        Names of generated files
 
-    def _removeTestFiles(self, test):
-        for fileP in self.fileMap.pop(test):
-            if path.isfile(fileP):
-                remove(fileP)
+    Raises
+    ------
+    OSError
+        If source file does not exist
+    """
+    if not path.exists(src):
+        raise OSError("Source file {} does not exist".format(src))
+    files = set()
+    if '.' in src:
+        dotIndx = src.index('.')
+        base = src[:dotIndx]
+        ext = src[dotIndx:]
+    else:
+        base = src
+        ext = ''
+    fileFmt = base + '_{}'.format(test) + '_cp{}' + ext
+    for n in range(numFiles):
+        thisF = fileFmt.format(n)
+        copy(src, thisF)
+        files.add(thisF)
+    return files
 
-    def _removeAllTestFiles(self):
-        tests = list(self.fileMap.keys())
-        for test in tests:
-            self._removeTestFiles(test)
-        self.fileMap = {}
+
+def removeTestFiles(files):
+    """Shortcut to remove files in iterable ``files``"""
+    for fileP in files:
+        if path.isfile(fileP):
+            remove(fileP)
