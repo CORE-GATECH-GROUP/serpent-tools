@@ -31,7 +31,7 @@ from numpy import square, sqrt
 from numpy.testing import assert_allclose
 
 from serpentTools.messages import MismatchedContainersError
-from serpentTools.tests import TEST_ROOT, copyTestFiles, removeTestFiles
+from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.samplers.detector import DetectorSampler
 
@@ -52,63 +52,16 @@ TOLERANCES = {
 SQRT2 = sqrt(2)
 
 
-class DetectorMixin(object):
-    """Simple mixin that compares keys between single and sampled readers"""
+class DetSamplerTester(unittest.TestCase):
+    """
+    Tester that looks for errors in mismatched detector files
+    and validates the averaging and uncertainty propagation
+    """
 
     def _checkContents(self):
         single = set(self.singleReader.detectors.keys())
         sampler = set(self.sampler.detectors.keys())
         self.assertSetEqual(single, sampler)
-
-
-class DetSamplerEquivTester(DetectorMixin, unittest.TestCase):
-    r"""
-    Compare detector tallies and scores from equivalent (copied under new name)
-    files to the original data. The sampled tally data should be identical
-    to the original, while the errors will decrease by a factor of .. math::
-
-        \overline{\sigma} = \frac{1}{2}\sqrt{2\sigma^2} =
-        \frac{\sigma}{\sqrt{2}}
-
-    """
-
-    def __init__(self, *args, **kwargs):
-        DetectorMixin.__init__(self)
-        unittest.TestCase.__init__(self, *args, **kwargs)
-
-    def setUp(self):
-        self.singleReader = DetectorReader(DET_FILES['bwr0'])
-        self.singleReader.read()
-
-    def test_preservedWithEquivFiles(self):
-        """
-        Verify that the tallies and errors for equivalent files are accurate
-        """
-        files = copyTestFiles('equivalent', DET_FILES['bwr0'], 2)
-        self.sampler = DetectorSampler(files)
-        self._checkContents()
-        for detName, detector in self.singleReader.iterDets():
-            sampledDet = self.sampler.detectors[detName]
-            for attr in ('tallies', 'errors'):
-                single = getattr(detector, attr)
-                if attr == 'errors':
-                    single /= SQRT2
-                tolerances = TOLERANCES[attr]
-                sampled = getattr(sampledDet, attr)
-                assert_allclose(
-                    sampled, single, err_msg='{} {}'.format(detName, attr),
-                    **tolerances)
-        removeTestFiles(files)
-
-
-class DetSamplerTester(DetectorMixin, unittest.TestCase):
-    """
-    Tester that looks for errors in mismatched detector files
-    """
-
-    def __init__(self, *args, **kwargs):
-        DetectorMixin.__init__(self)
-        unittest.TestCase.__init__(self, *args, **kwargs)
 
     @classmethod
     def setUpClass(cls):
