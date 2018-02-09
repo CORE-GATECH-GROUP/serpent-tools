@@ -8,8 +8,8 @@ from os.path import exists
 from six import iteritems
 
 from serpentTools.settings import rc
-from serpentTools.messages import (warning, debug, MismatchedContainersError, 
-                                   error)
+from serpentTools.messages import (warning, debug, MismatchedContainersError,
+                                   error, SamplerError)
 
 MISSING_KEY_FLAG = "<missing>"
 
@@ -121,3 +121,41 @@ class Sampler(object):
     def _precheck(self):
         """Run through a series of checks to make sure data is consistent"""
         pass
+
+
+class SampledContainer(object):
+
+    def __init__(self, N, expectedContainer):
+        self.N = N
+        self._index = 0
+        self.__expectedClass = expectedContainer
+
+    def free(self):
+        pass
+
+    def loadFromContainer(self, container):
+        if not isinstance(container, self.__expectedClass):
+            raise MismatchedContainersError(
+                'Sampled container expects {} type containers, not '
+                '{}'.format(self.__expectedClass, type(container)))
+        if self._index == self.N:
+            name = self.name if hasattr(self, 'name') else ''
+            otherName = container.__class__.__name__
+            msg = ("{} {} has already loaded {} {} objects and cannot exceed "
+                   "this bound ".format(self.__class__.__name__, name, self.N,
+                                        otherName))
+            raise SamplerError(msg)
+        self._loadFromContainer(container)
+        self._index += 1
+
+    def _loadFromContainer(self, container):
+        raise NotImplementedError
+
+    def finalize(self):
+        if self._index != self.N:
+            warning("Data from only {} of {} files has been loaded".format(
+                self._index, self.N))
+        self._finalize()
+
+    def _finalize(self):
+        raise NotImplementedError

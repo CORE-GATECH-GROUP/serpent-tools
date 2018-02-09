@@ -9,7 +9,7 @@ from serpentTools.messages import (MismatchedContainersError, warning,
                                    SamplerError)
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.objects.containers import DetectorBase
-from serpentTools.samplers import Sampler
+from serpentTools.samplers import Sampler, SampledContainer
 
 
 class DetectorSampler(Sampler):
@@ -45,7 +45,7 @@ class DetectorSampler(Sampler):
                 if detName not in self.detectors:
                     self.detectors[detName] = SampledDetector(detName,
                                                               numParsers)
-                self.detectors[detName].loadFromDetector(detector)
+                self.detectors[detName].loadFromContainer(detector)
         for _detName, sampledDet in self.iterDets():
             sampledDet.finalize()
             sampledDet.free()
@@ -55,7 +55,7 @@ class DetectorSampler(Sampler):
             yield name, detector
 
 
-class SampledDetector(DetectorBase):
+class SampledDetector(SampledContainer, DetectorBase):
     """
     Class to store aggregated detector data
 
@@ -81,18 +81,16 @@ class SampledDetector(DetectorBase):
     """
 
     def __init__(self, name, numFiles):
+        SampledContainer.__init__(self, numFiles, DetectorBase)
         DetectorBase.__init__(self, name)
-        self.N = numFiles
         self._allTallies = None
         self._allErrors = None
         self._allScores = None
-        self.__index = 0
-        self.__shape = None
 
     def _isReshaped(self):
         return True
 
-    def loadFromDetector(self, detector):
+    def _loadFromContainer(self, detector):
         """
         Load data from a detector
 
@@ -104,14 +102,10 @@ class SampledDetector(DetectorBase):
         -------
 
         """
-        if self.__index == self.N:
-            raise SamplerError("SampledDetector {} has already loaded {} "
-                               "detectors and cannot exceed this bound"
-                               .format(self.name, self.N))
         if detector.name != self.name:
             warning("Attempting to read from detector with dissimilar names: "
                     "Base: {}, incoming: {}".format(self.name, detector.name))
-        if not self.__index:
+        if not self._index:
             self.__shape = tuple([self.N] + list(detector.tallies.shape))
             self.__allocate(detector.scores is not None)
         if self.__shape[1:] != detector.tallies.shape:
@@ -125,7 +119,6 @@ class SampledDetector(DetectorBase):
             self.indexes = detector.indexes
         if not self.grids:
             self.grids = detector.grids
-        self.__index += 1
 
     def __allocate(self, scoreFlag):
         self._allTallies = empty(self.__shape)
@@ -137,7 +130,7 @@ class SampledDetector(DetectorBase):
         self._allTallies = self._allScores = self._allErrors = None
 
     def __load(self, tallies, errors, scores, oName):
-        index = self.__index
+        index = self._index
         otherHasScores = scores is not None
         selfHasScores = self._allScores is not None
         if otherHasScores and selfHasScores:
@@ -153,15 +146,11 @@ class SampledDetector(DetectorBase):
         self._allTallies[index] = tallies
         self._allErrors[index] = tallies * errors
 
-    def finalize(self):
+    def _finalize(self):
         if self._allTallies is None:
             raise SamplerError(
                 "Detector data has not been loaded and cannot be processed")
-        N = self.__index
-        if N != self.N:
-            warning("Only {} of {} detectors have been loaded.".format(
-                N, self.N))
-
+        N = self._index
         self.tallies = self._allTallies[:N].mean(axis=0)
         self.__computeErrors(N)
 
