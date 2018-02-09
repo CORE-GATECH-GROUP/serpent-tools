@@ -48,6 +48,9 @@ class DetectorSampler(Sampler):
                 self.detectors[detName].loadFromContainer(detector)
         for _detName, sampledDet in self.iterDets():
             sampledDet.finalize()
+
+    def _free(self):
+        for _detName, sampledDet in self.iterDets():
             sampledDet.free()
 
     def iterDets(self):
@@ -83,9 +86,9 @@ class SampledDetector(SampledContainer, DetectorBase):
     def __init__(self, name, numFiles):
         SampledContainer.__init__(self, numFiles, DetectorBase)
         DetectorBase.__init__(self, name)
-        self._allTallies = None
-        self._allErrors = None
-        self._allScores = None
+        self.allTallies = None
+        self.allErrors = None
+        self.allScores = None
 
     def _isReshaped(self):
         return True
@@ -121,20 +124,20 @@ class SampledDetector(SampledContainer, DetectorBase):
             self.grids = detector.grids
 
     def __allocate(self, scoreFlag):
-        self._allTallies = empty(self.__shape)
-        self._allErrors = empty_like(self._allTallies)
+        self.allTallies = empty(self.__shape)
+        self.allErrors = empty_like(self.allTallies)
         if scoreFlag:
-            self._allScores = empty_like(self._allTallies)
+            self.allScores = empty_like(self.allTallies)
 
     def free(self):
-        self._allTallies = self._allScores = self._allErrors = None
+        self.allTallies = self.allScores = self.allErrors = None
 
     def __load(self, tallies, errors, scores, oName):
         index = self._index
         otherHasScores = scores is not None
-        selfHasScores = self._allScores is not None
+        selfHasScores = self.allScores is not None
         if otherHasScores and selfHasScores:
-            self._allScores[index, ...] = scores
+            self.allScores[index, ...] = scores
         elif otherHasScores and not selfHasScores:
             warning("Incoming detector {} has score data, while base does "
                     "not. Skipping score data".format(oName))
@@ -143,25 +146,25 @@ class SampledDetector(SampledContainer, DetectorBase):
                 "Incoming detector {} does not have score data, while base "
                 "does.".format(oName)
             )
-        self._allTallies[index] = tallies
-        self._allErrors[index] = tallies * errors
+        self.allTallies[index] = tallies
+        self.allErrors[index] = tallies * errors
 
     def _finalize(self):
-        if self._allTallies is None:
+        if self.allTallies is None:
             raise SamplerError(
                 "Detector data has not been loaded and cannot be processed")
         N = self._index
-        self.tallies = self._allTallies[:N].mean(axis=0)
+        self.tallies = self.allTallies[:N].mean(axis=0)
         self.__computeErrors(N)
 
-        self.scores = (self._allScores[:N].mean(
-            axis=0) if self._allScores is not None else None)
+        self.scores = (self.allScores[:N].mean(
+            axis=0) if self.allScores is not None else None)
         self._map = {'tallies': self.tallies, 'errors': self.errors,
                      'scores': self.scores}
 
     def __computeErrors(self, N):
         nonZeroT = where(self.tallies > 0)
         zeroIndx = where(self.tallies == 0)
-        self.errors = sqrt(sum(square(self._allErrors), axis=0)) / N
+        self.errors = sqrt(sum(square(self.allErrors), axis=0)) / N
         self.errors[nonZeroT] /= self.tallies[nonZeroT]
         self.errors[zeroIndx] = 0

@@ -9,7 +9,7 @@ from six import iteritems
 
 from serpentTools.settings import rc
 from serpentTools.messages import (warning, debug, MismatchedContainersError,
-                                   error, SamplerError)
+                                   error, SamplerError, info)
 
 MISSING_KEY_FLAG = "<missing>"
 
@@ -42,6 +42,10 @@ class Sampler(object):
         else:
             debug('Skipping pre-check')
         self.process()
+        if self.settings['freeAll']:
+            info("Removing all parsers and containers from memory since "
+                 "setting <sampler.freeAll> is True")
+            self.free()
 
     def read(self):
         """Read all the files and create parser objects"""
@@ -65,8 +69,9 @@ class Sampler(object):
                 if raiseErrors:
                     raise ee
                 else:
-                    warning('The following error occurred while reading file '
-                            '{}:\n\t{}'.format(filePath, str(ee)))
+                    error('The following error occurred while reading file {} '
+                          'and was suppressed since setting <raiseErrors> is '
+                          'True}:\n{}'.format(filePath, str(ee)))
                     continue
             self.parsers.add(parser)
             self.map[filePath] = parser
@@ -121,6 +126,15 @@ class Sampler(object):
     def _precheck(self):
         """Run through a series of checks to make sure data is consistent"""
         pass
+
+    def free(self):
+        """Remove all parsers and individual containers from memory"""
+        self._free()  # call subclass specific before wiping all parsers
+        self.parsers = set()
+        self.map = {}
+
+    def _free(self):
+        raise NotImplementedError
 
 
 class SampledContainer(object):

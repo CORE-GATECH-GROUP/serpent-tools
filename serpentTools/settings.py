@@ -71,6 +71,12 @@ defaultSettings = {
                        'errors if a file does not exist',
         'type': bool
     },
+    'sampler.freeAll': {
+        'default': False,
+        'description': 'If true, do not retain data from parsers after '
+                       'reading. Limits memory usage after reading',
+        'type': bool,
+    },
     'sampler.raiseErrors': {
         'default': True,
         'description': 'If True, stop at the first error. Otherwise, '
