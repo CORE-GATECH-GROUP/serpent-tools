@@ -34,7 +34,8 @@ class DepletionSampler(Sampler):
         misMatch = {}
         for parser in self:
             for key, value in iteritems(parser.metadata):
-                valCheck = tuple(value)
+                valCheck = (tuple(value) if key in CONSTANT_MDATA
+                            else value.size)
                 if key not in misMatch:
                     misMatch[key] = {}
                 if valCheck not in misMatch[key]:
@@ -86,25 +87,29 @@ class DepletionSampler(Sampler):
         for _mName, material in iteritems(self.materials):
             material.free()
 
+    def iterMaterials(self):
+        for name, material in iteritems(self.materials):
+            yield name, material
+
 
 class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
     def __init__(self, N, name, metadata):
         SampledContainer.__init__(self, N, DepletedMaterialBase)
         DepletedMaterialBase.__init__(self, name, metadata)
-        self.__shape = None
         self.uncertainties = {}
         self.allData = {}
 
     def _loadFromContainer(self, container):
         for varName, varData in iteritems(container.data):
             if not self.allData:
-                self.__allocateLike(varData, container.data.keys())
+                self.__allocateLike(container)
             self.allData[varName][self._index] = varData
 
-    def __allocateLike(self, varData, keys):
-        self.__shape = tuple([self.N] + list(varData.shape))
-        self.allData = {key: zeros(self.__shape) for key in keys}
+    def __allocateLike(self, container):
+        for varName, varData in iteritems(container.data):
+            shape = tuple([self.N] + list(varData.shape))
+            self.allData[varName] = zeros(shape)
 
     def _finalize(self):
         for varName, varData in iteritems(self.allData):

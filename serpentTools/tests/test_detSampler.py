@@ -12,14 +12,6 @@ File Descriptions
 *. ``bwr_smallxy_det0.m`` has the same detector definitions as
     ``bwr_0_det0.m``, except the spatial grid for ``xymesh`` is smaller.
 
-.. note::
-
-    The relative error tolerances must be low, :math:`O(1)`, because the
-    error values themselves are incredibly low. In writing these tests,
-    a relative error of 1E-2 resulted in a 5% difference between
-    error quantities, which are all :math:`O(1E-3)`. A tight absolute
-    tolerance can still be achieved.
-
 """
 from math import sqrt
 from os import path
@@ -44,12 +36,12 @@ _DET_FILES = {
 DET_FILES = {key: path.join(TEST_ROOT, val + '_det0.m')
              for key, val in iteritems(_DET_FILES)}
 
+SQRT2 = sqrt(2)
+
 TOLERANCES = {
     'errors': {'atol': 1E-16, 'rtol': 1},
     'tallies': {'atol': 0, 'rtol': 1E-7}
 }
-
-SQRT2 = sqrt(2)
 
 
 class DetSamplerTester(unittest.TestCase):
@@ -78,7 +70,7 @@ class DetSamplerTester(unittest.TestCase):
         r0 = self.singleReader
         r1 = DetectorReader(DET_FILES['bwr1'])
         r1.read()
-        for detName in self.singleReader.detectors:
+        for detName in self.sampler.detectors:
             expectedTallies, expectedErrors = (_getExpectedAverages(
                 r0.detectors[detName], r1.detectors[detName]))
             uniq = self.sampler.detectors[detName]
