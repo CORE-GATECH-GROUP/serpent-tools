@@ -7,45 +7,17 @@ from serpentTools import messages
 from serpentTools.objects import NamedObject, convertVariableName
 
 
-class DepletedMaterial(NamedObject):
-    """
-    Class for storing material data from ``_dep.m`` files.
+class DepletedMaterialBase(NamedObject):
 
-    Parameters
-    ----------
-    parser: :py:class:`~serpentTools.parsers.depletion.DepletionReader`
-        Parser that found this material.
-        Used to obtain file metadata like isotope names and burnup
-    name: str
-        Name of this material
-
-    Attributes
-    ----------
-    zai: numpy.array or None
-        Isotope id's
-    names: numpy.array or None
-        Names of isotopes
-    days: numpy.array or None
-        Days over which the material was depleted
-    adens: numpy.array or None
-        Atomic density over time for each nuclide
-    mdens: numpy.array or None
-        Mass density over time for each nuclide
-    burnup: numpy.array or None
-        Burnup of the material over time
-
-    """
-
-    def __init__(self, parser, name):
+    def __init__(self, name, metadata):
         NamedObject.__init__(self, name)
         self.data = {}
-        self.zai = parser.metadata.get('zai', None)
-        self.names = parser.metadata.get('names', None)
-        self.days = parser.metadata.get('days', None)
-        self.filePath = parser.filePath
         self.__burnup = None
-        self.__adens = None
         self.__mdens = None
+        self.__adens = None
+        self.zai = metadata.get('zai', None)
+        self.names = metadata.get('names', None)
+        self.days = metadata.get('days', None)
 
     def __getitem__(self, item):
         if item not in self.data:
@@ -58,63 +30,47 @@ class DepletedMaterial(NamedObject):
         if 'burnup' not in self.data:
             raise AttributeError('Burnup for material {} has not been loaded'
                                  .format(self.name))
-        if self.__burnup is None:
-            self.__burnup = self.data['burnup']
-        return self.__burnup
+        return self.data['burnup']
 
     @property
     def adens(self):
         if 'adens' not in self.data:
             raise AttributeError('Atomic densities for material {} have not '
                                  'been loaded'.format(self.name))
-        if self.__adens is None:
-            self.__adens = self.data['adens']
-        return self.__adens
+        return self.data['adens']
 
     @property
     def mdens(self):
         if 'mdens' not in self.data:
             raise AttributeError('Mass densities for material {} has not been '
                                  'loaded'.format(self.name))
-        if self.__mdens is None:
-            self.__mdens = self.data['mdens']
-        return self.__mdens
+        return self.data['mdens']
 
-    def addData(self, variable, rawData):
-        """
-        Add data straight from the file onto a variable.
-
-        Parameters
-        ----------
-        variable: str
-            Name of the variable directly from ``SERPENT``
-        rawData: list
-            List of strings corresponding to the raw data from the file
-        """
-        newName = convertVariableName(variable)
-        messages.debug('Adding {} data to {}'.format(newName, self.name))
-        if isinstance(rawData, str):
-            scratch = [float(item) for item in rawData.split()]
+    def _getXSlice(self, xUnits, timePoints):
+        allX = self.days if xUnits == 'days' else self.data[xUnits]
+        if timePoints is not None:
+            colIndices = [indx for indx, xx in enumerate(allX)
+                          if xx in timePoints]
+            xVals = allX[colIndices]
         else:
-            scratch = []
-            for line in rawData:
-                if line:
-                    scratch.append([float(item) for item in line.split()])
-        self.data[newName] = numpy.array(scratch)
+            colIndices = None
+            xVals = allX
+        return xVals, colIndices
 
-    @messages.deprecated('getValues')
-    def getXY(self, xUnits, yUnits, timePoints=None, names=None):
-        """
-        Return x values for given time, and corresponding isotope values.
+    def _getIsoID(self, isotopes):
+        """Return the row indices that correspond to specfic isotopes."""
+        if not isotopes:
+            return numpy.array(list(range(len(self.names))), dtype=int)
+        isoList = [isotopes] if isinstance(isotopes, (str, int)) else isotopes
+        rowIDs = numpy.empty_like(isoList, dtype=int)
+        for indx, isotope in enumerate(isoList):
+            rowIDs[indx] = self.names.index(isotope)
+        return rowIDs
 
-        .. deprecated:: 0.1.0
-            Use :meth:`getValues` instead.
-        """
-        if timePoints is None:
-            timePoints = self.days
-            return self.getValues(xUnits, yUnits, timePoints, names), self.days
-        else:
-            return self.getValues(xUnits, yUnits, timePoints, names)
+    def _checkTimePoints(self, xUnits, timePoints):
+        valid = self.days if xUnits == 'days' else self.data[xUnits]
+        badPoints = [str(time) for time in timePoints if time not in valid]
+        return badPoints
 
     def getValues(self, xUnits, yUnits, timePoints=None, names=None):
         """
@@ -151,11 +107,11 @@ class DepletedMaterial(NamedObject):
             if any(timeCheck):
                 raise KeyError('The following times were not present in file'
                                '{}\n{}'.format(self.filePath,
-                                             ', '.join(timeCheck)))
+                                               ', '.join(timeCheck)))
         if names and self.names is None:
             raise AttributeError(
-                'Isotope names not stored on DepletedMaterial {}.'
-                .format(self.name))
+                'Isotope names not stored on DepletedMaterial '
+                '{}.'.format(self.name))
         xVals, colIndices = self._getXSlice(xUnits, timePoints)
         rowIndices = self._getIsoID(names)
         allY = self.data[yUnits]
@@ -168,32 +124,69 @@ class DepletedMaterial(NamedObject):
                                    else allY[rowId][:])
         return yVals
 
-    def _checkTimePoints(self, xUnits, timePoints):
-        valid = self.days if xUnits == 'days' else self.data[xUnits]
-        badPoints = [str(time) for time in timePoints if time not in valid]
-        return badPoints
 
-    def _getXSlice(self, xUnits, timePoints):
-        allX = self.days if xUnits == 'days' else self.data[xUnits]
-        if timePoints is not None:
-            colIndices = [indx for indx, xx in enumerate(allX)
-                          if xx in timePoints]
-            xVals = allX[colIndices]
+class DepletedMaterial(DepletedMaterialBase):
+    """
+    Class for storing material data from ``_dep.m`` files.
+
+    While ``adens``, ``mdens``, and ``burnup`` are accessible directly
+    with ``material.adens``, all variables read in from the file
+    can be accessed through the ``data`` dictionary::
+
+        >>> assert material.adens is material.data['adens']
+        >>> assert material.adens is material['adens']
+        # The three methods are equivalent
+
+    Parameters
+    ----------
+    parser: :py:class:`~serpentTools.parsers.depletion.DepletionReader`
+        Parser that found this material.
+        Used to obtain file metadata like isotope names and burnup
+    name: str
+        Name of this material
+
+    Attributes
+    ----------
+    zai: numpy.array or None
+        Isotope id's
+    names: numpy.array or None
+        Names of isotopes
+    days: numpy.array or None
+        Days over which the material was depleted
+    adens: numpy.array or None
+        Atomic density over time for each nuclide
+    mdens: numpy.array or None
+        Mass density over time for each nuclide
+    burnup: numpy.array or None
+        Burnup of the material over time
+
+    """
+
+    def __init__(self, name, parser):
+        DepletedMaterialBase.__init__(self, name, parser.metadata)
+        self.filePath = parser.filePath
+
+    def addData(self, variable, rawData):
+        """
+        Add data straight from the file onto a variable.
+
+        Parameters
+        ----------
+        variable: str
+            Name of the variable directly from ``SERPENT``
+        rawData: list
+            List of strings corresponding to the raw data from the file
+        """
+        newName = convertVariableName(variable)
+        messages.debug('Adding {} data to {}'.format(newName, self.name))
+        if isinstance(rawData, str):
+            scratch = [float(item) for item in rawData.split()]
         else:
-            colIndices = None
-            xVals = allX
-        return xVals, colIndices
-
-    def _getIsoID(self, isotopes):
-        """Return the row indices that correspond to specfic isotopes."""
-        # TODO: List comprehension to make rowIDs then return array
-        if not isotopes:
-            return numpy.array(list(range(len(self.names))), dtype=int)
-        isoList = [isotopes] if isinstance(isotopes, (str, int)) else isotopes
-        rowIDs = numpy.empty_like(isoList, dtype=int)
-        for indx, isotope in enumerate(isoList):
-            rowIDs[indx] = self.names.index(isotope)
-        return rowIDs
+            scratch = []
+            for line in rawData:
+                if line:
+                    scratch.append([float(item) for item in line.split()])
+        self.data[newName] = numpy.array(scratch)
 
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
              legend=True, label=True, xlabel=None, ylabel=None):
@@ -228,7 +221,7 @@ class DepletedMaterial(NamedObject):
 
         Returns
         -------
-        ``matplotlib axes``
+        matplotlib.pyplot.axes
             Axes corresponding to the figure that was plotted
 
         See Also

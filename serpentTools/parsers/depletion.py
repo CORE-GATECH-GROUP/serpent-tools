@@ -119,7 +119,7 @@ class DepletionReader(MaterialReader):
             return
         if name not in self.materials:
             messages.debug('Adding material {}...'.format(name))
-            self.materials[name] = DepletedMaterial(self, name)
+            self.materials[name] = DepletedMaterial(name, self)
             messages.debug('  added')
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
