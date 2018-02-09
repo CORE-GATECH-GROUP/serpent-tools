@@ -8,7 +8,10 @@ from os.path import exists
 from six import iteritems
 
 from serpentTools.settings import rc
-from serpentTools.messages import warning, debug, MismatchedContainersError
+from serpentTools.messages import (warning, debug, MismatchedContainersError, 
+                                   error)
+
+MISSING_KEY_FLAG = "<missing>"
 
 
 def extendFiles(files):
@@ -76,29 +79,30 @@ class Sampler(object):
         matches = {}
         for parser in self.parsers:
             if not hasattr(parser, attrName):
-                if 'missing' not in matches:
-                    matches['missing'] = 1
+                if MISSING_KEY_FLAG not in matches:
+                    matches[MISSING_KEY_FLAG] = {parser.filePath}
                 else:
-                    matches['missing'] += 1
+                    matches[MISSING_KEY_FLAG].add(parser.filePath)
                 continue
             d = getattr(parser, attrName)
             keys = tuple(d.keys())
             if sort:
                 keys = tuple(sorted(keys))
             if keys not in matches:
-                matches[keys] = 1
+                matches[keys] = {parser.filePath}
             else:
-                matches[keys] += 1
+                matches[keys].add(parser.filePath)
         if len(matches) > 1:
             self._raiseErrorMsgFromDict(matches, attrName, objName)
 
     @staticmethod
     def _raiseErrorMsgFromDict(misMatches, header, objName):
-        msg = 'Files do not contain a consistent set of {}\n'.format(objName)
-        msg += 'Number of files: ' + header
+        msg = 'Files do not contain a consistent set of {}'.format(objName)
+        critMsgs = [msg, header + ": Parser files"]
         for key, values in iteritems(misMatches):
-            numMismatch = values if isinstance(values, int) else len(values)
-            msg += '\n{}: {}'.format(numMismatch, key)
+            critMsgs.append('{}: {}'.format(key, ', '.join(values)))
+        for critMsg in critMsgs:
+            error(critMsg)
         raise MismatchedContainersError(msg)
 
     def __iter__(self):

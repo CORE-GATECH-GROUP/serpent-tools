@@ -29,12 +29,10 @@ class DepletionSampler(Sampler):
                 valCheck = tuple(value)
                 if key not in misMatch:
                     misMatch[key] = {}
-                    misMatch[key][valCheck] = 1
-                    continue
                 if valCheck not in misMatch[key]:
-                    misMatch[key][valCheck] = 1
+                    misMatch[key][valCheck] = {parser.filePath}
                 else:
-                    misMatch[key][valCheck] += 1
+                    misMatch[key][valCheck].add(parser.filePath)
         for mKey, matches in iteritems(misMatch):
             if len(matches) > 1:
                 self._raiseErrorMsgFromDict(matches, 'values',

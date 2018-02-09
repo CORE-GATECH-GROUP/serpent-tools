@@ -31,9 +31,9 @@ class DetectorSampler(Sampler):
                 level = sizes[detName]
                 shape = det.tallies.shape
                 if shape not in level:
-                    level[shape] = {parser}
+                    level[shape] = {parser.filePath}
                 else:
-                    level[shape].add(parser)
+                    level[shape].add(parser.filePath)
         for detName, misMatches in iteritems(sizes):
             if len(misMatches) > 1:
                 self._raiseErrorMsgFromDict(misMatches, 'shape', 'detector')
