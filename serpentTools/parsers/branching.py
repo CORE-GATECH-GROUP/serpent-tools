@@ -6,7 +6,7 @@ from numpy import array
 from serpentTools.objects import splitItems
 from serpentTools.objects.containers import BranchContainer
 from serpentTools.objects.readers import XSReader
-from serpentTools.messages import debug, info
+from serpentTools.messages import debug, info, error
 
 
 class BranchingReader(XSReader):
@@ -25,8 +25,9 @@ class BranchingReader(XSReader):
         self.branches = {}
         self._whereAmI = {key: None for key in
                           {'runIndx', 'coefIndx', 'buIndx', 'universe'}}
+        self._totalBranches = None
 
-    def read(self):
+    def _read(self):
         """Read the branching file and store the coefficients."""
         info('Preparing to read {}'.format(self.filePath))
         with open(self.filePath) as fObj:
@@ -68,6 +69,9 @@ class BranchingReader(XSReader):
         if header is None:
             return
         indx, runTot, coefIndx, totCoef, totUniv = header
+        # save total run number if it's not saved:
+        if self._totalBranches == None:
+            self._totalBranches = int(runTot)
         self._whereAmI['runIndx'] = int(indx)
         self._whereAmI['coefIndx'] = int(coefIndx)
         branchNames = tuple(self._advance()[1:])
@@ -115,3 +119,17 @@ class BranchingReader(XSReader):
         """Iterate over branches yielding paired branch IDs and containers"""
         for bID, b in iteritems(self.branches):
             yield bID, b
+
+    def _precheck(self):
+        """todo: is there a good precheck to do here?
+        """
+        pass
+
+    def _postcheck(self):
+        """Make sure Serpent finished printing output.
+        """
+
+        if self._totalBranches != self._whereAmI['runIndx']:
+            # maybe this should be an exception?
+            error("Serpent appears to have stopped printing coefficient\n"
+                    "mode output early for file {}".format(self.filePath))

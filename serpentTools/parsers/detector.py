@@ -31,7 +31,7 @@ class DetectorReader(BaseReader):
         else:
             self._loadAll = False
 
-    def read(self):
+    def _read(self):
         """Read the file and store the detectors."""
         keys = ['DET']
         separators = ['\n', '];']
@@ -69,3 +69,9 @@ class DetectorReader(BaseReader):
         detector.grids[binType] = data
         messages.debug('Added bin data {} to detector {}'
                        .format(binType, detName))
+
+    def _precheck(self):
+        pass
+
+    def _postcheck(self):
+        pass

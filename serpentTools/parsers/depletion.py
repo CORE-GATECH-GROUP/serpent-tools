@@ -7,7 +7,7 @@ from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools import messages
+from serpentTools.messages import warning, info, debug
 
 
 class DepletionReader(MaterialReader):
@@ -52,12 +52,12 @@ class DepletionReader(MaterialReader):
         patterns = self.settings['materials'] or ['.*']
         # match all materials if nothing given
         if any(['_' in pat for pat in patterns]):
-            messages.warning('Materials with underscores are not supported.')
+            warning('Materials with underscores are not supported.')
         return [re.compile(mat) for mat in patterns]
 
-    def read(self):
+    def _read(self):
         """Read through the depletion file and store requested data."""
-        messages.info('Preparing to read {}'.format(self.filePath))
+        info('Preparing to read {}'.format(self.filePath))
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
         keys.extend(self.settings['metadataKeys'])
         separators = ['\n', '];', '\r\n']
@@ -72,8 +72,8 @@ class DepletionReader(MaterialReader):
         if 'days' in self.metadata:
             for mKey in self.materials:
                 self.materials[mKey].days = self.metadata['days']
-        messages.info('Done reading depletion file')
-        messages.debug('  found {} materials'.format(len(self.materials)))
+        info('Done reading depletion file')
+        debug('  found {} materials'.format(len(self.materials)))
 
     def _addMetadata(self, chunk):
         options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
@@ -118,9 +118,9 @@ class DepletionReader(MaterialReader):
                 and variable not in self.settings['materialVariables']):
             return
         if name not in self.materials:
-            messages.debug('Adding material {}...'.format(name))
+            debug('Adding material {}...'.format(name))
             self.materials[name] = DepletedMaterial(self, name)
-            messages.debug('  added')
+            debug('  added')
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
         else:
@@ -130,3 +130,13 @@ class DepletionReader(MaterialReader):
                     continue
                 cleaned.append(line[:line.index('%')])
         self.materials[name].addData(variable, cleaned)
+
+    def _precheck(self):
+        """todo
+        """
+        pass
+
+    def _postcheck(self):
+        """todo
+        """
+        pass

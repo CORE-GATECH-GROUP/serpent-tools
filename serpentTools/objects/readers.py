@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from serpentTools.settings import rc
 
 
@@ -26,6 +27,15 @@ class BaseReader(object):
         return '<{} reading {}>'.format(self.__class__.__name__, self.filePath)
 
     def read(self):
+        """The main method for reading that not only parses data, but also
+        runs pre and post checks.
+        """
+        self._precheck()
+        self._read()
+        self._postcheck()
+
+    @abstractmethod
+    def _read(self):
         """Read the file and store the data.
 
         :warning:
@@ -33,7 +43,22 @@ class BaseReader(object):
             This read function has not been implemented yet
 
         """
-        raise NotImplementedError
+        pass
+
+    @abstractmethod
+    def _precheck(self):
+        """Pre-checking, e.g., make sure Serpent did not
+        exit abnormally, or disk ran out of space while parsing.
+        """
+        pass
+
+    @abstractmethod
+    def _postcheck(self):
+        """Make sure data looks reasonable. Could possibly check for
+        negative cross sections, negative material densitites, etc (which
+        can happen if using the reprocessing interface incorrectly).
+        """
+        pass
 
 
 class MaterialReader(BaseReader):
@@ -42,9 +67,6 @@ class MaterialReader(BaseReader):
     def __init__(self, filePath, readerSettingsLevel):
         BaseReader.__init__(self, filePath, readerSettingsLevel)
         self.materials = {}
-
-    def read(self):
-        raise NotImplementedError
 
 
 class XSReader(BaseReader):
@@ -56,8 +78,6 @@ class XSReader(BaseReader):
         self.settings.pop('variableGroups')
         self.settings.pop('variableExtras')
 
-    def read(self):
-        raise NotImplementedError
 
     def _checkAddVariable(self, variableName):
         """Check if the data for the variable should be stored"""
