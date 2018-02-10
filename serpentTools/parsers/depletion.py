@@ -7,7 +7,7 @@ from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools.messages import warning, info, debug
+from serpentTools.messages import warning, info, debug, error
 
 
 class DepletionReader(MaterialReader):
@@ -46,6 +46,9 @@ class DepletionReader(MaterialReader):
         # Captures variables for total block from string::
         #  TOT_ADENS --> ('ADENS', )
         #  ING_TOX --> ('ING_TOX', )
+
+        # track how many materials appear in the file
+        self.materialCount = 0
 
     def _makeMaterialRegexs(self):
         """Return the patterns by which to find the requested materials."""
@@ -132,11 +135,19 @@ class DepletionReader(MaterialReader):
         self.materials[name].addData(variable, cleaned)
 
     def _precheck(self):
-        """todo
+        """do a quick scan to see how many materials appear in the file
         """
-        pass
+        with open(self.filePath) as fh:
+            for line in fh:
+                sline = line.split()
+                if sline == []:
+                    continue
+                elif 'MAT' == line.split()[0]:
+                    self.materialCount += 1
 
     def _postcheck(self):
-        """todo
+        """ensure the parser grabbed the same number of counted materials
         """
-        pass
+        if len(self.materials) != self.materialCount:
+            error("Did not parse as many materials as counted in file\n"
+                  "{}".format(self.filePath))

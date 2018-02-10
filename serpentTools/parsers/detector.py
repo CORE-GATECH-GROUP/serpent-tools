@@ -6,6 +6,7 @@ from serpentTools.engines import KeywordParser
 from serpentTools.objects.containers import Detector
 from serpentTools.settings import messages
 from serpentTools.objects.readers import BaseReader
+from serpentTools.messages import error
 
 NUM_COLS = 12
 # number of columns/bins in a single detector line
@@ -30,6 +31,7 @@ class DetectorReader(BaseReader):
             self._loadAll = True
         else:
             self._loadAll = False
+        self.detCount = 0 # how many dets in file?
 
     def _read(self):
         """Read the file and store the detectors."""
@@ -71,7 +73,17 @@ class DetectorReader(BaseReader):
                        .format(binType, detName))
 
     def _precheck(self):
-        pass
+        """ Count how many detectors are in the file
+        """
+        with open(self.filePath) as fh:
+            for line in fh:
+                sline = line.split()
+                if sline == []:
+                    continue
+                elif 'DET' in sline[0]:
+                    self.detCount += 1
 
     def _postcheck(self):
-        pass
+        if self.detCount != len(self.detectors):
+            error("Did not parse expected number of detectors in file\n"
+                  "{}".format(self.filePath))

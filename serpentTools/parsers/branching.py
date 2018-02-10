@@ -69,9 +69,6 @@ class BranchingReader(XSReader):
         if header is None:
             return
         indx, runTot, coefIndx, totCoef, totUniv = header
-        # save total run number if it's not saved:
-        if self._totalBranches == None:
-            self._totalBranches = int(runTot)
         self._whereAmI['runIndx'] = int(indx)
         self._whereAmI['coefIndx'] = int(coefIndx)
         branchNames = tuple(self._advance()[1:])
@@ -121,9 +118,10 @@ class BranchingReader(XSReader):
             yield bID, b
 
     def _precheck(self):
-        """todo: is there a good precheck to do here?
+        """Currently, just grabs total number of coeff calcs
         """
-        pass
+        with open(self.filePath) as fObj:
+            self._totalBranches = int(fObj.readline().split()[1])
 
     def _postcheck(self):
         """Make sure Serpent finished printing output.
