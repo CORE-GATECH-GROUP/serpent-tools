@@ -90,12 +90,6 @@ class DepletedMaterialBase(NamedObject):
         KeyError
             If at least one of the days requested is not present
         """
-        if timePoints is not None:
-            timeCheck = self._checkTimePoints(xUnits, timePoints)
-            if any(timeCheck):
-                raise KeyError(
-                    'The following times were not present for material {}'
-                    '\n{}'.format(self.name, ', '.join(timeCheck)))
         if names and self.names is None:
             raise AttributeError(
                 'Isotope names not stored on DepletedMaterial '
@@ -111,17 +105,20 @@ class DepletedMaterialBase(NamedObject):
             return yVals
         return data[:, cols][rows]
 
-    def _checkTimePoints(self, xUnits, timePoints):
+    def _checkTimePoints(self, actual, requested):
         """Return a list of all requested points in time not stored."""
-        valid = self.days if xUnits == 'days' else self.data[xUnits]
-        badPoints = [str(time) for time in timePoints if time not in valid]
-        return badPoints
+        badPoints = [str(time) for time in requested if time not in actual]
+        if any(badPoints):
+            raise KeyError(
+                'The following times were not present for material {}'
+                '\n{}'.format(self.name, ', '.join(badPoints)))
 
     def _getColIndices(self, xUnits, timePoints):
         """Return row and column indices corresponding to isotopes and times"""
         allX = self.days if xUnits == 'days' else self.data[xUnits]
         if timePoints is None:
             return numpy.arange(len(allX), dtype=int)
+        self._checkTimePoints(allX, timePoints)
         colIndices = [indx for indx, xx in enumerate(allX) if xx in timePoints]
         return colIndices
 
@@ -202,7 +199,7 @@ class DepletedMaterial(DepletedMaterialBase):
         self.data[newName] = numpy.array(scratch)
 
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
-             legend=True, label=True, xlabel=None, ylabel=None):
+             autolabel=True,legend=True, xlabel=None, ylabel=None, **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -223,7 +220,7 @@ class DepletedMaterial(DepletedMaterialBase):
             Otherwise, create a new plot
         legend: bool
             Automatically add the legend
-        label: bool
+        autolabel: bool
             Automatically label the axis
         xlabel: None or str
             If given, use this as the label for the x-axis.
@@ -231,6 +228,14 @@ class DepletedMaterial(DepletedMaterialBase):
         ylabel: None or str
             If given, use this as the label for the y-axis.
             Otherwise, use yUnits
+        kwargs:
+            Optional keyword arguments to pass to matplotlib.pyplot.plot
+
+        .. note::
+
+            ``kwargs`` will be passed to the plot for all isotopes.
+            If ``c='r'`` is passed, to make a plot red, then data for
+            all isotopes plotted will be red and potentially very confusing.
 
         Returns
         -------
@@ -240,19 +245,19 @@ class DepletedMaterial(DepletedMaterialBase):
         See Also
         --------
         :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
-
+        :py:func:`matplotlib.pyplot.plot`
         """
         xVals = timePoints or self.days
         yVals = self.getValues(xUnits, yUnits, xVals, names)
         ax = ax or pyplot.axes()
         labels = names or self.names
         for row in range(yVals.shape[0]):
-            ax.plot(xVals, yVals[row], label=labels[row])
+            ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
 
         # format the plot
         if legend:
             ax.legend()
-        if label:
+        if autolabel:
             ax.set_xlabel(xlabel or xUnits)
             ax.set_ylabel(ylabel or yUnits)
         return ax

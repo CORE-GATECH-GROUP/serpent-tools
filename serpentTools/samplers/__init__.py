@@ -13,6 +13,11 @@ from serpentTools.messages import (warning, debug, MismatchedContainersError,
 
 MISSING_KEY_FLAG = "<missing>"
 
+SPREAD_PLOT_KWARGS = {
+    'c': 'k',
+    'alpha': 0.5
+}
+
 
 def extendFiles(files):
     """Return a set of files where some may contain * globs"""

@@ -4,12 +4,14 @@ and obtaining true uncertainties
 """
 from math import fabs
 from six import iteritems
+from six.moves import range
 from numpy import zeros, zeros_like
 
 from matplotlib import pyplot
 
+from serpentTools.messages import SamplerError
 from serpentTools.parsers.depletion import DepletionReader
-from serpentTools.samplers import Sampler, SampledContainer
+from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
 from serpentTools.objects.materials import DepletedMaterialBase
 
 CONSTANT_MDATA = ('names', 'zai')
@@ -123,7 +125,8 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         self.allData = {}
 
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
-             sigma=3, legend=True, label=True, xlabel=None, ylabel=None):
+             sigma=3, legend=True, xlabel=None, ylabel=None,
+             **kwargs):
         """
         Plot the average of some data vs. time for some or all isotopes.
 
@@ -146,14 +149,20 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             Confidence interval for uncertainties
         legend: bool
             Automatically add the legend
-        label: bool
-            Automatically label the axis
         xlabel: None or str
             If given, use this as the label for the x-axis.
             Otherwise, use xUnits
         ylabel: None or str
             If given, use this as the label for the y-axis.
             Otherwise, use yUnits
+        kwargs:
+            Optional keyword arguments to pass to matplotlib.pyplot.errorbar
+
+        .. note::
+
+            ``kwargs`` will be passed to the errorbar plot for all isotopes.
+            If ``c='r'`` is passed, to make a plot red, then data for
+            all isotopes plotted will be red and potentially very confusing.
 
         Returns
         -------
@@ -163,6 +172,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         See Also
         --------
         :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
+        :py:func:`matplotlib.pyplot.errorbar`
 
         """
         if sigma and yUnits not in self.uncertainties:
@@ -183,17 +193,79 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         labels = names or self.names
         yVals = yVals.copy(order='F')
         yUncs = yUncs.copy(order='F') * sigma
+
         for row in range(yVals.shape[0]):
             ax.errorbar(xVals, yVals[row], yerr=yUncs[row], xerr=xUncs,
-                        label=labels[row])
+                        label=labels[row], **kwargs)
 
         # format the plot
         if legend:
             ax.legend()
-        if label:
-            confStr = r'$\pm{} \sigma$'.format(sigma) if sigma else ''
-            xlabel = (xlabel or xUnits) + confStr
-            ylabel = (ylabel or yUnits) + confStr
-            ax.set_xlabel(xlabel)
-            ax.set_ylabel(ylabel)
+        if xlabel or ylabel:
+            ax = sigmaLabel(ax, xlabel, ylabel, sigma)
         return ax
+
+    def spreadPlot(self, xUnits, yUnits, isotope, timePoints=None, ax=None,
+                   xLabel=None, yLabel=None, primaryColor='r', autolabel=True):
+        """
+        Plot the mean quantity and data from all sampled files.
+
+        Parameters
+        ----------
+        xUnits
+        yUnits
+        isotope
+        timePoints
+        ax
+        primaryColor
+        autolabel
+
+        Returns
+        -------
+
+        Raises
+        ------
+        SamplerError
+            If ``self.allData`` is empty. Sampler was instructed to
+            free all materials and does not retain data from all containers
+
+        See Also
+        --------
+        :py:meth:`~serpentTools.samplers.depletion.SampledDepletedMaterial.plot`
+
+        """
+        if not self.allData:
+            raise SamplerError("Data from all sampled files has been cleared "
+                               "and cannot be used in this plot method")
+        ax = ax or pyplot.axes()
+        xVals = timePoints or self.days
+        rows = self._getRowIndices([isotope])
+        cols = self._getColIndices(xUnits, timePoints)
+        primaryData = self._slice(self.data[yUnits], rows, cols)[0]
+        N = self._index
+        sampledData = self.allData[yUnits][:N]
+        for n in range(N):
+            plotData = self._slice(sampledData[n], rows, cols)[0]
+            ax.plot(xVals, plotData, **SPREAD_PLOT_KWARGS)
+        ax.plot(xVals, primaryData, c=primaryColor)
+        if autolabel:
+            ax = sigmaLabel(ax, xLabel or xUnits, yLabel or yUnits, 0)
+        return ax
+
+
+def sigmaLabel(ax, xlabel, ylabel, sigma=None):
+    confStr = r'$\pm{} \sigma$'.format(sigma) if sigma else ''
+    if xlabel:
+        ax.set_xlabel(xlabel + confStr)
+    if ylabel:
+        ax.set_ylabel(ylabel + confStr)
+    return ax
+
+
+if __name__ is '__main__':
+    d = DepletionSampler(
+        '/home/ajohnson400/research/serpent-tools/models/repeat/*dep.m')
+    assert d.materials
+    f = d.materials['fue1']
+    f.spreadPlot('days', 'adens', 'U235')
+    pyplot.show()
