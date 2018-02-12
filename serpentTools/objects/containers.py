@@ -461,7 +461,7 @@ class DetectorBase(NamedObject):
 
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
                  cmap=None, addcbar=True, xlabel=None, ylabel=None,
-                 xscale='linear', yscale='linear'):
+                 xscale='linear', yscale='log'):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -484,7 +484,7 @@ class DetectorBase(NamedObject):
         xlabel: None or str
             Label to apply to x-axis. If not given, defaults to xdim
         ylabel: None or str
-            Label to apply to y-axis. If not given, defaults to xdim
+            Label to apply to y-axis. If not given, defaults to ydim
         xscale: {'log', 'linear'}
             Scale to apply to x-axis
         yscale: {'log', 'linear'}
@@ -498,7 +498,7 @@ class DetectorBase(NamedObject):
         Raises
         ------
         SerpentToolsException
-            If data to be plotted, with or without constraints, is 2D
+            If data to be plotted, with or without constraints, is not 1D
         KeyError
             If the data set by ``what`` not in the allowed selection
 

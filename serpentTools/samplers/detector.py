@@ -2,14 +2,16 @@
 Class to read and process a batch of similar detector files
 """
 from six import iteritems
+from six.moves import range
 
-from numpy import empty, empty_like, square, sqrt, sum, where
+from numpy import empty, empty_like, square, sqrt, sum, where, arange
+from matplotlib import pyplot
 
 from serpentTools.messages import (MismatchedContainersError, warning,
-                                   SamplerError)
+                                   SamplerError, SerpentToolsException)
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.objects.containers import DetectorBase
-from serpentTools.samplers import Sampler, SampledContainer
+from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
 
 
 class DetectorSampler(Sampler):
@@ -130,7 +132,9 @@ class SampledDetector(SampledContainer, DetectorBase):
             self.allScores = empty_like(self.allTallies)
 
     def free(self):
-        self.allTallies = self.allScores = self.allErrors = None
+        self.allTallies = None
+        self.allScores = None
+        self.allErrors = None
 
     def __load(self, tallies, errors, scores, oName):
         index = self._index
@@ -168,3 +172,78 @@ class SampledDetector(SampledContainer, DetectorBase):
         self.errors = sqrt(sum(square(self.allErrors), axis=0)) / N
         self.errors[nonZeroT] /= self.tallies[nonZeroT]
         self.errors[zeroIndx] = 0
+
+    def spreadPlot(self, xdim=None, fixed=None, ax=None, xlabel=None,
+                   ylabel=None, xscale='log', yscale='log', autolegend=True):
+        """
+        Plot the mean tally value against all sampled detector data
+
+        Parameters
+        ----------
+        xdim: str
+            Bin index to place on the x-axis
+        fixed: None or dict
+            Dictionary controlling the reduction in data down to one dimension
+        ax: axes or None
+            Axes on which to plot the data. Create a new plot if not given
+        xlabel: None or str
+            Label to apply to x-axis. If not given, defaults to xdim
+        ylabel: None or str
+            Label to apply to y-axis. If not given, defaults to "Tally Data"
+        xscale: {'log', 'linear'}
+            Scale to apply to x-axis
+        yscale: {'log', 'linear'}
+            Scale to apply to y-axis
+        autolegend: bool
+            If true, apply a label to this plot.
+
+        Returns
+        -------
+        matplotlib.pyplot.axes
+            Axes on which this figure was drawn
+
+        Raises
+        ------
+        SamplerError
+            If ``allTallies`` is None, indicating this object has been
+               instructed to free up data from all sampled files
+        SerpentToolsException
+            If data to be plotted, after applying ``fixed``, is not
+            one dimensional
+
+        """
+        if self.allTallies is None:
+            raise SamplerError("Data from all sampled files has been freed "
+                               "and cannot be used in this plot method")
+        samplerData = self.slice(fixed, 'tallies')
+        slices = self._getSlices(fixed)
+        if len(samplerData.shape) != 1:
+            raise SerpentToolsException(
+                'Data must be constrained to 1D, not {}'.format(
+                    samplerData.shape))
+        if xdim is not None:
+            if xdim in self.indexes:
+                xdata = self.indexes[xdim]
+                xlabel = xlabel or xdim
+            else:
+                warning('Could not find key {} in indexes: Options: {}'
+                        .format(xdim, ', '.join(self.indexes.keys())))
+                xdata = arange(len(samplerData))
+        else:
+            xdata = arange(len(samplerData))
+        ax = ax or pyplot.axes()
+        N = self._index
+        allTallies = self.allTallies.copy(order='F')
+        for n in range(N):
+            plotData = allTallies[n][slices]
+            ax.plot(xdata, plotData, **SPREAD_PLOT_KWARGS)
+
+        ax.plot(xdata, samplerData, label='Mean value')
+        if autolegend:
+            ax.legend()
+        ax.set_xlabel(xlabel)
+        if ylabel:
+            ax.set_ylabel(ylabel)
+        ax.set_xscale(xscale)
+        ax.set_yscale(yscale)
+        return ax

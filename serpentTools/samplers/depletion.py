@@ -206,7 +206,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         return ax
 
     def spreadPlot(self, xUnits, yUnits, isotope, timePoints=None, ax=None,
-                   xLabel=None, yLabel=None, primaryColor='r', autolabel=True):
+                   xLabel=None, yLabel=None, autolabel=True, autolegend=True):
         """
         Plot the mean quantity and data from all sampled files.
 
@@ -217,8 +217,8 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         isotope
         timePoints
         ax
-        primaryColor
         autolabel
+        autolegend
 
         Returns
         -------
@@ -235,7 +235,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         """
         if not self.allData:
-            raise SamplerError("Data from all sampled files has been cleared "
+            raise SamplerError("Data from all sampled files has been freed "
                                "and cannot be used in this plot method")
         ax = ax or pyplot.axes()
         xVals = timePoints or self.days
@@ -247,9 +247,11 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         for n in range(N):
             plotData = self._slice(sampledData[n], rows, cols)[0]
             ax.plot(xVals, plotData, **SPREAD_PLOT_KWARGS)
-        ax.plot(xVals, primaryData, c=primaryColor)
+        ax.plot(xVals, primaryData, label='Mean value')
         if autolabel:
             ax = sigmaLabel(ax, xLabel or xUnits, yLabel or yUnits, 0)
+        if autolegend:
+            ax.legend()
         return ax
 
 
@@ -260,12 +262,3 @@ def sigmaLabel(ax, xlabel, ylabel, sigma=None):
     if ylabel:
         ax.set_ylabel(ylabel + confStr)
     return ax
-
-
-if __name__ is '__main__':
-    d = DepletionSampler(
-        '/home/ajohnson400/research/serpent-tools/models/repeat/*dep.m')
-    assert d.materials
-    f = d.materials['fue1']
-    f.spreadPlot('days', 'adens', 'U235')
-    pyplot.show()
