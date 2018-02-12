@@ -8,4 +8,4 @@ from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
 
-messages.info('Using version {}'.format(__version__))
+messages.debug('Using version {}'.format(__version__))
