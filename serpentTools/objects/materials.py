@@ -93,20 +93,23 @@ class DepletedMaterialBase(NamedObject):
         if timePoints is not None:
             timeCheck = self._checkTimePoints(xUnits, timePoints)
             if any(timeCheck):
-                raise KeyError('The following times were not present in file'
-                               '{}\n{}'.format(self.filePath,
-                                               ', '.join(timeCheck)))
+                raise KeyError(
+                    'The following times were not present for material {}'
+                    '\n{}'.format(self.name, ', '.join(timeCheck)))
         if names and self.names is None:
             raise AttributeError(
                 'Isotope names not stored on DepletedMaterial '
                 '{}.'.format(self.name))
         colIndices = self._getColIndices(xUnits, timePoints)
-        allY = self.data[yUnits]
-        if allY.shape[0] == 1 or len(allY.shape) == 1:  # vector
-            yVals = allY[colIndices]
-            return yVals
         rowIndices = self._getRowIndices(names)
-        return allY[:, colIndices][rowIndices]
+        return self._slice(self.data[yUnits], rowIndices, colIndices)
+
+    @staticmethod
+    def _slice(data, rows, cols):
+        if data.shape[0] == 1 or len(data.shape) == 1 or rows is None:
+            yVals = data[cols]
+            return yVals
+        return data[:, cols][rows]
 
     def _checkTimePoints(self, xUnits, timePoints):
         """Return a list of all requested points in time not stored."""
@@ -133,6 +136,7 @@ class DepletedMaterialBase(NamedObject):
         for indx, isotope in enumerate(isoList):
             rowIDs[indx] = self.names.index(isotope)
         return rowIDs
+
 
 class DepletedMaterial(DepletedMaterialBase):
     """
@@ -241,7 +245,7 @@ class DepletedMaterial(DepletedMaterialBase):
         xVals = timePoints or self.days
         yVals = self.getValues(xUnits, yUnits, xVals, names)
         ax = ax or pyplot.axes()
-        labels = names or ['']
+        labels = names or self.names
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row])
 

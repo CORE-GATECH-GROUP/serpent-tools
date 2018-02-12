@@ -2,9 +2,11 @@
 Class responsible for reading multiple depletion files
 and obtaining true uncertainties
 """
-
+from math import fabs
 from six import iteritems
-from numpy import zeros
+from numpy import zeros, zeros_like
+
+from matplotlib import pyplot
 
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.samplers import Sampler, SampledContainer
@@ -61,6 +63,7 @@ class DepletionSampler(Sampler):
                         SampledDepletedMaterial(numFiles, material.name,
                                                 parser.metadata))
                 sampledMaterial.loadFromContainer(material)
+        self._finalize()
 
     def _finalize(self):
         for _matName, material in iteritems(self.materials):
@@ -118,3 +121,79 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
     def free(self):
         self.allData = {}
+
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
+             sigma=3, legend=True, label=True, xlabel=None, ylabel=None):
+        """
+        Plot the average of some data vs. time for some or all isotopes.
+
+        Parameters
+        ----------
+        xUnits: str
+            name of x value to obtain, e.g. ``'days'``, ``'burnup'``
+        yUnits: str
+            name of y value to return, e.g. ``'adens'``, ``'burnup'``
+        timePoints: list or None
+            If given, select the time points according to those
+            specified here. Otherwise, select all points
+        names: list or None
+            If given, return y values corresponding to these isotope
+            names. Otherwise, return values for all isotopes.
+        ax: None or matplotlib.pyplot.axes
+            If given, add the data to this plot.
+            Otherwise, create a new plot
+        sigma: int
+            Confidence interval for uncertainties
+        legend: bool
+            Automatically add the legend
+        label: bool
+            Automatically label the axis
+        xlabel: None or str
+            If given, use this as the label for the x-axis.
+            Otherwise, use xUnits
+        ylabel: None or str
+            If given, use this as the label for the y-axis.
+            Otherwise, use yUnits
+
+        Returns
+        -------
+        matplotlib.pyplot.axes
+            Axes corresponding to the figure that was plotted
+
+        See Also
+        --------
+        :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
+
+        """
+        if sigma and yUnits not in self.uncertainties:
+            raise KeyError("Uncertainties for {} not stored"
+                           .format(yUnits))
+        sigma = int(fabs(sigma))
+        xVals = timePoints or self.days
+        colIndices = self._getColIndices(xUnits, timePoints)
+        rowIndices = self._getRowIndices(names)
+        yVals = self._slice(self.data[yUnits], rowIndices, colIndices)
+        yUncs = self._slice(self.uncertainties[yUnits], rowIndices, colIndices)
+        if xUnits in self.uncertainties and sigma:
+            xUncs = (sigma * self._slice(self.uncertainties[xUnits], None,
+                                         colIndices))
+        else:
+            xUncs = zeros_like(xVals)
+        ax = ax or pyplot.axes()
+        labels = names or self.names
+        yVals = yVals.copy(order='F')
+        yUncs = yUncs.copy(order='F') * sigma
+        for row in range(yVals.shape[0]):
+            ax.errorbar(xVals, yVals[row], yerr=yUncs[row], xerr=xUncs,
+                        label=labels[row])
+
+        # format the plot
+        if legend:
+            ax.legend()
+        if label:
+            confStr = r'$\pm{} \sigma$'.format(sigma) if sigma else ''
+            xlabel = (xlabel or xUnits) + confStr
+            ylabel = (ylabel or yUnits) + confStr
+            ax.set_xlabel(xlabel)
+            ax.set_ylabel(ylabel)
+        return ax
