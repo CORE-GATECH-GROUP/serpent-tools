@@ -157,4 +157,4 @@ texinfo_documents = [
 ]
 
 # -- Options for auto documentation --------------------------------------
-autodoc_default_flags = ['members']
+autodoc_default_flags = ['members', 'show-inheritance']

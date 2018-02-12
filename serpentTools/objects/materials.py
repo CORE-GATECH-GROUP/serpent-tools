@@ -8,6 +8,49 @@ from serpentTools.objects import NamedObject, convertVariableName
 
 
 class DepletedMaterialBase(NamedObject):
+    docParams = """name: str
+        Name of this material
+    metadata: dict
+        Dictionary with file metadata"""
+    docAttrs = """data: dict
+        dictionary that stores all variable data
+    zai: list
+        Isotopic ZZAAA identifiers, e.g. 93325
+    names: list
+        Names of isotopes, e.g. U235
+    days: numpy.ndarray
+        Vector of total, cumulative days of burnup for the run that
+        created this material
+    burnup: numpy.ndarray
+        Vector of total, cumulative burnup [MWd/kgU] for this specific
+        material
+    adens: numpy.ndarray
+        2D array of atomic {densStruct:s}
+    mdens: numpy.ndarray
+        2D array of mass {densStruct:s}""".format(
+        densStruct="densities where where row ``j`` corresponds to isotope "
+                   "``j`` and column ``i`` corresponds to time ``i``")
+    docEquiv = """    While ``adens``, ``mdens``, and ``burnup`` are 
+        accessible directly with ``material.adens``, all variables read in 
+        from the file can be accessed through the ``data`` dictionary::
+
+            >>> assert material.adens is material.data['adens']
+            >>> assert material.adens is material['adens']
+            # The three methods are equivalent"""
+    __doc__ = """
+    Base class for storing material data from a depleted material file
+
+    {equiv:s}
+
+    Parameters
+    ----------
+    {params:s}
+
+    Attributes
+    ----------
+    {attrs:s}
+
+    """.format(equiv=docEquiv, params=docParams, attrs=docAttrs)
 
     def __init__(self, name, metadata):
         NamedObject.__init__(self, name)
@@ -136,45 +179,8 @@ class DepletedMaterialBase(NamedObject):
 
 
 class DepletedMaterial(DepletedMaterialBase):
-    """
-    Class for storing material data from ``_dep.m`` files.
 
-    While ``adens``, ``mdens``, and ``burnup`` are accessible directly
-    with ``material.adens``, all variables read in from the file
-    can be accessed through the ``data`` dictionary::
-
-        >>> assert material.adens is material.data['adens']
-        >>> assert material.adens is material['adens']
-        # The three methods are equivalent
-
-    Parameters
-    ----------
-    parser: :py:class:`~serpentTools.parsers.depletion.DepletionReader`
-        Parser that found this material.
-        Used to obtain file metadata like isotope names and burnup
-    name: str
-        Name of this material
-
-    Attributes
-    ----------
-    zai: numpy.array or None
-        Isotope id's
-    names: numpy.array or None
-        Names of isotopes
-    days: numpy.array or None
-        Days over which the material was depleted
-    adens: numpy.array or None
-        Atomic density over time for each nuclide
-    mdens: numpy.array or None
-        Mass density over time for each nuclide
-    burnup: numpy.array or None
-        Burnup of the material over time
-
-    """
-
-    def __init__(self, name, parser):
-        DepletedMaterialBase.__init__(self, name, parser.metadata)
-        self.filePath = parser.filePath
+    __doc__ = DepletedMaterialBase.__doc__
 
     def addData(self, variable, rawData):
         """
@@ -202,6 +208,12 @@ class DepletedMaterial(DepletedMaterialBase):
              autolabel=True,legend=True, xlabel=None, ylabel=None, **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
+
+        .. note::
+
+            ``kwargs`` will be passed to the plot for all isotopes.
+            If ``c='r'`` is passed, to make a plot red, then data for
+            all isotopes plotted will be red and potentially very confusing.
 
         Parameters
         ----------
@@ -231,12 +243,6 @@ class DepletedMaterial(DepletedMaterialBase):
         kwargs:
             Optional keyword arguments to pass to matplotlib.pyplot.plot
 
-        .. note::
-
-            ``kwargs`` will be passed to the plot for all isotopes.
-            If ``c='r'`` is passed, to make a plot red, then data for
-            all isotopes plotted will be red and potentially very confusing.
-
         Returns
         -------
         matplotlib.pyplot.axes
@@ -244,8 +250,8 @@ class DepletedMaterial(DepletedMaterialBase):
 
         See Also
         --------
-        :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
-        :py:func:`matplotlib.pyplot.plot`
+        * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
+        * :py:func:`matplotlib.pyplot.plot`
         """
         xVals = timePoints or self.days
         yVals = self.getValues(xUnits, yUnits, xVals, names)

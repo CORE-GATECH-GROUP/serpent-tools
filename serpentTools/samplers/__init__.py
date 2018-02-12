@@ -10,6 +10,7 @@ from six import iteritems
 from serpentTools.settings import rc
 from serpentTools.messages import (warning, debug, MismatchedContainersError,
                                    error, SamplerError, info)
+from serpentTools.objects.readers import BaseReader
 
 MISSING_KEY_FLAG = "<missing>"
 
@@ -34,8 +35,47 @@ def extendFiles(files):
 
 
 class Sampler(object):
+    docFiles = """files: str or iterable
+            Single file or iterable (list) of files from which to read.
+            Supports file globs, ``*det0.m`` expands to all files that
+            end with ``det0.m``"""
+    docAttrs = """files: set
+        Unordered set containing full paths of unique files read
+    settings: dict
+        Dictionary of sampler-wide settings
+    parsers: set
+        Unordered set of all parsers that were successful
+    map: dict
+        Dictionary where key, value pairs are files and their corresponding
+        parsers"""
+
+    __doc__ = """
+    Base class for reading multiple files of of a similar type
+
+    Parameters
+    ----------
+    {files:s}
+    parser: subclass of BaseReader
+        Class that will be used to read all files
+
+    Attributes
+    ----------
+    {attrs:s}
+
+    Raises
+    ------
+    serpentTools.messages.SamplerError
+        If ``parser`` is not a subclass of ``BaseReader``
+    """.format(files=docFiles, attrs=docAttrs)
+
+    docSkipChecks = """These tests can be skipped by setting
+    ``<sampler.skipPrecheck>`` to be ``False``"""
 
     def __init__(self, files, parser):
+        if not issubclass(parser, BaseReader):
+            raise SamplerError(
+                "parser argument must be a subclass of BaseReader, not "
+                "{}".format(parser.__name__))
         self.settings = rc.getReaderSettings('sampler')
         self.files = extendFiles(files)
         self.__parserCls = parser
@@ -49,7 +89,7 @@ class Sampler(object):
         self.process()
         if self.settings['freeAll']:
             info("Removing all parsers and containers from memory since "
-                 "setting <sampler.freeAll> is True")
+                 "setting <sampler.freeAll> is ``True``")
             self.free()
 
     def read(self):
@@ -143,6 +183,21 @@ class Sampler(object):
 
 
 class SampledContainer(object):
+    """
+    Base class for containers that produce averages and deviations from
+    multiple files
+
+    Parameters
+    ----------
+    N: int
+        Number of containers to expect
+    expectedContainer: class
+        What class to expect for all incoming containers
+    """
+
+    docFree = """If ``<sampler.freeAll>`` 
+        is True, then ``free`` will be called after all files have been read 
+        and processed."""
 
     def __init__(self, N, expectedContainer):
         self.N = N
@@ -153,6 +208,24 @@ class SampledContainer(object):
         pass
 
     def loadFromContainer(self, container):
+        """
+        Copy data from a similar container.
+
+        Parameters
+        ----------
+        container:
+            Incoming container from which to take data.
+
+        Raises
+        ------
+        serpentTools.messages.MismatchedContainersError
+            If the incoming container is not the expected type
+            declared at construction
+        serpentTools.messages.SamplerError
+            If more containers have been loaded than specified at
+            construction
+
+        """
         if not isinstance(container, self.__expectedClass):
             raise MismatchedContainersError(
                 'Sampled container expects {} type containers, not '
@@ -171,6 +244,7 @@ class SampledContainer(object):
         raise NotImplementedError
 
     def finalize(self):
+        """Produce final uncertainties from all aggregated runs"""
         if self._index != self.N:
             warning("Data from only {} of {} files has been loaded".format(
                 self._index, self.N))

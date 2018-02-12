@@ -15,6 +15,28 @@ from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
 
 
 class DetectorSampler(Sampler):
+    __doc__ = """
+    Class responsible for reading multiple detector files
+    
+    The following checks are performed to ensure that all detectors are
+    of similar structure and content
+    
+        1. Each parser must have the same detectors
+        2. The reshaped tally data must be of the same size for all detectors
+    
+    {skip:s}
+
+    Parameters
+    ----------
+    {files:s}
+
+    Attributes
+    ----------
+    {detAttrs:s}
+    {samplerAttrs:s}
+
+    """.format(detAttrs=DetectorReader.docAttrs, samplerAttrs=Sampler.docAttrs,
+               files=Sampler.docFiles, skip=Sampler.docSkipChecks)
 
     def __init__(self, files):
         self.detectors = {}
@@ -61,29 +83,28 @@ class DetectorSampler(Sampler):
 
 
 class SampledDetector(SampledContainer, DetectorBase):
-    """
+    __doc__ = """
     Class to store aggregated detector data
+    
+    .. note ::
+
+        :py:func:`~serpentTools.samplers.detector.SampledDetector.free`
+        sets ``allTallies``, ``allErrors``, and ``allScores`` to 
+        ``None``. {free:s}
 
     Parameters
     ----------
-    name: str
-        Name of this detector
+    {detParams:s}
     numFiles: int
         Number of files that have been/will be read
 
     Attributes
     ----------
-    grids: dict
-        Dictionary with additional data describing energy grids or mesh points
-    tallies: None or numpy.array
-        Tally data averaged over all detector files
-    errors: None or numpy.array
-        Relative error in tally data data
-    scores: None or numpy.array
-        Reshaped array of tally scores. SERPENT 1 only
-    indexes: None or OrderedDict
-        Collection of unique indexes for each requested bin
-    """
+    {detAttrs:s}
+
+        
+    """.format(detAttrs=DetectorBase.baseAttrs, free=SampledContainer.docFree,
+               detParams=DetectorBase.baseParams)
 
     def __init__(self, name, numFiles):
         SampledContainer.__init__(self, numFiles, DetectorBase)
@@ -176,7 +197,7 @@ class SampledDetector(SampledContainer, DetectorBase):
     def spreadPlot(self, xdim=None, fixed=None, ax=None, xlabel=None,
                    ylabel=None, xscale='log', yscale='log', autolegend=True):
         """
-        Plot the mean tally value against all sampled detector data
+        Plot the mean tally value against all sampled detector data.
 
         Parameters
         ----------
@@ -206,7 +227,7 @@ class SampledDetector(SampledContainer, DetectorBase):
         ------
         SamplerError
             If ``allTallies`` is None, indicating this object has been
-               instructed to free up data from all sampled files
+            instructed to free up data from all sampled files
         SerpentToolsException
             If data to be plotted, after applying ``fixed``, is not
             one dimensional

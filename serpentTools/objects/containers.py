@@ -179,18 +179,20 @@ class HomogUniv(NamedObject):
 
 class DetectorBase(NamedObject):
     """
-    Class to store detector data.
+    Base class for classes that store detector data
 
     Parameters
     ----------
-    name: str
-        Name of this detector
+    {params:s}
 
     Attributes
     ----------
-    bins: numpy.array
-        Tallies straight from the detector file
-    grids: dict
+    {attrs:s}
+    """
+
+    baseParams = """name: str
+        Name of this detector"""
+    baseAttrs = """grids: dict
         Dictionary with additional data describing energy grids or mesh points
     tallies: None or numpy.array
         Reshaped tally data to correspond to the bins used
@@ -199,8 +201,8 @@ class DetectorBase(NamedObject):
     scores: None or numpy.array
         Reshaped array of tally scores. SERPENT 1 only
     indexes: None or OrderedDict
-        Collection of unique indexes for each requested bin
-    """
+        Collection of unique indexes for each requested bin"""
+    __doc__ = __doc__.format(params=baseParams, attrs=baseAttrs)
 
     def __init__(self, name):
         NamedObject.__init__(self, name)
@@ -461,7 +463,7 @@ class DetectorBase(NamedObject):
 
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
                  cmap=None, addcbar=True, xlabel=None, ylabel=None,
-                 xscale='linear', yscale='log'):
+                 xscale='linear', yscale='linear'):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -544,6 +546,20 @@ class DetectorBase(NamedObject):
 
 
 class Detector(DetectorBase):
+    """
+    Class that stores detector data from a single detector file
+
+    Parameters
+    ----------
+    {params:s}
+
+    Attributes
+    bins: numpy.ndarray
+        Tally data directly from SERPENT file
+    {attrs:s}
+    """
+    __doc__ = __doc__.format(params=DetectorBase.baseParams,
+                             attrs=DetectorBase.baseAttrs)
 
     def __init__(self, name):
         DetectorBase.__init__(self, name)
@@ -678,6 +694,7 @@ class BranchContainer(object):
         universe were created.
 
         .. warning::
+
             This method will overwrite data for universes that already exist
 
         Parameters

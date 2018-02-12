@@ -9,7 +9,7 @@ from numpy import zeros, zeros_like
 
 from matplotlib import pyplot
 
-from serpentTools.messages import SamplerError
+from serpentTools.messages import SamplerError, warning
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
 from serpentTools.objects.materials import DepletedMaterialBase
@@ -21,6 +21,36 @@ VARIED_MDATA = ('days', 'burnup')
 
 
 class DepletionSampler(Sampler):
+    __doc__ = """
+    Class that reads and stores data from multiple ``*dep.m`` files
+    
+    The following checks are performed in order to ensure that depletion 
+    files are of similar form:
+    
+    1. Keys of ``materials`` dictionary are consistent for all parsers
+    2. Metadata keys are consistent for all parsers
+    3. Isotope names and ZZAAA metadata are equal for all parsers
+
+    {skip:s}
+    
+    Parameters
+    ----------
+    {files:s}    
+
+    Attributes
+    ----------
+    {depAttr:s}
+    metadataUncs: dict
+        Dictionary containing uncertainties in file-wide metadata,
+        such as burnup schedule
+    allMdata: dict
+        Dictionary where key, value pairs are name of metadata and
+        metadata arrays for all runs. Arrays with be of one greater dimension,
+        as the first index corresponds to the file index.
+    {samplerAttr:s}
+     
+    """.format(files=Sampler.docFiles, samplerAttr=Sampler.docAttrs,
+               skip=Sampler.docSkipChecks, depAttr=DepletionReader.docAttrs)
 
     def __init__(self, files):
         self.materials = {}
@@ -93,11 +123,46 @@ class DepletionSampler(Sampler):
             material.free()
 
     def iterMaterials(self):
+        """Yields material names and objects"""
         for name, material in iteritems(self.materials):
             yield name, material
 
 
 class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
+    __doc__ = """
+    Class that stores data from a variety of depleted materials
+    
+    .. note ::
+
+        :py:func:`~serpentTools.samplers.depletion.SampledDepletedMaterial.free`
+        sets ``allData`` to an empty dictionary {free:s}
+        
+    {equiv:s}
+            
+    Parameters
+    ----------
+    N: int
+        Number of containers to expect
+    name: str
+        Name of this material
+    metadata: dict
+        File-wide metadata for this run. Should contain ZAI and names for all
+        isotopes, days, and burnup schedule
+
+    Attributes
+    ----------
+    {depAttrs:s}
+    uncertainties: dict
+        Uncertainties for all variables stored in ``data``
+    allData: dict
+        Dictionary where key, value pairs correspond to names of
+        variables stored on this object and arrays of data from all files.
+        The dimensionality will be increased by one, as the first index
+        corresponds to the order in which files were loaded
+        
+    """.format(free=SampledContainer.docFree,
+               equiv=DepletedMaterialBase.docEquiv,
+               depAttrs=DepletedMaterialBase.docAttrs)
 
     def __init__(self, N, name, metadata):
         SampledContainer.__init__(self, N, DepletedMaterialBase)
@@ -106,6 +171,9 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         self.allData = {}
 
     def _loadFromContainer(self, container):
+        if container.name != self.name:
+            warning("Attempting to store data from material {} onto "
+                    "sampled material {}".format(self.name, container.name))
         for varName, varData in iteritems(container.data):
             if not self.allData:
                 self.__allocateLike(container)
@@ -122,6 +190,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             self.uncertainties[varName] = varData.std(axis=0)
 
     def free(self):
+        """Clear up data from all sampled parsers"""
         self.allData = {}
 
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
@@ -129,6 +198,13 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
              **kwargs):
         """
         Plot the average of some data vs. time for some or all isotopes.
+
+        .. note::
+
+            ``kwargs`` will be passed to the errorbar plot for all
+            isotopes. If ``c='r'`` is passed, to make a plot red, then
+            data for all isotopes plotted will be red and potentially
+            very confusing.
 
         Parameters
         ----------
@@ -158,12 +234,6 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         kwargs:
             Optional keyword arguments to pass to matplotlib.pyplot.errorbar
 
-        .. note::
-
-            ``kwargs`` will be passed to the errorbar plot for all isotopes.
-            If ``c='r'`` is passed, to make a plot red, then data for
-            all isotopes plotted will be red and potentially very confusing.
-
         Returns
         -------
         matplotlib.pyplot.axes
@@ -171,8 +241,8 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         See Also
         --------
-        :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
-        :py:func:`matplotlib.pyplot.errorbar`
+        * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`s
+        * :py:func:`matplotlib.pyplot.errorbar`
 
         """
         if sigma and yUnits not in self.uncertainties:
@@ -212,16 +282,31 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         Parameters
         ----------
-        xUnits
-        yUnits
-        isotope
-        timePoints
-        ax
-        autolabel
-        autolegend
+        xUnits: str
+            name of x value to obtain, e.g. ``'days'``, ``'burnup'``
+        yUnits: str
+            name of y value to return, e.g. ``'adens'``, ``'burnup'``
+        isotope: str
+            Plot data for this isotope
+        timePoints: list or None
+            If given, select the time points according to those
+            specified here. Otherwise, select all points
+        ax: None or matplotlib.pyplot.axes
+            If given, add the data to this plot.
+        xLabel: None or str
+            If given, use this as the label for the x-axis.
+            Otherwise, use xUnits
+        yLabel: None or str
+            If given, use this as the label for the y-axis.
+        autolabel: bool
+            Apply xLabel and yLabel directly to the figure
+        autolegend: bool
+            Add a legend to the figure
 
         Returns
         -------
+        matplotlib.pyplot.axes
+            Axes corresponding to the figure that was plotted
 
         Raises
         ------
@@ -256,6 +341,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
 
 def sigmaLabel(ax, xlabel, ylabel, sigma=None):
+    """Label the axes on a figure with some uncertainty."""
     confStr = r'$\pm{} \sigma$'.format(sigma) if sigma else ''
     if xlabel:
         ax.set_xlabel(xlabel + confStr)
