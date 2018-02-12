@@ -5,6 +5,7 @@ import unittest
 from os import path
 
 from six import iteritems
+from numpy import where, fabs
 from numpy.testing import assert_allclose
 
 from serpentTools.messages import MismatchedContainersError
@@ -63,7 +64,19 @@ class DepletedSamplerTester(unittest.TestCase):
                                                  (varData, samplerUnc),
                                                  (expectedMean, expectedStd)):
                     msg = errMsg.format(qty=qty, varN=varName, matN=material)
-                    assert_allclose(actual, expected, err_msg=msg)
+                    try:
+                        assert_allclose(actual, expected, err_msg=msg)
+                    except AssertionError as ae:
+                        for aRow, eRow in zip(actual, expected):
+                            print('Actual:   ', aRow)
+                            print('Expected: ', eRow)
+                            den = aRow.copy()
+                            den[where(den == 0)] = 1
+                            rDiff = (fabs(aRow - eRow)
+                                     / den)
+                            print('Relative: ', rDiff)
+
+                        raise ae
 
 
 if __name__ == '__main__':
