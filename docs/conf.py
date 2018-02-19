@@ -36,17 +36,13 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
-    'sphinx.ext.napoleon',
-    'IPython.sphinxext.ipython_console_highlighting',
-    'IPython.sphinxext.ipython_directive']
+    'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
-#
-# source_suffix = ['.rst', '.md']
 source_suffix = '.rst'
 
 # The master toctree document.
@@ -54,8 +50,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'serpentTools'
-copyright = '2017, Andrew Johnson, Dan Kotlyar, GTRC'
-author = 'Andrew Johnson, Dan Kotlyar'
+copyright = '2017-2018, Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, GTRC'
+author = 'Andrew Johnson, Dan Kotlyar, Stefano Terlizzi'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -137,7 +133,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'serpentTools.tex', 'serpentTools Documentation',
-     'Andrew Johnson, Dan Kotlyar', 'manual'),
+     author, 'manual'),
 ]
 
 # -- Options for manual page output ---------------------------------------
@@ -161,4 +157,4 @@ texinfo_documents = [
 ]
 
 # -- Options for auto documentation --------------------------------------
-autodoc_default_flags = ['members', 'inherited-members']
+autodoc_default_flags = ['members']

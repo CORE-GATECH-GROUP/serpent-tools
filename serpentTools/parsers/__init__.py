@@ -48,7 +48,7 @@ REGEXES = {
     r'(.*\.bumat\d+)': BumatReader
 }
 
-__all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES', 
+__all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES',
            'DepletionReader', 'BranchingReader', 'DetectorReader',
            'BumatReader', 'ResultsReader', 'FissionMatrixReader']
 
@@ -61,7 +61,7 @@ def inferReader(filePath):
     ----------
     filePath: str
         File to be read.
-    
+
     Raises
     ------
     SerpentToolsException
@@ -70,7 +70,8 @@ def inferReader(filePath):
     for reg, reader in six.iteritems(REGEXES):
         match = re.match(reg, filePath)
         if match and match.group() == filePath:
-            info('Inferred reader for {}: {}'.format(filePath, reader.__name__))
+            info('Inferred reader for {}: {}'
+                 .format(filePath, reader.__name__))
             return reader
     raise SerpentToolsException(
         'Failed to infer filetype and thus accurate reader from'
@@ -140,7 +141,8 @@ def read(filePath, reader='infer'):
                     'Reader type {} not supported'.format(reader)
                 )
     else:
-        assert callable(reader), 'Reader {} is not callable'.format(str(reader))
+        assert callable(reader), (
+                'Reader {} is not callable'.format(str(reader)))
         loader = reader
     returnedFromLoader = loader(filePath)
     returnedFromLoader.read()
@@ -202,7 +204,8 @@ def depmtx(fileP):
         if not nMatch:
             raise SerpentToolsException(failMsg + line)
 
-        n0Storage, line, numIso = _parseIsoBlock(f, {}, nMatch, line, nDensRegex)
+        n0Storage, line, numIso = _parseIsoBlock(f, {}, nMatch, line,
+                                                 nDensRegex)
         debug('Found {} isotopes for file {}'.format(numIso, fileP))
         n0 = empty((numIso, 1), dtype=longfloat)
         for indx, v in six.iteritems(n0Storage):

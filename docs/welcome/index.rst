@@ -1,3 +1,4 @@
+.. _welcome:
 
 Welcome!
 ========
@@ -7,5 +8,4 @@ Welcome!
     :caption: Contents:
 
     about.rst
-    install.rst
     license.rst

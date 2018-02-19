@@ -1,0 +1,432 @@
+.. _detector-example:
+
+==============
+DetectorReader
+==============
+
+Basic Operation
+---------------
+
+The :py:class:`~serpentTools.parsers.detector.DetectorReader`
+is capable of reading SERPENT detector files.
+These detectors can be defined with many binning parameters,
+listed
+`on the SERPENT
+Wiki <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#det_.28detector_definition.29>`_.
+One could define a detector that has a spatial mesh, ``dx/dy/dz/``, but
+also includes reaction and material bins, ``dr, dm``. Detectors are
+stored on the reader object in the ``detectors`` dictionary as custom
+:py:class:`~serpentTools.objects.containers.Detector` objects. 
+Here, all energy and spatial grid data are stored,
+including other binning information such as reaction, universe, and
+lattice bins.
+
+.. code::
+
+    >>> from matplotlib import pyplot
+    >>> import serpentTools
+    INFO    : serpentTools: Using version 0.2.1
+    >>> pinFile = 'fuelPin_det0.m'
+    >>> bwrFile = 'bwr_det0.m'
+    >>> pin = serpentTools.read(pinFile)
+    >>> bwr = serpentTools.read(bwrFile)
+    INFO    : serpentTools: Inferred reader for fuelPin_det0.m: DetectorReader
+    INFO    : serpentTools: Preparing to read fuelPin_det0.m
+    INFO    : serpentTools: Done
+    INFO    : serpentTools: Inferred reader for bwr_det0.m: DetectorReader
+    INFO    : serpentTools: Preparing to read bwr_det0.m
+    INFO    : serpentTools: Done
+    >>> print(pin.detectors)
+    >>> print(bwr.detectors)
+    {'nodeFlx':
+        <serpentTools.objects.containers.Detector object at 0x7fb3ae1db978>}
+    {'spectrum':
+        <serpentTools.objects.containers.Detector object at 0x7fb3ae1db9e8>,
+     'xymesh':
+         <serpentTools.objects.containers.Detector object at 0x7fb3ae1dba20>}
+
+These detectors were defined for a single fuel pin with 16 axial layers
+and a separate BWR assembly, with a description of the detectors provided in
+below:
+
++--------------+---------------+
+| Name         | Description   |
++==============+===============+
+| ``nodeFlx``  | One-group     |
+|              | flux tallied  |
+|              | in each axial |
+|              | layer         |
++--------------+---------------+
+| ``spectrum`` | CSEWG 239     |
+|              | group         |
+|              | stucture for  |
+|              | flux and      |
+|              | U-235 fission |
+|              | cross section |
++--------------+---------------+
+| ``xymesh``   | Two-group     |
+|              | flux for a    |
+|              | 20x20 xy grid |
++--------------+---------------+
+
+For each :py:class:`~serpentTools.objects.containers.Detector` object,
+the full tally matrix is stored in the
+:py:attr:`~serpentTools.objects.containers.Detector.bins` array.
+
+.. code:: 
+
+    >>> nodeFlx = pin.detectors['nodeFlx']
+    >>> print(nodeFlx.bins.shape)
+    (16, 12)
+    >>> nodeFlx.bins[:5, :]
+    array([[  1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   2.34759000e-02,   4.53000000e-03],
+           [  2.00000000e+00,   1.00000000e+00,   2.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   5.75300000e-02,   3.38000000e-03],
+           [  3.00000000e+00,   1.00000000e+00,   3.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   8.47000000e-02,   2.95000000e-03],
+           [  4.00000000e+00,   1.00000000e+00,   4.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   1.02034000e-01,   2.63000000e-03],
+           [  5.00000000e+00,   1.00000000e+00,   5.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   1.00000000e+00,   1.00000000e+00,
+              1.00000000e+00,   1.10384000e-01,   2.31000000e-03]])
+
+Here, only three columns are changing:
+
+-  column 0: universe column
+-  column 10: tally column
+-  column 11: errors
+
+.. note::
+
+    For SERPENT-1, there would be an additional column 12 that
+    contained the scores for each bin
+
+.. code:: 
+
+    >>> nodeFlx.bins[:, 0]
+    array([  1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.,   9.,  10.,  11.,
+            12.,  13.,  14.,  15.,  16.])
+
+Once each detector is given this binned tally data, the
+:py:meth:`~serpentTools.objects.containers.Detector.reshape`
+method is called to recast the
+:py:attr:`~serpentTools.objects.containers.Detector.tallies`,
+:py:attr:`~serpentTools.objects.containers.Detector.errors`, and, if applicable,
+the :py:attr:`~serpentTools.objects.containers.Detector.scores` columns into
+individual, multidimensional arrays. For this case,
+since the only variable bin quantity is that of the universe, these
+will all be 1D arrays.
+
+.. code:: 
+
+    >>> assert nodeFlx.tallies.shape == (16, )
+    >>> assert nodeFlx.errors.shape == (16, )
+    >>> nodeFlx.tallies
+    array([ 0.0234759 ,  0.05753   ,  0.0847    ,  0.102034  ,  0.110384  ,
+            0.110174  ,  0.102934  ,  0.0928861 ,  0.0810541 ,  0.067961  ,
+            0.0550446 ,  0.0422486 ,  0.0310226 ,  0.0211475 ,  0.0125272 ,
+            0.00487726])
+    >>> nodeFlx.errors
+    array([ 0.00453,  0.00338,  0.00295,  0.00263,  0.00231,  0.00222,
+            0.00238,  0.00251,  0.00282,  0.00307,  0.00359,  0.00415,
+            0.00511,  0.00687,  0.00809,  0.01002])
+
+Bin information is retained through the
+:py:attr:`~serpentTools.objects.containers.Detector.indexes` attribute.
+This is an `OrderedDictionary`, as the keys are placed according to their column
+position. These postions can be found in the SERPENT Manual, and are
+provided in the 
+:py:data:`~serpentTools.objects.containers.DET_COLS` tuple
+
+.. code:: 
+
+    >>> from serpentTools.objects.containers import DET_COLS
+    >>> print(DET_COLS)
+    ('value', 'energy', 'universe', 'cell', 'material', 'lattice', 
+     'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
+    >>> nodeFlx.indexes
+    OrderedDict([('universe',
+                  array([  1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.,   
+                           9.,  10.,  11.,  12.,  13.,  14.,  15.,  16.]))])
+
+
+Each item in the :py:attr:`~serpentTools.objects.containers.Detector.indexes` 
+ordered dictionary corresponds to the
+unique values of that bin in the original 
+:py:attr:`~serpentTools.objects.containers.Detector.bins` array. Here,
+``universe`` is the first item and contains an equal number of elements
+to the size of the first (and only) axis in the nodeFlx tally matrix
+
+.. code:: 
+
+    >>> assert nodeFlx.indexes['universe'].size == nodeFlx.tallies.size
+
+Plotting Routines
+-----------------
+
+Each :py:class:`~serpentTools.objects.containers.Detector` object is capable of
+simple 1D and 2D plotting
+routines. The simplest 1D plot method is simply 
+:py:meth:`~serpentTools.objects.containers.Detector.plot`, 
+however a wide range of plot options are supported.
+
++-------------+------------------------------------------------+
+| Option      | Description                                    |
++=============+================================================+
+| ``what``    | What data to plot                              |
++-------------+------------------------------------------------+
+| ``ax``      | Pre-prepared figure on which to add this plot  |
++-------------+------------------------------------------------+
+| ``xdim``    | Quantity from ``indexes`` to use as x-axis     |
++-------------+------------------------------------------------+
+| ``sigma``   | Confidence interval to place on errors         |
++-------------+------------------------------------------------+
+| ``steps``   | Draw tally values as constant inside bin       |
++-------------+------------------------------------------------+
+
+The plot routine also accepts various options, which can be found in the
+`matplotlib.pyplot.plot
+documentation <https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html>`_
+
+.. code:: 
+
+    >>> nodeFlx.plot()
+
+
+
+.. image:: images/Detector_21_0.png
+
+
+.. code:: 
+
+    >>> ax = nodeFlx.plot(steps=True, label='steps')
+    >>> nodeFlx.plot(sigma=100, ax=ax, marker='x', label='sigma')
+    >>> ax.legend()
+
+.. image:: images/Detector_22_0.png
+
+Passing ``what='errors'`` to the plot method plots the associated
+relative errors, rather than the tally data on the y-axis. Similarly,
+passing a key from :py:attr:`~serpentTools.objects.containers.Detector.indexes`
+as the ``xdim`` argument sets the x-axis to be that specific index.
+
+.. code:: 
+
+    >>> nodeFlx.plot(xdim='universe', what='errors');
+
+.. image:: images/Detector_24_0.png
+
+For detectors that include some grid matrices, such as spatial or energy
+meshes ``DET<name>E``, these arrays are stored in the
+:py:attr:`~serpentTools.objects.containers.Detector.grids` dictionary
+
+.. code:: 
+
+    >>> spectrum = bwr.detectors['spectrum']
+    >>> print(spectrum.grids['E'][:5, :])
+    [[  1.00002000e-11   4.13994000e-07   2.07002000e-07]
+     [  4.13994000e-07   5.31579000e-07   4.72786000e-07]
+     [  5.31579000e-07   6.25062000e-07   5.78320000e-07]
+     [  6.25062000e-07   6.82560000e-07   6.53811000e-07]
+     [  6.82560000e-07   8.33681000e-07   7.58121000e-07]]
+
+The :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot` method is
+designed to prepare plots of energy spectra.
+Supported keyword arguments method include
+
++-----------------+----------------+----------------------------------------------+
+| Option          | Default        | Description                                  |
++=================+================+==============================================+
+| ``normalize``   | ``True``       | Normalize tallies per unit lethargy          |
++-----------------+----------------+----------------------------------------------+
+| ``sigma``       | 3              | Level of confidence for statistical errors   |
++-----------------+----------------+----------------------------------------------+
+| ``xscale``      | ``'log'``      | Set the x scale to be log or linear          |
++-----------------+----------------+----------------------------------------------+
+| ``yscale``      | ``'linear'``   | Set the y scale to be log or linear          |
++-----------------+----------------+----------------------------------------------+
+
+Since our detector has energy bins and reaction bins, we need to reduce
+down to one-dimension with the ``fixed`` command. More on this in the
+next section. Here, the spectrum is plotted for the first reaction type,
+total flux for this detector.
+
+.. code::
+
+    >>> spectrum.spectrumPlot(fixed={'reaction': 1})
+
+.. image:: images/Detector_28_0.png
+
+Multi-dimensional Detectors
+---------------------------
+
+The :py:class:`~serpentTools.objects.containers.Detector` objects are capable
+of reshaping the detector data intoan array where each axis corresponds to a
+varying bin. In the above examples, the reshaped data was one-dimensional,
+because the detectors only tallied data against one bin, universe and energy.
+In the following example, the detector has been configured to tally the
+fission and capture rates (two ``dr`` arguments) in an XY mesh.
+
+.. code:: 
+
+    >>> xy = bwr.detectors['xymesh']
+    >>> for key in xy.indexes:
+    >>>     print(key, xy.indexes[key])
+    energy [1 2]
+    ymesh [ 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20]
+    xmesh [ 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20]
+
+Traversing the first axis in the
+:py:attr:`~serpentTools.objects.containers.Detector.tallies` array corresponds to
+changing the value of the ``reaction``. The second axis corresponds to
+changing ``ymesh`` values, and the final axis reflects changes in
+``xmesh``.
+
+.. code:: 
+
+    >>> print(xy.bins.shape)
+    (800, 12)
+    >>> print(xy.tallies.shape)
+    (2, 20, 20)
+    >>> print(xy.bins[:5, 10])
+    [ 0.0401505  0.0352695  0.0330053  0.0292071  0.0267413]
+    >>> print(xy.tallies[0, 0, :5])
+    [ 0.0401505  0.0352695  0.0330053  0.0292071  0.0267413]
+
+Slicing
+~~~~~~~
+
+As the detectors produced by SERPENT can contain multiple bin types, as
+seen in ``DET_COLS``, obtaining data from the tally data can become
+complicated. This retrieval can be simplified using the
+:py:meth:`~serpentTools.objects.containers.Detector.slice`
+method. This method takes an argument indicating what bins (keys in
+:py:attr:`~serpentTools.objects.containers.Detector.indexes`)
+to fix at what position.
+
+If we want to retrive the tally data for the fission reaction in the
+``spectrum`` detector, you would instruct the
+:py:meth:`~serpentTools.objects.containers.Detector.slice` method to use
+column 2 along the axis that corresponds to the reaction bin
+
+.. code:: 
+
+    >>> print(spectrum.indexes['reaction'])
+    [1 2]
+    >>> spectrum.slice({'reaction': 2})[:20]
+    array([  1.84253000e+03,   3.27275000e+01,   1.65728000e+01,
+             7.78628000e+00,   1.56444000e+01,   3.88358000e+00,
+             2.43967000e+01,   1.42860000e+01,   5.06925000e+00,
+             5.08734000e+00,   4.62725000e+00,   1.03671000e+01,
+             1.76183000e+00,   7.40425000e+00,   3.71261000e+00,
+             3.10994000e+01,   1.45352000e+01,   1.13481000e+01,
+             1.80058000e+01,   1.57873000e+01])
+
+As the fission reaction corresponded to reaction tally 1 in the original
+matrix.
+
+This method also works for slicing the error and score matrices by using
+``what='errors'`` or ``'scores'``, respectively.
+
+.. code:: 
+
+    >>> spectrum.slice({'reaction': 2}, 'errors')[:20]
+    array([ 0.0061 ,  0.01354,  0.01527,  0.01992,  0.01574,  0.02734,
+            0.01549,  0.01713,  0.01376,  0.01549,  0.01491,  0.01391,
+            0.01632,  0.01631,  0.02035,  0.02192,  0.01766,  0.01279,
+            0.02488,  0.01606])
+
+This call returns the relative error in the fission rate, reaction 2.
+
+Plotting
+~~~~~~~~
+
+For data with dimensionality greater than one, the
+:py:meth:`~serpentTools.objects.containers.Detector.meshPlot` method
+can be used to plot some 2D slice of the data. Passing a dictionary as
+the ``fixed`` argument restricts the tally data down to two dimensions.
+Since the ``xymesh`` detector is three dimensions, (energy, x, and y),
+we must pick an energy group to plot.
+
+.. code:: 
+
+    >>> xy.meshPlot('x', 'y', fixed={'energy': 1});
+    # plot the fast spectrum flux
+
+.. image:: images/Detector_40_0.png
+
+
+
+The :py:meth:`~serpentTools.objects.containers.Detector.meshPlot` also
+supports a range of labeling options
+
+.. code:: 
+
+    >>> spectrum.meshPlot('e', 'reaction', what='errors',
+    ...                   ylabel='Reaction type',
+    ...                   xlabel='Energy [MeV]');
+
+.. image:: images/Detector_42_0.png
+
+Using the ``slicing`` arguments allows access to the 1D plot methods
+from before
+
+.. code::
+
+    >>> xy.plot(fixed={'energy': 2, 'xmesh': 2},
+    ...         xlabel='Y position',
+    ...         ylabel='Thermal flux along x={}'
+    ...         .format(xy.grids['X'][2, 0]));
+
+
+
+.. image:: images/Detector_44_0.png
+
+
+The underlying matplotlib plot routines can be used to plot multiple
+data sets on the same plot.
+
+.. code::
+
+    >>> ax = pyplot.axes()
+    >>> labels = (
+    ... 'flux',
+    ... r'$\sigma_f^{u235}\psi$')  # render as mathtype
+    >>> reactions = spectrum.indexes['reaction']
+    >>> for reac, label in zip(reactions, labels):
+    ... spectrum.spectrumPlot({'reaction': reac}, steps=True, sigma=3,
+    ....                      ax=ax, label=label)
+    >>> ax.set_ylabel('Normalized tally per unit lethargy')
+    >>> ax.legend()
+
+.. image:: images/Detector_46_0.png
+
+Conclusion
+----------
+
+The :py:class:`~serpentTools.parsers.detector.DetectorReader` is capable of
+reading and storing detector data from SERPENT detector files.
+The data is stored on custom
+:py:class:`~serpentTools.objects.containers.Detector`
+objects, capable of reshaping tally and error matrices into arrays with
+dimensionality reflecting the detector binning.
+These :py:class:`~serpentTools.objects.containers.Detector`
+objects have simple methods for retrieving and plotting detector data.
+
+References
+----------
+
+1. J. Leppänen, M. Pusa, T. Viitanen, V. Valtavirta, and T.
+   Kaltiaisenaho. "The Serpent Monte Carlo code: Status, development and
+   applications in 2013." Ann. Nucl. Energy, `82 (2015)
+   142-150 <https://www.sciencedirect.com/science/article/pii/S0306454914004095>`__

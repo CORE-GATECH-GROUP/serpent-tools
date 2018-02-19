@@ -14,20 +14,20 @@ class. This notebook will provide as an intro into using this class.
 Basic Usage
 ===========
 
-.. code:: ipython3
+.. code:: 
 
     >>> import serpentTools
+    INFO    : serpentTools: Using version 0.2.1
     >>> from serpentTools.settings import rc, defaultSettings
-    INFO    : serpentTools: Using version 0.1.0
 
 Below are the default values for each setting available
 
-.. code:: ipython3
+.. code:: 
 
     >>> for setting in sorted(defaultSettings.keys()):
-    >>>     print(setting)
-    >>>     for key in defaultSettings[setting]:
-    >>>         print('\t', key, '-', defaultSettings[setting][key])
+    ...     print(setting)
+    ...     for key in defaultSettings[setting]:
+    ...         print('\t', key, '-', defaultSettings[setting][key])
     depletion.materialVariables
          default - []
          description - Names of variables to store. Empty list -> all variables.
@@ -71,7 +71,7 @@ the ``ResultsReader`` and ``BranchingReader``, as well as their specific
 settings. The ``rc`` class acts as a dictionary, and updating a value is
 as simple as
 
-.. code:: ipython3
+.. code:: 
 
     >> rc['verbosity'] = 'debug'
     DEBUG   : serpentTools: Updated setting verbosity to debug
@@ -80,17 +80,17 @@ as simple as
 The ``rc`` object automatically checks to make sure the value is of the
 correct type, and is an allowable option, if given.
 
-.. code:: ipython3
+.. code:: 
 
     >>> try:
-    >>>     rc['depletion.metadataKeys'] = False
-    >>> except TypeError as te:
-    >>>     print(te)
+    ...     rc['depletion.metadataKeys'] = False
+    ... except TypeError as te:
+    ...     print(te)
     Setting depletion.metadataKeys should be of type <class 'list'>, not <class 'bool'>
     >>> try:
-    >>>     rc['serpentVersion'] = '1.2.3'
-    >>> except KeyError as ke:
-    >>>     print(ke)
+    ...     rc['serpentVersion'] = '1.2.3'
+    ... except KeyError as ke:
+    ...     print(ke)
     "Setting serpentVersion is
     1.2.3
     and not one of the allowed options:
@@ -99,10 +99,10 @@ correct type, and is an allowable option, if given.
 The ``rc`` object can also be used inside a context manager to revert
 changes.
 
-.. code:: ipython3
+.. code:: 
 
     >>> with rc:
-    >>>     rc['depletion.metadataKeys'] = ['ZAI', 'BU']
+    ...     rc['depletion.metadataKeys'] = ['ZAI', 'BU']
     >>>
     >>> rc['depletion.metadataKeys']
     >>> rc['verbosity'] = 'info'
@@ -126,7 +126,7 @@ extracted from the results and coefficient files.
 These variable groups are stored in ``serpentTools/variables.yaml`` and
 rely upon the ``SERPENT`` version to properly expand the groups.
 
-.. code:: ipython3
+.. code:: 
 
     >>> rc['serpentVersion']
     '2.1.29'
@@ -152,7 +152,7 @@ rely upon the ``SERPENT`` version to properly expand the groups.
 However, one might see that the full group constant cross sections are
 not present in this set
 
-.. code:: ipython3
+.. code:: 
 
     >>> assert 'INF_SCATT3' not in varSet
 
@@ -168,3 +168,28 @@ to obtain all the data present in their respective files.
 
 See the :ref:`branching-ex` example for more information on using these
 settings to control scraped data.
+
+.. _conf-files:
+
+Configuration Files
+-------------------
+
+As of version 0.1.2, the ``rc`` object allows for settings to be updated
+from a yaml configuration file using the
+:py:meth:`~serpentTools.settings.UserSettingsLoader.loadYaml` method.
+The file is structured with the names of settings as keys and the
+desired setting value as the values.
+The loader also attempts to expand nested settings, like reader-specific
+settings, that may be lumped in a second level.
+
+.. code:: yaml
+
+    verbosity: warning
+    xs.getInfXS: False
+    branching:
+        areUncsPresent: False
+        floatVariables: [Fhi, Blo]
+    depletion:
+        materials: [fuel*]
+        materialVariables:
+            [ADENS, MDENS, VOLUME]
