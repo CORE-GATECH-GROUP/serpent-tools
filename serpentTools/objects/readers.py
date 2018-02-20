@@ -1,8 +1,6 @@
-from abc import abstractmethod
 from serpentTools.settings import rc
 
-
-class BaseReader(object):
+class BaseReader:
     """Parent class from which all parsers will inherit.
 
     Parameters
@@ -34,7 +32,6 @@ class BaseReader(object):
         self._read()
         self._postcheck()
 
-    @abstractmethod
     def _read(self):
         """Read the file and store the data.
 
@@ -45,14 +42,12 @@ class BaseReader(object):
         """
         pass
 
-    @abstractmethod
     def _precheck(self):
         """Pre-checking, e.g., make sure Serpent did not
         exit abnormally, or disk ran out of space while parsing.
         """
         pass
 
-    @abstractmethod
     def _postcheck(self):
         """Make sure data looks reasonable. Could possibly check for
         negative cross sections, negative material densitites, etc (which

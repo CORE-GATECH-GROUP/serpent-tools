@@ -82,8 +82,5 @@ class DetectorReader(BaseReader):
                     continue
                 elif 'DET' in sline[0]:
                     self.detCount += 1
-
-    def _postcheck(self):
-        if self.detCount != len(self.detectors):
-            error("Did not parse expected number of detectors in file\n"
-                  "{}".format(self.filePath))
+        if self.detCount == 0:
+            error("No detectors found in {}".format(self.filePath))

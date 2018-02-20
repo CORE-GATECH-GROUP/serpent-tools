@@ -135,7 +135,7 @@ class DepletionReader(MaterialReader):
         self.materials[name].addData(variable, cleaned)
 
     def _precheck(self):
-        """do a quick scan to see how many materials appear in the file
+        """do a quick scan to ensure this looks like a material file
         """
         with open(self.filePath) as fh:
             for line in fh:
@@ -144,10 +144,16 @@ class DepletionReader(MaterialReader):
                     continue
                 elif 'MAT' == line.split()[0]:
                     self.materialCount += 1
+        if self.materialCount == 0:
+            error("No materials found in {}".format(self.filePath))
+
+        if not self.materials:
+            error("0 materials to grab specified.")
 
     def _postcheck(self):
-        """ensure the parser grabbed the same number of counted materials
+        """ensure the parser grabbed expected materials
         """
-        if len(self.materials) != self.materialCount:
-            error("Did not parse as many materials as counted in file\n"
-                  "{}".format(self.filePath))
+        # checking if it is an instance of DepletedMaterial should
+        # work, since otherwise, self.materials[matname]
+        for mat in self.materials.values():
+            assert isinstance(mat, DepletedMaterial)

@@ -121,7 +121,11 @@ class BranchingReader(XSReader):
         """Currently, just grabs total number of coeff calcs
         """
         with open(self.filePath) as fObj:
-            self._totalBranches = int(fObj.readline().split()[1])
+            try:
+                self._totalBranches = int(fObj.readline().split()[1])
+            except:
+                error("COE output at {} likely malformatted or misnamed".format(
+                    self.filePath))
 
     def _postcheck(self):
         """Make sure Serpent finished printing output.
