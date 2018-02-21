@@ -31,7 +31,6 @@ class DetectorReader(BaseReader):
             self._loadAll = True
         else:
             self._loadAll = False
-        self.detCount = 0 # how many dets in file?
 
     def _read(self):
         """Read the file and store the detectors."""
@@ -75,12 +74,13 @@ class DetectorReader(BaseReader):
     def _precheck(self):
         """ Count how many detectors are in the file
         """
+        detCount = 0
         with open(self.filePath) as fh:
             for line in fh:
                 sline = line.split()
                 if sline == []:
                     continue
                 elif 'DET' in sline[0]:
-                    self.detCount += 1
-        if self.detCount == 0:
+                    detCount += 1
+        if detCount == 0:
             error("No detectors found in {}".format(self.filePath))

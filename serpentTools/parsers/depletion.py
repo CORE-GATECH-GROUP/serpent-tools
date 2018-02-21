@@ -47,9 +47,6 @@ class DepletionReader(MaterialReader):
         #  TOT_ADENS --> ('ADENS', )
         #  ING_TOX --> ('ING_TOX', )
 
-        # track how many materials appear in the file
-        self.materialCount = 0
-
     def _makeMaterialRegexs(self):
         """Return the patterns by which to find the requested materials."""
         patterns = self.settings['materials'] or ['.*']
@@ -137,14 +134,15 @@ class DepletionReader(MaterialReader):
     def _precheck(self):
         """do a quick scan to ensure this looks like a material file
         """
+        materialCount = 0
         with open(self.filePath) as fh:
             for line in fh:
                 sline = line.split()
                 if sline == []:
                     continue
                 elif 'MAT' == line.split()[0]:
-                    self.materialCount += 1
-        if self.materialCount == 0:
+                    materialCount += 1
+        if materialCount == 0:
             error("No materials found in {}".format(self.filePath))
 
         if not self.materials:

@@ -40,7 +40,7 @@ class BaseReader:
             This read function has not been implemented yet
 
         """
-        pass
+        raise NotImplementedError
 
     def _precheck(self):
         """Pre-checking, e.g., make sure Serpent did not
