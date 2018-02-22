@@ -6,7 +6,7 @@ from numpy import array
 from serpentTools.objects import splitItems
 from serpentTools.objects.containers import BranchContainer
 from serpentTools.objects.readers import XSReader
-from serpentTools.messages import debug, info
+from serpentTools.messages import debug, info, error
 
 
 class BranchingReader(XSReader):
@@ -25,8 +25,9 @@ class BranchingReader(XSReader):
         self.branches = {}
         self._whereAmI = {key: None for key in
                           {'runIndx', 'coefIndx', 'buIndx', 'universe'}}
+        self._totalBranches = None
 
-    def read(self):
+    def _read(self):
         """Read the branching file and store the coefficients."""
         info('Preparing to read {}'.format(self.filePath))
         with open(self.filePath) as fObj:
@@ -115,3 +116,22 @@ class BranchingReader(XSReader):
         """Iterate over branches yielding paired branch IDs and containers"""
         for bID, b in iteritems(self.branches):
             yield bID, b
+
+    def _precheck(self):
+        """Currently, just grabs total number of coeff calcs
+        """
+        with open(self.filePath) as fObj:
+            try:
+                self._totalBranches = int(fObj.readline().split()[1])
+            except:
+                error("COE output at {} likely malformatted or misnamed".format(
+                    self.filePath))
+
+    def _postcheck(self):
+        """Make sure Serpent finished printing output.
+        """
+
+        if self._totalBranches != self._whereAmI['runIndx']:
+            # maybe this should be an exception?
+            error("Serpent appears to have stopped printing coefficient\n"
+                    "mode output early for file {}".format(self.filePath))
