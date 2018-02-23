@@ -39,6 +39,7 @@ Here are all the wonderful people that helped make this project happen
 * `Andrew Johnson <https://github.com/drewejohnson>`_
 * `Dr. Dan Kotlyar <https://github.com/CORE-GATECH>`_
 * `Stefano Terlizzi <https://github.com/sallustius>`_
+* `Gavin Ridley <https://github.com/gridley>`_
 
 References
 ----------
@@ -47,7 +48,7 @@ The Annals of Nuclear Energy article should be cited for all work
 using ``SERPENT``. If you wish to cite this project, please cite as::
 
     url{@serpentTools
-        author = {Andrew Johnson and Dan Kotlyar},
+        author = {Andrew Johnson and Dan Kotlyar and Stefano Terlizzi and Gavin Ridley},
         title = {serpentTools: A suite of parsers designed to make interacting with SERPENT outputs simple and flawless},
         url = {https://github.com/CORE-GATECH-GROUP/serpent-tools},
         year = {2017}
