@@ -27,12 +27,9 @@ ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 # may not exist on RTD
 # https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
 MOCK_MODULES = ['numpy', 'matplotlib', 'pyyaml', 'six', 'serpentTools']
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return MagicMock()
+
 if ON_RTD:
-    sys.modules.update((name, Mock()) for name in MOCK_MODULES)
+    sys.modules.update((name, MagicMock()) for name in MOCK_MODULES)
     import numpy
 
 import serpentTools
