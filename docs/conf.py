@@ -33,6 +33,7 @@ class Mock(MagicMock):
         return MagicMock()
 if ON_RTD:
     sys.modules.update((name, Mock()) for name in MOCK_MODULES)
+    import numpy
 
 import serpentTools
 
