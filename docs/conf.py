@@ -63,7 +63,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'serpentTools'
 copyright = '2017-2018, Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, GTRC'
-author = 'Andrew Johnson, Dan Kotlyar, Stefano Terlizzi'
+author = 'The serpentTools developer team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -153,7 +153,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'serpenttools', 'serpentTools Documentation',
+    (master_doc, 'serpentTools', 'serpentTools Documentation',
      [author], 1)
 ]
 
@@ -164,7 +164,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'serpentTools', 'serpentTools Documentation',
-     author, 'serpentTools', 'One line description of project.',
+     author, 'serpentTools', 'Parsings tools for the SERPENT Monte Carlo Code',
      'Miscellaneous'),
 ]
 
