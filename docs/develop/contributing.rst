@@ -67,9 +67,20 @@ the ``master`` branch. If you have code you want to
 contribute, please look at the content in the :ref:`dev-guide`
 for things like :ref:`pr-checklist`, :ref:`code-style`, and more.
 
-When your content is ready for the pull request, follow
-the
+When your content is ready for the pull request, follow the
 `pull-request-template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/pull_request_template.md>`_
 and make a request!
 Someone of the core development team will review the changes according
 to the criteria above and make changes and/or approve for merging!
+
+The ``develop`` branch is the primary branch for this project.
+All pull requests, except for bugs on public releases, should be compared against this branch.
+When a pull request is approved and has passed the required checks, it should be 
+`squashed and merged <https://github.com/blog/2141-squash-your-commits>`_ into the develop branch.
+Squashing a branch converts a series of commits into a single commit onto the main branch,
+creating a tidy git history.
+
+For pull requests into ``master``, as in releases, these should simply be merged without squashing.
+When viewing the ``git log`` on the ``master`` or ``develop`` branches, one is presented only with
+approved and closed pull requests, not incremental commits that led to a PR being closed.
+
