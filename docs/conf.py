@@ -17,9 +17,23 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+from unittest.mock import MagicMock
+
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+
+# mock modules that we need to build this documentation that
+# may not exist on RTD
+# https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
+MOCK_MODULES = ['numpy', 'matplotlib', 'pyyaml', 'six', 'serpentTools']
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+if ON_RTD:
+    sys.modules.update((name, Mock()) for name in MOCK_MODULES)
+
 import serpentTools
 
 # -- General configuration ------------------------------------------------
