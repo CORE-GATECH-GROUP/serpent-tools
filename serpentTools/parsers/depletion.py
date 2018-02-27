@@ -2,6 +2,7 @@
 import re
 
 import numpy
+from six import iteritems
 
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
@@ -132,26 +133,26 @@ class DepletionReader(MaterialReader):
         self.materials[name].addData(variable, cleaned)
 
     def _precheck(self):
-        """do a quick scan to ensure this looks like a material file
-        """
+        """do a quick scan to ensure this looks like a material file."""
         materialCount = 0
         with open(self.filePath) as fh:
             for line in fh:
                 sline = line.split()
                 if sline == []:
                     continue
-                elif 'MAT' == line.split()[0]:
+                elif 'MAT' == line.split('_')[0]:
                     materialCount += 1
         if materialCount == 0:
             error("No materials found in {}".format(self.filePath))
 
-        if not self.materials:
-            error("0 materials to grab specified.")
-
     def _postcheck(self):
-        """ensure the parser grabbed expected materials
-        """
-        # checking if it is an instance of DepletedMaterial should
-        # work, since otherwise, self.materials[matname]
-        for mat in self.materials.values():
-            assert isinstance(mat, DepletedMaterial)
+        """ensure the parser grabbed expected materials."""
+        if not self.materials:
+            error("No materials obtained from {}".format(self.filePath))
+            return
+
+        for mKey, mat in iteritems(self.materials):
+            assert isinstance(mat, DepletedMaterial), (
+                'Unexpected key {}: {} in materials dictionary'.format(
+                    mKey, type(mat))
+            )
