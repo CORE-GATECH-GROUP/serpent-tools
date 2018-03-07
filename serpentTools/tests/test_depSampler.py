@@ -1,5 +1,18 @@
 """
 Class for testing the DepletionSampler
+
+File Descriptions
+-----------------
+
+*. ``bwr_0`` and ``bwr_1`` are identical input files with
+   different seeds. The detectors are defined exactly the same.
+*. ``bwr_badInventory`` has a different nuclide inventory
+   than ``bwr_0``, which would create data matrices such as ``adens``
+   of different sizes, breaking the sampling routines
+*. ``bwr_longT`` has a much longer final burn step, but equal number
+   of burnup steps.
+*. ``bwr_missingT`` is missing the final burnup step
+
 """
 import unittest
 from os import path

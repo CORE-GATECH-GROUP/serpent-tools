@@ -179,7 +179,6 @@ class DepletedMaterialBase(NamedObject):
 
 
 class DepletedMaterial(DepletedMaterialBase):
-
     __doc__ = DepletedMaterialBase.__doc__
 
     def addData(self, variable, rawData):
@@ -205,7 +204,7 @@ class DepletedMaterial(DepletedMaterialBase):
         self.data[newName] = numpy.array(scratch)
 
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
-             autolabel=True,legend=True, xlabel=None, ylabel=None, **kwargs):
+             autolabel=True, legend=True, xlabel=None, ylabel=None, **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 

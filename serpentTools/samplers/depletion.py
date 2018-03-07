@@ -132,12 +132,12 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
     __doc__ = """
     Class that stores data from a variety of depleted materials
     
+    {equiv:s}
+    
     .. note ::
 
         :py:func:`~serpentTools.samplers.depletion.SampledDepletedMaterial.free`
         sets ``allData`` to an empty dictionary {free:s}
-        
-    {equiv:s}
             
     Parameters
     ----------
@@ -241,7 +241,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         See Also
         --------
-        * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues
+        * :py:meth:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
         * :py:func:`matplotlib.pyplot.errorbar`
 
         """

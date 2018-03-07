@@ -1,14 +1,5 @@
 """
 Module for testing the ``serpentTools`` package
-
-.. note::
-
-    The relative error tolerances must be low, :math:`O(1)`, because the
-    error values themselves are incredibly low. In writing these tests,
-    a relative error of 1E-2 resulted in a 5% difference between
-    error quantities, which are all :math:`O(1E-3)`. A tight absolute
-    tolerance can still be achieved.
-
 """
 from os import path
 

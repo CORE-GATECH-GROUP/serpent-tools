@@ -4,13 +4,21 @@ Class for testing the detector sampler
 File Descriptions
 -----------------
 
-*. ``bwr_0_det0.m`` and ``bwr_1_det0.m`` are identical input files with
-    different seeds. The detectors are defined exactly the same.
-*. ``bwr_noxy_det0.m`` is the same file as ``bwr_0_det0.m`` with the
-    ``xymesh`` detector completely removed. All spatial and energy grid
-    data is removed from this file as well
-*. ``bwr_smallxy_det0.m`` has the same detector definitions as
-    ``bwr_0_det0.m``, except the spatial grid for ``xymesh`` is smaller.
+*. ``bwr_0`` and ``bwr_1`` are identical input files with
+   different seeds. The detectors are defined exactly the same.
+*. ``bwr_noxy`` is the same file as ``bwr_0`` with the
+   ``xymesh`` detector completely removed. All spatial and energy grid
+   data is removed from this file as well
+*. ``bwr_smallxy`` has the same detector definitions as
+   ``bwr_0``, except the spatial grid for ``xymesh`` is smaller.
+
+.. note::
+
+    The relative error tolerances must be low, :math:`O(1)`, because the
+    absolute error values themselves are low. In writing these tests,
+    a relative error of 1E-2 resulted in a 5% difference between
+    error quantities, which are all :math:`O(1E-3)`. A tight absolute
+    tolerance can still be achieved.
 
 """
 from math import sqrt
