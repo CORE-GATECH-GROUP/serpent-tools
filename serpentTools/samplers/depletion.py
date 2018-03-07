@@ -241,7 +241,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         See Also
         --------
-        * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`s
+        * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues
         * :py:func:`matplotlib.pyplot.errorbar`
 
         """

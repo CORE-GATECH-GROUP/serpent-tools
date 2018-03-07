@@ -5,10 +5,10 @@ import unittest
 from os import path
 
 from six import iteritems
-from numpy import where, fabs
+from numpy import where, fabs, ndarray
 from numpy.testing import assert_allclose
 
-from serpentTools.messages import MismatchedContainersError
+from serpentTools.messages import MismatchedContainersError, critical
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.samplers.depletion import DepletionSampler
 from serpentTools.tests import TEST_ROOT, computeMeansErrors
@@ -44,7 +44,7 @@ class DepletedSamplerTester(unittest.TestCase):
     def setUp(self):
         self.reader0 = DepletionReader(DEP_FILES['0'])
         self.reader0.read()
-        self.reader1 = DepletionReader(DEP_FILES['0'])
+        self.reader1 = DepletionReader(DEP_FILES['1'])
         self.reader1.read()
         self.sampler = DepletionSampler([DEP_FILES[x] for x in ('0', '1')])
 
@@ -65,16 +65,22 @@ class DepletedSamplerTester(unittest.TestCase):
                                                  (expectedMean, expectedStd)):
                     msg = errMsg.format(qty=qty, varN=varName, matN=material)
                     try:
-                        assert_allclose(actual, expected, err_msg=msg)
+                        assert_allclose(actual, expected, err_msg=msg,
+                                        rtol=1E-5)
                     except AssertionError as ae:
+                        critical("\nMaterial {} - value {}".format(
+                            name, varName))
                         for aRow, eRow in zip(actual, expected):
-                            print('Actual:   ', aRow)
-                            print('Expected: ', eRow)
+                            critical('Actual:   {}'.format(aRow))
+                            critical('Expected: {}'.format(eRow))
                             den = aRow.copy()
-                            den[where(den == 0)] = 1
+                            if isinstance(den, ndarray):
+                                den[where(den == 0)] = 1
+                            else:
+                                den = den or 1
                             rDiff = (fabs(aRow - eRow)
                                      / den)
-                            print('Relative: ', rDiff)
+                            critical('Relative: {}'.format(rDiff))
 
                         raise ae
 

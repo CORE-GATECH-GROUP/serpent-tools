@@ -82,6 +82,10 @@ class Sampler(object):
         self.parsers = set()
         self.map = {}
         self.read()
+
+    def read(self):
+        """Read all the files and create parser objects"""
+        self._readAll()
         if not self.settings['skipPrecheck']:
             self._precheck()
         else:
@@ -92,8 +96,7 @@ class Sampler(object):
                  "setting <sampler.freeAll> is ``True``")
             self.free()
 
-    def read(self):
-        """Read all the files and create parser objects"""
+    def _readAll(self):
         self.map = {}
         self.parsers = set()
         allExistFlag = self.settings['allExist']
@@ -151,13 +154,18 @@ class Sampler(object):
         critMsgs = [msg, header + ": Parser files"]
         for key, values in iteritems(misMatches):
             critMsgs.append('{}: {}'.format(key, ', '.join(values)))
-        for critMsg in critMsgs:
-            error(critMsg)
+        error('\n'.join(str(item) for item in critMsgs))
         raise MismatchedContainersError(msg)
 
     def __iter__(self):
         for parser in self.parsers:
             yield parser
+
+    def __len__(self):
+        return len(self.parsers)
+
+    def __contains__(self, item):
+        return item in self.files
 
     def process(self):
         """Process the repeated files to obtain true uncertainties"""

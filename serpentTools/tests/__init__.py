@@ -18,6 +18,7 @@ from serpentTools import ROOT_DIR
 
 TEST_ROOT = path.join(ROOT_DIR, 'tests')
 
+
 def computeMeansErrors(*arrays):
     """
     Return the matrices of element-wise means and standard deviations

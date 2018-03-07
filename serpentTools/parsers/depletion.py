@@ -121,7 +121,7 @@ class DepletionReader(MaterialReader):
             return
         if name not in self.materials:
             debug('Adding material {}...'.format(name))
-            self.materials[name] = DepletedMaterial(self, self.metadata)
+            self.materials[name] = DepletedMaterial(name, self.metadata)
             debug('  added')
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
@@ -139,7 +139,7 @@ class DepletionReader(MaterialReader):
         with open(self.filePath) as fh:
             for line in fh:
                 sline = line.split()
-                if sline == []:
+                if not sline:
                     continue
                 elif 'MAT' == line.split('_')[0]:
                     materialCount += 1
