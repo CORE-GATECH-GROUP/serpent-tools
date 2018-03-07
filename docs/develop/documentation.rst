@@ -161,3 +161,6 @@ Jupyter notebooks in the ``examples/`` directory, or with an
 Specifically, all readers should be demonstrated as Jupyter notebooks
 that detail the typical usage, user control settings, and examples
 of how the data is stored and accessed.
+
+These Jupyer notebooks can be converted to ``.rst`` files for inclusion
+in the manual with the command ``jupyter nbconvert --to=rst``.

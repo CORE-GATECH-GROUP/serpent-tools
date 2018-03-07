@@ -50,10 +50,9 @@ setupArgs = {
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),
     'long_description': longDesc,
-    'author': 'Andrew Johnson',
-    'author_email': 'ajohnson400@gatech.edu',
-    'maintainer': 'Dan Kotlyar',
-    'maintainer_email': 'dan.kotlyar@me.gatech.edu',
+    'maintainer': 'Andrew Johnson',
+    'maintainer_email': 'ajohnson400@gatech.edu',
+    'author': 'serpentTools developer team',
     'classifiers': classifiers,
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',

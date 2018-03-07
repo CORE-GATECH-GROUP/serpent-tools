@@ -17,9 +17,21 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+from unittest.mock import MagicMock
+
+ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
+
+# mock modules that we need to build this documentation that
+# may not exist on RTD
+# https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
+MOCK_MODULES = ['numpy', 'matplotlib', 'pyyaml', 'six', 'serpentTools']
+
+if ON_RTD:
+    sys.modules.update((name, MagicMock()) for name in MOCK_MODULES)
+    import numpy
+
 import serpentTools
 
 # -- General configuration ------------------------------------------------
@@ -51,7 +63,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'serpentTools'
 copyright = '2017-2018, Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, GTRC'
-author = 'Andrew Johnson, Dan Kotlyar, Stefano Terlizzi'
+author = 'The serpentTools developer team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -141,7 +153,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'serpenttools', 'serpentTools Documentation',
+    (master_doc, 'serpentTools', 'serpentTools Documentation',
      [author], 1)
 ]
 
@@ -152,7 +164,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'serpentTools', 'serpentTools Documentation',
-     author, 'serpentTools', 'One line description of project.',
+     author, 'serpentTools', 'Parsings tools for the SERPENT Monte Carlo Code',
      'Miscellaneous'),
 ]
 
