@@ -1,5 +1,6 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
 
+from six import iteritems
 import numpy
 
 from serpentTools.engines import KeywordParser
@@ -22,7 +23,15 @@ class DetectorReader(BaseReader):
     ----------
     filePath: str
         path to the depletion file
+
+    Attributes
+    ----------
+    {attrs:s}
     """
+    docAttrs = """detectors: dict
+        Dictionary where key, value pairs correspond to detector names
+        and their respective ``DetectorObject``"""
+    __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'detector')
@@ -31,6 +40,10 @@ class DetectorReader(BaseReader):
             self._loadAll = True
         else:
             self._loadAll = False
+
+    def iterDets(self):
+        for name, detector in iteritems(self.detectors):
+            yield name, detector
 
     def _read(self):
         """Read the file and store the detectors."""

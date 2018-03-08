@@ -45,7 +45,7 @@ pythonRequires = '>=2.7,!=3.0,!=3.1,!=3.2,!=3.3,!=3.4'
 setupArgs = {
     'name': 'serpentTools',
     'packages': ['serpentTools', 'serpentTools.parsers',
-                 'serpentTools.objects'],
+                 'serpentTools.objects', 'serpentTools.samplers'],
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),

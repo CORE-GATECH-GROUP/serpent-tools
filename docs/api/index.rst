@@ -18,3 +18,4 @@ API
    detector.rst
    fissionMatrix.rst
    results.rst
+   sampler.rst

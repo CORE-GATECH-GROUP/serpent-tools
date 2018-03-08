@@ -22,18 +22,19 @@ class DepletionReader(MaterialReader):
 
     Attributes
     ----------
-    materials: dict
+    {attrs:s}
+    settings: dict
+        names and values of the settings used to control operations
+        of this reader
+    """
+    docAttrs="""materials: dict
         Dictionary with material names as keys and the corresponding
         :py:class:`~serpentTools.objects.DepletedMaterial` class
         for that material as values
     metadata: dict
         Dictionary with file-wide data names as keys and the
-        corresponding dataas values, e.g. 'zai': [list of zai numbers]
-    settings: dict
-        names and values of the settings used to control operations
-        of this reader
-
-    """
+        corresponding data, e.g. 'zai': [list of zai numbers]"""
+    __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
@@ -120,7 +121,7 @@ class DepletionReader(MaterialReader):
             return
         if name not in self.materials:
             debug('Adding material {}...'.format(name))
-            self.materials[name] = DepletedMaterial(self, name)
+            self.materials[name] = DepletedMaterial(name, self.metadata)
             debug('  added')
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
@@ -138,7 +139,7 @@ class DepletionReader(MaterialReader):
         with open(self.filePath) as fh:
             for line in fh:
                 sline = line.split()
-                if sline == []:
+                if not sline:
                     continue
                 elif 'MAT' == line.split('_')[0]:
                     materialCount += 1
