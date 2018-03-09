@@ -75,3 +75,45 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     ax.figure.colorbar(quadmesh, norm=norm)
 
     return ax
+
+def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
+    """
+    Shortcut plot for plotting series of labeled data onto a plot
+
+    Parameters
+    ----------
+    xdata: numpy.array or iterable
+        Points along the x axis to plot
+    plotData: numpy.array
+        
+    """
+    ax = ax or pyplot.axes()
+
+    if yerr is not None:
+        assert yerr.shape == plotData.shape
+        errBar = True
+    else:
+        errBar = False
+
+    if len(plotData.shape) == 1:
+        plotData = plotData.reshape(plotData.size, 1)
+    dShape = plotData.shape
+   
+    if labels is None:
+        labels = [None] * (dShape[1] if len(dShape) > 1 else 1)
+
+    if errBar and yerr.shape != plotData.shape:
+        yerr = yerr.reshape(plotData.shape)
+    
+    for col, label in enumerate(labels):
+        if errBar:
+            ax.errorbar(xdata, plotData[:, col], label=label, yerr=yerr[:, col],
+                    **kwargs)
+        else:
+           ax.plot(xdata, plotData[:, col], label=label, **kwargs)
+
+    if any(labels):
+        ax.legend()
+
+    return ax
+

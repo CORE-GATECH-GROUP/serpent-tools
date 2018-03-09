@@ -14,7 +14,7 @@ from matplotlib import pyplot
 
 from numpy import array, arange, unique, log, divide, ones_like
 
-from serpentTools.plot import cartMeshPlot
+from serpentTools.plot import cartMeshPlot, plot
 from serpentTools.objects import NamedObject, convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug
 
@@ -283,7 +283,7 @@ class DetectorBase(NamedObject):
 
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
                      ylabel=None, steps=True, xscale='log', yscale='linear',
-                     sigma=3, **kwargs):
+                     sigma=3, labels=None, **kwargs):
         """
         Quick plot of the detector value as a function of energy.
 
@@ -307,8 +307,13 @@ class DetectorBase(NamedObject):
             Scale to apply to y axis
         sigma: int
             Level of confidence to apply to errors. Use for no error bars
+        labels: None or iterable
+            Labels to apply to each plot if slicing the data returns a 2D
+            array. This can be used to identify which bin is plotted
+            as each color
         kwargs:
             Additional arguments to pass to plot command
+
         Returns
         -------
         ax: pyplot.Axes
@@ -324,40 +329,35 @@ class DetectorBase(NamedObject):
         --------
         :py:meth:`~serpentTools.objects.containers.Detector.slice`
         """
-        if not len(self.tallies.shape) == 1 and fixed is None:
-            raise SerpentToolsException(
-                'Tally data is not a one-dimensional matrix. '
-                'Need constraining arguments in fixed dictionary'
-            )
         slicedTallies = self.slice(fixed, 'tallies')
-        if not len(slicedTallies.shape) == 1:
+        if len(slicedTallies.shape) > 2:
             raise SerpentToolsException(
-                'Sliced data must be one-dimensional for spectrum plot, not '
+                'Sliced data cannot exceed 2-D for spectrum plot, not '
                 '{}'.format(slicedTallies.shape)
             )
+        elif len(slicedTallies.shape) == 1:
+            slicedTallies = slicedTallies.reshape(slicedTallies.size, 1)
+        lowerE = self.grids['E'][:, 0]
         if normalize:
             lethBins = log(
-                divide(self.grids['E'][:, -1], self.grids['E'][:, 0]))
-            slicedTallies = divide(slicedTallies, lethBins)
-            slicedTallies = slicedTallies / slicedTallies.max()
-        ax = ax or pyplot.axes()
+                divide(self.grids['E'][:, -1], lowerE))
+            for indx in range(slicedTallies.shape[1]):
+                scratch = divide(slicedTallies[:, indx], lethBins)
+                slicedTallies[:, indx] = scratch / scratch.max() 
+        
         if steps:
             if 'drawstyle' in kwargs:
                 debug('Defaulting to drawstyle specified in kwargs as {}'
                       .format(kwargs['drawstyle']))
-                drawstyle = kwargs.pop('drawstyle')
             else:
-                drawstyle = 'steps-post'
-        else:
-            drawstyle = None
+                kwargs['drawstyle'] = 'steps-post'
+        
         if sigma:
-            slicedErrors = sigma * self.slice(fixed, 'errors') * slicedTallies
-            ax.errorbar(self.grids['E'][:, 0], slicedTallies,
-                        yerr=slicedErrors,
-                        drawstyle=drawstyle, **kwargs)
+            slicedErrors = sigma * self.slice(fixed, 'errors')
+            slicedErrors = slicedErrors.reshape(slicedTallies.shape) * slicedTallies
         else:
-            ax.plot(self.grids['E'][:, 0], slicedTallies, drawstyle=drawstyle,
-                    **kwargs)
+            slicedErrors = None
+        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, yerr=slicedErrors, **kwargs)     
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
         ax.set_xlabel(xlabel or 'Energy [MeV]')
@@ -368,7 +368,7 @@ class DetectorBase(NamedObject):
         return ax
 
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
-             xlabel=None, ylabel=None, steps=False, **kwargs):
+             xlabel=None, ylabel=None, steps=False, labels=None, **kwargs):
         """
         Shortcut routine for plotting 1D data
 
@@ -396,7 +396,10 @@ class DetectorBase(NamedObject):
             If true, plot the data as constant inside the respective bins.
             Sets ``drawstyle`` to be ``steps-post`` unless ``drawstyle``
             given in ``kwargs``
-        kwargs: dict
+        labels: None or iterable
+            If fixed returns a 2D array, apply these labels to each plot.
+            Can be used to apply additional bin labels to plot
+        kwargs: 
             additional arguments to pass to the
             :py:func:`~matplotlib.pyplot.plot`  of
             :py:func:`~matplotlib.pyplot.errorbar` function.
@@ -416,19 +419,22 @@ class DetectorBase(NamedObject):
           better options for plotting energy spectra
         """
         data = self.slice(fixed, what)
-        if len(data.shape) != 1:
+        if len(data.shape) > 2:
             raise SerpentToolsException(
-                'Data must be constrained to 1D, not {}'.format(data.shape))
+                'Data must be constrained to 1- or 2-D, not {}'.format(data.shape))
+        elif len(data.shape) == 1:
+            data = data.reshape(data.size, 1)
+
         if sigma:
             if what != 'errors':
-                errors = self.slice(fixed, 'errors') * data * sigma
+                yerr = self.slice(fixed, 'errors') * data * sigma
             else:
                 warning(
                     'Will not plot error bars on the error plot. Data to be '
                     'plotted: {}.  Sigma: {}'.format(what, sigma))
-                errors = None
-        else:
-            errors = None
+                yerr = None
+        else: 
+           yerr = None
         if xdim is not None:
             if xdim in self.indexes:
                 xdata = self.indexes[xdim]
@@ -441,20 +447,15 @@ class DetectorBase(NamedObject):
             xdata = arange(len(data))
 
         ax = ax or pyplot.axes()
+        
         if steps:
             if 'drawstyle' in kwargs:
                 debug('Defaulting to drawstyle specified in kwargs as {}'
                       .format(kwargs['drawstyle']))
-                drawstyle = kwargs.pop('drawstyle')
             else:
-                drawstyle = 'steps-post'
-        else:
-            drawstyle = None
-        if errors is None:
-            ax.plot(xdata, data, drawstyle=drawstyle, **kwargs)
-        else:
-            ax.errorbar(xdata, data, yerr=errors, drawstyle=drawstyle,
-                        **kwargs)
+                kwargs['drawstyle'] = 'steps-post'
+        ax = plot(xdata, data, ax, labels, yerr,**kwargs)
+        
         if xlabel is not None:
             ax.set_xlabel(xlabel)
         if ylabel is not None:
