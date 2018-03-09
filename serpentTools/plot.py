@@ -1,13 +1,12 @@
 """Plot routines"""
 
 import numpy
+from numpy import meshgrid, where
 from matplotlib import pyplot
-from matplotlib.patches import Rectangle
-from matplotlib.collections import PatchCollection
+from matplotlib.colors import LogNorm, Normalize
 
-
-def cartMeshPlot(data, xticks, yticks, widths=1, heights=1, ax=None, cmap=None,
-                 addcbar=True):
+def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
+                 normalizer=None, **kwargs):
     """
     Create a cartesian mesh plot of the data
 
@@ -19,22 +18,36 @@ def cartMeshPlot(data, xticks, yticks, widths=1, heights=1, ax=None, cmap=None,
         Values corresponding to lower x boundary of meshes
     yticks: iterable
         Values corresponding to lower y boundary of meshes
-    widths: float or iterable
-        Width of each mesh
-    heights: float or iterable
-        Height of each mesh
-    ax: None or matplotlib.pyplot.axes.Axe
-        Figure on which to draw the plot
+    ax: matplotlib.pyplot.Axes
+        Existing figure on which to draw the plot
     cmap: None or str
         colormap to apply to the figure. Must be a valid matplotlib
         colormap
-    addcbar: bool
-        If true, attach a colorbar to the plot
+    logScale: bool
+        If true, apply a logarithmic coloring 
+    normalizer: callable or Normalize
+        Custom normalizer for this plot.
+        If an instance of ``Normalize``, use directly.
+        Otherwise, assume a callable object and call as 
+        ``norm = normalizer(data, xticks, yticks)``
+    kwargs:
+        Additional keyword arguments to pass to
+        :py:func:`matplotlib.colors.pcolormesh`
 
     Returns
     -------
-    ax: matplotlib.pyplot.Axes
-        Object containing the patches
+    matplotlib.pyplot.Axes
+        plot on which the figure was drawn
+
+    Raises
+    ------
+    ValueError:
+        If ``logScale`` and data contains negative quantities
+
+    See Also
+    --------
+    :py:func:`matplotlib.colors.pcolormesh`
+    :py:class:`matplotlib.colors.Normalize`
     """
     assert len(data.shape) == 2, 'Mesh plot requires 2D data, ' \
                                  'not {}'.format(data.shape)
@@ -42,40 +55,23 @@ def cartMeshPlot(data, xticks, yticks, widths=1, heights=1, ax=None, cmap=None,
         'Cannot properly for a mesh with the presented data. \n# points: {}, '
         '# x mesh points: {}, # y mesh points: {}'.format(
             data.shape, len(xticks), len(yticks)))
-    if isinstance(widths, (float, int)):
-        widths = numpy.ones_like(xticks) * widths
-    else:
-        assert len(widths) == len(xticks)
-    if isinstance(heights, (float, int)):
-        heights = numpy.ones_like(yticks) * heights
-    else:
-        assert len(heights) == len(yticks)
+    if logScale and data.min() < 0:
+        raise ValueError("Will not apply log normalization to data with "
+                         "negative elements")
 
-    # make the patches
-
-    patchValues = numpy.empty(data.size)
-    patches = numpy.empty(data.size, dtype=object)
-    pIndex = 0
-    for xindx, xbound in enumerate(xticks):
-        for yindx, ybound in enumerate(yticks):
-            patches[pIndex] = Rectangle(
-                (xbound, ybound), width=widths[xindx], height=heights[yindx]
-            )
-            patchValues[pIndex] = data[yindx, xindx]
-            pIndex += 1
-    patches = PatchCollection(patches, cmap=cmap)
-    patches.set_array(patchValues)
-    del patchValues
+    if not logScale and normalizer is None:
+        norm = None
+    elif normalizer is not None:
+        norm =  (normalizer if isinstance(normalizer, Normlize) 
+                 else normalizer(data, xticks, yticks))
+    else:
+        smallestPos = data[where(data > 0)].min()
+        norm = LogNorm(smallestPos, data.max())
 
     # make the plot
     ax = ax or pyplot.axes()
-
-    ax.add_collection(patches)
-    if addcbar:
-        fig = pyplot.gcf()
-        fig.colorbar(patches, ax=ax)
-
-    ax.set_xlim((xticks.min(), xticks.max() + widths[-1]))
-    ax.set_ylim((yticks.min(), yticks.max() + heights[-1]))
+    X, Y = meshgrid(xticks, yticks)
+    quadmesh = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, **kwargs)
+    ax.figure.colorbar(quadmesh, norm=norm)
 
     return ax

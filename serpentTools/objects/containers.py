@@ -462,8 +462,8 @@ class DetectorBase(NamedObject):
         return ax
 
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
-                 cmap=None, addcbar=True, xlabel=None, ylabel=None,
-                 xscale='linear', yscale='linear'):
+                 cmap=None, logColor=False, xlabel=None, 
+                 ylabel=None, xscale='linear', yscale='linear', **kwargs):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -481,8 +481,9 @@ class DetectorBase(NamedObject):
             Axes on which to plot the data
         cmap: None or str
             Colormap to apply to the figure. If None, use default colormap
-        addcbar: bool
-            If True, add a colorbar to the figure
+        logColor: bool
+            If true, apply a logarithmic coloring to the data positive 
+            data
         xlabel: None or str
             Label to apply to x-axis. If not given, defaults to xdim
         ylabel: None or str
@@ -491,6 +492,9 @@ class DetectorBase(NamedObject):
             Scale to apply to x-axis
         yscale: {'log', 'linear'}
             Scale to apply to y-axis
+        kwargs:
+            Additional keyword arguments to pass to 
+            :py:func:`~matplotlib.colors.pcolormesh`
 
         Returns
         -------
@@ -503,10 +507,14 @@ class DetectorBase(NamedObject):
             If data to be plotted, with or without constraints, is not 1D
         KeyError
             If the data set by ``what`` not in the allowed selection
+        ValueError
+            If the data contains negative quantities and ``logColor`` is
+            ``True``
 
         See Also
         --------
-        :py:meth:`~serpentTools.objects.containers.Detector.slice`
+        :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+        :py:func:`matplotlib.colors.pcolormesh`
         """
         data = self.slice(fixed, what)
         if len(data.shape) != 2:
@@ -514,35 +522,27 @@ class DetectorBase(NamedObject):
                 'Data must be 2D for mesh plot, currently is {}.\nConstraints:'
                 '{}'.format(data.shape, fixed)
             )
-        if xdim[0].upper() in self.grids:
-            xgridFull = self.grids[xdim[0].upper()]
-            xgrid = xgridFull[:, 0]
-            widths = xgridFull[:, 1] - xgrid
-            del xgridFull
-        else:
-            xgrid = self.indexes[xdim] - 1
-            widths = ones_like(xgrid)
-
-        if ydim[0].upper() in self.grids:
-            ygridFull = self.grids[xdim[0].upper()]
-            ygrid = ygridFull[:, 0]
-            heights = ygridFull[:, 1] - ygrid
-            del ygridFull
-        else:
-            ygrid = self.indexes[ydim] - 1
-            heights = ones_like(ygrid)
+        xgrid = self._getGrid(xdim)
+        ygrid = self._getGrid(ydim)
         if data.shape != (ygrid.size, xgrid.size):
             data = data.T
 
-        ax = cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
-                          addcbar)
-
+        ax = cartMeshPlot(data, xgrid, ygrid, ax, cmap, logColor, **kwargs)
         ax.set_xlabel(xlabel or xdim)
         ax.set_ylabel(ylabel or ydim)
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
 
         return ax
+
+    def _getGrid(self, qty):
+        if qty[0].upper() in self.grids:
+            return self.grids[qty[0].upper()][:, 0]
+        if qty not in self.indexes:
+            raise KeyError("No index {} found on detector. Bin indexes: {}"
+                           .format(qty, ', '.join(self.indexes.keys())))
+        bins = self.indexes[qty]
+        return bins.reshape(len(bins), 1)
 
 
 class Detector(DetectorBase):
