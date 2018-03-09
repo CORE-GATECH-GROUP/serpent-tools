@@ -1,12 +1,63 @@
 """Plot routines"""
+from functools import wraps
+from textwrap import dedent
+
+from six import iteritems
 
 import numpy
 from numpy import meshgrid, where
 from matplotlib import pyplot
 from matplotlib.colors import LogNorm, Normalize
 
+#
+# DOCSTRING EXTRAS
+#
+_LOG_BASE = """log{}: bool\n    Apply a log scale to {}."""
+LOG_LOG = _LOG_BASE.format('log', 'both axes')
+LOGX = _LOG_BASE.format('x', 'x axis')
+LOGY = _LOG_BASE.format('y', 'y axis')
+LABELS = """labels: None or iterable
+    Labels to apply to each line drawn. This can be used to identify
+    which bin is plotted as what line."""
+
+XLABEL = """xlabel: str or None\n    Label for x-axis."""
+YLABEL = """yabel: str or None\n    Label for y-axis."""
+SIGMA = """sigma: int
+    Confidence interval to apply to errors. If not given or ``0``, 
+    no errors will be drawn."""
+AX = """ax: matplotlib.pyplot.axes or None
+    Ax on which to plot the data."""
+RETURNS_AX = """matplotlib.pyplot.Axes
+    Ax on which the data was plotted."""
+CMAP = """cmap: str or None
+    Valid Matplotlib colormap to apply to the plot."""
+KWARGS = """kwargs:\n    Addition keyword arguments to pass to"""
+
+PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
+        'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
+        'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
+        'ylabel': YLABEL, 'kwargs': KWARGS}
+"""Magic strings that, if found as {x}, will be replaced by the key of x"""
+
+
+def magicPlotDocDecorator(f):
+    """Decorator that replaces a lot magic strings used in plot functions"""
+    
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        return f(*args, **kwargs)
+    doc = dedent(f.__doc__)
+    for magic, replace in PLOT_MAGIC_STRINGS.items():
+        lookF = '{' + magic + '}'
+        if lookF in doc:
+            doc = doc.replace(lookF, replace)
+    decorated.__doc__ = doc
+    return decorated
+
+
+@magicPlotDocDecorator
 def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
-                 normalizer=None, **kwargs):
+                 normalizer=None, cbarLabel=None, **kwargs):
     """
     Create a cartesian mesh plot of the data
 
@@ -18,11 +69,8 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
         Values corresponding to lower x boundary of meshes
     yticks: iterable
         Values corresponding to lower y boundary of meshes
-    ax: matplotlib.pyplot.Axes
-        Existing figure on which to draw the plot
-    cmap: None or str
-        colormap to apply to the figure. Must be a valid matplotlib
-        colormap
+    {ax}
+    {cmap}
     logScale: bool
         If true, apply a logarithmic coloring 
     normalizer: callable or Normalize
@@ -30,14 +78,13 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
         If an instance of ``Normalize``, use directly.
         Otherwise, assume a callable object and call as 
         ``norm = normalizer(data, xticks, yticks)``
-    kwargs:
-        Additional keyword arguments to pass to
-        :py:func:`matplotlib.colors.pcolormesh`
+    cbarLabel: None or str
+        Label to apply to colorbar
+    {kwargs} :py:func:`matplotlib.colors.pcolormesh`
 
     Returns
     -------
-    matplotlib.pyplot.Axes
-        plot on which the figure was drawn
+    {rax}
 
     Raises
     ------
@@ -72,7 +119,9 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     ax = ax or pyplot.axes()
     X, Y = meshgrid(xticks, yticks)
     quadmesh = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, **kwargs)
-    ax.figure.colorbar(quadmesh, norm=norm)
+    cbar = ax.figure.colorbar(quadmesh, norm=norm)
+    if cbarLabel is not None:
+        cbar.ax.set_ylabel(cbarLabel)
 
     return ax
 
@@ -98,10 +147,10 @@ def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
     if len(plotData.shape) == 1:
         plotData = plotData.reshape(plotData.size, 1)
     dShape = plotData.shape
-   
     if labels is None:
         labels = [None] * (dShape[1] if len(dShape) > 1 else 1)
-
+    if 'label' in kwargs:
+        labels[0] = kwargs.pop('label')
     if errBar and yerr.shape != plotData.shape:
         yerr = yerr.reshape(plotData.shape)
     

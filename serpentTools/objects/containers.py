@@ -1,5 +1,4 @@
-"""
-Custom-built containers for storing data from serpent outputs
+""" Custom-built containers for storing data from serpent outputs
 
 Contents
 --------
@@ -14,7 +13,7 @@ from matplotlib import pyplot
 
 from numpy import array, arange, unique, log, divide, ones_like
 
-from serpentTools.plot import cartMeshPlot, plot
+from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug
 
@@ -222,17 +221,16 @@ class DetectorBase(NamedObject):
 
         Parameters
         ----------
-        data: {'tallies', 'errors', 'scores'}
-            Which data set to slice
         fixed: dict
             dictionary to aid in the restriction on the multidimensional
             array. Keys correspond to the various grids present in
             ``indexes`` while the values are used to
-
+        data: {'tallies', 'errors', 'scores'}
+            Which data set to slice
 
         Returns
         -------
-        reduced: numpy.array
+        numpy.array
             View into the respective data where certain dimensions
             have been removed
 
@@ -256,6 +254,8 @@ class DetectorBase(NamedObject):
             raise SerpentToolsException(
                 '{} data for detector {} is None. '
                 'Cannot perform slicing'.format(data, self.name))
+        if not fixed:
+            return work
         return work[self._getSlices(fixed)]
 
     def _getSlices(self, fixed):
@@ -281,9 +281,10 @@ class DetectorBase(NamedObject):
                 'Could not find arguments in index that match the following'
                 ' requested slice keys: {}'.format(', '.join(keys)))
         return slices
-
+    
+    @magicPlotDocDecorator
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
-                     ylabel=None, steps=True, xscale='log', yscale='linear',
+                     ylabel=None, steps=True, logx=True, logy=False, loglog=False, 
                      sigma=3, labels=None, **kwargs):
         """
         Quick plot of the detector value as a function of energy.
@@ -291,34 +292,25 @@ class DetectorBase(NamedObject):
         Parameters
         ----------
         fixed: None or dict
-            Dictionary controlling the reduction in data down to one dimension
-        ax: pyplot.Axes or None
-            Ax on which to plot the data
+            Dictionary controlling the reduction in data
+        {ax}
         normalize: bool
             Normalize quantities per unit lethargy
-        xlabel: str or None
-            Label for x-axis. Defaults to 'Energy [MeV]'
-        ylabel: str or None
-            Label for y axis
+        {xlabel}
+        {ylabel}
         steps: bool
             Plot tally as constant inside bin
-        xscale: {'log', 'linear'}
-            Scale to apply to x axis
-        yscale: {'log', 'linear'}
-            Scale to apply to y axis
-        sigma: int
-            Level of confidence to apply to errors. Use for no error bars
-        labels: None or iterable
-            Labels to apply to each plot if slicing the data returns a 2D
-            array. This can be used to identify which bin is plotted
-            as each color
-        kwargs:
-            Additional arguments to pass to plot command
+        {logx}
+        {logy}
+        {loglog}
+        {sigma}
+        {labels}
+        {kwargs} :py:func:`matplotlib.pyplot.plot` or 
+            :py:func:`matplotlib.pyplot.errorbar`
 
         Returns
         -------
-        ax: pyplot.Axes
-            Axes on which the data was plotted
+        {rax}
 
         Raises
         ------
@@ -359,20 +351,23 @@ class DetectorBase(NamedObject):
         else:
             slicedErrors = None
         ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, yerr=slicedErrors, **kwargs)     
-        ax.set_xscale(xscale)
-        ax.set_yscale(yscale)
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
         ax.set_xlabel(xlabel or 'Energy [MeV]')
         ylabel = ylabel or 'Tally data' + (' normalized per unit lethargy'
                                              if normalize else '')
         ax.set_ylabel(ylabel)
 
         return ax
-
+    
+    @magicPlotDocDecorator
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
              xlabel=None, ylabel=None, steps=False, labels=None, 
              logx=False, logy=False, loglog=False, **kwargs):
         """
-        Shortcut routine for plotting 1D data
+        Simple plot routine for 1- or 2-D data
 
         Parameters
         ----------
@@ -381,44 +376,32 @@ class DetectorBase(NamedObject):
             the x axis
         what: {'tallies', 'errors', 'scores'}
             Primary data to plot
-        sigma: None or int
-            If given, apply this level of confidence to absolute errors.
-            If not given, then error bars will not be used
+        {sigma}
         fixed: None or dict
             Dictionary controlling the reduction in data down to one dimension
-        ax: axes or None
-            Axes on which to plot the data
-        xlabel: None or str
-            If given, apply this label to the x-axis. If ``xdim`` is given
-            and ``xlabel`` is ``None``, then ``xdim`` will be applied to the
-            x-axis
-        ylabel: None or str
-            If given, label to apply to y-axis
+        {ax}
+        {xlabel} If ``xdim`` is given and ``xlabel`` is ``None``, then 
+            ``xdim`` will be applied to the x-axis.
+        {ylabel}
         steps: bool
             If true, plot the data as constant inside the respective bins.
             Sets ``drawstyle`` to be ``steps-post`` unless ``drawstyle``
             given in ``kwargs``
-        labels: None or iterable
-            If fixed returns a 2D array, apply these labels to each plot.
-            Can be used to apply additional bin labels to plot
-        logx: bool
-            Apply a log scale to the x axis
-        logy: bool
-            Apply a log scale to the y axis
-        loglog: bool
-            Apply a log scale to both axis
-        kwargs: 
-            additional arguments to pass to the
-            :py:func:`~matplotlib.pyplot.plot`  of
+        {labels}
+        {logx}
+        {logy}
+        {loglog}
+        {kwargs} :py:func:`~matplotlib.pyplot.plot`  of
             :py:func:`~matplotlib.pyplot.errorbar` function.
 
         Returns
         -------
-        ax: matplotlib.AxesSubplot
+        {rax}
 
         Raises
         ------
-        SerpentToolsException: If the data is not constrained to 1D
+        SerpentToolsException
+            If data contains more than 2 dimensions
 
         See Also
         --------
@@ -426,6 +409,7 @@ class DetectorBase(NamedObject):
         * :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
           better options for plotting energy spectra
         """
+
         data = self.slice(fixed, what)
         if len(data.shape) > 2:
             raise SerpentToolsException(
@@ -435,7 +419,7 @@ class DetectorBase(NamedObject):
 
         if sigma:
             if what != 'errors':
-                yerr = self.slice(fixed, 'errors') * data * sigma
+                yerr = self.slice(fixed, 'errors').reshape(data.shape) * data * sigma
             else:
                 warning(
                     'Will not plot error bars on the error plot. Data to be '
@@ -473,10 +457,11 @@ class DetectorBase(NamedObject):
         if loglog or logy:
             ax.set_yscale('log')
         return ax
-
+    
+    @magicPlotDocDecorator
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
                  cmap=None, logColor=False, xlabel=None, 
-                 ylabel=None, xscale='linear', yscale='linear', **kwargs):
+                 ylabel=None, logx=False, logy=False, loglog=False, **kwargs):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -490,30 +475,21 @@ class DetectorBase(NamedObject):
             Color meshes from tally data, uncertainties, or scores
         fixed: None or dict
             Dictionary controlling the reduction in data down to one dimension
-        ax: axes or None
-            Axes on which to plot the data
-        cmap: None or str
-            Colormap to apply to the figure. If None, use default colormap
+        {ax}
+        {cmap}
         logColor: bool
             If true, apply a logarithmic coloring to the data positive 
             data
-        xlabel: None or str
-            Label to apply to x-axis. If not given, defaults to xdim
-        ylabel: None or str
-            Label to apply to y-axis. If not given, defaults to ydim
-        xscale: {'log', 'linear'}
-            Scale to apply to x-axis
-        yscale: {'log', 'linear'}
-            Scale to apply to y-axis
-        kwargs:
-            Additional keyword arguments to pass to 
-            :py:func:`~matplotlib.colors.pcolormesh`
+        {xlabel}
+        {ylabel}
+        {logx}
+        {logy}
+        {loglog}
+        {kwargs}:py:func:`~matplotlib.colors.pcolormesh`
 
         Returns
         -------
-        ax: pyplot.Axes
-            Ax on which the data was plotted
-
+        {rax}
         Raises
         ------
         SerpentToolsException
@@ -537,15 +513,20 @@ class DetectorBase(NamedObject):
             )
         xgrid = self._getGrid(xdim)
         ygrid = self._getGrid(ydim)
+        if data.size != xgrid.size * ygrid.size:
+            raise SerpentToolsException(
+                "Fixed data does not match size of x and y grids: {} vs {} "
+                "and {}".format(data.shape, xgrid.shape, ygrid.shape))
         if data.shape != (ygrid.size, xgrid.size):
             data = data.T
 
         ax = cartMeshPlot(data, xgrid, ygrid, ax, cmap, logColor, **kwargs)
         ax.set_xlabel(xlabel or xdim)
         ax.set_ylabel(ylabel or ydim)
-        ax.set_xscale(xscale)
-        ax.set_yscale(yscale)
-
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
         return ax
 
     def _getGrid(self, qty):
