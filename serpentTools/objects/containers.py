@@ -218,7 +218,7 @@ class DetectorBase(NamedObject):
 
     def slice(self, fixed, data='tallies'):
         """
-        Return a slice of the reshaped array where certain axes are fixed
+        Return a view of the reshaped array where certain axes are fixed
 
         Parameters
         ----------
@@ -228,6 +228,7 @@ class DetectorBase(NamedObject):
             dictionary to aid in the restriction on the multidimensional
             array. Keys correspond to the various grids present in
             ``indexes`` while the values are used to
+
 
         Returns
         -------
@@ -329,7 +330,7 @@ class DetectorBase(NamedObject):
         --------
         :py:meth:`~serpentTools.objects.containers.Detector.slice`
         """
-        slicedTallies = self.slice(fixed, 'tallies')
+        slicedTallies = self.slice(fixed, 'tallies').copy()
         if len(slicedTallies.shape) > 2:
             raise SerpentToolsException(
                 'Sliced data cannot exceed 2-D for spectrum plot, not '
@@ -353,7 +354,7 @@ class DetectorBase(NamedObject):
                 kwargs['drawstyle'] = 'steps-post'
         
         if sigma:
-            slicedErrors = sigma * self.slice(fixed, 'errors')
+            slicedErrors = sigma * self.slice(fixed, 'errors').copy()
             slicedErrors = slicedErrors.reshape(slicedTallies.shape) * slicedTallies
         else:
             slicedErrors = None
@@ -361,14 +362,15 @@ class DetectorBase(NamedObject):
         ax.set_xscale(xscale)
         ax.set_yscale(yscale)
         ax.set_xlabel(xlabel or 'Energy [MeV]')
-        ylabel = ylabel or 'Neutron flux' + (' normalized per unit lethargy'
+        ylabel = ylabel or 'Tally data' + (' normalized per unit lethargy'
                                              if normalize else '')
         ax.set_ylabel(ylabel)
 
         return ax
 
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
-             xlabel=None, ylabel=None, steps=False, labels=None, **kwargs):
+             xlabel=None, ylabel=None, steps=False, labels=None, 
+             logx=False, logy=False, loglog=False, **kwargs):
         """
         Shortcut routine for plotting 1D data
 
@@ -399,6 +401,12 @@ class DetectorBase(NamedObject):
         labels: None or iterable
             If fixed returns a 2D array, apply these labels to each plot.
             Can be used to apply additional bin labels to plot
+        logx: bool
+            Apply a log scale to the x axis
+        logy: bool
+            Apply a log scale to the y axis
+        loglog: bool
+            Apply a log scale to both axis
         kwargs: 
             additional arguments to pass to the
             :py:func:`~matplotlib.pyplot.plot`  of
@@ -460,6 +468,10 @@ class DetectorBase(NamedObject):
             ax.set_xlabel(xlabel)
         if ylabel is not None:
             ax.set_ylabel(ylabel)
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
         return ax
 
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
