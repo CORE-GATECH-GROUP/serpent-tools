@@ -14,20 +14,7 @@ class XSData(NamedObject):
         Dictionary with file metadata"""
     docAttrs = """data: dict
         dictionary that stores all variable data
-    zai: list
-        Isotopic ZZAAA identifiers, e.g. 93325
-    names: list
-        Names of isotopes, e.g. U235
-    days: numpy.ndarray
-        Vector of total, cumulative days of burnup for the run that
-        created this material
-    burnup: numpy.ndarray
-        Vector of total, cumulative burnup [MWd/kgU] for this specific
-        material
-    adens: numpy.ndarray
-        2D array of atomic {densStruct:s}
-    mdens: numpy.ndarray
-        2D array of mass {densStruct:s}""".format(
+    """.format(
     __doc__ = """
     Base class for storing cross section data an xsplot file
 
