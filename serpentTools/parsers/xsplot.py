@@ -1,6 +1,18 @@
 """Parser responsible for reading the ``*dep.m`` files"""
+import numpy as np
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, info, debug, error
+from serpentTools.objects.readers import BaseReader
+from serpentTools.objects.xsdata import XSData
+
+def _cleanChunk(string):
+    """rstrip, but also removes = ["""
+    newstring= string.rstrip()
+    if '=' in newstring:
+        i = newstring.index('=')
+        return newstring[:i-1]
+    else:
+        return newstring
 
 class XSPlotReader(BaseReader):
     """
@@ -32,52 +44,57 @@ class XSPlotReader(BaseReader):
 
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'xsplot')
+        self.xsections = {}
+        self.metadata = {}
 
     def _read(self):
         """Read through the depletion file and store requested data."""
         info('Preparing to read {}'.format(self.filePath))
-        keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
-        keys.extend(self.settings['metadataKeys'])
+        keys = ['E', 'i[0-9]{4,5}', 'm[a-zA-Z]']
         separators = ['\n', '];', '\r\n']
+
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
-                if 'MAT' in chunk[0]:
-                    self._addMaterial(chunk)
-                elif 'TOT' in chunk[0]:
-                    self._addTotal(chunk)
-                else:
-                    self._addMetadata(chunk)
-        if 'days' in self.metadata:
-            for mKey in self.materials:
-                self.materials[mKey].days = self.metadata['days']
-        info('Done reading depletion file')
-        debug('  found {} materials'.format(len(self.materials)))
 
-    def _addMetadata(self, chunk):
-        options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
-                   'BU': 'burnup'}
-        for varName, metadataKey in options.items():
-            if varName in chunk[0]:
-                if varName in ['ZAI', 'NAMES']:
-                    values = [line.strip() for line in chunk[1:]]
-                    if varName == 'NAMES':
-                        values = [item.split()[0][1:] for item in values]
-                else:
-                    line = self._cleanSingleLine(chunk)
-                    values = numpy.array([float(item)
-                                          for item in line.split()])
-                self.metadata[metadataKey] = values
-                return
+                if chunk[0][:5] == 'E = [':
+                    # The energy grid
+                    self.metadata['egrid']= np.array(chunk[1:], dtype=np.float64)
 
-    @staticmethod
-    def _cleanSingleLine(chunk):
-        return chunk[0][chunk[0].index('[') + 1:chunk[0].index(']')]
+                elif chunk[0][:15] == 'majorant_xs = [':
+                    # L-inf norm on all XS on all materials
+                    self.metadata['majorant_xs'] = np.array(chunk[1:],
+                                                             dtype=np.float64)
+
+                elif chunk[0][-7:] == 'mt = [\n':
+                    debug('found mt specification')
+                    xsname = chunk[0][:-8]
+                    isiso = True if chunk[0][0] == 'i' else False
+                    self.xsections[xsname] = XSData(xsname, self.metadata,
+                                                    isIso=isiso)
+                    self.xsections[xsname].setMTs(chunk)
+
+                elif chunk[0][-7:] == 'xs = [\n':
+                    debug('found xs specification')
+                    xsname = chunk[0][:-8]
+                    self.xsections[xsname].setData(chunk)
+
+                elif chunk[0][-7:] == 'nu = [\n':
+                    debug('found nu specification')
+                    xsname = chunk[0][:-8]
+                    self.xsections[xsname].setNuData(chunk)
+
+                else:
+                    print(chunk)
+                    error('Unidentifiable entry {}'.format(chunk[0]))
+
+        info('Done reading xsplot file')
+        debug('  found {} xs listings'.format(len(self.xsections)))
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a xsplot file."""
         if '_xs' not in self.filePath:
-            warning("This file doesn't look like the file format serpent
-                     gives for xsplot stuff.")
+            warning("This file doesn't look like the file format serpent"
+                    "gives for xsplot stuff.")
 
         with open(self.filePath) as fh:
             # first chunk should be energy bins
@@ -89,4 +106,12 @@ class XSPlotReader(BaseReader):
 
     def _postcheck(self):
         """ensure the parser grabbed expected stuff."""
-        pass
+        try:
+            for xs in self.xsections.values():
+                assert xs.hasExpectedData()
+        except AssertionError:
+            error("Seems either the file was cut off, or data incomplete."
+                  "The incomplete XS is {}".format(xs.name))
+
+        # check energy grid found
+        assert 'egrid' in self.metadata.keys()

@@ -1,6 +1,5 @@
 """Holds cross section data pertaining to Serpent xsplot output."""
-
-import numpy
+import numpy as np
 from matplotlib import pyplot
 
 from serpentTools import messages
@@ -12,9 +11,6 @@ class XSData(NamedObject):
         Name of this material
     metadata: dict
         Dictionary with file metadata"""
-    docAttrs = """data: dict
-        dictionary that stores all variable data
-    """.format(
     __doc__ = """
     Base class for storing cross section data an xsplot file
 
@@ -24,26 +20,34 @@ class XSData(NamedObject):
 
     Attributes
     ----------
-    {attrs:s}
 
-    """.format(equiv=docEquiv, params=docParams, attrs=docAttrs)
+    """.format(params=docParams)
 
-    def __init__(self, name, metadata):
+    def __init__(self, name, metadata, isIso=False):
         NamedObject.__init__(self, name)
-        self.data = {}
+
         # Whether this describes individual isotope XS, or whole-material XS
         self.isIso = True
 
         # serpent starts their names with an "m" if it's a whole-material XS
-        if name[0] == 'm':
-            self.isIso = False
+        self.isIso = isIso
 
-        # a reference to the energy grid the XS are defined on:
-        self.egrid = bleh
+        # energy grid for the nuclides
+        self.egrid = None
+
+        # metadata reference
+        self.metadata = metadata
 
         # Possible reactions on this material / nuclide
         # Maps MT integer number to a description
-        self.mts = {}
+        self.MT = []
+        self.MTdescrip = []
+
+        # Holds XS numeric data
+        self.xsdata = None
+
+        # whether nu data present for fissionables
+        self.hasNuData = False
 
     @staticmethod
     def negativeMTDescription(mt):
@@ -76,3 +80,41 @@ class XSData(NamedObject):
         except KeyError:
             error("Cannot find description for MT {}.".format(mt))
             return None
+
+    def setMTs(self, chunk):
+        """ Parse chunk to MT numbers and descriptions"""
+        if not self.isIso:
+            self.MT = [int(c) for c in chunk[1:]]
+        else:
+            self.MT = [int(c.split('%')[0]) for c in chunk[1:]]
+
+        # Make MT descriptions
+        if not self.isIso:
+            for mt in self.MT:
+                self.MTdescrip.append(self.negativeMTDescription(mt))
+        else:
+            self.MTdescrip = [c.split('%')[1].rstrip() for c in chunk[1:]]
+
+    def setData(self, chunk):
+        """ Parse data from chunk to np array."""
+        self.xsdata = np.zeros([len(self.metadata['egrid']), len(self.MT)])
+        for i, line in enumerate(chunk[1:]):
+            self.xsdata[i,:] = np.array(line.split(), dtype=np.float64)
+
+    def setNuData(self, chunk):
+        """ Add fission neutrons per fission data """
+        self.hasNuData = True
+        self.nuData = np.zeros([len(self.metadata['egrid']),2], dtype=np.float64)
+        for i, cc in enumerate(chunk[1:]):
+            self.nuData[i,:] = np.array(cc.split(), dtype=np.float64)
+
+    def hasExpectedData(self):
+        """ Check that the expected data (MT numbers, an energy grid, etc)
+        were collected. """
+
+        if not isinstance(self.xsdata, np.ndarray):
+            return False
+        if self.MT == []:
+            return False
+        else:
+            return True
