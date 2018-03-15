@@ -272,7 +272,7 @@ class DetectorBase(NamedObject):
         slices = []
         for key in self.indexes:
             if key in keys:
-                slices.append(fixed[key] - 1)
+                slices.append(fixed[key])
                 keys.remove(key)
             else:
                 slices.append(slice(0, len(self.indexes[key])))
@@ -542,7 +542,7 @@ class DetectorBase(NamedObject):
             raise KeyError("No index {} found on detector. Bin indexes: {}"
                            .format(qty, ', '.join(self.indexes.keys())))
         bins = self.indexes[qty]
-        return hstack((0, bins)) 
+        return hstack((bins, len(bins)))
 
 
 class Detector(DetectorBase):
@@ -611,7 +611,7 @@ class Detector(DetectorBase):
             if 0 < index < 10:
                 uniqueVals = unique(self.bins[:, index])
                 if len(uniqueVals) > 1:
-                    self.indexes[indexName] = array(uniqueVals, dtype=int)
+                    self.indexes[indexName] = array(uniqueVals, dtype=int) - 1
                     shape.append(len(uniqueVals))
         self.tallies = self.bins[:, 10].reshape(shape)
         self.errors = self.bins[:, 11].reshape(shape)
