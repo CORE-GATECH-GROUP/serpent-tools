@@ -11,6 +11,7 @@ API
    messages.rst
    parsers.rst
    engines.rst
+   plot.rst
    containers.rst
    branching.rst
    bumat.rst

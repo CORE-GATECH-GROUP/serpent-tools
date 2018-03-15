@@ -320,7 +320,7 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        :py:meth:`~serpentTools.objects.containers.Detector.slice`
+        :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
         """
         slicedTallies = self.slice(fixed, 'tallies').copy()
         if len(slicedTallies.shape) > 2:
@@ -391,7 +391,7 @@ class DetectorBase(NamedObject):
         {logx}
         {logy}
         {loglog}
-        {kwargs} :py:func:`~matplotlib.pyplot.plot`  of
+        {kwargs} :py:func:`~matplotlib.pyplot.plot` or
             :py:func:`~matplotlib.pyplot.errorbar` function.
 
         Returns
@@ -406,8 +406,8 @@ class DetectorBase(NamedObject):
         See Also
         --------
         * :py:meth:`~serpentTools.objects.containers.Detector.slice`
-        * :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
-          better options for plotting energy spectra
+        * :py:meth:`~serpentTools.objects.containers.DetectorBase.spectrumPlot`
+           better options for plotting energy spectra
         """
 
         data = self.slice(fixed, what)
@@ -460,8 +460,8 @@ class DetectorBase(NamedObject):
     
     @magicPlotDocDecorator
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
-                 cmap=None, logColor=False, xlabel=None, 
-                 ylabel=None, logx=False, logy=False, loglog=False, **kwargs):
+                 cmap=None, logColor=False, xlabel=None, ylabel=None, 
+                 logx=False, logy=False, loglog=False, **kwargs):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -485,11 +485,12 @@ class DetectorBase(NamedObject):
         {logx}
         {logy}
         {loglog}
-        {kwargs}:py:func:`~matplotlib.colors.pcolormesh`
+        {kwargs} :py:func:`~matplotlib.pyplot.pcolormesh`
 
         Returns
         -------
         {rax}
+
         Raises
         ------
         SerpentToolsException
@@ -502,8 +503,9 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
-        :py:func:`matplotlib.colors.pcolormesh`
+        * :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+        * :py:func:`matplotlib.pyplot.pcolormesh`
+        * :py:func:`~serpentTools.plot.cartMeshPlot`
         """
         if fixed:
             for qty, name in zip((xdim, ydim), ('x', 'y')):
@@ -554,6 +556,7 @@ class Detector(DetectorBase):
     {params:s}
 
     Attributes
+    ----------
     bins: numpy.ndarray
         Tally data directly from SERPENT file
     {attrs:s}

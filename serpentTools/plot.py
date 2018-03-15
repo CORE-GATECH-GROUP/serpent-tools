@@ -12,6 +12,7 @@ from matplotlib.colors import LogNorm, Normalize
 #
 # DOCSTRING EXTRAS
 #
+_MPL_AX = ':py:class:`matplotlib.axes.Axes`'
 _LOG_BASE = """log{}: bool\n    Apply a log scale to {}."""
 LOG_LOG = _LOG_BASE.format('log', 'both axes')
 LOGX = _LOG_BASE.format('x', 'x axis')
@@ -25,10 +26,10 @@ YLABEL = """yabel: str or None\n    Label for y-axis."""
 SIGMA = """sigma: int
     Confidence interval to apply to errors. If not given or ``0``, 
     no errors will be drawn."""
-AX = """ax: matplotlib.pyplot.axes or None
-    Ax on which to plot the data."""
-RETURNS_AX = """matplotlib.pyplot.Axes
-    Ax on which the data was plotted."""
+AX = """ax: {} or None
+    Ax on which to plot the data.""".format(_MPL_AX)
+RETURNS_AX = """{}
+    Ax on which the data was plotted.""".format(_MPL_AX)
 CMAP = """cmap: str or None
     Valid Matplotlib colormap to apply to the plot."""
 KWARGS = """kwargs:\n    Addition keyword arguments to pass to"""
@@ -36,7 +37,7 @@ KWARGS = """kwargs:\n    Addition keyword arguments to pass to"""
 PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
         'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
         'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
-        'ylabel': YLABEL, 'kwargs': KWARGS}
+        'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP}
 """Magic strings that, if found as {x}, will be replaced by the key of x"""
 
 
@@ -80,7 +81,7 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
         ``norm = normalizer(data, xticks, yticks)``
     cbarLabel: None or str
         Label to apply to colorbar
-    {kwargs} :py:func:`matplotlib.colors.pcolormesh`
+    {kwargs} :py:func:`matplotlib.pyplot.pcolormesh`
 
     Returns
     -------
@@ -93,8 +94,8 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
 
     See Also
     --------
-    :py:func:`matplotlib.colors.pcolormesh`
-    :py:class:`matplotlib.colors.Normalize`
+    * :py:func:`matplotlib.pyplot.pcolormesh`
+    * :py:class:`matplotlib.colors.Normalize`
     """
     assert len(data.shape) == 2, 'Mesh plot requires 2D data, ' \
                                  'not {}'.format(data.shape)
@@ -121,21 +122,47 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
 
     return ax
 
+
+@magicPlotDocDecorator
 def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
     """
     Shortcut plot for plotting series of labeled data onto a plot
+
+    If ``plotData`` is an array, it is assumed that each column
+    represents one set of data to be plotted against ``xdata``.
+    The same assumption is made for ``yerr`` if given.
 
     Parameters
     ----------
     xdata: numpy.array or iterable
         Points along the x axis to plot
-    plotData: numpy.array
+    plotData: numpy.array or iterable
+        Data to be plotted
+    {ax}
+    {labels}
+    yerr: None or numpy.array or iterable
+        Absolute error for each data point in ``plotData``
+    {kwargs} :py:func:`matplotlib.pyplot.plot` or 
+        :py:func:`matplotlib.pyplot.errorbar`
+
+    Returns
+    -------
+    {rax}
+
+    Raises
+    ------
+    IndexError
+        If ``yerr`` is not ``None`` and does not match the shape
+        of ``plotData``
         
     """
     ax = ax or pyplot.axes()
 
     if yerr is not None:
-        assert yerr.shape == plotData.shape
+        if not yerr.shape == plotData.shape:
+            raise IndexError(
+                "Y error data has shape {}, while plotData has shape {}".format(
+                yerr.shape, plotData.shape))
         errBar = True
     else:
         errBar = False
