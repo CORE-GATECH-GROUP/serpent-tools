@@ -387,7 +387,7 @@ we must pick an energy group to plot.
 .. image:: images/Detector_36_0.png
 
 
-The |meshPlot| also supports a range of labeling and plot options.
+The |mesh| also supports a range of labeling and plot options.
 Here, we attempt to plot the flux and U-235 fission reaction rate errors
 as a function of energy, with the two reaction rates separated on the
 y-axis. Passing ``logColor=True`` applies a logarithmic color scale to
