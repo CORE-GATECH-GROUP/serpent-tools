@@ -11,7 +11,7 @@ from collections import OrderedDict
 
 from matplotlib import pyplot
 
-from numpy import array, arange, unique, log, divide, ones_like
+from numpy import array, arange, unique, log, divide, ones_like, hstack
 
 from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
@@ -505,19 +505,23 @@ class DetectorBase(NamedObject):
         :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
         :py:func:`matplotlib.colors.pcolormesh`
         """
+        if fixed:
+            for qty, name in zip((xdim, ydim), ('x', 'y')):
+                if qty in fixed:
+                    raise SerpentToolsException(
+                        'Requested {} dimension {} is one of the axis to be constrained. '
+                        .format(name, qty))
+
         data = self.slice(fixed, what)
-        if len(data.shape) != 2:
+        dShape = data.shape
+        if len(dShape) != 2:
             raise SerpentToolsException(
                 'Data must be 2D for mesh plot, currently is {}.\nConstraints:'
-                '{}'.format(data.shape, fixed)
+                '{}'.format(dShape, fixed)
             )
         xgrid = self._getGrid(xdim)
         ygrid = self._getGrid(ydim)
-        if data.size != xgrid.size * ygrid.size:
-            raise SerpentToolsException(
-                "Fixed data does not match size of x and y grids: {} vs {} "
-                "and {}".format(data.shape, xgrid.shape, ygrid.shape))
-        if data.shape != (ygrid.size, xgrid.size):
+        if data.shape != (ygrid.size - 1, xgrid.size - 1):
             data = data.T
 
         ax = cartMeshPlot(data, xgrid, ygrid, ax, cmap, logColor, **kwargs)
@@ -531,12 +535,14 @@ class DetectorBase(NamedObject):
 
     def _getGrid(self, qty):
         if qty[0].upper() in self.grids:
-            return self.grids[qty[0].upper()][:, 0]
+            grid = self.grids[qty[0].upper()]
+            lowBounds = grid[:, 0]
+            return hstack((lowBounds, grid[-1, -1]))
         if qty not in self.indexes:
             raise KeyError("No index {} found on detector. Bin indexes: {}"
                            .format(qty, ', '.join(self.indexes.keys())))
         bins = self.indexes[qty]
-        return bins.reshape(len(bins), 1)
+        return hstack((0, bins)) 
 
 
 class Detector(DetectorBase):

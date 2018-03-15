@@ -98,10 +98,6 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     """
     assert len(data.shape) == 2, 'Mesh plot requires 2D data, ' \
                                  'not {}'.format(data.shape)
-    assert data.size == len(xticks) * len(yticks), (
-        'Cannot properly for a mesh with the presented data. \n# points: {}, '
-        '# x mesh points: {}, # y mesh points: {}'.format(
-            data.shape, len(xticks), len(yticks)))
     if logScale and data.min() < 0:
         raise ValueError("Will not apply log normalization to data with "
                          "negative elements")
