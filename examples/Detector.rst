@@ -60,8 +60,8 @@ lattice bins.
 
 .. parsed-literal::
 
-    {'nodeFlx': <serpentTools.objects.containers.Detector object at 0x7f3def349400>}
-    {'spectrum': <serpentTools.objects.containers.Detector object at 0x7f3def349320>, 'xymesh': <serpentTools.objects.containers.Detector object at 0x7f3def3494a8>}
+    {'nodeFlx': <serpentTools.objects.containers.Detector object at 0x7f2f2b20d4a8>}
+    {'xymesh': <serpentTools.objects.containers.Detector object at 0x7f2f2b20d470>, 'spectrum': <serpentTools.objects.containers.Detector object at 0x7f2f2b20d5c0>}
 
 
 These detectors were defined for a single fuel pin with 16 axial layers
@@ -348,29 +348,29 @@ Each ``Detector`` object is capable of simple 1D and 2D plotting
 routines. The simplest 1D plot method is simply ``plot``, however a wide
 range of plot options are present.
 
-+--------------+------------------------------------------------+
-| Option       | Description                                    |
-+==============+================================================+
-| ``what``     | What data to plot                              |
-+--------------+------------------------------------------------+
-| ``ax``       | Preprepared figure on which to add this plot   |
-+--------------+------------------------------------------------+
-| ``xdim``     | Quantity from ``indexes`` to use as x-axis     |
-+--------------+------------------------------------------------+
-| ``sigma``    | Confidence interval to place on errors         |
-+--------------+------------------------------------------------+
-| ``steps``    | Draw tally values as constant inside bin       |
-+--------------+------------------------------------------------+
-| ``xlabel``   | Label to apply to x-axis                       |
-+--------------+------------------------------------------------+
-| ``ylabel``   | Label to apply to y-axis                       |
-+--------------+------------------------------------------------+
-| ``loglog``   | Use a log scalling on both of the axes         |
-+--------------+------------------------------------------------+
-| ``logx``     | Use a log scaling on the x-axis                |
-+--------------+------------------------------------------------+
-| ``logy``     | Use a log scaling on the y-axis                |
-+--------------+------------------------------------------------+
++--------------+-------------------------------------------------+
+| Option       | Description                                     |
++==============+=================================================+
+| ``what``     | What data to plot                               |
++--------------+-------------------------------------------------+
+| ``ax``       | Preprepared figure on which to add this plot    |
++--------------+-------------------------------------------------+
+| ``xdim``     | Quantity from ``indexes`` to use as x-axis      |
++--------------+-------------------------------------------------+
+| ``sigma``    | Confidence interval to place on errors - 1D     |
++--------------+-------------------------------------------------+
+| ``steps``    | Draw tally values as constant inside bin - 1D   |
++--------------+-------------------------------------------------+
+| ``xlabel``   | Label to apply to x-axis                        |
++--------------+-------------------------------------------------+
+| ``ylabel``   | Label to apply to y-axis                        |
++--------------+-------------------------------------------------+
+| ``loglog``   | Use a log scalling on both of the axes          |
++--------------+-------------------------------------------------+
+| ``logx``     | Use a log scaling on the x-axis                 |
++--------------+-------------------------------------------------+
+| ``logy``     | Use a log scaling on the y-axis                 |
++--------------+-------------------------------------------------+
 
 The plot routine also accepts various options, which can be found in the
 `matplotlib.pyplot.plot

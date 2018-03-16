@@ -539,7 +539,7 @@ class DetectorBase(NamedObject):
         if qty[0].upper() in self.grids:
             grid = self.grids[qty[0].upper()]
             lowBounds = grid[:, 0]
-            return hstack((lowBounds, grid[-1, -1]))
+            return hstack((lowBounds, grid[-1, 1]))
         if qty not in self.indexes:
             raise KeyError("No index {} found on detector. Bin indexes: {}"
                            .format(qty, ', '.join(self.indexes.keys())))
