@@ -4,6 +4,7 @@ import numpy
 from matplotlib import pyplot
 
 from serpentTools import messages
+from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
 
 
@@ -202,9 +203,10 @@ class DepletedMaterial(DepletedMaterialBase):
                 if line:
                     scratch.append([float(item) for item in line.split()])
         self.data[newName] = numpy.array(scratch)
-
+    
+    @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
-             autolabel=True, legend=True, xlabel=None, ylabel=None, **kwargs):
+             legend=True, xlabel=None, ylabel=None, **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -226,26 +228,16 @@ class DepletedMaterial(DepletedMaterialBase):
         names: list or None
             If given, return y values corresponding to these isotope
             names. Otherwise, return values for all isotopes.
-        ax: None or matplotlib.pyplot.axes
-            If given, add the data to this plot.
-            Otherwise, create a new plot
+        {ax}
         legend: bool
             Automatically add the legend
-        autolabel: bool
-            Automatically label the axis
-        xlabel: None or str
-            If given, use this as the label for the x-axis.
-            Otherwise, use xUnits
-        ylabel: None or str
-            If given, use this as the label for the y-axis.
-            Otherwise, use yUnits
-        kwargs:
-            Optional keyword arguments to pass to matplotlib.pyplot.plot
+        {xlabel} Otherwise, use ``xUnits``
+        {ylabel} Otherwise, use ``yUnits``
+        {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
         -------
-        matplotlib.pyplot.axes
-            Axes corresponding to the figure that was plotted
+        {rax}
 
         See Also
         --------
@@ -262,7 +254,7 @@ class DepletedMaterial(DepletedMaterialBase):
         # format the plot
         if legend:
             ax.legend()
-        if autolabel:
-            ax.set_xlabel(xlabel or xUnits)
-            ax.set_ylabel(ylabel or yUnits)
+        ax.set_xlabel(xlabel or xUnits)
+        ax.set_ylabel(ylabel or yUnits)
         return ax
+

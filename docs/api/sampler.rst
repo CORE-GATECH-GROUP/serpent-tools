@@ -1,5 +1,3 @@
-.. |serpentTools| replace:: :ref:`welcome`
-
 .. |depletion| replace:: :ref:`depletion`
 
 .. |detector| replace:: :ref:`detector-reader`
@@ -17,7 +15,7 @@ A common practice in Monte Carlo analysis is repeat a single case
 with a variety of new random number seeds.
 Averaging the results from these runs reduces the impact of stochastic
 uncertainty and can give a better picture of the *true* behavior of a
-system. The |serpentTools| package supports reading multiple output
+system. The ``sampler`` package supports reading multiple output
 files of a common type and obtaining average values and associated
 uncertainties, while retaining data structure and retrieval
 methods similar to the single file cases.

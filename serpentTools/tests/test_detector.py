@@ -68,9 +68,9 @@ class DetectorReaderTester(unittest.TestCase):
     def test_detectorIndex(self):
         """Verify that the detector tally index is properly constructed"""
         expected = OrderedDict()
-        expected['reaction'] = numpy.array([1, 2])
-        expected['ymesh'] = numpy.array([1, 2, 3, 4, 5])
-        expected['xmesh'] = numpy.array([1, 2, 3, 4, 5])
+        expected['reaction'] = numpy.array([0, 1])
+        expected['ymesh'] = numpy.array([0, 1, 2, 3, 4])
+        expected['xmesh'] = numpy.array([0, 1, 2, 3, 4])
         expectedKeys = list(expected.keys())
         actualIndex = self.refDet.indexes
         actualKeys = list(actualIndex.keys())
@@ -80,7 +80,7 @@ class DetectorReaderTester(unittest.TestCase):
 
     def test_detectorSlice(self):
         """Verify the slicing method"""
-        constrain = {'reaction': 1}
+        constrain = {'reaction': 0}
         expectedTallies = numpy.array([
             [2.55119E-01, 2.55077E-01, 2.53685E-01, 2.55592E-01, 2.58450E-01],
             [2.54101E-01, 2.53408E-01, 2.56666E-01, 2.55375E-01, 2.52936E-01],

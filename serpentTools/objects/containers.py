@@ -1,5 +1,4 @@
-"""
-Custom-built containers for storing data from serpent outputs
+""" Custom-built containers for storing data from serpent outputs
 
 Contents
 --------
@@ -12,9 +11,9 @@ from collections import OrderedDict
 
 from matplotlib import pyplot
 
-from numpy import array, arange, unique, log, divide, ones_like
+from numpy import array, arange, unique, log, divide, ones_like, hstack
 
-from serpentTools.plot import cartMeshPlot
+from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug
 
@@ -218,20 +217,20 @@ class DetectorBase(NamedObject):
 
     def slice(self, fixed, data='tallies'):
         """
-        Return a slice of the reshaped array where certain axes are fixed
+        Return a view of the reshaped array where certain axes are fixed
 
         Parameters
         ----------
-        data: {'tallies', 'errors', 'scores'}
-            Which data set to slice
         fixed: dict
             dictionary to aid in the restriction on the multidimensional
             array. Keys correspond to the various grids present in
             ``indexes`` while the values are used to
+        data: {'tallies', 'errors', 'scores'}
+            Which data set to slice
 
         Returns
         -------
-        reduced: numpy.array
+        numpy.array
             View into the respective data where certain dimensions
             have been removed
 
@@ -255,6 +254,8 @@ class DetectorBase(NamedObject):
             raise SerpentToolsException(
                 '{} data for detector {} is None. '
                 'Cannot perform slicing'.format(data, self.name))
+        if not fixed:
+            return work
         return work[self._getSlices(fixed)]
 
     def _getSlices(self, fixed):
@@ -271,7 +272,7 @@ class DetectorBase(NamedObject):
         slices = []
         for key in self.indexes:
             if key in keys:
-                slices.append(fixed[key] - 1)
+                slices.append(fixed[key])
                 keys.remove(key)
             else:
                 slices.append(slice(0, len(self.indexes[key])))
@@ -280,39 +281,36 @@ class DetectorBase(NamedObject):
                 'Could not find arguments in index that match the following'
                 ' requested slice keys: {}'.format(', '.join(keys)))
         return slices
-
+    
+    @magicPlotDocDecorator
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
-                     ylabel=None, steps=True, xscale='log', yscale='linear',
-                     sigma=3, **kwargs):
+                     ylabel=None, steps=True, logx=True, logy=False, loglog=False, 
+                     sigma=3, labels=None, **kwargs):
         """
         Quick plot of the detector value as a function of energy.
 
         Parameters
         ----------
         fixed: None or dict
-            Dictionary controlling the reduction in data down to one dimension
-        ax: pyplot.Axes or None
-            Ax on which to plot the data
+            Dictionary controlling the reduction in data
+        {ax}
         normalize: bool
             Normalize quantities per unit lethargy
-        xlabel: str or None
-            Label for x-axis. Defaults to 'Energy [MeV]'
-        ylabel: str or None
-            Label for y axis
+        {xlabel}
+        {ylabel}
         steps: bool
             Plot tally as constant inside bin
-        xscale: {'log', 'linear'}
-            Scale to apply to x axis
-        yscale: {'log', 'linear'}
-            Scale to apply to y axis
-        sigma: int
-            Level of confidence to apply to errors. Use for no error bars
-        kwargs:
-            Additional arguments to pass to plot command
+        {logx}
+        {logy}
+        {loglog}
+        {sigma}
+        {labels}
+        {kwargs} :py:func:`matplotlib.pyplot.plot` or 
+            :py:func:`matplotlib.pyplot.errorbar`
+
         Returns
         -------
-        ax: pyplot.Axes
-            Axes on which the data was plotted
+        {rax}
 
         Raises
         ------
@@ -322,55 +320,54 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        :py:meth:`~serpentTools.objects.containers.Detector.slice`
+        :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
         """
-        if not len(self.tallies.shape) == 1 and fixed is None:
+        slicedTallies = self.slice(fixed, 'tallies').copy()
+        if len(slicedTallies.shape) > 2:
             raise SerpentToolsException(
-                'Tally data is not a one-dimensional matrix. '
-                'Need constraining arguments in fixed dictionary'
-            )
-        slicedTallies = self.slice(fixed, 'tallies')
-        if not len(slicedTallies.shape) == 1:
-            raise SerpentToolsException(
-                'Sliced data must be one-dimensional for spectrum plot, not '
+                'Sliced data cannot exceed 2-D for spectrum plot, not '
                 '{}'.format(slicedTallies.shape)
             )
+        elif len(slicedTallies.shape) == 1:
+            slicedTallies = slicedTallies.reshape(slicedTallies.size, 1)
+        lowerE = self.grids['E'][:, 0]
         if normalize:
             lethBins = log(
-                divide(self.grids['E'][:, -1], self.grids['E'][:, 0]))
-            slicedTallies = divide(slicedTallies, lethBins)
-            slicedTallies = slicedTallies / slicedTallies.max()
-        ax = ax or pyplot.axes()
+                divide(self.grids['E'][:, -1], lowerE))
+            for indx in range(slicedTallies.shape[1]):
+                scratch = divide(slicedTallies[:, indx], lethBins)
+                slicedTallies[:, indx] = scratch / scratch.max() 
+        
         if steps:
             if 'drawstyle' in kwargs:
                 debug('Defaulting to drawstyle specified in kwargs as {}'
                       .format(kwargs['drawstyle']))
-                drawstyle = kwargs.pop('drawstyle')
             else:
-                drawstyle = 'steps-post'
-        else:
-            drawstyle = None
+                kwargs['drawstyle'] = 'steps-post'
+        
         if sigma:
-            slicedErrors = sigma * self.slice(fixed, 'errors') * slicedTallies
-            ax.errorbar(self.grids['E'][:, 0], slicedTallies,
-                        yerr=slicedErrors,
-                        drawstyle=drawstyle, **kwargs)
+            slicedErrors = sigma * self.slice(fixed, 'errors').copy()
+            slicedErrors = slicedErrors.reshape(slicedTallies.shape) * slicedTallies
         else:
-            ax.plot(self.grids['E'][:, 0], slicedTallies, drawstyle=drawstyle,
-                    **kwargs)
-        ax.set_xscale(xscale)
-        ax.set_yscale(yscale)
+            slicedErrors = None
+        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, yerr=slicedErrors, **kwargs)     
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
         ax.set_xlabel(xlabel or 'Energy [MeV]')
-        ylabel = ylabel or 'Neutron flux' + (' normalized per unit lethargy'
+        ylabel = ylabel or 'Tally data' + (' normalized per unit lethargy'
                                              if normalize else '')
         ax.set_ylabel(ylabel)
 
         return ax
-
+    
+    @magicPlotDocDecorator
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
-             xlabel=None, ylabel=None, steps=False, **kwargs):
+             xlabel=None, ylabel=None, steps=False, labels=None, 
+             logx=False, logy=False, loglog=False, **kwargs):
         """
-        Shortcut routine for plotting 1D data
+        Simple plot routine for 1- or 2-D data
 
         Parameters
         ----------
@@ -379,56 +376,57 @@ class DetectorBase(NamedObject):
             the x axis
         what: {'tallies', 'errors', 'scores'}
             Primary data to plot
-        sigma: None or int
-            If given, apply this level of confidence to absolute errors.
-            If not given, then error bars will not be used
+        {sigma}
         fixed: None or dict
             Dictionary controlling the reduction in data down to one dimension
-        ax: axes or None
-            Axes on which to plot the data
-        xlabel: None or str
-            If given, apply this label to the x-axis. If ``xdim`` is given
-            and ``xlabel`` is ``None``, then ``xdim`` will be applied to the
-            x-axis
-        ylabel: None or str
-            If given, label to apply to y-axis
+        {ax}
+        {xlabel} If ``xdim`` is given and ``xlabel`` is ``None``, then 
+            ``xdim`` will be applied to the x-axis.
+        {ylabel}
         steps: bool
             If true, plot the data as constant inside the respective bins.
             Sets ``drawstyle`` to be ``steps-post`` unless ``drawstyle``
             given in ``kwargs``
-        kwargs: dict
-            additional arguments to pass to the
-            :py:func:`~matplotlib.pyplot.plot`  of
+        {labels}
+        {logx}
+        {logy}
+        {loglog}
+        {kwargs} :py:func:`~matplotlib.pyplot.plot` or
             :py:func:`~matplotlib.pyplot.errorbar` function.
 
         Returns
         -------
-        ax: matplotlib.AxesSubplot
+        {rax}
 
         Raises
         ------
-        SerpentToolsException: If the data is not constrained to 1D
+        SerpentToolsException
+            If data contains more than 2 dimensions
 
         See Also
         --------
         * :py:meth:`~serpentTools.objects.containers.Detector.slice`
-        * :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
-          better options for plotting energy spectra
+        * :py:meth:`~serpentTools.objects.containers.DetectorBase.spectrumPlot`
+           better options for plotting energy spectra
         """
+
         data = self.slice(fixed, what)
-        if len(data.shape) != 1:
+        if len(data.shape) > 2:
             raise SerpentToolsException(
-                'Data must be constrained to 1D, not {}'.format(data.shape))
+                'Data must be constrained to 1- or 2-D, not {}'.format(data.shape))
+        elif len(data.shape) == 1:
+            data = data.reshape(data.size, 1)
+
         if sigma:
             if what != 'errors':
-                errors = self.slice(fixed, 'errors') * data * sigma
+                yerr = self.slice(fixed, 'errors').reshape(data.shape) * data * sigma
             else:
                 warning(
                     'Will not plot error bars on the error plot. Data to be '
                     'plotted: {}.  Sigma: {}'.format(what, sigma))
-                errors = None
-        else:
-            errors = None
+                yerr = None
+        else: 
+           yerr = None
         if xdim is not None:
             if xdim in self.indexes:
                 xdata = self.indexes[xdim]
@@ -441,29 +439,29 @@ class DetectorBase(NamedObject):
             xdata = arange(len(data))
 
         ax = ax or pyplot.axes()
+        
         if steps:
             if 'drawstyle' in kwargs:
                 debug('Defaulting to drawstyle specified in kwargs as {}'
                       .format(kwargs['drawstyle']))
-                drawstyle = kwargs.pop('drawstyle')
             else:
-                drawstyle = 'steps-post'
-        else:
-            drawstyle = None
-        if errors is None:
-            ax.plot(xdata, data, drawstyle=drawstyle, **kwargs)
-        else:
-            ax.errorbar(xdata, data, yerr=errors, drawstyle=drawstyle,
-                        **kwargs)
+                kwargs['drawstyle'] = 'steps-post'
+        ax = plot(xdata, data, ax, labels, yerr,**kwargs)
+        
         if xlabel is not None:
             ax.set_xlabel(xlabel)
         if ylabel is not None:
             ax.set_ylabel(ylabel)
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
         return ax
-
+    
+    @magicPlotDocDecorator
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
-                 cmap=None, addcbar=True, xlabel=None, ylabel=None,
-                 xscale='linear', yscale='linear'):
+                 cmap=None, logColor=False, xlabel=None, ylabel=None, 
+                 logx=False, logy=False, loglog=False, **kwargs):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -477,25 +475,21 @@ class DetectorBase(NamedObject):
             Color meshes from tally data, uncertainties, or scores
         fixed: None or dict
             Dictionary controlling the reduction in data down to one dimension
-        ax: axes or None
-            Axes on which to plot the data
-        cmap: None or str
-            Colormap to apply to the figure. If None, use default colormap
-        addcbar: bool
-            If True, add a colorbar to the figure
-        xlabel: None or str
-            Label to apply to x-axis. If not given, defaults to xdim
-        ylabel: None or str
-            Label to apply to y-axis. If not given, defaults to ydim
-        xscale: {'log', 'linear'}
-            Scale to apply to x-axis
-        yscale: {'log', 'linear'}
-            Scale to apply to y-axis
+        {ax}
+        {cmap}
+        logColor: bool
+            If true, apply a logarithmic coloring to the data positive 
+            data
+        {xlabel}
+        {ylabel}
+        {logx}
+        {logy}
+        {loglog}
+        {kwargs} :py:func:`~matplotlib.pyplot.pcolormesh`
 
         Returns
         -------
-        ax: pyplot.Axes
-            Ax on which the data was plotted
+        {rax}
 
         Raises
         ------
@@ -503,46 +497,54 @@ class DetectorBase(NamedObject):
             If data to be plotted, with or without constraints, is not 1D
         KeyError
             If the data set by ``what`` not in the allowed selection
+        ValueError
+            If the data contains negative quantities and ``logColor`` is
+            ``True``
 
         See Also
         --------
-        :py:meth:`~serpentTools.objects.containers.Detector.slice`
+        * :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+        * :py:func:`matplotlib.pyplot.pcolormesh`
+        * :py:func:`~serpentTools.plot.cartMeshPlot`
         """
+        if fixed:
+            for qty, name in zip((xdim, ydim), ('x', 'y')):
+                if qty in fixed:
+                    raise SerpentToolsException(
+                        'Requested {} dimension {} is one of the axis to be constrained. '
+                        .format(name, qty))
+
         data = self.slice(fixed, what)
-        if len(data.shape) != 2:
+        dShape = data.shape
+        if len(dShape) != 2:
             raise SerpentToolsException(
                 'Data must be 2D for mesh plot, currently is {}.\nConstraints:'
-                '{}'.format(data.shape, fixed)
+                '{}'.format(dShape, fixed)
             )
-        if xdim[0].upper() in self.grids:
-            xgridFull = self.grids[xdim[0].upper()]
-            xgrid = xgridFull[:, 0]
-            widths = xgridFull[:, 1] - xgrid
-            del xgridFull
-        else:
-            xgrid = self.indexes[xdim] - 1
-            widths = ones_like(xgrid)
-
-        if ydim[0].upper() in self.grids:
-            ygridFull = self.grids[xdim[0].upper()]
-            ygrid = ygridFull[:, 0]
-            heights = ygridFull[:, 1] - ygrid
-            del ygridFull
-        else:
-            ygrid = self.indexes[ydim] - 1
-            heights = ones_like(ygrid)
-        if data.shape != (ygrid.size, xgrid.size):
+        xgrid = self._getGrid(xdim)
+        ygrid = self._getGrid(ydim)
+        if data.shape != (ygrid.size - 1, xgrid.size - 1):
             data = data.T
 
-        ax = cartMeshPlot(data, xgrid, ygrid, widths, heights, ax, cmap,
-                          addcbar)
-
+        ax = cartMeshPlot(data, xgrid, ygrid, ax, cmap, logColor, **kwargs)
         ax.set_xlabel(xlabel or xdim)
         ax.set_ylabel(ylabel or ydim)
-        ax.set_xscale(xscale)
-        ax.set_yscale(yscale)
-
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
         return ax
+
+    def _getGrid(self, qty):
+        if qty[0].upper() in self.grids:
+            grid = self.grids[qty[0].upper()]
+            lowBounds = grid[:, 0]
+            return hstack((lowBounds, grid[-1, 1]))
+        if qty not in self.indexes:
+            raise KeyError("No index {} found on detector. Bin indexes: {}"
+                           .format(qty, ', '.join(self.indexes.keys())))
+        bins = self.indexes[qty]
+        return hstack((bins, len(bins)))
 
 
 class Detector(DetectorBase):
@@ -554,6 +556,7 @@ class Detector(DetectorBase):
     {params:s}
 
     Attributes
+    ----------
     bins: numpy.ndarray
         Tally data directly from SERPENT file
     {attrs:s}
@@ -611,7 +614,7 @@ class Detector(DetectorBase):
             if 0 < index < 10:
                 uniqueVals = unique(self.bins[:, index])
                 if len(uniqueVals) > 1:
-                    self.indexes[indexName] = array(uniqueVals, dtype=int)
+                    self.indexes[indexName] = array(uniqueVals, dtype=int) - 1
                     shape.append(len(uniqueVals))
         self.tallies = self.bins[:, 10].reshape(shape)
         self.errors = self.bins[:, 11].reshape(shape)

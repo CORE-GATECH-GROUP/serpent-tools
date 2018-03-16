@@ -9,10 +9,10 @@ from matplotlib import pyplot
 
 from serpentTools.messages import (MismatchedContainersError, warning,
                                    SamplerError, SerpentToolsException)
+from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.objects.containers import DetectorBase
 from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
-
 
 class DetectorSampler(Sampler):
     __doc__ = """
@@ -194,8 +194,10 @@ class SampledDetector(SampledContainer, DetectorBase):
         self.errors[nonZeroT] /= self.tallies[nonZeroT]
         self.errors[zeroIndx] = 0
 
+    @magicPlotDocDecorator
     def spreadPlot(self, xdim=None, fixed=None, ax=None, xlabel=None,
-                   ylabel=None, xscale='log', yscale='log', autolegend=True):
+                   ylabel=None, logx=False, logy=False, loglog=False,
+                   autolegend=True):
         """
         Plot the mean tally value against all sampled detector data.
 
@@ -205,23 +207,18 @@ class SampledDetector(SampledContainer, DetectorBase):
             Bin index to place on the x-axis
         fixed: None or dict
             Dictionary controlling the reduction in data down to one dimension
-        ax: axes or None
-            Axes on which to plot the data. Create a new plot if not given
-        xlabel: None or str
-            Label to apply to x-axis. If not given, defaults to xdim
-        ylabel: None or str
-            Label to apply to y-axis. If not given, defaults to "Tally Data"
-        xscale: {'log', 'linear'}
-            Scale to apply to x-axis
-        yscale: {'log', 'linear'}
-            Scale to apply to y-axis
+        {ax}
+        {xlabel}
+        {ylabel}
+        {logx}
+        {logy}
+        {loglog}
         autolegend: bool
             If true, apply a label to this plot.
 
         Returns
         -------
-        matplotlib.pyplot.axes
-            Axes on which this figure was drawn
+        {rax}
 
         Raises
         ------
@@ -265,6 +262,9 @@ class SampledDetector(SampledContainer, DetectorBase):
         ax.set_xlabel(xlabel)
         if ylabel:
             ax.set_ylabel(ylabel)
-        ax.set_xscale(xscale)
-        ax.set_yscale(yscale)
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
         return ax
+
