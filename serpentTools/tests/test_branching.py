@@ -23,7 +23,7 @@ class _BranchTesterHelper(unittest.TestCase):
         cls.expectedBranches = {('nom', 'nom', 'nom')}
         cls.expectedUniverses = {
             # universe id, burnup, step
-            (0, 0, 1),
+            (0, 0, 0),
         }
         with rc:
             rc['serpentVersion'] = '2.1.29'
@@ -77,7 +77,7 @@ class BranchContainerTester(_BranchTesterHelper):
     def setUpClass(cls):
         _BranchTesterHelper.setUpClass()
         cls.refBranchID = ('nom', 'nom', 'nom')
-        cls.refUnivKey = (0, 0, 1)
+        cls.refUnivKey = (0, 0, 0)
         cls.refBranch = cls.reader.branches[cls.refBranchID]
         cls.refUniv = cls.refBranch.universes[cls.refUnivKey]
 

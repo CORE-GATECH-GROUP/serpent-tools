@@ -53,11 +53,11 @@ class HomogUniv(NamedObject):
     ----------
     name: str
         name of the universe
-    bu: float
+    bu: float or int
         non-negative burnup value
-    step: float
+    step: int
         temporal step
-    day: float
+    day: float or int
         non-negative depletion day
     infExp: dict
         Expected values for infinite medium group constants
@@ -86,6 +86,9 @@ class HomogUniv(NamedObject):
                 "Will not create universe with negative burnup\n{}"
                 .format(', '.join(tail)))
         NamedObject.__init__(self, name)
+        if step == 0:  
+            bu = bu if bu is not None else 0.0
+            day = day if day is not None else 0.0
         self.bu = bu
         self.step = step
         self.day = day
