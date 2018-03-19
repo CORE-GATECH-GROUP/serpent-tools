@@ -175,5 +175,7 @@ autodoc_default_flags = ['members', 'show-inheritance']
 # -- Links to external documentation
 intersphinx_mapping = {
         'python': ('https://docs.python.org/3.5', None),
-        'matplotlib': ('https://matplotlib.org', None)}
-                    
+        'matplotlib': ('https://matplotlib.org', None),
+        'numpy': ('https://docs.scipy.org/doc/numpy/', None)
+    }
+

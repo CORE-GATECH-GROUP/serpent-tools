@@ -1,3 +1,13 @@
+.. |depReader| replace:: :py:class:`~serpentTools.parsers.depletion.DepletionReader`
+
+.. |depMat| replace:: :py:class:`~serpentTools.objects.materials.DepletedMaterial`
+
+.. |materials| replace:: :py:attr:`~serpentTools.objects.materials.DepletedMaterial.materials`
+
+.. |matData| replace:: :py:attr:`~serpentTools.objects.materials.DepletedMaterial.data`
+
+.. |getValues|  replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues`
+
 .. _depletion-reader-ex:
 
 ===============
@@ -9,10 +19,8 @@ Basic Operation
 SERPENT produces a
 `burned material file <http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Burnup_calculation_output>`_,
 containing the evolution of material properties through burnup for all
-burned materials present in the problem. The
-:py:class:`~serpentTools.parsers.depletion.DepletionReader` is capable of reading
-this file, and storing the data inside
-:py:class:`~serpentTools.objects.materials.DepletedMaterial` objects.
+burned materials present in the problem. The |depReader| is capable of reading
+this file, and storing the data inside |depMat| objects.
 Each such object has methods and attributes that should ease analysis.
 
 .. code:: 
@@ -20,14 +28,13 @@ Each such object has methods and attributes that should ease analysis.
     >>> import six
     >>> import serpentTools
     >>> from serpentTools.settings import rc
-    INFO    : serpentTools: Using version 0.2.1
     >>> depFile = 'demo_dep.m'
     >>> dep = serpentTools.read(depFile)
     INFO    : serpentTools: Inferred reader for demo_dep.m: DepletionReader
     INFO    : serpentTools: Preparing to read demo_dep.m
     INFO    : serpentTools: Done reading depletion file
 
-The materials read in from the file are stored in the ``materials``
+The materials read in from the file are stored in the |materials| 
 dictionary, where the keys represent the name of specific materials, and
 the corresponding values are the depleted material.
 
@@ -55,7 +62,7 @@ DepletedMaterial
 ----------------
 
 As mentioned before, all the material data is stored inside these
-:py:class:`~serpentTools.objects.materials.DepletedMaterial` objects.
+|depMat| objects.
 These objects share access to the metadata of the reader as well.
 
 .. code:: 
@@ -67,7 +74,7 @@ These objects share access to the metadata of the reader as well.
     True
 
 All of the variables present in the depletion file for this material are
-present, stored in the ``data`` dictionary. A few properties commonly
+present, stored in the |matData| dictionary. A few properties commonly
 used are accessible as attributes as well.
 
 .. code:: 
@@ -77,15 +84,7 @@ used are accessible as attributes as well.
     >>> fuel.adens
     array([[  0.00000000e+00,   2.43591000e-09,   4.03796000e-09, ...,
               4.70133000e-09,   4.70023000e-09,   4.88855000e-09],
-           [  0.00000000e+00,   6.06880000e-09,   8.11783000e-09, ...,
-              8.05991000e-09,   8.96359000e-09,   9.28554000e-09],
-           [  4.48538000e-06,   4.48486000e-06,   4.48432000e-06, ...,
-              4.44726000e-06,   4.44668000e-06,   4.44611000e-06],
            ..., 
-           [  0.00000000e+00,   3.03589000e-11,   7.38022000e-11, ...,
-              1.62829000e-09,   1.63566000e-09,   1.64477000e-09],
-           [  0.00000000e+00,   1.15541000e-14,   2.38378000e-14, ...,
-              8.60736000e-13,   8.73669000e-13,   8.86782000e-13],
            [  6.88332000e-02,   6.88334000e-02,   6.88336000e-02, ...,
               6.88455000e-02,   6.88457000e-02,   6.88459000e-02]])
 
@@ -105,34 +104,50 @@ positions in burnup/day vectors.
 Data Retrieval
 --------------
 
-At the heart of the :py:class:`~serpentTools.objects.materials.DepletedMaterial`
-is the
-:py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues` method.
-This method acts as an slicing mechanism that returns data for a select
-number of isotopes at select points in time.
+At the heart of the |depMat|  is the |getValues| method.
+This method acts as an slicing mechanism that returns data for a
+select number of isotopes at select points in time. |getValues| 
+requires two arguments for the units of time requested, e.g. ``days`` or
+``burnup``, and the name of the data requested. This second value must
+be a key in the |matData| dictionary.
+
+Specific days or values of burnup can be passed with the ``timePoints``
+keyword. This will instruct the slicing tool to retrieve data that
+corresponds to values of ``days`` or ``burnup`` in the ``timePoints``
+list. By default the method returns data for every time point on the
+material unless ``timePoints`` is given. Similarly, one can pass a
+string or list of strings as the ``names`` argument and obtain data for
+those specific isotopes. Data for every isotope is given if ``names`` is
+not given.
 
 .. code:: 
 
     >>> dayPoints = [0, 5, 10, 30]
-    >>> iso = ['Xe135', 'U235']
+    >>> iso = ['Xe135', 'Sm149']
     >>> vals = fuel.getValues('days', 'a', dayPoints, iso)
     >>> print(vals.shape)
     (2, 4)
     >>> print(vals)
     [[  0.00000000e+00   3.28067000e+14   3.24606000e+14   3.27144000e+14]
-     [  5.36447000e+07   5.34519000e+07   5.32499000e+07   5.24766000e+07]]
+     [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00]]
     
 
-The :py:class:`~serpentTools.objects.materials.DepletedMaterial` uses
+The |depMat| uses
 this slicing for the built-in
 :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot` method
 
 .. code:: 
 
     >>> fuel.plot('days', 'ingTox', dayPoints, iso,
-                  ylabel='Ingenstion Toxicity');
+                  ylabel='Ingenstion Toxicity')
 
-.. image:: images/DepletionReader-plot.png
+.. image:: images/DepletionReader_22_0.png
+
+.. code::
+    
+    >>> fuel.plot('burnup', 'ingTox', names='Xe135', logy=True)
+
+.. image:: images/DepletionReader_23_0.png
 
 
 Limitations

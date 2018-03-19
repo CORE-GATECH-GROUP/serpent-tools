@@ -19,15 +19,15 @@ class DepletedMaterialBase(NamedObject):
         Isotopic ZZAAA identifiers, e.g. 93325
     names: list
         Names of isotopes, e.g. U235
-    days: numpy.ndarray
+    days: :py:class:`numpy.ndarray`
         Vector of total, cumulative days of burnup for the run that
         created this material
-    burnup: numpy.ndarray
+    burnup: :py:class:`numpy.ndarray`
         Vector of total, cumulative burnup [MWd/kgU] for this specific
         material
-    adens: numpy.ndarray
+    adens: :py:class:`numpy.ndarray`
         2D array of atomic {densStruct:s}
-    mdens: numpy.ndarray
+    mdens: :py:class:`numpy.ndarray`
         2D array of mass {densStruct:s}""".format(
         densStruct="densities where where row ``j`` corresponds to isotope "
                    "``j`` and column ``i`` corresponds to time ``i``")
@@ -117,7 +117,7 @@ class DepletedMaterialBase(NamedObject):
         timePoints: list or None
             If given, select the time points according to those specified here.
             Otherwise, select all points
-        names: list or None
+        names: str or list or None
             If given, return y values corresponding to these isotope names.
             Otherwise, return values for all isotopes.
 
@@ -206,7 +206,8 @@ class DepletedMaterial(DepletedMaterialBase):
     
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
-             legend=True, xlabel=None, ylabel=None, **kwargs):
+             legend=True, xlabel=None, ylabel=None, logx=False, logy=False,
+             loglog=False, **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -225,7 +226,7 @@ class DepletedMaterial(DepletedMaterialBase):
         timePoints: list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
-        names: list or None
+        names: str or list or None
             If given, return y values corresponding to these isotope
             names. Otherwise, return values for all isotopes.
         {ax}
@@ -233,6 +234,9 @@ class DepletedMaterial(DepletedMaterialBase):
             Automatically add the legend
         {xlabel} Otherwise, use ``xUnits``
         {ylabel} Otherwise, use ``yUnits``
+        {logx}
+        {logy}
+        {loglog}
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
@@ -244,10 +248,18 @@ class DepletedMaterial(DepletedMaterialBase):
         * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
         * :py:func:`matplotlib.pyplot.plot`
         """
-        xVals = timePoints or self.days
+        if xUnits not in ('days', 'burnup'):
+            raise KeyError("Plot method only uses x-axis data from <days> and <burnup>, not "
+                           "{}".format(xUnits))
+        xVals = timePoints or (self.days if xUnits == 'days' else self.burnup)
         yVals = self.getValues(xUnits, yUnits, xVals, names)
         ax = ax or pyplot.axes()
-        labels = names or self.names
+        if names is None:
+            labels = self.names
+        elif isinstance(names, str):
+            labels = [names]
+        else:
+            labels = names
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
 
@@ -256,5 +268,9 @@ class DepletedMaterial(DepletedMaterialBase):
             ax.legend()
         ax.set_xlabel(xlabel or xUnits)
         ax.set_ylabel(ylabel or yUnits)
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
         return ax
 
