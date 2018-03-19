@@ -16,8 +16,21 @@ data in a logical and accessible format. These containers are detailed here.
 
 .. autoclass:: serpentTools.objects.containers.BranchContainer
 
+Materials
+---------
+
+.. autoclass:: serpentTools.objects.materials.DepletedMaterialBase
+
 .. autoclass:: serpentTools.objects.materials.DepletedMaterial
 
+Detectors
+---------
+
+.. autoclass:: serpentTools.objects.containers.DetectorBase
+
 .. autoclass:: serpentTools.objects.containers.Detector
+
+Homogenized Universes
+---------------------
 
 .. autoclass:: serpentTools.objects.containers.HomogUniv

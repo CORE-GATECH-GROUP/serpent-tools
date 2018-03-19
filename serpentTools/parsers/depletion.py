@@ -2,12 +2,13 @@
 import re
 
 import numpy
+from six import iteritems
 
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools import messages
+from serpentTools.messages import warning, info, debug, error
 
 
 class DepletionReader(MaterialReader):
@@ -21,18 +22,19 @@ class DepletionReader(MaterialReader):
 
     Attributes
     ----------
-    materials: dict
-        Dictionary with material names as keys and the corresponding
-        :py:class:`~serpentTools.objects.DepletedMaterial` class
-        for that material as values
-    metadata: dict
-        Dictionary with file-wide data names as keys and the
-        corresponding dataas values, e.g. 'zai': [list of zai numbers]
+    {attrs:s}
     settings: dict
         names and values of the settings used to control operations
         of this reader
-
     """
+    docAttrs="""materials: dict
+        Dictionary with material names as keys and the corresponding
+        :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
+        for that material as values
+    metadata: dict
+        Dictionary with file-wide data names as keys and the
+        corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
+    __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
@@ -52,12 +54,12 @@ class DepletionReader(MaterialReader):
         patterns = self.settings['materials'] or ['.*']
         # match all materials if nothing given
         if any(['_' in pat for pat in patterns]):
-            messages.warning('Materials with underscores are not supported.')
+            warning('Materials with underscores are not supported.')
         return [re.compile(mat) for mat in patterns]
 
-    def read(self):
+    def _read(self):
         """Read through the depletion file and store requested data."""
-        messages.info('Preparing to read {}'.format(self.filePath))
+        info('Preparing to read {}'.format(self.filePath))
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
         keys.extend(self.settings['metadataKeys'])
         separators = ['\n', '];', '\r\n']
@@ -72,8 +74,8 @@ class DepletionReader(MaterialReader):
         if 'days' in self.metadata:
             for mKey in self.materials:
                 self.materials[mKey].days = self.metadata['days']
-        messages.info('Done reading depletion file')
-        messages.debug('  found {} materials'.format(len(self.materials)))
+        info('Done reading depletion file')
+        debug('  found {} materials'.format(len(self.materials)))
 
     def _addMetadata(self, chunk):
         options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
@@ -118,9 +120,9 @@ class DepletionReader(MaterialReader):
                 and variable not in self.settings['materialVariables']):
             return
         if name not in self.materials:
-            messages.debug('Adding material {}...'.format(name))
-            self.materials[name] = DepletedMaterial(self, name)
-            messages.debug('  added')
+            debug('Adding material {}...'.format(name))
+            self.materials[name] = DepletedMaterial(name, self.metadata)
+            debug('  added')
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
         else:
@@ -130,3 +132,28 @@ class DepletionReader(MaterialReader):
                     continue
                 cleaned.append(line[:line.index('%')])
         self.materials[name].addData(variable, cleaned)
+
+    def _precheck(self):
+        """do a quick scan to ensure this looks like a material file."""
+        materialCount = 0
+        with open(self.filePath) as fh:
+            for line in fh:
+                sline = line.split()
+                if not sline:
+                    continue
+                elif 'MAT' == line.split('_')[0]:
+                    materialCount += 1
+        if materialCount == 0:
+            error("No materials found in {}".format(self.filePath))
+
+    def _postcheck(self):
+        """ensure the parser grabbed expected materials."""
+        if not self.materials:
+            error("No materials obtained from {}".format(self.filePath))
+            return
+
+        for mKey, mat in iteritems(self.materials):
+            assert isinstance(mat, DepletedMaterial), (
+                'Unexpected key {}: {} in materials dictionary'.format(
+                    mKey, type(mat))
+            )
