@@ -17,6 +17,10 @@ class BranchingReader(XSReader):
     ----------
     filePath: str
         path to the depletion file
+    branches: dict
+        Dictionary of branch names and their corresponding
+        :py:class:`~serpentTools.objects.containers.BranchContainer`
+        objects
     """
 
     def __init__(self, filePath):

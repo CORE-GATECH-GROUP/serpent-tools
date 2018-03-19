@@ -86,7 +86,7 @@ class HomogUniv(NamedObject):
                 "Will not create universe with negative burnup\n{}"
                 .format(', '.join(tail)))
         NamedObject.__init__(self, name)
-        if step == 0:  
+        if step is not None and step == 0:  
             bu = bu if bu is not None else 0.0
             day = day if day is not None else 0.0
         self.bu = bu
@@ -99,10 +99,22 @@ class HomogUniv(NamedObject):
         self.infUnc = {}
         self.metadata = {}
 
+    def __str__(self):
+        extras = []
+        if self.bu is not None:
+            extras.append('burnup: {:5.3f} MWd/kgu'.format(self.bu))
+        if self.step:
+            extras.append('step: {}'.format(self.step))
+        if self.day is not None:
+            extras.append('{:5.3f} days'.format(self.day))
+        if extras:
+            extras = ': ' + ', '.join(extras)
+        return '<{} {}{}>'.format(self.__class__.__name__, self.name,
+                                  extras or '')
     
     def addData(self, variableName, variableValue, uncertainty=False):
         """
-        Sets the value of the variable and, optionally, the associate s.d.
+        sets the value of the variable and, optionally, the associate s.d.
 
         .. warning::
 
@@ -791,8 +803,8 @@ class BranchContainer(object):
 
         Returns
         -------
-        :py:class:~`serpentTools.objects.containers.HomogUniv`
-            Requested Universe
+        :py:class:`~serpentTools.objects.containers.HomogUniv`
+            Requested universe
 
         Raises
         ------
