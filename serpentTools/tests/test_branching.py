@@ -10,6 +10,7 @@ from numpy.testing import assert_allclose
 from serpentTools.settings import rc
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers import BranchingReader
+from serpentTools.objects.containers import BranchContainer
 from serpentTools.messages import SerpentToolsException
 
 
@@ -108,6 +109,18 @@ class BranchContainerTester(_BranchTesterHelper):
         with self.assertRaises(SerpentToolsException):
             self.refBranch.getUniv(key[0])
 
+    def test_cannotAddBurnupDays(self):
+        """
+        Verify that a universe cannot be added with burnup of opposite units.
+        """
+        containerWithBU = BranchContainer(None, None, None, None)
+        containerWithBU.addUniverse(101, 10, 1)
+        containerWithDays = BranchContainer(None, None, None, None)
+        containerWithDays.addUniverse(101, -10, 1)
+        with self.assertRaises(SerpentToolsException):
+            containerWithBU.addUniverse(101, -10, 1)
+        with self.assertRaises(SerpentToolsException):
+            containerWithDays.addUniverse(101, 10, 1)
 
 if __name__ == '__main__':
     unittest.main()
