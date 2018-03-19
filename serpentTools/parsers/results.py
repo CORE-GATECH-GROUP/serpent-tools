@@ -3,6 +3,7 @@ import re
 
 
 from numpy import array, empty
+import matplotlib.pyplot as plt
 
 
 from serpentTools.settings import rc
@@ -68,8 +69,13 @@ class ResultsReader(XSReader):
                     values = self._getDictVal(tline)
                     if self._idxSect[0] and self._checkAddVariable(currKey.group()):
                         self.metadata[keyName] = values
-                    elif self._idxSect[1] and self._checkAddVariable(currKey.group()):
-                        self.resdata[keyName][self._counter['step']-1, :] = values
+                    elif self._idxSect[1]:
+                        if keyName in convertVariableName(self._strSearch['days']) or keyName in \
+                                convertVariableName(self._strSearch['bu']) or keyName in \
+                                convertVariableName(self._strSearch['buIdx']):
+                            self.resdata[keyName][self._counter['step'] - 1, :] = values
+                        elif self._checkAddVariable(currKey.group()):
+                            self.resdata[keyName][self._counter['step'] - 1, :] = values
                     else:
                         self._processUnivData(flagStore, currKey.group(), values)
 
@@ -87,7 +93,7 @@ class ResultsReader(XSReader):
             self.univdata[self._brachID] = HomogUniv(self._currUniv, self._bu, self._buIdx, self._days)
         else:
             if self._checkAddVariable(varName):
-                if self.strSearch['inf'] in varName[0:4] or self.strSearch['b1'] in varName[0:4]:
+                if self._strSearch['inf'] in varName[0:4] or self._strSearch['b1'] in varName[0:4]:
                     vals, uncs = splitItems(values)
                     self.univdata[self._brachID].addData(varName, array(uncs), True)
                     self.univdata[self._brachID].addData(varName, array(vals), False)
@@ -170,7 +176,7 @@ class ResultsReader(XSReader):
         with open(self.filePath, 'r') as fObject:
             for tline in fObject:
                 # If not an empty line or a comment
-                if re.search(self.strSearch['universe'], tline):
+                if re.search(self._strSearch['universe'], tline):
                     currUniv = self._getDictVal(tline)
                     self._addUniv(currUniv)
 
@@ -211,10 +217,10 @@ class ResultsReader(XSReader):
         fObj = open(self.filePath, 'r')
         numChar = 0  # counts the number of characters
         for tline in fObj:
-            if re.search(self.strSearch['start'], tline) is not None:
+            if re.search(self._strSearch['start'], tline) is not None:
                 cond[0] = True
                 self._ChunkPos[0] = numChar  # equivalent to tell()
-            if re.search(self.strSearch['end'], tline) is not None and self._ChunkPos[0]:
+            if re.search(self._strSearch['end'], tline) is not None and self._ChunkPos[0]:
                 cond[1] = True
                 self._ChunkPos[1] = numChar
                 break
@@ -225,13 +231,13 @@ class ResultsReader(XSReader):
     def _positionInFile(self, tline):
         """The function identifies the position in the file and returns
         The sections are: general, meta, cross-sections"""
-        if re.search(self.strSearch['start'], tline):
+        if re.search(self._strSearch['start'], tline):
             self._idxSect = [True, False, False]
             return True
-        elif re.search(self.strSearch['meta'], tline):
+        elif re.search(self._strSearch['meta'], tline):
             self._idxSect = [False, True, False]
             return True
-        elif re.search(self.strSearch['universe'], tline):
+        elif re.search(self._strSearch['universe'], tline):
             self._idxSect = [False, False, True]
             return True
         return False
@@ -270,10 +276,10 @@ class ResultsReader(XSReader):
                                'inf':'_INF',
                                'b1':'_B1'}}
         if version in MapStrVersions.keys():
-            self.strSearch = MapStrVersions[version]
-            self._daysStr = convertVariableName(self.strSearch['days'])
-            self._buStr = convertVariableName(self.strSearch['bu'])
-            self._buIdxStr = convertVariableName(self.strSearch['buIdx'])
+            self._strSearch = MapStrVersions[version]
+            self._daysStr = convertVariableName(self._strSearch['days'])
+            self._buStr = convertVariableName(self._strSearch['bu'])
+            self._buIdxStr = convertVariableName(self._strSearch['buIdx'])
             if rc['serpentVersion'] not in version:
                 warning('The user version {} is not matching the results'
                         ' file version  {}'.format(rc['serpentVersion'], version))
@@ -310,10 +316,93 @@ class ResultsReader(XSReader):
             tline = tline.replace(item, '0.0E+00')
         return tline
 
+    def plot(self, keyName, stepOption = None, brState = None, xlabel = None, ylabel = None):
+        """Plot 1D results
+        resdata (e.g. k-eff) is plotted vs. time/burnup
+        univdata (e.g. cross-sections) is plotted vs. energy
+
+        Parameters
+        ----------
+        keyName: Variable to be plotted
+            Should appear in either resdata or univdata
+        stepOption: 'burnup' or 'days' (default)
+            If an incorrect entry is given then 'days' are used as default
+        brState: (universe, burnup, burnIdx, days) state
+        xlabel: description of x-axis (not mandatory)
+        ylabel: description of y-axis (not mandatory)
+        """
+
+        xdata = None
+        ydata = None
+        plotFig = False
+        if stepOption == None:
+            stepOption = 'days'
+        if keyName in self.resdata.keys():
+            ydata = self.resdata[keyName][0:, 0]
+            if 'burnup' in stepOption:
+                xdata = self.resdata['burnup']
+                if xlabel == None:
+                    xlabel = 'Burnup, MWd/kg'
+            else:
+                xdata = self.resdata['burnDays']
+                if xlabel == None:
+                    xlabel = 'Time, days'
+            if len(ydata) == len(xdata):
+                plotFig = True
+                plt.plot(xdata, ydata)
+                plt.xlabel(xlabel)
+                if ylabel == None:
+                    ylabel = keyName
+                plt.ylabel(ylabel)
+            else:
+                warning('No plot... xdata {} and ydata {} dimensions'
+                        ' are not equal, '.format(len(xdata), len(ydata)))
+        # obtain all the data points
+        allStates = [st for st in self.univdata.keys()]
+        if brState != None and brState in allStates:
+            currState = self.univdata[brState]
+            if keyName in currState.infExp.keys():
+                ydata = [val for val in currState.infExp[keyName][0::2]
+                         for _ in(0, 1)]
+            elif keyName in currState.b1Exp.keys():
+                ydata = [val for val in currState.b1Exp[keyName][0::2]
+                         for _ in(0, 1)]
+            else:
+                warning(
+                    'No plot... variable {} is not in univdata'.format(keyName))
+            # obtain the energy grid: E0, E1, E2, ...
+            if 'macroE' in currState.metadata.keys():
+                energy = currState.metadata['macroE']
+                energy[0] = 100  # set max. Energy to 100 MeV
+                energy[len(energy) - 1] = 0.00001  # set min. E to 1E-5 MeV
+                # create energy bins [E0, E1], [E1, E2], [E2, E3] ...
+                xdata = [val for val in energy for _ in (0, 1)]
+                xdata.pop(len(xdata) - 1)
+                xdata.pop(0)
+            else:
+                warning(
+                    'No plot... variable {} is not in univdata.metadata'
+                        .format('macroE'))
+            if ydata != None and xdata != None and len(ydata) == len(xdata):
+                plotFig = True
+                plt.loglog(xdata, ydata)
+                if xlabel == None:
+                    xlabel = 'Energy, MeV'
+                plt.xlabel(xlabel)
+                if ylabel == None:
+                    ylabel = keyName
+                plt.ylabel(ylabel)
+            else:
+                warning('No plot... xdata {} and ydata {} dimensions'
+                        ' are not equal, '.format(len(xdata), len(ydata)))
+        if not plotFig:
+            warning('No plot... variable {} is not in resdata or the branching '
+                    'state does not exist '.format(keyName))
+
 # DEBUG
 if __name__ == '__main__':
-    filePath = "C:\\Users\\dkotlyar6\\Dropbox (GaTech)\\Reactor-Simulation-tools\\Serpent Tools\\serpent-tools\\serpentTools\\tests\\pwrPin_res.m"
+    filePath = "C:\\Users\\dkotlyar6\\Dropbox (GaTech)\\Reactor-Simulation-tools\\Serpent Tools\\serpent-tools\\serpentTools\\tests\\pwr_res.m"
     res = ResultsReader(filePath)
     res.read()
-    a=1
+
 
