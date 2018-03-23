@@ -105,7 +105,6 @@ html_theme = 'alabaster'
 html_theme_options = {
     'github_user': 'CORE-GATECH-GROUP',
     'github_repo': 'serpent-tools',
-    'travis_button': True,
     'sidebar_width': '230px',
 }
 # Add any paths that contain custom static files (such as style sheets) here,
