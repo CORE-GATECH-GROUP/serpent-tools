@@ -105,7 +105,6 @@ html_theme = 'alabaster'
 html_theme_options = {
     'github_user': 'CORE-GATECH-GROUP',
     'github_repo': 'serpent-tools',
-    'badge_branch': 'develop',
     'travis_button': True,
     'sidebar_width': '230px',
 }
