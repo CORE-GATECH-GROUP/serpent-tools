@@ -10,6 +10,7 @@ from numpy import zeros, zeros_like
 from matplotlib import pyplot
 
 from serpentTools.messages import SamplerError, warning
+from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
 from serpentTools.objects.materials import DepletedMaterialBase
@@ -192,7 +193,8 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
     def free(self):
         """Clear up data from all sampled parsers"""
         self.allData = {}
-
+    
+    @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
              sigma=3, legend=True, xlabel=None, ylabel=None,
              **kwargs):
@@ -218,26 +220,17 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         names: list or None
             If given, return y values corresponding to these isotope
             names. Otherwise, return values for all isotopes.
-        ax: None or matplotlib.pyplot.axes
-            If given, add the data to this plot.
-            Otherwise, create a new plot
-        sigma: int
-            Confidence interval for uncertainties
+        {ax}
+        {sigma}
         legend: bool
             Automatically add the legend
-        xlabel: None or str
-            If given, use this as the label for the x-axis.
-            Otherwise, use xUnits
-        ylabel: None or str
-            If given, use this as the label for the y-axis.
-            Otherwise, use yUnits
-        kwargs:
-            Optional keyword arguments to pass to matplotlib.pyplot.errorbar
+        {xlabel}
+        {ylabel}
+        {kwargs} matplotlib.pyplot.errorbar
 
         Returns
         -------
-        matplotlib.pyplot.axes
-            Axes corresponding to the figure that was plotted
+        {rax}
 
         See Also
         --------
@@ -275,8 +268,9 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             ax = sigmaLabel(ax, xlabel, ylabel, sigma)
         return ax
 
+    @magicPlotDocDecorator
     def spreadPlot(self, xUnits, yUnits, isotope, timePoints=None, ax=None,
-                   xLabel=None, yLabel=None, autolabel=True, autolegend=True):
+                   xlabel=None, ylabel=None, autolegend=True):
         """
         Plot the mean quantity and data from all sampled files.
 
@@ -291,22 +285,15 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         timePoints: list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
-        ax: None or matplotlib.pyplot.axes
-            If given, add the data to this plot.
-        xLabel: None or str
-            If given, use this as the label for the x-axis.
-            Otherwise, use xUnits
-        yLabel: None or str
-            If given, use this as the label for the y-axis.
-        autolabel: bool
-            Apply xLabel and yLabel directly to the figure
+        {ax}
+        {xlabel}
+        {ylabel}
         autolegend: bool
             Add a legend to the figure
 
         Returns
         -------
-        matplotlib.pyplot.axes
-            Axes corresponding to the figure that was plotted
+        {rax}
 
         Raises
         ------
@@ -333,8 +320,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             plotData = self._slice(sampledData[n], rows, cols)[0]
             ax.plot(xVals, plotData, **SPREAD_PLOT_KWARGS)
         ax.plot(xVals, primaryData, label='Mean value')
-        if autolabel:
-            ax = sigmaLabel(ax, xLabel or xUnits, yLabel or yUnits, 0)
+        ax = sigmaLabel(ax, xlabel or xUnits, ylabel or yUnits, 0)
         if autolegend:
             ax.legend()
         return ax

@@ -48,7 +48,8 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
-    'sphinx.ext.napoleon']
+    'sphinx.ext.napoleon',
+    'sphinx.ext.intersphinx']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -170,3 +171,11 @@ texinfo_documents = [
 
 # -- Options for auto documentation --------------------------------------
 autodoc_default_flags = ['members', 'show-inheritance']
+
+# -- Links to external documentation
+intersphinx_mapping = {
+        'python': ('https://docs.python.org/3.5', None),
+        'matplotlib': ('https://matplotlib.org', None),
+        'numpy': ('https://docs.scipy.org/doc/numpy/', None)
+    }
+

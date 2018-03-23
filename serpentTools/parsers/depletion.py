@@ -29,11 +29,11 @@ class DepletionReader(MaterialReader):
     """
     docAttrs="""materials: dict
         Dictionary with material names as keys and the corresponding
-        :py:class:`~serpentTools.objects.DepletedMaterial` class
+        :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
         for that material as values
     metadata: dict
         Dictionary with file-wide data names as keys and the
-        corresponding data, e.g. 'zai': [list of zai numbers]"""
+        corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
     __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
