@@ -8,7 +8,7 @@ python:
 
 # install
 install:
-  - pip install jupyter
+  - pip install jupyter codecov coverate
   - python setup.py install
 
 # use xvfb to give the plot functions something to use
@@ -22,5 +22,10 @@ before_script:
 
 # run
 script:
-  - pytest
+  - coverage run setup.py test 
   - ./testNotebooks.sh 
+
+# only if build succeeds
+after-success:
+  - codecov
+
