@@ -765,20 +765,20 @@ class BranchContainer(object):
             Empty new universe
 
         """
-        days = 0 if not burnup else None
         if self.__hasDays is None and burnup:
             self.__hasDays = burnup < 0
         if burnup < 0:
             if not self.__hasDays:
                 raise SerpentToolsException(self.__mismatchedBurnup.format(
                     'negative', 'MWd/kgU'))
-            burnup, days = days, - burnup
+            burnup, burnDays = None if burnup else 0, - burnup
         else:
-            if self.__hasDays:
+            if self.__hasDays and not burnDays:
                 raise SerpentToolsException(self.__mismatchedBurnup.format(
                     'positive', 'days'))
-        newUniv = HomogUniv(univID, burnup, burnIndex, days)
-        key = (univID, burnup or days, burnIndex)
+            burnDays = None if burnup else 0
+        newUniv = HomogUniv(univID, burnup, burnIndex, burnDays)
+        key = (univID, burnup or burnDays, burnIndex)
         if key in self.__keys:
             warning('Overwriting existing universe {} in {}'
                     .format(key, str(self)))
