@@ -17,6 +17,10 @@ class BranchingReader(XSReader):
     ----------
     filePath: str
         path to the depletion file
+    branches: dict
+        Dictionary of branch names and their corresponding
+        :py:class:`~serpentTools.objects.containers.BranchContainer`
+        objects
     """
 
     def __init__(self, filePath):
@@ -98,7 +102,7 @@ class BranchingReader(XSReader):
     def _processBranchUniverses(self, branch, burnup, burnupIndex):
         """Add universe data to this branch at this burnup."""
         unvID, numVariables = [int(xx) for xx in self._advance()]
-        univ = branch.addUniverse(unvID, burnup, burnupIndex)
+        univ = branch.addUniverse(unvID, burnup, burnupIndex - 1)
         for step in range(numVariables):
             splitList = self._advance(
                 possibleEndOfFile=step == numVariables - 1)
