@@ -23,17 +23,6 @@ from unittest.mock import MagicMock
 
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 
-# mock modules that we need to build this documentation that
-# may not exist on RTD
-# https://docs.readthedocs.io/en/latest/faq.html#i-get-import-errors-on-libraries-that-depend-on-c-modules
-MOCK_MODULES = ['numpy', 'matplotlib', 'pyyaml', 'six', 'serpentTools']
-
-if ON_RTD:
-    sys.modules.update((name, MagicMock()) for name in MOCK_MODULES)
-    import numpy
-
-import serpentTools
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -55,17 +44,13 @@ extensions = [
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
-# The suffix(es) of source filenames.
-# You can specify multiple suffix as a list of string:
-source_suffix = '.rst'
-
 # The master toctree document.
 master_doc = 'index'
 
 # General information about the project.
 project = 'serpentTools'
 copyright = (
-    '2017-2018, <a href='
+    u'2017-2018, <a href='
     '"https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/develop/'
     'README.rst#contributors">The serpentTools developer team</a>'
     ', GTRC')
@@ -102,9 +87,9 @@ extlinks = {
     'pull': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
              'pull/%s', '#'), 
     'bug': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
-            'issues/%s', '🐛'),
+            'issues/%s', u'🐛'),
     'squashed': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
-                 'pull/%s', '🔨')
+                 'pull/%s', u'🔨')
 }
 # -- Options for HTML output ----------------------------------------------
 
