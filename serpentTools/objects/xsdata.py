@@ -23,14 +23,33 @@ class XSData(NamedObject):
 
     """.format(params=docParams)
 
+    MTdescriptions= {
+        -1  : "Macro total",
+        -2  : "Macro total capture",
+        -3  : "Macro total elastic scatter",
+        -4  : "Macro total heating",
+        -5  : "Macro total photon production",
+        -6  : "Macro total fission",
+        -7  : "Macro total fission neutron production",
+        -8  : "Total fission energy production",
+        -9  : "Majorant macro",
+        -10 : "Macro scattering recoil heating",
+        -11 : "Source rate",
+        -15 : "neutron density",
+        -16 : "Macro total scattering neutron production",
+        -53 : "Macro proton production",
+        -54 : "Macro deutron production",
+        -55 : "Macro triton production",
+        -56 : "Macro He-3 production",
+        -57 : "Macro He-4 production",
+        -100: "User response function" }
+
     def __init__(self, name, metadata, isIso=False):
         NamedObject.__init__(self, name)
 
         # Whether this describes individual isotope XS, or whole-material XS
-        self.isIso = True
-
         # serpent starts their names with an "m" if it's a whole-material XS
-        self.isIso = isIso
+        self.isIso = True
 
         # energy grid for the nuclides
         self.egrid = None
@@ -55,28 +74,8 @@ class XSData(NamedObject):
         for whole materials, for neutrons only. """
         if mt > 0:
             error("Uh, that's not a negative MT.")
-        descriptions= {
-            -1  : "Macro total",
-            -2  : "Macro total capture",
-            -3  : "Macro total elastic scatter",
-            -4  : "Macro total heating",
-            -5  : "Macro total photon production",
-            -6  : "Macro total fission",
-            -7  : "Macro total fission neutron production",
-            -8  : "Total fission energy production",
-            -9  : "Majorant macro",
-            -10 : "Macro scattering recoil heating",
-            -11 : "Source rate",
-            -15 : "neutron density",
-            -16 : "Macro total scattering neutron production",
-            -53 : "Macro proton production",
-            -54 : "Macro deutron production",
-            -55 : "Macro triton production",
-            -56 : "Macro He-3 production",
-            -57 : "Macro He-4 production",
-            -100: "User response function" }
         try:
-            return descriptions[mt]
+            return MTdescriptions[mt]
         except KeyError:
             error("Cannot find description for MT {}.".format(mt))
             return None
@@ -114,7 +113,7 @@ class XSData(NamedObject):
 
         if not isinstance(self.xsdata, np.ndarray):
             return False
-        if self.MT == []:
+        if not self.MT:
             return False
-        else:
-            return True
+
+        return True

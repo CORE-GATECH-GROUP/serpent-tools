@@ -1,4 +1,4 @@
-"""Parser responsible for reading the ``*dep.m`` files"""
+"""Parser responsible for reading the ``*_xsplot.m`` files"""
 import numpy as np
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, info, debug, error
@@ -33,14 +33,6 @@ class XSPlotReader(BaseReader):
         names and values of the settings used to control operations
         of this reader
     """
-    docAttrs="""datalibs: dict
-        Dictionary with material names as keys and the corresponding
-        :py:class:`~serpentTools.objects.DepletedMaterial` class
-        for that material as values
-    metadata: dict
-        misc stuff 
-        """
-    __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'xsplot')
