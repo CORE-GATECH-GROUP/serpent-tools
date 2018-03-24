@@ -49,10 +49,7 @@ class XSData(NamedObject):
 
         # Whether this describes individual isotope XS, or whole-material XS
         # serpent starts their names with an "m" if it's a whole-material XS
-        self.isIso = True
-
-        # energy grid for the nuclides
-        self.egrid = None
+        self.isIso = isIso
 
         # metadata reference
         self.metadata = metadata
@@ -75,7 +72,7 @@ class XSData(NamedObject):
         if mt > 0:
             error("Uh, that's not a negative MT.")
         try:
-            return MTdescriptions[mt]
+            return XSData.MTdescriptions[mt]
         except KeyError:
             error("Cannot find description for MT {}.".format(mt))
             return None
