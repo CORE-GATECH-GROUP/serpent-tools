@@ -89,7 +89,9 @@ extlinks = {
     'bug': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
             'issues/%s', u'🐛'),
     'squashed': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
-                 'pull/%s', u'🔨')
+                 'pull/%s', u'🔨'),
+    'release-tag': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
+                    'releases/tag/%s', '')
 }
 # -- Options for HTML output ----------------------------------------------
 
