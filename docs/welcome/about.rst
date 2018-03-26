@@ -4,13 +4,8 @@
 serpent-tools
 =============
 
-.. only:: html
-
-    .. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=master
-        :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
-
-A suite of parsers designed to make interacting with
-``SERPENT`` [1]_ output files simple and flawless.
+    A suite of parsers designed to make interacting with
+    ``SERPENT`` [1]_ output files simple and flawless.
 
 The ``SERPENT`` Monte Carlo code
 is developed by VTT Technical Research Centre of Finland, Ltd.

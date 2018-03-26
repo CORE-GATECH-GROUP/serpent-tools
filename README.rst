@@ -2,8 +2,13 @@
 serpent-tools
 =============
 
-.. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=master
+.. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=develop
     :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
+    :alt: Build status - develop
+
+.. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
+    :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
 
 A suite of parsers designed to make interacting with
 ``SERPENT`` [1]_ output files simple and flawless. 
@@ -12,17 +17,6 @@ The ``SERPENT`` Monte Carlo code
 is developed by VTT Technical Research Centre of Finland, Ltd.
 More information, including distribution and licensing of ``SERPENT`` can be
 found at `<montecarlo.vtt.fi>`_
-
-Documentation
--------------
-
-A pdf version of the manual can be found in the ``docs`` directory.
-
-#. ``serpent-tools``
-#. Contributing
-#. Examples
-#. Developer's Guide
-#. Api
 
 Issues
 ------

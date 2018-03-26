@@ -9,3 +9,5 @@ Welcome!
 
     about.rst
     license.rst
+    changelog.rst
+
