@@ -435,7 +435,7 @@ assumptions with the scaling and labeling, but all the same controls as
 the above line plots.
 
 The |spectrum| method is designed to prepare plots of energy
-spectra. Supported arguments for the |spectrumPlot| method include
+spectra. Supported arguments for the |spectrum| method include
 
 +-----------------+----------------+----------------------------------------------+
 | Option          | Default        | Description                                  |
@@ -452,12 +452,12 @@ spectra. Supported arguments for the |spectrumPlot| method include
 +-----------------+----------------+----------------------------------------------+
 
 The figure below demonstrates the default options and control in this
-|spectrumPlot| routine by
+|spectrum| routine by
 
 1. Using the less than helpful plot routine with no formatting
-2. Using |spectrumPlot| without normalization to show default labels
+2. Using |spectrum| without normalization to show default labels
    and scaling
-3. Using |spectrumPlot|with normalization
+3. Using |spectrum| with normalization
 
 Since our detector has energy bins and reaction bins, we need to reduce
 down to one-dimension with the ``fixed`` command.
@@ -477,7 +477,7 @@ Multiple line plots
 ~~~~~~~~~~~~~~~~~~~
 
 Plots can be made against multiple bins, such as spectrum in different
-materials or reactions, with the |plot| and |spectrumPlot| methods.
+materials or reactions, with the |plot| and |spectrum| methods.
 Below is the flux spectrum and spectrum of the U-235 fission reaction
 rate from the same detector. The ``labels`` argument is what is used to
 label each individual plot in the order of the bin index.
