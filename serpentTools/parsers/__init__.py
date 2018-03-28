@@ -29,6 +29,7 @@ from serpentTools.parsers.detector import DetectorReader
 from serpentTools.parsers.bumat import BumatReader
 from serpentTools.parsers.results import ResultsReader
 from serpentTools.parsers.fissionMatrix import FissionMatrixReader
+from serpentTools.parsers.history import HistoryReader
 
 READERS = {
     'dep': DepletionReader,
@@ -36,7 +37,8 @@ READERS = {
     'det': DetectorReader,
     'results': ResultsReader,
     'fission': FissionMatrixReader,
-    'bumat': BumatReader
+    'bumat': BumatReader,
+    'history': HistoryReader
 }
 
 REGEXES = {
@@ -45,7 +47,8 @@ REGEXES = {
     r'(.*_det\d+\.m)': DetectorReader,
     r'(.*_res\.m)': ResultsReader,
     r'(.*_fmtx\d+\.m)': FissionMatrixReader,
-    r'(.*\.bumat\d+)': BumatReader
+    r'(.*\.bumat\d+)': BumatReader,
+    r'(.*_his\d+\.m)': HistoryReader
 }
 
 __all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES',
