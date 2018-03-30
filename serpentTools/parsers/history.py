@@ -105,7 +105,7 @@ class HistoryReader(BaseReader):
         curKey = None
         scratch = ScratchStorage()
         cycles = None
-        indx = None
+        indx = 0
         with open(self.filePath) as out:
             for lineNo, line in enumerate(out):
                 if not line.strip():
@@ -119,11 +119,13 @@ class HistoryReader(BaseReader):
                         self.numInactive = indx
                     continue
                 if line[0] == ']':
-                    self.arrays[curKey] = asfortranarray(scratch.data)
-                    cycles = indx
+                    data = asfortranarray(scratch.data)
+                    self.arrays[curKey] = data
+                    cycles = data.shape[0]
+                    indx = 0
                     continue
-                values = line.split()
-                indx = int(values.pop(0))
+                values = line.split()[1:]  # skip indexing term
+                indx += 1 
                 values = [float(xx) for xx in values]
                 if cycles and indx == 1:
                     scratch.allocate((cycles, len(values)))
