@@ -59,7 +59,6 @@ class DepletionReader(MaterialReader):
 
     def _read(self):
         """Read through the depletion file and store requested data."""
-        info('Preparing to read {}'.format(self.filePath))
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
         keys.extend(self.settings['metadataKeys'])
         separators = ['\n', '];', '\r\n']
@@ -74,8 +73,6 @@ class DepletionReader(MaterialReader):
         if 'days' in self.metadata:
             for mKey in self.materials:
                 self.materials[mKey].days = self.metadata['days']
-        info('Done reading depletion file')
-        debug('  found {} materials'.format(len(self.materials)))
 
     def _addMetadata(self, chunk):
         options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
@@ -122,7 +119,6 @@ class DepletionReader(MaterialReader):
         if name not in self.materials:
             debug('Adding material {}...'.format(name))
             self.materials[name] = DepletedMaterial(name, self.metadata)
-            debug('  added')
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
         else:
@@ -135,16 +131,14 @@ class DepletionReader(MaterialReader):
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a material file."""
-        materialCount = 0
         with open(self.filePath) as fh:
             for line in fh:
                 sline = line.split()
                 if not sline:
                     continue
                 elif 'MAT' == line.split('_')[0]:
-                    materialCount += 1
-        if materialCount == 0:
-            error("No materials found in {}".format(self.filePath))
+                    return
+        error("No materials found in {}".format(self.filePath))
 
     def _postcheck(self):
         """ensure the parser grabbed expected materials."""
@@ -157,3 +151,5 @@ class DepletionReader(MaterialReader):
                 'Unexpected key {}: {} in materials dictionary'.format(
                     mKey, type(mat))
             )
+        debug('  found {} materials'.format(len(self.materials)))
+

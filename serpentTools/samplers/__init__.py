@@ -260,3 +260,4 @@ class SampledContainer(object):
 
     def _finalize(self):
         raise NotImplementedError
+

@@ -1,4 +1,5 @@
 from serpentTools.settings import rc
+from serpentTools.messages import info
 
 class BaseReader:
     """Parent class from which all parsers will inherit.
@@ -28,8 +29,10 @@ class BaseReader:
         """The main method for reading that not only parses data, but also
         runs pre and post checks.
         """
+        info("Reading {}".format(self.filePath))
         self._precheck()
         self._read()
+        info("  - done")
         self._postcheck()
 
     def _read(self):

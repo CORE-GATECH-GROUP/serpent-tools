@@ -17,6 +17,9 @@ class BranchingReader(XSReader):
     ----------
     filePath: str
         path to the depletion file
+
+    Attributes
+    ----------
     branches: dict
         Dictionary of branch names and their corresponding
         :py:class:`~serpentTools.objects.containers.BranchContainer`
@@ -33,12 +36,10 @@ class BranchingReader(XSReader):
 
     def _read(self):
         """Read the branching file and store the coefficients."""
-        info('Preparing to read {}'.format(self.filePath))
         with open(self.filePath) as fObj:
             self.__fileObj = fObj
             while self.__fileObj is not None:
                 self._processBranchBlock()
-        info('Done reading branching file')
 
     def _advance(self, possibleEndOfFile=False):
         if self.__fileObj is None:
@@ -122,8 +123,7 @@ class BranchingReader(XSReader):
             yield bID, b
 
     def _precheck(self):
-        """Currently, just grabs total number of coeff calcs
-        """
+        """Currently, just grabs total number of coeff calcs."""
         with open(self.filePath) as fObj:
             try:
                 self._totalBranches = int(fObj.readline().split()[1])
@@ -132,10 +132,8 @@ class BranchingReader(XSReader):
                     self.filePath))
 
     def _postcheck(self):
-        """Make sure Serpent finished printing output.
-        """
+        """Make sure Serpent finished printing output."""
 
         if self._totalBranches != self._whereAmI['runIndx']:
-            # maybe this should be an exception?
             error("Serpent appears to have stopped printing coefficient\n"
                     "mode output early for file {}".format(self.filePath))
