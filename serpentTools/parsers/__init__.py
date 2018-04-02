@@ -1,11 +1,5 @@
 """
 Package dedicated for reading ``SERPENT`` output files
-
-The :py:func:`serpentTools.parsers.read` function uses
-the following string arguments to infer the type of reader
-to be used.
-
-
 """
 from os import path
 import re
@@ -70,8 +64,8 @@ def inferReader(filePath):
     for reg, reader in six.iteritems(REGEXES):
         match = re.match(reg, filePath)
         if match and match.group() == filePath:
-            info('Inferred reader for {}: {}'
-                 .format(filePath, reader.__name__))
+            debug('Inferred reader for {}: {}'
+                  .format(filePath, reader.__name__))
             return reader
     raise SerpentToolsException(
         'Failed to infer filetype and thus accurate reader from'
@@ -190,7 +184,7 @@ def depmtx(fileP):
     failMsg = 'File {} is ill-formed for depmtx reader\nLine: '.format(fileP)
 
     if not HAS_SCIPY:
-        warning('Decay matrix will be returned as full matrix')
+        debug('Decay matrix will be returned as full matrix')
 
     with open(fileP) as f:
         line = f.readline()
@@ -265,3 +259,4 @@ def _parseIsoBlock(stream, storage, match, line, regex):
         line = stream.readline()
         match = re.match(regex, line)
     return storage, line, items
+

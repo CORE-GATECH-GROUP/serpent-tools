@@ -48,7 +48,7 @@ loggingConfig = {
     },
     'root': {
         'handlers': ['console'],
-        'level': logging.INFO
+        'level': logging.WARNING
     }
 }
 
