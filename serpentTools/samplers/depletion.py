@@ -334,3 +334,4 @@ def sigmaLabel(ax, xlabel, ylabel, sigma=None):
     if ylabel:
         ax.set_ylabel(ylabel + confStr)
     return ax
+
