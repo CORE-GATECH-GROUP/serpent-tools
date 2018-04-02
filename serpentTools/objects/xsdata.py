@@ -5,7 +5,6 @@ from matplotlib import pyplot
 from serpentTools import messages
 from serpentTools.objects import NamedObject, convertVariableName
 
-
 class XSData(NamedObject):
     docParams = """name: str
         Name of this material
@@ -66,6 +65,24 @@ class XSData(NamedObject):
         self.hasNuData = False
 
     @staticmethod
+    def starify(arr1, arr2):
+        """ Takes two arrays, and makes it stairlike in pyplot.
+        I.e., make the plotting do zero order interpolation even
+        though there's no way to change it from first order interp.
+        """
+
+        assert len(arr1) == len(arr2)
+        temp1 = np.zeros(2*len(arr1))
+        temp2 = np.zeros(2*len(arr2))
+        longlen = len(temp1) - 1
+        for i in range(len(temp1)):
+            temp1[i] = arr1[i//2 + i%2 - i//longlen]
+            temp2[i] = arr2[i//2]
+
+        return temp1, temp2
+
+
+    @staticmethod
     def negativeMTDescription(mt):
         """ Gives descriptions for negative MT numbers used by Serpent
         for whole materials, for neutrons only. """
@@ -114,3 +131,39 @@ class XSData(NamedObject):
             return False
 
         return True
+
+    def plot(self, mts, **kwargs):
+        """ Return a matplotlib figure for plotting XS.
+        mts should be a list of the desired MT numbers to plot for this
+        XS. Units should automatically be fixed between micro and macro XS.
+        """
+
+        # convert to list if it's just one MT
+        if isinstance(mts, int):
+            mts = [mts]
+
+        for mt in mts:
+            if mt not in self.MT:
+                error("{} not in collected MT numbers, {}".format(mt, self.MT))
+        fig = pyplot.figure(**kwargs)
+
+        # could possibly automatically set up subplotting
+        ax = fig.add_subplot(111)
+
+        # list of MT number descriptions
+        descriplist = []
+
+        for mt in mts:
+            for i, MT in enumerate(self.MT):
+                if mt == MT:
+                    newdat = XSData.starify(self.metadata['egrid'],
+                        self.xsdata[:,i])
+                    ax.loglog(newdat[0], newdat[1])
+                    descriplist.append(self.MTdescrip[i])
+
+        ax.legend(descriplist)
+        ax.set_title('{} cross section{}'.format(self.name,'s' if len(mts)>1 else ''))
+        ax.set_xlabel('Energy (MeV)')
+        ax.set_ylabel('XS ({})'.format('b' if self.isIso else 'cm$^{-1}$'))
+
+        return fig
