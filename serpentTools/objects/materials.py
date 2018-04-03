@@ -3,7 +3,7 @@
 import numpy
 from matplotlib import pyplot
 
-from serpentTools import messages
+from serpentTools.messages import warning, debug
 from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
 
@@ -194,7 +194,7 @@ class DepletedMaterial(DepletedMaterialBase):
             List of strings corresponding to the raw data from the file
         """
         newName = convertVariableName(variable)
-        messages.debug('Adding {} data to {}'.format(newName, self.name))
+        debug('Adding {} data to {}'.format(newName, self.name))
         if isinstance(rawData, str):
             scratch = [float(item) for item in rawData.split()]
         else:
@@ -207,7 +207,7 @@ class DepletedMaterial(DepletedMaterialBase):
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
              legend=True, xlabel=None, ylabel=None, logx=False, logy=False,
-             loglog=False, **kwargs):
+             loglog=False, labelFmt=None, **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -237,6 +237,24 @@ class DepletedMaterial(DepletedMaterialBase):
         {logx}
         {logy}
         {loglog}
+        labelFmt: str or None
+            Formattable string for labeling the individual plots. If not given, 
+            just label as isotope name, e.g. ``'U235'``.
+            Will make the following substitutions on the ``labelFmt`` string, 
+            if given:
+
+            +---------------+-------------------------+
+            |Keyword        | Replacement             |
+            +===============+=========================+
+            |``'material'`` | name of this material   |
+            +---------------+-------------------------+
+            |``'mat'``      | name of this material   |
+            +---------------+-------------------------+
+            |``'name'``     | specific isotope name   |
+            +---------------+-------------------------+
+            |``'zai'``      | specific isotope ZZAAAI |
+            +---------------+-------------------------+
+
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
@@ -247,6 +265,7 @@ class DepletedMaterial(DepletedMaterialBase):
         --------
         * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
         * :py:func:`matplotlib.pyplot.plot`
+        * :py:func:`str.format`
         """
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> and <burnup>, not "
@@ -254,12 +273,7 @@ class DepletedMaterial(DepletedMaterialBase):
         xVals = timePoints or (self.days if xUnits == 'days' else self.burnup)
         yVals = self.getValues(xUnits, yUnits, xVals, names)
         ax = ax or pyplot.axes()
-        if names is None:
-            labels = self.names
-        elif isinstance(names, str):
-            labels = [names]
-        else:
-            labels = names
+        labels = self._formatLabel(labelFmt, names)
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
 
@@ -273,4 +287,23 @@ class DepletedMaterial(DepletedMaterialBase):
         if loglog or logy:
             ax.set_yscale('log')
         return ax
+
+    def _formatLabel(self, labelFmt, names):
+        if isinstance(names, str):
+            names = [names]
+        elif names is None:
+            labels = self.names
+        fmtr = labelFmt.replace('{material', '{mat') if labelFmt else '{name}'
+        labels = []
+        if '{iso' in fmtr and self.zai is None:
+            warning('ZAI not set for material {}. Labeling plot with isotope names'
+                    .format(self.name))
+            zaiLookup = self.names
+        else:
+            zaiLookup = self.zai
+        for name in names:
+            labels.append(fmtr.format(mat=self.name, name=name,
+                          iso=zaiLookup[self.names.index(name)]))
+
+        return labels
 
