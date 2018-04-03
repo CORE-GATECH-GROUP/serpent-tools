@@ -2,11 +2,11 @@
 
 .. |depMat| replace:: :py:class:`~serpentTools.objects.materials.DepletedMaterial`
 
-.. |materials| replace:: :py:attr:`~serpentTools.objects.materials.DepletedMaterial.materials`
+.. |materials| replace:: :py:attr:`~serpentTools.parsers.depletion.DepletionReader.materials`
 
 .. |matData| replace:: :py:attr:`~serpentTools.objects.materials.DepletedMaterial.data`
 
-.. |getValues|  replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues`
+.. |getValues| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
 
 .. |depMatPlot| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot` 
 
@@ -185,15 +185,14 @@ argument.
 Limitations
 -----------
 
-Currently, the :py:class:`~serpentTools.parsers.DepletionReader`
-cannot catch materials with underscore in the name, due to variables
-like ``ING_TOX`` also containing an underscore.
+Currently, the |depReader| cannot catch materials with underscore in the name,
+due to variables like ``ING_TOX`` also containing an underscore.
 Issue `#58 <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues/58>`_
 
 Settings
 --------
 
-The :py:class:`~serpentTools.parsers.DepletionReader`
+The |depReader| 
 also has a collection of settings to control
 what data is stored. If none of these settings are modified, the default
 is to store all the data from the output file.
@@ -224,7 +223,7 @@ is to store all the data from the output file.
         options default
         default ['ZAI', 'NAMES', 'DAYS', 'BU']
 
-Below is an example of configuring a ``DepletionReader`` that only
+Below is an example of configuring a |depReader| that only
 stores the burnup days, and atomic density for all materials that begin
 with ``bglass`` followed by at least one integer.
 
@@ -267,11 +266,12 @@ with ``bglass`` followed by at least one integer.
 Conclusion
 ----------
 
-The ``DepletionReader`` is capable of reading and storing all the data
+The |depReader| is capable of reading and storing all the data
 from the SERPENT burned materials file. Upon reading, the reader creates
-custom ``DepletedMaterial`` objects that are responsible for storing and
-retrieving the data. These objects also have a handy ``plot`` method for
-quick analysis. Use of the ``rc`` settings control object allows
+custom |depMat| objects that are responsible for storing and
+retrieving the data. These objects also have a handy |depMatPlot| method for
+quick analysis. Use of the 
+:py:class:`~serpentTool.settings.rc` settings control object allows
 increased control over the data selected from the output file.
 
 References
