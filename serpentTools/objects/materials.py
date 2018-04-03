@@ -178,6 +178,25 @@ class DepletedMaterialBase(NamedObject):
             rowIDs[indx] = self.names.index(isotope)
         return rowIDs
 
+    def _formatLabel(self, labelFmt, names):
+        if isinstance(names, str):
+            names = [names]
+        elif names is None:
+            labels = self.names
+        fmtr = labelFmt if labelFmt else '{iso}'
+        labels = []
+        if '{zai' in fmtr and self.zai is None:
+            warning('ZAI not set for material {}. Labeling plot with isotope names'
+                    .format(self.name))
+            zaiLookup = self.names
+        else:
+            zaiLookup = self.zai
+        names = names or self.names
+        for name in names:
+            labels.append(fmtr.format(mat=self.name, iso=name,
+                          zai=zaiLookup[self.names.index(name)]))
+
+        return labels
 
 class DepletedMaterial(DepletedMaterialBase):
     __doc__ = DepletedMaterialBase.__doc__
@@ -237,23 +256,7 @@ class DepletedMaterial(DepletedMaterialBase):
         {logx}
         {logy}
         {loglog}
-        labelFmt: str or None
-            Formattable string for labeling the individual plots. If not given, 
-            just label as isotope name, e.g. ``'U235'``.
-            Will make the following substitutions on the ``labelFmt`` string, 
-            if given:
-
-            +---------------+-------------------------+
-            |Keyword        | Replacement             |
-            +===============+=========================+
-            |``'material'`` | name of this material   |
-            +---------------+-------------------------+
-            |``'mat'``      | name of this material   |
-            +---------------+-------------------------+
-            |``'name'``     | specific isotope name   |
-            +---------------+-------------------------+
-            |``'zai'``      | specific isotope ZZAAAI |
-            +---------------+-------------------------+
+        {matLabelFmt}
 
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
@@ -266,10 +269,15 @@ class DepletedMaterial(DepletedMaterialBase):
         * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
         * :py:func:`matplotlib.pyplot.plot`
         * :py:func:`str.format`
+
+        Raises
+        ------
+        KeyError
+            If x axis units are not ``'days'`` nor ``'burnup'``
         """
         if xUnits not in ('days', 'burnup'):
-            raise KeyError("Plot method only uses x-axis data from <days> and <burnup>, not "
-                           "{}".format(xUnits))
+            raise KeyError("Plot method only uses x-axis data from <days> "
+                           "and <burnup>, not {}".format(xUnits))
         xVals = timePoints or (self.days if xUnits == 'days' else self.burnup)
         yVals = self.getValues(xUnits, yUnits, xVals, names)
         ax = ax or pyplot.axes()
@@ -287,23 +295,4 @@ class DepletedMaterial(DepletedMaterialBase):
         if loglog or logy:
             ax.set_yscale('log')
         return ax
-
-    def _formatLabel(self, labelFmt, names):
-        if isinstance(names, str):
-            names = [names]
-        elif names is None:
-            labels = self.names
-        fmtr = labelFmt.replace('{material', '{mat') if labelFmt else '{name}'
-        labels = []
-        if '{iso' in fmtr and self.zai is None:
-            warning('ZAI not set for material {}. Labeling plot with isotope names'
-                    .format(self.name))
-            zaiLookup = self.names
-        else:
-            zaiLookup = self.zai
-        for name in names:
-            labels.append(fmtr.format(mat=self.name, name=name,
-                          iso=zaiLookup[self.names.index(name)]))
-
-        return labels
 
