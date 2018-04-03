@@ -8,6 +8,8 @@
 
 .. |getValues|  replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues`
 
+.. |depMatPlot| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot` 
+
 .. _depletion-reader-ex:
 
 ===============
@@ -132,9 +134,25 @@ not given.
      [  0.00000000e+00   0.00000000e+00   0.00000000e+00   0.00000000e+00]]
     
 
-The |depMat| uses
-this slicing for the built-in
-:py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot` method
+The |depMat| uses this slicing for the built-in |depMatPlot| method, 
+which takes similar slicing arguments to |getValues|.
+
+In addition, the ``labelFmt`` argument can be used to apply a consistent
+label to each unique plot. This argument supports `brace-delimited
+formatting <https://docs.python.org/3/library/stdtypes.html?#str.format>`__,
+and will automatically replace strings like ``{mat}`` with the name of
+the material. The table below contains the special strings and their
+replacements
+
++-----------+--------------------------------------+
+| String    | Replacement                          |
++===========+======================================+
+| ``'mat'`` | Name of the material                 |
++-----------+--------------------------------------+
+| ``'iso'`` | Name of the isotope, e.g. ``'U235'`` |
++-----------+--------------------------------------+
+| ``'zai'`` | ZZAAAI of the isotope, e.g. 922350   |
++-----------+--------------------------------------+
 
 .. code:: 
 
@@ -145,10 +163,24 @@ this slicing for the built-in
 
 .. code::
     
-    >>> fuel.plot('burnup', 'ingTox', names='Xe135', logy=True)
+    >>> fuel.plot('burnup', 'ingTox', names='Xe135', logy=True,
+                  labelFmt="{iso}")
 
 .. image:: images/DepletionReader_23_0.png
 
+This type of plotting can also be applied to the |depReader| 
+:py:func:`~serpentTools.parsers.depletion.DepletionReader.plot` method
+, with similar options for formatting and retrieving data. The
+materials to be plotted can be filtered using the ``materials``
+argument.
+
+.. code:: 
+
+    dep.plot('days', 'adens', names=iso, 
+             materials=['fuel0', 'total'],
+             labelFmt="{mat}: {iso}", logy=True);
+
+.. image:: images/DepletionReader_25_0.png
 
 Limitations
 -----------
