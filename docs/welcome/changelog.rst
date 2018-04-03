@@ -4,6 +4,13 @@
 Changelog
 =========
 
+.. _next:
+
+Next
+----
+
+* :pull:`107` - DepletionReader can now plot data for some or all materials
+
 .. _v0.2.2:
 
 :release-tag:`0.2.2`

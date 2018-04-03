@@ -197,7 +197,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
              sigma=3, legend=True, xlabel=None, ylabel=None,
-             **kwargs):
+             labelFmt=None, **kwargs):
         """
         Plot the average of some data vs. time for some or all isotopes.
 
@@ -253,7 +253,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         else:
             xUncs = zeros_like(xVals)
         ax = ax or pyplot.axes()
-        labels = names or self.names
+        labels = self._formatLabel(labelFmt, names)
         yVals = yVals.copy(order='F')
         yUncs = yUncs.copy(order='F') * sigma
 
