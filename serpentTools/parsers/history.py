@@ -61,6 +61,10 @@ class HistoryReader(BaseReader):
     """
     Class responsible for reading history files
 
+    Arrays can be accessed through either the ``arrays`` 
+    dictionary, or with ``his[key]``, where ``key`` is the
+    name of an array in ``arrays``.
+
     Parameters
     ----------
     filePath: str
