@@ -49,12 +49,13 @@ MAT_FMT_DOC = """labelFmt: str or None
     |``'zai'``      | specific isotope ZZAAAI |
     +---------------+-------------------------+
 """
+LEGEND = """legend: bool\n    Automatically label the plot"""
 
 PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
         'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
         'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
         'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP,
-        'matLabelFmt': MAT_FMT_DOC}
+        'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND}
 """Magic strings that, if found as {x}, will be replaced by the key of x"""
 
 
