@@ -4,10 +4,17 @@
 Changelog
 =========
 
+.. _next:
+
+Next
+----
+
+* :pull:`107` - DepletionReader can now plot data for some or all materials
+
 .. _v0.2.2:
 
 :release-tag:`0.2.2`
-----------------
+--------------------
 
 * :pull:`82` - Command line interface and some sub-commands
 * :pull:`88` - Pre- and post-check methods for readers
