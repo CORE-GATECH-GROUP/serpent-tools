@@ -4,11 +4,12 @@
 Changelog
 *********
 
-.. _next:
+.. _v0.3.0:
 
-Next
-====
+:release-tag:`0.3.0`
+====================
 
+* :pull:`109` - Capability to read history files
 * :pull:`107` - DepletionReader can now plot data for some or all materials
 
 .. _v0.2.2:
