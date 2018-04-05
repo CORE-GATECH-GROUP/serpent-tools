@@ -1,8 +1,8 @@
 .. _welcome:
 
-=============
+*************
 serpent-tools
-=============
+*************
 
     A suite of parsers designed to make interacting with
     ``SERPENT`` [1]_ output files simple and flawless.
@@ -13,7 +13,7 @@ More information, including distribution and licensing of ``SERPENT`` can be
 found at `<montecarlo.vtt.fi>`_
 
 Installation
-------------
+============
 
 The ``serpentTools`` package can be downloaded either as a git repository or
 as a zipped file. Both can be obtained through the ``Clone or download`` option
@@ -37,14 +37,14 @@ Installing in this manner ensures that the supporting packages,
 like ``numpy`` are installed and up to date.
 
 Issues
-------
+======
 
 If you have issues installing the project, find a bug, or want to add a feature,
 the `GitHub issue page <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues>`_
 is the best place to do that.
 
 Contributors
-------------
+============
 
 Here are all the wonderful people that helped make this project happen
 
@@ -54,7 +54,7 @@ Here are all the wonderful people that helped make this project happen
 * `Gavin Ridley <https://github.com/gridley>`_
 
 References
-----------
+==========
 
 The Annals of Nuclear Energy article should be cited for all work
 using ``SERPENT``. If you wish to cite this project, please cite as::
