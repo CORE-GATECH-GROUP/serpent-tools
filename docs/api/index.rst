@@ -18,5 +18,6 @@ API
    depletion.rst
    detector.rst
    fissionMatrix.rst
+   history.rst
    results.rst
    sampler.rst

@@ -1,7 +1,6 @@
-.. _welcome:
-
+########
 Welcome!
-========
+########
 
 .. toctree::
     :maxdepth: 2
