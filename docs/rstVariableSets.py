@@ -13,19 +13,24 @@ PYTHON_VERSION = '{}.{}.{}'.format(*pyVersInfo[:3])
 VAR_FMTR = "  * ``{original}`` →  ``{converted}``\n"
 OUT_FILE = 'variableGroups.rst'
 IN_FILE = '../serpentTools/variables.yaml'
+REF_FMT = '.. _{}-{}:\n\n'
 SECTION_CHAR = '-'
 SUBSECTION_CHAR = '~'
 
-def versionHeader(title, subsection=False):
+def makeHeading(title, subsection=False):
     hdr = SECTION_CHAR * (len(title) + 4)
     titleTT = '``{}``'.format(title)
     front = ('' if subsection else hdr)
-    return'\n'.join((front, titleTT, hdr)) + '\n\n'
+    return '\n'.join((front, titleTT, hdr)) + '\n\n'
 
-def groupHeader(sssVersion, group):
-    lines = '.. _{}-{}:\n'.format(sssVersion.replace('.', '-'), group)
-    lines += versionHeader(group, subsection=True)
-    return lines
+def makeVersionHeading(sVersion):
+    tag = REF_FMT.format('vars', sVersion.replace('.', '-'))
+    return tag + makeHeading(sVersion)
+
+
+def makeVarGroupHeading(sVersion, groupName):
+    tag = REF_FMT.format(groupName, sVersion.replace('.', '-'))
+    return tag + makeHeading(groupName, True)
 
 def varsToBullets(incomingVars):
     lines = "\n"
@@ -47,12 +52,12 @@ if __name__ == '__main__':
     
     with open(OUT_FILE, 'w') as out:
         for version, varSet in iteritems(variables):
-            out.write(versionHeader(version))
+            out.write(makeVersionHeading(version))
             for group in varSet:
-                out.write(groupHeader(version, group))
+                out.write(makeVarGroupHeading(version, group))
                 out.write(varsToBullets(varSet[group]))
-        out.write(versionHeader('base'))
+        out.write(makeVersionHeading('base'))
         for group in sorted(baseGroups):
             baseVars = baseDict[group]
-            out.write(groupHeader('base', group))
+            out.write(makeVarGroupHeading('base', group))
             out.write(varsToBullets(baseVars))

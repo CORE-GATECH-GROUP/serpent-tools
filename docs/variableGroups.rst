@@ -1,8 +1,11 @@
+.. _vars-2-1-29:
+
 ----------
 ``2.1.29``
 ----------
 
-.. _2-1-29-diffusion:
+.. _diffusion-2-1-29:
+
 
 ``diffusion``
 -------------
@@ -17,11 +20,14 @@
   * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
   * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
 
+.. _vars-base:
+
 --------
 ``base``
 --------
 
-.. _base-arr-estimators:
+.. _arr-estimators-base:
+
 
 ``arr-estimators``
 ------------------
@@ -41,7 +47,8 @@
   * ``U238_FISS`` →  ``u238Fiss``
   * ``XE135_CAPT`` →  ``xe135Capt``
 
-.. _base-burnup-coeff:
+.. _burnup-coeff-base:
+
 
 ``burnup-coeff``
 ----------------
@@ -56,7 +63,8 @@
   * ``COEF_BU_STEP`` →  ``coefBuStep``
   * ``COEF_IDX`` →  ``coefIdx``
 
-.. _base-eig:
+.. _eig-base:
+
 
 ``eig``
 -------
@@ -69,7 +77,8 @@
   * ``GEOM_ALBEDO`` →  ``geomAlbedo``
   * ``IMP_KEFF`` →  ``impKeff``
 
-.. _base-files:
+.. _files-base:
+
 
 ``files``
 ---------
@@ -81,7 +90,8 @@
   * ``SFY_DATA_DILE_PATH`` →  ``sfyDataDilePath``
   * ``XS_DATA_FILE_PATH`` →  ``xsDataFilePath``
 
-.. _base-gc-meta:
+.. _gc-meta-base:
+
 
 ``gc-meta``
 -----------
@@ -97,7 +107,8 @@
   * ``MICRO_E`` →  ``microE``
   * ``MICRO_NG`` →  ``microNg``
 
-.. _base-kinetics:
+.. _kinetics-base:
+
 
 ``kinetics``
 ------------
@@ -124,7 +135,8 @@
   * ``FWD_ANA_BETA_ZERO`` →  ``fwdAnaBetaZero``
   * ``FWD_ANA_LAMBDA`` →  ``fwdAnaLambda``
 
-.. _base-lifetime:
+.. _lifetime-base:
+
 
 ``lifetime``
 ------------
@@ -136,7 +148,8 @@
   * ``ANA_THERM_FRAC`` →  ``anaThermFrac``
   * ``ANA_THERM_TIME`` →  ``anaThermTime``
 
-.. _base-memory:
+.. _memory-base:
+
 
 ``memory``
 ----------
@@ -152,7 +165,8 @@
   * ``UNUSED_MEMSIZE`` →  ``unusedMemsize``
   * ``XS_MEMSIZE`` →  ``xsMemsize``
 
-.. _base-misc:
+.. _misc-base:
+
 
 ``misc``
 --------
@@ -167,7 +181,8 @@
   * ``IMP_EALF`` →  ``impEalf``
   * ``NUBAR`` →  ``nubar``
 
-.. _base-n-balance:
+.. _n-balance-base:
+
 
 ``n-balance``
 -------------
@@ -185,7 +200,8 @@
   * ``BALA_SRC_NEUTRON_TOT`` →  ``balaSrcNeutronTot``
   * ``BALA_SRC_NEUTRON_VR`` →  ``balaSrcNeutronVr``
 
-.. _base-neutron-physics:
+.. _neutron-physics-base:
+
 
 ``neutron-physics``
 -------------------
@@ -207,7 +223,8 @@
   * ``USE_DELNU`` →  ``useDelnu``
   * ``USE_URES`` →  ``useUres``
 
-.. _base-nuclides:
+.. _nuclides-base:
+
 
 ``nuclides``
 ------------
@@ -221,7 +238,8 @@
   * ``TOT_TRANSMU_REA`` →  ``totTransmuRea``
   * ``TOT_TRANSPORT_NUCLIDES`` →  ``totTransportNuclides``
 
-.. _base-optimization:
+.. _optimization-base:
+
 
 ``optimization``
 ----------------
@@ -233,7 +251,8 @@
   * ``RECONSTRUCT_MICROXS`` →  ``reconstructMicroxs``
   * ``SPECTRUM_COLLAPSE`` →  ``spectrumCollapse``
 
-.. _base-parallel:
+.. _parallel-base:
+
 
 ``parallel``
 ------------
@@ -247,7 +266,8 @@
   * ``SHARE_BUF_ARRAY`` →  ``shareBufArray``
   * ``SHARE_RES2_ARRAY`` →  ``shareRes2Array``
 
-.. _base-parameters:
+.. _parameters-base:
+
 
 ``parameters``
 --------------
@@ -268,7 +288,8 @@
   * ``UFS_MODE`` →  ``ufsMode``
   * ``UFS_ORDER`` →  ``ufsOrder``
 
-.. _base-rad-data:
+.. _rad-data-base:
+
 
 ``rad-data``
 ------------
@@ -295,7 +316,8 @@
   * ``TOT_DECAY_HEAT`` →  ``totDecayHeat``
   * ``TOT_SF_RATE`` →  ``totSfRate``
 
-.. _base-sampling:
+.. _sampling-base:
+
 
 ``sampling``
 ------------
@@ -316,7 +338,8 @@
   * ``ST_FRAC`` →  ``stFrac``
   * ``TOT_COL_EFF`` →  ``totColEff``
 
-.. _base-stats:
+.. _stats-base:
+
 
 ``stats``
 ---------
@@ -328,7 +351,8 @@
   * ``SIMULATION_COMPLETED`` →  ``simulationCompleted``
   * ``SOURCE_POPULATION`` →  ``sourcePopulation``
 
-.. _base-times:
+.. _times-base:
+
 
 ``times``
 ---------
@@ -347,7 +371,8 @@
   * ``TRANSPORT_CPU_USAGE`` →  ``transportCpuUsage``
   * ``TRANSPORT_CYCLE_TIME`` →  ``transportCycleTime``
 
-.. _base-total-rr:
+.. _total-rr-base:
+
 
 ``total-rr``
 ------------
@@ -371,7 +396,8 @@
   * ``TOT_RR`` →  ``totRr``
   * ``TOT_SRCRATE`` →  ``totSrcrate``
 
-.. _base-ures:
+.. _ures-base:
+
 
 ``ures``
 --------
@@ -383,7 +409,8 @@
   * ``URES_EMIN`` →  ``uresEmin``
   * ``URES_SEED`` →  ``uresSeed``
 
-.. _base-versions:
+.. _versions-base:
+
 
 ``versions``
 ------------
@@ -402,7 +429,8 @@
   * ``VERSION`` →  ``version``
   * ``WORKING_DIRECTORY`` →  ``workingDirectory``
 
-.. _base-xs:
+.. _xs-base:
+
 
 ``xs``
 ------
@@ -440,7 +468,8 @@
   * ``TOT`` →  ``tot``
   * ``TRANSPXS`` →  ``transpxs``
 
-.. _base-xs-prod:
+.. _xs-prod-base:
+
 
 ``xs-prod``
 -----------
@@ -463,7 +492,8 @@
   * ``SP6`` →  ``sp6``
   * ``SP7`` →  ``sp7``
 
-.. _base-xs-yields:
+.. _xs-yields-base:
+
 
 ``xs-yields``
 -------------
