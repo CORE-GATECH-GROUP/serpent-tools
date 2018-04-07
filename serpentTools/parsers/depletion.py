@@ -92,7 +92,7 @@ class DepPlotMixin(object):
         if loglog or logx:
             ax.set_xscale('log')
         if loglog or logy:
-            ax.set_xscale('log')
+            ax.set_yscale('log')
 
         return ax
 

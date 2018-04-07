@@ -189,39 +189,20 @@ Currently, the |depReader| cannot catch materials with underscore in the name,
 due to variables like ``ING_TOX`` also containing an underscore.
 Issue `#58 <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues/58>`_
 
+.. _depletion-settings:
+
 Settings
 --------
 
-The |depReader| 
-also has a collection of settings to control
+The |depReader| also has a collection of settings to control
 what data is stored. If none of these settings are modified, the default
-is to store all the data from the output file.
+is to store all the data from the output file. The settings that
+control the depletion reader are 
 
-.. code:: 
-
-    >>> from serpentTools.settings import rc, defaultSettings
-    >>> for setting in defaultSettings:
-    >>>     if 'depletion' in setting:
-    >>>         print(setting)
-    >>>         for k, v in six.iteritems(defaultSettings[setting]):
-    >>>             print('\t', k, v)
-    depletion.materials
-         type <class 'list'>
-         description Names of materials to store. Empty list -> all materials.
-         default []
-    depletion.processTotal
-        type <class 'bool'>
-        description Option to store the depletion data from the TOT block
-        default True
-    depletion.materialVariables
-        type <class 'list'>
-        description Names of variables to store. Empty list -> all variables.
-        default []
-    depletion.metadataKeys
-        type <class 'list'>
-        description Non-material data to store, i.e. zai, isotope names, burnup schedule, etc.
-        options default
-        default ['ZAI', 'NAMES', 'DAYS', 'BU']
+  * :ref:`depletion-materials`
+  * :ref:`depletion-materialVariables`
+  * :ref:`depletion-metadataKeys`
+  * :ref:`depletion-processTotal`
 
 Below is an example of configuring a |depReader| that only
 stores the burnup days, and atomic density for all materials that begin
