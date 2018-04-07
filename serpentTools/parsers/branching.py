@@ -77,6 +77,8 @@ class BranchingReader(XSReader):
         self._whereAmI['runIndx'] = int(indx)
         self._whereAmI['coefIndx'] = int(coefIndx)
         branchNames = tuple(self._advance()[1:])
+        if len(branchNames) == 1:
+            branchNames = branchNames[0]
         if branchNames not in self.branches:
             branchState = self._processBranchStateData()
             self.branches[branchNames] = (
