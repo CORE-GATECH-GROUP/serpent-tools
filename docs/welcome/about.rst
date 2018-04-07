@@ -34,7 +34,7 @@ installed with ``pip`` as::
     pip install -U setuptools
 
 Installing in this manner ensures that the supporting packages,
-like ``numpy`` are installed and up to date.
+like :py:mod:`numpy` are installed and up to date.
 
 Issues
 ======

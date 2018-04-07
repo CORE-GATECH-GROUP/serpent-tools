@@ -107,7 +107,7 @@ html_theme = 'alabaster'
 html_theme_options = {
     'github_user': 'CORE-GATECH-GROUP',
     'github_repo': 'serpent-tools',
-    'sidebar_width': '230px',
+    'sidebar_width': '260px',
 }
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

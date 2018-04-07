@@ -234,62 +234,26 @@ be used to efficiently iterate over all the branches presented in the file.
 
 .. _branching-settings:
 
-User Control
-------------
+Settings
+--------
 
 The ``SERPENT``
 `set coefpara <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_coefpara>`_
-card already restricts the data present in the coeffient file to user
+card already restricts the data present in the coefficient file to user
 control, and the |branchReader|  includes similar control. 
-Below are the various settings that the |branchReader| uses to read and
-process coefficient files.
 
-.. code:: 
-
-    >>> import six
-    >>> from serpentTools.settings import rc
-    >>> from serpentTools.settings import rc, defaultSettings
-    >>> for setting in defaultSettings:
-    >>>     if 'xs' in setting or 'branching' in setting:
-    >>>         print(setting)
-    >>>         for k, v in six.iteritems(defaultSettings[setting]):
-    >>>             print('\t', k+':', v)
-    branching.areUncsPresent
-         default: False
-         type: <class 'bool'>
-         description: True if the values in the .coe file contain uncertainties
-    branching.intVariables
-         default: []
-         description: Name of state data variables to convert to integers for
-         each branch
-         type: <class 'list'>
-    branching.floatVariables
-         default: []
-         description: Names of state data variables to convert to floats for
-         each branch
-         type: <class 'list'>
-    xs.getInfXS
-         default: True
-         description: If true, store the infinite medium cross sections.
-         type: <class 'bool'>
-    xs.getB1XS
-         default: True
-         description: If true, store the critical leakage cross sections.
-         type: <class 'bool'>
-    xs.variableGroups
-         default: []
-         description: Name of variable groups from variables.yaml to be expanded
-          into SERPENT variable to be stored
-         type: <class 'list'>
-    xs.variableExtras
-         default: []
-         description: Full SERPENT name of variables to be read
-         type: <class 'list'>
+  * :ref:`branching-areUncsPresent`
+  * :ref:`branching-floatvariables`
+  * :ref:`branching-intVariables`
+  * :ref:`xs-getB1XS`
+  * :ref:`xs-getInfXS`
+  * :ref:`xs-variableExtras`
+  * :ref:`xs-variableGroups`
 
 In our example above, the ``BOR`` and ``TFU`` variables represented
 boron concentration and fuel temperature, and can easily be cast into
-numeric values using the ``branching.intVariables`` and
-``brancing.floatVariables`` settings. From the previous example, we see
+numeric values using the :ref:`branching-intVariables` and
+:ref:`branching-floatVariables` settings. From the previous example, we see
 that the default action is to store all state data variables as strings.
 
 .. code:: 
@@ -297,7 +261,7 @@ that the default action is to store all state data variables as strings.
     >>> assert isinstance(b0.stateData['BOR'], str)
 
 As demonstrated in the :ref:`group-const-variables` example, use of
-``xs.variableGroups`` and ``xs.variableExtras`` controls what data is
+:ref:`xs-variableExtras` and :ref:`xs-variableGroups` controls what data is
 stored on the |homogUniv| 
 objects. By default, all variables present in the coefficient file are stored.
 
