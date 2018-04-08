@@ -28,7 +28,17 @@ class XSPlotReader(BaseReader):
 
     Attributes
     ----------
-    {attrs:s}
+    xsections: NamedDict
+        Contains XSData objects with keys given by their names. There should be
+        one XSData instance for each isotope and material present in the
+        problem.
+    metadata: dict
+        Contains data pertinent to all XSData instances collected.
+        One particularly important entry is the 'egrid', which is a numpy array
+        of values that define the bin structure XS were recorded in by Serpent.
+        In addition, Serpent defines the 'majorant_xs', which is the L-inf norm
+        among all macroscopic cross sections used in the problem. This gets
+        used in the delta tracking routines usually.
     settings: dict
         names and values of the settings used to control operations
         of this reader
@@ -74,6 +84,10 @@ class XSPlotReader(BaseReader):
                     debug('found nu specification')
                     xsname = chunk[0][:-8]
                     self.xsections[xsname].setNuData(chunk)
+
+                elif 'bra_f' in chunk[0]:
+                    warning("There is this weird 'bra_f' XS. these seem ot be"
+                            " constant. skipping though.")
 
                 else:
                     print(chunk)
