@@ -203,16 +203,14 @@ class HomogUniv(NamedObject):
         return x, dx
 
     def _lookup(self, variableName, uncertainty):
-        if "inf" in variableName:
+        if 'inf' == variableName[:3]:
             if not uncertainty:
                 return self.infExp
-            else:
-                return self.infUnc
-        elif "b1" in variableName:
+            return self.infUnc
+        elif "b1" ==  variableName[:2]:
             if not uncertainty:
                 return self.b1Exp
-            else:
-                return self.b1Unc
+            return self.b1Unc
         else:
             return self.metadata
 
