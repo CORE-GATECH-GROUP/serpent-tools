@@ -6,8 +6,31 @@ from numpy import array
 from serpentTools.objects import splitItems
 from serpentTools.objects.containers import BranchContainer
 from serpentTools.objects.readers import XSReader
-from serpentTools.messages import debug, info, error
+from serpentTools.messages import debug, info, error, warning, willChange
 
+class BranchesWrapper(dict):
+    """Special dictionary that warns about the change in accessing branches."""
+
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self.__warned = False
+
+    def __getitem__(self, key):
+        if key in self:
+            return dict.__getitem__(self, key)
+        if isinstance(key, tuple) and len(key) == 1 and key[0] in self:
+            if not self.__warned:
+                self.__warn(key)
+                return dict.__getitem__(self, key[0]) 
+        raise KeyError(key)
+
+    @willChange("In the future, access a single item branch name with only "
+                "the string, ['name'] vs. [('name', )]")
+    def __warn(self, key):
+        warning("Future versions will not accept '{key}' but will accept "
+                "'{entry}'".format(key=key, entry=key[0]))
+        self.__warned = True
+        
 
 class BranchingReader(XSReader):
     """
@@ -29,7 +52,7 @@ class BranchingReader(XSReader):
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'branching')
         self.__fileObj = None
-        self.branches = {}
+        self.branches = BranchesWrapper() 
         self._whereAmI = {key: None for key in
                           {'runIndx', 'coefIndx', 'buIndx', 'universe'}}
         self._totalBranches = None
