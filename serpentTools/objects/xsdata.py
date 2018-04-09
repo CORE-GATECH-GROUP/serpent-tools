@@ -116,7 +116,7 @@ class XSData(NamedObject):
         return True
 
     @magicPlotDocDecorator
-    def plot(self, mts, logscale=True, **kwargs):
+    def plot(self, mts, logscale=True, figargs={}, **kwargs):
         """ Return a matplotlib figure for plotting XS.
         mts should be a list of the desired MT numbers to plot for this
         XS. Units should automatically be fixed between micro and macro XS.
@@ -129,13 +129,20 @@ class XSData(NamedObject):
             A list should be a list of MT numbers to plot.
         logscale: bool
             whether to use a logscale
+        figargs: dict
+            kwarguments to pass to plt.figure, like dpi:96 or figsize:(6,6)
+            by default, extra kwargs go to plot.
         """
+        # don't pass figargs to plotting command
+        kwargs.pop('figargs', None)
 
         if mts == 'all':
             mts = self.MT
         elif isinstance(mts, int):
             # convert to list if it's just one MT
             mts = [mts]
+        elif isinstance(mts, list) and all([isinstance(ii, int) for ii in mts]):
+            pass
         else:
             msg = ("mts argument must be a string saying 'all',"
                    "a list of integer MTs, or a single interger"
@@ -146,7 +153,7 @@ class XSData(NamedObject):
         for mt in mts:
             if mt not in self.MT:
                 error("{} not in collected MT numbers, {}".format(mt, self.MT))
-        fig = pyplot.figure(**kwargs)
+        fig = pyplot.figure(**figargs)
 
         # could possibly automatically set up subplotting
         ax = fig.add_subplot(111)
@@ -157,10 +164,12 @@ class XSData(NamedObject):
         for mt in mts:
             for i, MT in enumerate(self.MT):
                 if mt == MT:
+                    x = self.metadata['egrid']
+                    y = self.xsdata[:,i]
                     if logscale:
-                        ax.loglog(newdat[0], newdat[1], drawstyle='steps')
+                        ax.loglog(x, y, drawstyle='steps')
                     else:
-                        ax.plot(newdat[0], newdat[1], drawstyle='steps')
+                        ax.plot(x, y, drawstyle='steps')
                     descriplist.append(self.MTdescrip[i])
 
         ax.legend(descriplist)
@@ -169,3 +178,17 @@ class XSData(NamedObject):
         ax.set_ylabel('XS ({})'.format('b' if self.isIso else 'cm$^{-1}$'))
 
         return fig
+
+    def showMT(self):
+        """ Pretty prints MT values available for this XS and
+        descriptions.
+        """
+        print("MT numbers available for {}:".format(self.name))
+        print("--------------------------"+len(self.name)*'-')
+        for i, mt in enumerate(self.MT):
+            if self.isIso:
+                descr = self.MTdescrip[i]
+            else:
+                descr = XSData.negativeMTDescription(mt)
+            spaces = (4-len(str(mt)))*' '
+            print(str(mt)+spaces, descr)
