@@ -4,6 +4,7 @@ from matplotlib import pyplot
 
 from serpentTools import messages
 from serpentTools.objects import NamedObject, convertVariableName
+from serpentTools.plot import magicPlotDocDecorator # make nice docstring
 
 class XSData(NamedObject):
     docParams = """name: str
@@ -65,24 +66,6 @@ class XSData(NamedObject):
         self.hasNuData = False
 
     @staticmethod
-    def starify(arr1, arr2):
-        """ Takes two arrays, and makes it stairlike in pyplot.
-        I.e., make the plotting do zero order interpolation even
-        though there's no way to change it from first order interp.
-        """
-
-        assert len(arr1) == len(arr2)
-        temp1 = np.zeros(2*len(arr1))
-        temp2 = np.zeros(2*len(arr2))
-        longlen = len(temp1) - 1
-        for i in range(len(temp1)):
-            temp1[i] = arr1[i//2 + i%2 - i//longlen]
-            temp2[i] = arr2[i//2]
-
-        return temp1, temp2
-
-
-    @staticmethod
     def negativeMTDescription(mt):
         """ Gives descriptions for negative MT numbers used by Serpent
         for whole materials, for neutrons only. """
@@ -132,15 +115,33 @@ class XSData(NamedObject):
 
         return True
 
-    def plot(self, mts, **kwargs):
+    @magicPlotDocDecorator
+    def plot(self, mts, logscale=True, **kwargs):
         """ Return a matplotlib figure for plotting XS.
         mts should be a list of the desired MT numbers to plot for this
         XS. Units should automatically be fixed between micro and macro XS.
+
+        Parameters
+        ----------
+        mts: int, string, or list of ints
+            If it's a string, it should be 'all'.
+            A single int indicates one MT reaction number.
+            A list should be a list of MT numbers to plot.
+        logscale: bool
+            whether to use a logscale
         """
 
-        # convert to list if it's just one MT
-        if isinstance(mts, int):
+        if mts == 'all':
+            mts = self.MT
+        elif isinstance(mts, int):
+            # convert to list if it's just one MT
             mts = [mts]
+        else:
+            msg = ("mts argument must be a string saying 'all',"
+                   "a list of integer MTs, or a single interger"
+                   "instead, {} of type {} was passed.".format(
+                   mts, type(mts)))
+            raise Exception(msg)
 
         for mt in mts:
             if mt not in self.MT:
@@ -156,9 +157,10 @@ class XSData(NamedObject):
         for mt in mts:
             for i, MT in enumerate(self.MT):
                 if mt == MT:
-                    newdat = XSData.starify(self.metadata['egrid'],
-                        self.xsdata[:,i])
-                    ax.loglog(newdat[0], newdat[1])
+                    if logscale:
+                        ax.loglog(newdat[0], newdat[1], drawstyle='steps')
+                    else:
+                        ax.plot(newdat[0], newdat[1], drawstyle='steps')
                     descriplist.append(self.MTdescrip[i])
 
         ax.legend(descriplist)
