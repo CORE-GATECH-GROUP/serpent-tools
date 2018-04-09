@@ -48,7 +48,7 @@ loggingConfig = {
     },
     'root': {
         'handlers': ['console'],
-        'level': logging.INFO
+        'level': logging.WARNING
     }
 }
 
@@ -88,9 +88,8 @@ def updateLevel(level):
         __logger__.setLevel('INFO')
         warning('Logger option {} not in options. Set to info.'.format(level))
         return 'info'
-    else:
-        __logger__.setLevel(level.upper())
-        return level
+    __logger__.setLevel(level.upper())
+    return level
 
 
 def deprecated(useInstead):
@@ -101,7 +100,6 @@ def deprecated(useInstead):
         def decorated(*args, **kwargs):
             msg = ('Function {} has been deprecated. Use {} instead'
                    .format(f.__name__, useInstead))
-            warning(msg)
             _updateFilterAlert(msg, DeprecationWarning)
             return f(*args, **kwargs)
 
@@ -116,7 +114,6 @@ def willChange(changeMsg):
     def decorate(f):
         @functools.wraps(f)
         def decoratedFunc(*args, **kwargs):
-            warning(changeMsg)
             _updateFilterAlert(changeMsg, FutureWarning)
             return f(*args, **kwargs)
 

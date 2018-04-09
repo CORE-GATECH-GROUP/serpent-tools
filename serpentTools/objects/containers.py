@@ -4,6 +4,7 @@ Contents
 --------
 :py:class:`~serpentTools.objects.containers.HomogUniv`
 :py:class:`~serpentTools.objects.containers.BranchContainer
+:py:class:`~serpentTools.objects.containers.DetectorBase`
 :py:class:`~serpentTools.objects.containers.Detector`
 
 """
@@ -20,6 +21,17 @@ from serpentTools.messages import warning, SerpentToolsException, debug
 DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
             'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
 """Name of the columns of the data"""
+
+
+__all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
+           'DetectorBase')
+
+
+def isNonNeg(value):
+    """Return true if a value is None or non-negative"""
+    if value is None:
+        return True
+    return value >= 0
 
 
 class HomogUniv(NamedObject):
@@ -41,12 +53,12 @@ class HomogUniv(NamedObject):
     ----------
     name: str
         name of the universe
-    bu: float
-        burnup value
-    step: float
+    bu: float or int
+        non-negative burnup value
+    step: int
         temporal step
-    day: float
-        depletion day
+    day: float or int
+        non-negative depletion day
     infExp: dict
         Expected values for infinite medium group constants
     infUnc: dict
@@ -57,10 +69,26 @@ class HomogUniv(NamedObject):
         Relative uncertainties for leakage-corrected group constants
     metadata: dict
         Other values that do not not conform to inf/b1 dictionaries
+
+    Raises
+    ------
+    SerpentToolsException:
+        If a negative value of burnup, step, or burnup days is passed
+
     """
 
     def __init__(self, name, bu, step, day):
+        if not all(isNonNeg(xx) for xx in (bu, step, day)): 
+            tail = ['{}: {}'.format(name, val)
+                for name, val in zip(('burnup', 'index', 'days'),
+                                               (bu, step, day))]
+            raise SerpentToolsException(
+                "Will not create universe with negative burnup\n{}"
+                .format(', '.join(tail)))
         NamedObject.__init__(self, name)
+        if step is not None and step == 0:  
+            bu = bu if bu is not None else 0.0
+            day = day if day is not None else 0.0
         self.bu = bu
         self.step = step
         self.day = day
@@ -71,9 +99,22 @@ class HomogUniv(NamedObject):
         self.infUnc = {}
         self.metadata = {}
 
+    def __str__(self):
+        extras = []
+        if self.bu is not None:
+            extras.append('burnup: {:5.3f} MWd/kgu'.format(self.bu))
+        if self.step:
+            extras.append('step: {}'.format(self.step))
+        if self.day is not None:
+            extras.append('{:5.3f} days'.format(self.day))
+        if extras:
+            extras = ': ' + ', '.join(extras)
+        return '<{} {}{}>'.format(self.__class__.__name__, self.name,
+                                  extras or '')
+    
     def addData(self, variableName, variableValue, uncertainty=False):
         """
-        Sets the value of the variable and, optionally, the associate s.d.
+        sets the value of the variable and, optionally, the associate s.d.
 
         .. warning::
 
@@ -162,16 +203,14 @@ class HomogUniv(NamedObject):
         return x, dx
 
     def _lookup(self, variableName, uncertainty):
-        if "inf" in variableName:
+        if 'inf' == variableName[:3]:
             if not uncertainty:
                 return self.infExp
-            else:
-                return self.infUnc
-        elif "b1" in variableName:
+            return self.infUnc
+        elif "b1" ==  variableName[:2]:
             if not uncertainty:
                 return self.b1Exp
-            else:
-                return self.b1Unc
+            return self.b1Unc
         else:
             return self.metadata
 
@@ -658,6 +697,8 @@ class BranchContainer(object):
         Keys are tuples of
         ``(universeID, burnup, burnIndex)``
     """
+    __mismatchedBurnup = ("Was not expecting a {} value of burnup. "
+                          "Expect burnup in units of {}")
 
     def __init__(self, filePath, branchID, branchNames, stateData):
         self.filePath = filePath
@@ -667,6 +708,7 @@ class BranchContainer(object):
         self.branchNames = branchNames
         self.__orderedUniverses = None
         self.__keys = set()
+        self.__hasDays = None
 
     def __str__(self):
         return '<BranchContainer for {} from {}>'.format(
@@ -693,8 +735,11 @@ class BranchContainer(object):
         Add a universe to this branch.
 
         Data for the universes are produced at specific points in time.
-        The additional arguments help track when the data for this
+        The additional arguments help track of when the data for this
         universe were created.
+        A negative value of ``burnup`` indicates the units on burnup are
+        really ``days``. Therefore, the value of ``burnDays`` and ``burnup``
+        will be swapped.
 
         .. warning::
 
@@ -705,7 +750,8 @@ class BranchContainer(object):
         univID: int or str
             Identifier for this universe
         burnup: float or int
-            Value of burnup [MWd/kgU]
+            Value of burnup [MWd/kgU]. A negative value here indicates
+            the value is really in units of days.
         burnIndex: int
             Point in the depletion schedule
         burnDays: int or float
@@ -713,11 +759,24 @@ class BranchContainer(object):
 
         Returns
         -------
-        newUniv: serpentTools.objects.containers.HomogUniv
+        serpentTools.objects.containers.HomogUniv
+            Empty new universe
+
         """
+        if self.__hasDays is None and burnup:
+            self.__hasDays = burnup < 0
+        if burnup < 0:
+            if not self.__hasDays:
+                raise SerpentToolsException(self.__mismatchedBurnup.format(
+                    'negative', 'MWd/kgU'))
+            burnup, burnDays = None if burnup else 0, - burnup
+        else:
+            if self.__hasDays and not burnDays:
+                raise SerpentToolsException(self.__mismatchedBurnup.format(
+                    'positive', 'days'))
+            burnDays = None if burnup else 0
         newUniv = HomogUniv(univID, burnup, burnIndex, burnDays)
-        key = tuple(
-            [univID, burnup, burnIndex] + ([burnDays] if burnDays else []))
+        key = (univID, burnup or burnDays, burnIndex)
         if key in self.__keys:
             warning('Overwriting existing universe {} in {}'
                     .format(key, str(self)))
@@ -743,8 +802,8 @@ class BranchContainer(object):
 
         Returns
         -------
-        univ: serpentTools.objects.containers.HomogUniv
-            Requested Universe
+        :py:class:`~serpentTools.objects.containers.HomogUniv`
+            Requested universe
 
         Raises
         ------
@@ -755,7 +814,7 @@ class BranchContainer(object):
         """
         if burnup is None and index is None:
             raise SerpentToolsException('Burnup or index are required inputs')
-        searchIndex = 2 if index is not None else 1
+        searchIndex = 2 if index is not None else 1 
         searchValue = index if index is not None else burnup
         for key in self.__keys:
             if key[0] == univID and key[searchIndex] == searchValue:
@@ -766,3 +825,11 @@ class BranchContainer(object):
         raise KeyError(
             'Could not find a universe that matched requested universe {} and '
             '{} {}'.format(univID, searchName, searchValue))
+
+    @property
+    def hasDays(self):
+        """Returns True if the burnups in the file are in units of days"""
+        if self.__hasDays is None:
+            raise AttributeError("Need to load at least one universe with "
+                                 "non-zero burnup first.""")
+        return self.__hasDays

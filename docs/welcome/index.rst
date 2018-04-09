@@ -1,7 +1,6 @@
-.. _welcome:
-
+########
 Welcome!
-========
+########
 
 .. toctree::
     :maxdepth: 2
@@ -9,3 +8,5 @@ Welcome!
 
     about.rst
     license.rst
+    changelog.rst
+
