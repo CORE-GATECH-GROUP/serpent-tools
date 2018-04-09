@@ -86,7 +86,7 @@ class XSPlotReader(BaseReader):
                     self.xsections[xsname].setNuData(chunk)
 
                 elif 'bra_f' in chunk[0]:
-                    warning("There is this weird 'bra_f' XS. these seem ot be"
+                    warning("There is this weird 'bra_f' XS. these seem to be"
                             " constant. skipping though.")
 
                 else:
