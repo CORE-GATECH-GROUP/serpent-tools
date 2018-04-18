@@ -9,6 +9,7 @@ Changelog
 Next
 ====
 
+* :pull:`118` - Support for ``SERPENT`` 2.1.30
 * :pull:`114` - Standalone branches in the coefficient files are stored
   and accessed using a single string, rather than a single-entry tuple
   ``branches['myBranch']`` vs. ``branches[('myBranch', )]``
