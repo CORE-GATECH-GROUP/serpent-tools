@@ -71,11 +71,7 @@ class XSData(NamedObject):
         for whole materials, for neutrons only. """
         if mt > 0:
             error("Uh, that's not a negative MT.")
-        try:
-            return XSData.MTdescriptions[mt]
-        except KeyError:
-            error("Cannot find description for MT {}.".format(mt))
-            return None
+        return XSData.MTdescriptions[mt]
 
     def setMTs(self, chunk):
         """ Parse chunk to MT numbers and descriptions"""
@@ -115,26 +111,42 @@ class XSData(NamedObject):
 
         return True
 
-    @magicPlotDocDecorator
-    def plot(self, mts, logscale=True, figargs={}, **kwargs):
-        """ Return a matplotlib figure for plotting XS.
-        mts should be a list of the desired MT numbers to plot for this
-        XS. Units should automatically be fixed between micro and macro XS.
+    def tabulate(self, mts='all', colnames=None):
+        """ Returns a pandas table, for pretty tabulation in Jupyter
+        notebooks.
 
         Parameters
         ----------
         mts: int, string, or list of ints
-            If it's a string, it should be 'all'.
+            If it's a string, it should be 'all', which is default.
             A single int indicates one MT reaction number.
             A list should be a list of MT numbers to plot.
-        logscale: bool
-            whether to use a logscale
-        figargs: dict
-            kwarguments to pass to plt.figure, like dpi:96 or figsize:(6,6)
-            by default, extra kwargs go to plot.
+        colnames: any type with string representation
+            Column names for each MT number, if you'd like to change them.
+
+        Returns
+        -------
+        Pandas Dataframe version of the XS data.
+
+        Raises
+        ------
+        ImportError:
+            if you don't have pandas.
+        TypeError:
+            if MT numbers that don't make sense come up
         """
-        # don't pass figargs to plotting command
-        kwargs.pop('figargs', None)
+        try:
+            import pandas as pd
+        except ModuleNotFoundError:
+            print("This requires the pandas package.")
+            return None
+
+        if len(self.metadata['egrid']) > 99:
+            y = input('This is about to be a big table. Still want it? (y/n)')
+            if not (y == 'y' or y == 'Y'):
+                pass
+            else:
+                return None
 
         if mts == 'all':
             mts = self.MT
@@ -148,15 +160,77 @@ class XSData(NamedObject):
                    "a list of integer MTs, or a single interger"
                    "instead, {} of type {} was passed.".format(
                    mts, type(mts)))
-            raise Exception(msg)
+            raise TypeError(msg)
 
         for mt in mts:
             if mt not in self.MT:
                 error("{} not in collected MT numbers, {}".format(mt, self.MT))
-        fig = pyplot.figure(**figargs)
 
-        # could possibly automatically set up subplotting
-        ax = fig.add_subplot(111)
+        cols2use = []
+        mtnums = []
+        for mt in mts:
+            for i, MT in enumerate(self.MT):
+                if mt == MT:
+                    cols2use.append(i)
+                    mtnums.append(mt)
+
+        frame = pd.DataFrame(self.xsdata[:,cols2use])
+        unit = ' b' if self.isIso else ' cm$^{-1}$'
+        frame.columns = colnames or ['MT ' + str(mt) + unit for mt in mtnums]
+        frame.insert(0, 'Energy (MeV)', self.metadata['egrid'])
+
+        return frame
+
+    @magicPlotDocDecorator
+    def plot(self, mts='all', ax=None, loglog=True, xlabel=None, ylabel=None,
+             labels=None, cmap=None, logx=False, logy=False, title=None,
+             **kwargs):
+        """ Return a matplotlib figure for plotting XS.
+        mts should be a list of the desired MT numbers to plot for this
+        XS. Units should automatically be fixed between micro and macro XS.
+
+        Parameters
+        ----------
+        mts: int, string, or list of ints
+            If it's a string, it should be 'all'.
+            A single int indicates one MT reaction number.
+            A list should be a list of MT numbers to plot.
+        {ax}
+        {kwargs} :py:func:`matplotlib.pyplot.plot`
+
+        Returns
+        -------
+        {rax}
+
+        Raises
+        ------
+        TypeError:
+            if MT numbers that don't make sense come up
+        """
+        # check input
+        if logx and logy:
+            loglog=True
+
+        if mts == 'all':
+            mts = self.MT
+        elif isinstance(mts, int):
+            # convert to list if it's just one MT
+            mts = [mts]
+        elif isinstance(mts, list) and all([isinstance(ii, int) for ii in mts]):
+            pass
+        else:
+            msg = ("mts argument must be a string saying 'all',"
+                   "a list of integer MTs, or a single interger"
+                   "instead, {} of type {} was passed.".format(
+                   mts, type(mts)))
+            raise TypeError(msg)
+
+        for mt in mts:
+            if mt not in self.MT:
+                error("{} not in collected MT numbers, {}".format(mt, self.MT))
+
+        # as per serpentTools style! (so pythonic!)
+        ax = ax or pyplot.axes()
 
         # list of MT number descriptions
         descriplist = []
@@ -166,20 +240,27 @@ class XSData(NamedObject):
                 if mt == MT:
                     x = self.metadata['egrid']
                     y = self.xsdata[:,i]
-                    if logscale:
+                    if loglog:
                         ax.loglog(x, y, drawstyle='steps')
+                    elif logy:
+                        ax.semilogy(x, y, drawstyle='steps')
+                    elif logx:
+                        ax.semilogx(x, y, drawstyle='steps')
                     else:
                         ax.plot(x, y, drawstyle='steps')
                     descriplist.append(self.MTdescrip[i])
 
         ax.legend(descriplist)
-        ax.set_title('{} cross section{}'.format(self.name,'s' if len(mts)>1 else ''))
+        if title:
+            ax.set_title(title)
+        else:
+            ax.set_title('{} cross section{}'.format(self.name,'s' if len(mts)>1 else ''))
         ax.set_xlabel('Energy (MeV)')
-        ax.set_ylabel('XS ({})'.format('b' if self.isIso else 'cm$^{-1}$'))
+        ax.set_ylabel('Cross Section ({})'.format('b' if self.isIso else 'cm$^{-1}$'))
 
-        return fig
+        return ax
 
-    def showMT(self):
+    def showMT(self, retstring=False):
         """ Pretty prints MT values available for this XS and
         descriptions.
         """

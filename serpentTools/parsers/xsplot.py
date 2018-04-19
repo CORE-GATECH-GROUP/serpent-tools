@@ -52,7 +52,7 @@ class XSPlotReader(BaseReader):
     def _read(self):
         """Read through the depletion file and store requested data."""
         info('Preparing to read {}'.format(self.filePath))
-        keys = ['E', 'i[0-9]{4,5}', 'm[a-zA-Z]']
+        keys = ['E', 'i\d{4,5}', 'm\w']
         separators = ['\n', '];', '\r\n']
 
         with KeywordParser(self.filePath, keys, separators) as parser:
@@ -87,7 +87,8 @@ class XSPlotReader(BaseReader):
 
                 elif 'bra_f' in chunk[0]:
                     warning("There is this weird 'bra_f' XS. these seem to be"
-                            " constant. skipping though.")
+                            " constant. recording to metadata instead.")
+                    self.metadata[xsname].setData(chunk)
 
                 else:
                     print(chunk)
@@ -120,4 +121,7 @@ class XSPlotReader(BaseReader):
                   "The incomplete XS is {}".format(xs.name))
 
         # check energy grid found
-        assert 'egrid' in self.metadata.keys()
+        try:
+            assert 'egrid' in self.metadata.keys()
+        except AssertionError as e:
+            e.args += 'No energy grid found in xsplot parser.'
