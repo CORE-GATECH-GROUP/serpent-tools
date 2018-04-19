@@ -20,6 +20,28 @@
   * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
   * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
 
+.. _vars-2-1-30:
+
+----------
+``2.1.30``
+----------
+
+.. _diffusion-2-1-30:
+
+
+``diffusion``
+-------------
+
+
+  * ``CMM_DIFFCOEF`` →  ``cmmDiffcoef``
+  * ``CMM_DIFFCOEF_X`` →  ``cmmDiffcoefX``
+  * ``CMM_DIFFCOEF_Y`` →  ``cmmDiffcoefY``
+  * ``CMM_DIFFCOEF_Z`` →  ``cmmDiffcoefZ``
+  * ``CMM_TRANSPXS`` →  ``cmmTranspxs``
+  * ``CMM_TRANSPXS_X`` →  ``cmmTranspxsX``
+  * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
+  * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
+
 .. _vars-base:
 
 --------
