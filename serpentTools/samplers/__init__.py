@@ -31,7 +31,7 @@ def extendFiles(files):
             if not unGlob:
                 warning("No files matched with pattern {}".format(ff))
                 continue
-            for globbed in unGlob(ff):
+            for globbed in unGlob:
                 out.add(globbed)
         else:
             out.add(ff)
