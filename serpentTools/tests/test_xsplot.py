@@ -633,5 +633,20 @@ class XSPlotTester(unittest.TestCase):
         # added, removed, modified, same = dict_compare(gotDict, expected)
         assert findDiff(gotDict, expected)
 
+    def test2_testPrintMT(self):
+        """ Test the printMT method, a real simple text comparison!
+        """
+        refString = """MT numbers available for mfissile:
+----------------------------------
+-1  Macro total
+-3  Macro total elastic scatter
+-2  Macro total capture
+-6  Macro total fission
+-7  Macro total fission neutron production
+-16 Macro total scattering neutron production
+                     """
+        assert refString.rstrip() == self.reader.xsections['mfissile'].showMT(
+                                                 retstring=True).rstrip()
+
 if __name__ == '__main__':
     unittest.main()

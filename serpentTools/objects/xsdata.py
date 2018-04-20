@@ -263,13 +263,23 @@ class XSData(NamedObject):
     def showMT(self, retstring=False):
         """ Pretty prints MT values available for this XS and
         descriptions.
+        
+        Parameters
+        ----------
+        retstring: bool
+            return a string if true. Otherwise, print it
         """
-        print("MT numbers available for {}:".format(self.name))
-        print("--------------------------"+len(self.name)*'-')
+        outstr = ""
+        outstr += "MT numbers available for {}:\n".format(self.name)
+        outstr += "--------------------------"+len(self.name)*'-'+'\n'
         for i, mt in enumerate(self.MT):
             if self.isIso:
                 descr = self.MTdescrip[i]
             else:
                 descr = XSData.negativeMTDescription(mt)
             spaces = (4-len(str(mt)))*' '
-            print(str(mt)+spaces, descr)
+            outstr += str(mt) + spaces + descr + '\n'
+        if retstring:
+            return outstr
+        else:
+            print(outstr)
