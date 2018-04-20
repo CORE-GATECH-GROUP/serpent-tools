@@ -27,7 +27,11 @@ def extendFiles(files):
         files = [files]
     for ff in files:
         if '*' in ff:
-            for globbed in glob(ff):
+            unGlob = glob(ff)
+            if not unGlob:
+                warning("No files matched with pattern {}".format(ff))
+                continue
+            for globbed in unGlob:
                 out.add(globbed)
         else:
             out.add(ff)
@@ -78,6 +82,8 @@ class Sampler(object):
                 "{}".format(parser.__name__))
         self.settings = rc.getReaderSettings('sampler')
         self.files = extendFiles(files)
+        if not self.files:
+            raise SamplerError("No files stored on Sampler.")
         self.__parserCls = parser
         self.parsers = set()
         self.map = {}
