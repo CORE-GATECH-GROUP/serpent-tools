@@ -130,16 +130,12 @@ class XSData(NamedObject):
 
         Raises
         ------
-        ImportError:
+        ModuleNotFoundError:
             if you don't have pandas.
         TypeError:
             if MT numbers that don't make sense come up
         """
-        try:
-            import pandas as pd
-        except ModuleNotFoundError:
-            print("This requires the pandas package.")
-            return None
+        import pandas as pd
 
         if len(self.metadata['egrid']) > 99:
             y = input('This is about to be a big table. Still want it? (y/n)')
@@ -229,7 +225,6 @@ class XSData(NamedObject):
             if mt not in self.MT:
                 error("{} not in collected MT numbers, {}".format(mt, self.MT))
 
-        # as per serpentTools style! (so pythonic!)
         ax = ax or pyplot.axes()
 
         # list of MT number descriptions
