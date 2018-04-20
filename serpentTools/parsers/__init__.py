@@ -34,8 +34,7 @@ READERS = {
     'fission': FissionMatrixReader,
     'bumat': BumatReader,
     'history': HistoryReader,
-    'xsplot' : XSPlotReader,
-    'history': HistoryReader
+    'xsplot' : XSPlotReader
 }
 
 REGEXES = {
@@ -46,8 +45,7 @@ REGEXES = {
     r'(.*_fmtx\d+\.m)': FissionMatrixReader,
     r'(.*\.bumat\d+)': BumatReader,
     r'(.*_his\d+\.m)': HistoryReader,
-    r'(.*_xs\d*\.m)' : XSPlotReader,
-    r'(.*_his\d+\.m)': HistoryReader
+    r'(.*_xs\d*\.m)' : XSPlotReader
 }
 
 __all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES',
