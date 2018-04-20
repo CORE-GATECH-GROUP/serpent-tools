@@ -239,16 +239,8 @@ class SampledDetector(SampledContainer, DetectorBase):
             raise SerpentToolsException(
                 'Data must be constrained to 1D, not {}'.format(
                     samplerData.shape))
-        if xdim is not None:
-            if xdim in self.indexes:
-                xdata = self.indexes[xdim]
-                xlabel = xlabel or xdim
-            else:
-                warning('Could not find key {} in indexes: Options: {}'
-                        .format(xdim, ', '.join(self.indexes.keys())))
-                xdata = arange(len(samplerData))
-        else:
-            xdata = arange(len(samplerData))
+        xdata, autoX = self._getPlotXData(xdim, samplerData)
+        xlabel = xlabel or autoX
         ax = ax or pyplot.axes()
         N = self._index
         allTallies = self.allTallies.copy(order='F')
@@ -256,12 +248,11 @@ class SampledDetector(SampledContainer, DetectorBase):
             plotData = allTallies[n][slices]
             ax.plot(xdata, plotData, **SPREAD_PLOT_KWARGS)
 
-        ax.plot(xdata, samplerData, label='Mean value')
+        ax.plot(xdata, samplerData, label='Mean value - N={}'.format(N))
         if autolegend:
             ax.legend()
         ax.set_xlabel(xlabel)
-        if ylabel:
-            ax.set_ylabel(ylabel)
+        ax.set_ylabel(ylabel or "Tally Data")
         if loglog or logx:
             ax.set_xscale('log')
         if loglog or logy:
