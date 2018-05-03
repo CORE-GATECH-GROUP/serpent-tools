@@ -33,7 +33,7 @@ class _ResultsTesterHelper(unittest.TestCase):
 
 
 class ResultsTester(_ResultsTesterHelper):
-    """Class for testing the branching coefficient file reader."""
+    """Class for testing the results reader."""
 
     def test_variables(self):
         """Verify that the correct settings and variables are obtained."""
@@ -49,19 +49,6 @@ class ResultsTester(_ResultsTesterHelper):
                     'CMM_DIFFCOEF_Y', 'CMM_DIFFCOEF_Z'}
         self.assertSetEqual(expected, self.reader.settings['variables'])
 
-    def test_raiseError(self):
-        """Verify that the reader raises an error if the file does not exist"""
-        badFile = os.path.join(TEST_ROOT, 'bad_results.m')
-        badReader = ResultsReader(badFile)
-        with self.assertRaises(SerpentToolsException):
-            badReader.read()
-
-    def test_branchingUniverses(self):
-        """Verify that the correct universes are present."""
-        for branchID, branch in iteritems(self.reader.univdata):
-            self.assertSetEqual(
-                self.expectedUniverses, set(branch.universes),
-                'Branch {}'.format(branchID))
-
 if __name__ == '__main__':
     unittest.main()
+    a = 1
