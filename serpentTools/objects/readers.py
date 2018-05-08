@@ -92,3 +92,14 @@ class XSReader(BaseReader):
                 self.settings['variables']):
             return True
         return False
+
+class MicroXSReader(BaseReader):
+    """Parent class for files that store micro cross-sections."""
+
+    def __init__(self, filePath, readerSettingsLevel):
+        BaseReader.__init__(self, filePath, readerSettingsLevel)
+        self.nfy = {}
+        self.microXS = dict()
+        self.uncXS = {}
+        self.fluxRatio = {}
+        self.fluxUnc = {}
