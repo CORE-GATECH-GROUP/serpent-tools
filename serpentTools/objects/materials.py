@@ -9,7 +9,6 @@ from serpentTools.objects import NamedObject, convertVariableName
 
 
 class DepletedMaterialBase(NamedObject):
-    PLOT_XLABELS = {'days': "Days", 'burnup': r"Burnup $[MWd/kgU]$"}
     docParams = """name: str
         Name of this material
     metadata: dict
@@ -279,8 +278,7 @@ class DepletedMaterial(DepletedMaterialBase):
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))
-        xVals = timePoints if timePoints is not None else (
-            self.days if xUnits == 'days' else self.burnup)
+        xVals = timePoints or (self.days if xUnits == 'days' else self.burnup)
         yVals = self.getValues(xUnits, yUnits, xVals, names)
         ax = ax or pyplot.axes()
         labels = self._formatLabel(labelFmt, names)
@@ -290,7 +288,7 @@ class DepletedMaterial(DepletedMaterialBase):
         # format the plot
         if legend:
             ax.legend()
-        ax.set_xlabel(xlabel or self.PLOT_XLABELS[xUnits])
+        ax.set_xlabel(xlabel or xUnits)
         ax.set_ylabel(ylabel or yUnits)
         if loglog or logx:
             ax.set_xscale('log')

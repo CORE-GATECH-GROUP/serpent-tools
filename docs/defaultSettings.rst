@@ -165,7 +165,7 @@ Version of SERPENT
 
   Default: 2.1.29
   Type: str
-  Options: [2.1.29, 2.1.30]
+  Options: [2.1.29]
 
 .. _verbosity:
 
