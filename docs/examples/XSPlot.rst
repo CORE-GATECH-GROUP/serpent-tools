@@ -73,7 +73,7 @@ Plotting the entries is very easy, check this out:
 
 
 
-.. image:: XSPlot_files/XSPlot_8_0.png
+.. image:: images/XSPlot_files/XSPlot_8_0.png
 
 
 This is nice to have an automatically generated legend, but gets
@@ -106,7 +106,7 @@ available, and plot only a few:
 
 
 
-.. image:: XSPlot_files/XSPlot_11_0.png
+.. image:: images/XSPlot_files/XSPlot_11_0.png
 
 
 Of course, the same process can be applied to materials, but Serpent has
@@ -148,7 +148,7 @@ change figure options, this goes in its own dictionary:
 
 
 
-.. image:: XSPlot_files/XSPlot_15_1.png
+.. image:: images/XSPlot_files/XSPlot_15_1.png
 
 
 Lastly, there are two ways to directly access data from Serpent’s xsplot
