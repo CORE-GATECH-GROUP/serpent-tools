@@ -18,4 +18,3 @@ without any loss of comprehension.
     documentation.rst
     checklist.rst
     git.rst
-    serpentVersions.rst

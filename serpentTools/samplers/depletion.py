@@ -245,12 +245,8 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         if sigma and yUnits not in self.uncertainties:
             raise KeyError("Uncertainties for {} not stored"
                            .format(yUnits))
-        if xUnits not in ('days', 'burnup'):
-            raise KeyError("Plot method only uses x-axis data from <days> "
-                           "and <burnup>, not {}".format(xUnits))
-        xVals = timePoints if timePoints is not None else (
-            self.days if xUnits == 'days' else self.burnup)
         sigma = int(fabs(sigma))
+        xVals = timePoints or self.days
         colIndices = self._getColIndices(xUnits, timePoints)
         rowIndices = self._getRowIndices(names)
         yVals = self._slice(self.data[yUnits], rowIndices, colIndices)
@@ -272,18 +268,14 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         # format the plot
         if legend:
             ax.legend()
-        ax = sigmaLabel(ax, xlabel or self.PLOT_XLABELS[xUnits],
-                        ylabel or yUnits, sigma)
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        if xlabel or ylabel:
+            ax = sigmaLabel(ax, xlabel, ylabel, sigma)
         return ax
 
     @magicPlotDocDecorator
     def spreadPlot(self, xUnits, yUnits, isotope, timePoints=None, ax=None,
                    xlabel=None, ylabel=None, logx=False, logy=False, 
-                   loglog=False, legend=True):
+                   loglog=True, legend=True):
         """
         Plot the mean quantity and data from all sampled files.
 
@@ -325,11 +317,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             raise SamplerError("Data from all sampled files has been freed "
                                "and cannot be used in this plot method")
         ax = ax or pyplot.axes()
-        if xUnits not in ('days', 'burnup'):
-            raise KeyError("Plot method only uses x-axis data from <days> "
-                           "and <burnup>, not {}".format(xUnits))
-        xVals = timePoints if timePoints is not None else (
-            self.days if xUnits == 'days' else self.burnup)
+        xVals = timePoints or self.days
         rows = self._getRowIndices([isotope])
         cols = self._getColIndices(xUnits, timePoints)
         primaryData = self._slice(self.data[yUnits], rows, cols)[0]
@@ -339,7 +327,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             plotData = self._slice(sampledData[n], rows, cols)[0]
             ax.plot(xVals, plotData, **SPREAD_PLOT_KWARGS)
         ax.plot(xVals, primaryData, label='Mean value')
-        ax = sigmaLabel(ax, xlabel or self.PLOT_XLABELS[xUnits], ylabel or yUnits)
+        ax = sigmaLabel(ax, xlabel or xUnits, ylabel or yUnits, 0)
         if loglog or logx:
             ax.set_xscale('log')
         if loglog or logy:
@@ -351,8 +339,10 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
 def sigmaLabel(ax, xlabel, ylabel, sigma=None):
     """Label the axes on a figure with some uncertainty."""
-    confStr = r'$\pm{} \sigma$'.format(sigma) if sigma is not None else ''
-    ax.set_xlabel(xlabel + confStr)
-    ax.set_ylabel(ylabel + confStr)
+    confStr = r'$\pm{} \sigma$'.format(sigma) if sigma else ''
+    if xlabel:
+        ax.set_xlabel(xlabel + confStr)
+    if ylabel:
+        ax.set_ylabel(ylabel + confStr)
     return ax
 

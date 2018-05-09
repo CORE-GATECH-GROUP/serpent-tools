@@ -8,7 +8,7 @@ python:
 
 # install
 install:
-  - pip install jupyter codecov coverage pandas
+  - pip install jupyter codecov coverage
   - python setup.py install
 
 # use xvfb to give the plot functions something to use
