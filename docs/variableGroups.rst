@@ -154,8 +154,10 @@
   * ``ADJ_PERT_GEN_TIME`` →  ``adjPertGenTime``
   * ``ADJ_PERT_LIFETIME`` →  ``adjPertLifetime``
   * ``ADJ_PERT_ROSSI_ALPHA`` →  ``adjPertRossiAlpha``
+  * ``BETA_EFF`` →  ``betaEff``
   * ``FWD_ANA_BETA_ZERO`` →  ``fwdAnaBetaZero``
   * ``FWD_ANA_LAMBDA`` →  ``fwdAnaLambda``
+  * ``LAMBDA`` →  ``lambda``
 
 .. _lifetime-base:
 
