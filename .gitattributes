@@ -1,2 +1,4 @@
 serpentTools/_version.py export-subst
-* text=auto
+* text eol=auto
+* text eol=lf
+*.py diff=py
