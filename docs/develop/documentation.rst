@@ -77,6 +77,13 @@ More content can be added to the docstring, including
 * See Also - follow up information that may be useful
 * Yields - If this object is a generator. Similar to Returns
 
+
+.. note::
+
+    For multi-line docstrings, like the longer ``depmtx`` above,
+    Leave a full blank line between the first line of the docstring,
+    the summary, and the rest of the documentation
+
 Classes
 -------
 
