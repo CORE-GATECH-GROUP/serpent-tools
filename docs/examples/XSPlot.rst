@@ -131,25 +131,7 @@ meaning without requiring your reference back to the wiki.
 
 
 Note that any extra arguments passed to the plot method get passed on to
-matplotlib’s plotting, and not figure instantiations. So, if you want to
-change figure options, this goes in its own dictionary:
-
-.. code::
-
-    xsreader.xsections['mfissile'].plot(mts=[-3, -6, -16])
-
-
-
-
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7ffb37cd47f0>
-
-
-
-
-.. image:: images/XSPlot_files/XSPlot_15_1.png
-
+matplotlib’s plotting, and not figure instantiations.
 
 Lastly, there are two ways to directly access data from Serpent’s xsplot
 output. Firstly, if you’d like to see the data as-stored, just check the
