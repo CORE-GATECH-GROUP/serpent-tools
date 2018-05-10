@@ -60,7 +60,14 @@ PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
 
 
 def magicPlotDocDecorator(f):
-    """Decorator that replaces a lot magic strings used in plot functions"""
+    """
+    Decorator that replaces a lot magic strings used in plot functions.
+    
+    Allows docstrings to contain keyword that will be replaced with
+    a valid and proper explanation of the keyword.
+    Keywords must be wrapped in single brackets, i.e. ``{x}``
+    """
+    
     
     @wraps(f)
     def decorated(*args, **kwargs):

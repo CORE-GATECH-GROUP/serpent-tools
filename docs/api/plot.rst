@@ -8,3 +8,8 @@ Plotting Routines
 .. autofunction:: serpentTools.plot.plot
 
 
+Plot Formatters
+---------------
+
+.. autofunction:: serpentTools.plot.magicPlotDocDecorator
+

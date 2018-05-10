@@ -181,7 +181,9 @@ class XSData(NamedObject):
     def plot(self, mts='all', ax=None, loglog=True, xlabel=None, ylabel=None,
              labels=None, cmap=None, logx=False, logy=False, title=None,
              **kwargs):
-        """ Return a matplotlib figure for plotting XS.
+        """
+        Return a matplotlib figure for plotting XS.
+        
         mts should be a list of the desired MT numbers to plot for this
         XS. Units should automatically be fixed between micro and macro XS.
 
