@@ -4,10 +4,10 @@
 Changelog
 *********
 
-.. _vNext:
+.. _v0.4.0:
 
-Next
-====
+:release-tag:`0.4.0`
+====================
 
 * :pull:`95` Add ``xsplot`` file reader
 * :pull:`121` Samplers will raise more warnings/errors if no files are loaded
