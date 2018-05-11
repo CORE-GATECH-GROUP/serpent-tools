@@ -21,3 +21,4 @@ API
    history.rst
    results.rst
    sampler.rst
+   xsplot.rst

@@ -77,6 +77,13 @@ More content can be added to the docstring, including
 * See Also - follow up information that may be useful
 * Yields - If this object is a generator. Similar to Returns
 
+
+.. note::
+
+    For multi-line docstrings, like the longer ``depmtx`` above,
+    Leave a full blank line between the first line of the docstring,
+    the summary, and the rest of the documentation
+
 Classes
 -------
 
@@ -150,7 +157,7 @@ If an object is deprecated or will be modified in future versions, then the
 :py:func:`~serpentTools.messages.willChange` decorators should be applied to
 the object, and a note should be added to the docstring indicating as much.
 
-.. _examples:
+.. _jupyterExamples:
 
 Examples
 ========
@@ -162,5 +169,95 @@ Specifically, all readers should be demonstrated as Jupyter notebooks
 that detail the typical usage, user control settings, and examples
 of how the data is stored and accessed.
 
-These Jupyer notebooks can be converted to ``.rst`` files for inclusion
+Converting
+----------
+
+These Jupyter notebooks can be converted to ``.rst`` files for inclusion
 in the manual with the command ``jupyter nbconvert --to=rst``.
+
+The ``nbconvert`` command will place the following blocks around python code::
+
+    .. code:: ipython3
+
+        print('hello world!')
+
+    .. parsed-literal::
+
+        hello world!
+
+When building this documentation on `readthedocs <serpent-tools.readthedocs.io/latest>`_,
+the ``ipython3`` statement can cause the code not to be rendered. 
+This is summarized in some comments on :issue:`123`, but it appears that
+the ``ipython3`` lexer `is not trivially installed <https://github.com/jupyter/nbconvert/issues/528>`_
+and is not found on readthedocs.
+For now, all these instances should be removed from the ``.rst`` version of the notebook so that
+the wonderful code examples are proudly displayed in our documentation.
+
+Upon conversion, move the file into the ``docs/examples`` directory and include the 
+file name in ``docs/examples/index.rst``.
+
+Images
+------
+
+Executing ``jupyter nbconvert --to=rst`` will create a directory containing the images
+contained in the notebook.
+When moving the ``.rst`` version of the notebook into the ``docs/examples`` folder, make sure
+that all links to images are correct.
+
+Verifying
+---------
+
+You worked hard on this documentation, and we want your great work to be properly displayed 
+once completed.
+In order to reduce the chances of some errors, try running the following from inside the
+``docs`` directory::
+
+    $ make clean html
+
+Navigate to the files created in ``_build/html`` to ensure that images are loaded properly,
+code is rendered properly, and the converted notebook looks exactly how you expect it to
+look. 
+
+.. warning::
+
+    If there is an issue with rendering your example, we will likely call upon you to fix these
+    issues.
+
+
+.. note::
+
+    Building the documentation locally requires ``sphinx`` and a handful of other
+    packages. Installing these is outside the scope of this guide, partially because
+    `the sphinx team has a great guide already <http://www.sphinx-doc.org/en/master/usage/installation.html>`_.
+    Check this out if you are having issues running the ``make clean install`` commands from the 
+    docs directory.
+
+Adding Objects to API
+=====================
+
+New reader or container objects should be included in the 
+`api section of the documentation <http://serpent-tools.readthedocs.io/en/latest/api/index.html>`_, 
+as with any function that the end user may utilize.
+For documenting these, we utilize the 
+`sphinx autodoc <http://www.sphinx-doc.org/en/master/ext/autodoc.html>`_ features to use the 
+docstrings to automatically document new features.
+This is most simply done by calling ``.. autoclass::`` or ``..autofunction::`` like::
+
+    .. autofunction:: serpentTools.plot.plot
+    .. autoclass:: serpentTools.parsers.results.ResultsReader
+
+For new readers, those should be included in their own file, such as ``docs/api/myNewReader.rst``, 
+which can be as bare as::
+
+    My New Reader
+    =============
+
+    .. autoclass:: serpentTools.parsers.new.MyNewReader
+
+Be sure to include your new file in ``docs/api/index.rst``, or else your file will be 
+left out of the documentation.
+Proper documentation of the class or function requires thorough and concise
+documentation of all attributes, class methods, and construction arguments.
+Follow the above guides, such as :ref:`docstrings`, and this process *should*
+go smoothly.
+

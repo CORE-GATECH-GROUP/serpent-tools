@@ -16,6 +16,8 @@ data in a logical and accessible format. These containers are detailed here.
 
 .. autoclass:: serpentTools.objects.containers.BranchContainer
 
+.. autoclass:: serpentTools.objects.xsdata.XSData
+
 Materials
 ---------
 
