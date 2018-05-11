@@ -1,103 +1,3 @@
-.. _vars-2-1-30:
-
-----------
-``2.1.30``
-----------
-
-.. _diffusion-2-1-30:
-
-
-``diffusion``
--------------
-
-
-  * ``CMM_DIFFCOEF`` →  ``cmmDiffcoef``
-  * ``CMM_DIFFCOEF_X`` →  ``cmmDiffcoefX``
-  * ``CMM_DIFFCOEF_Y`` →  ``cmmDiffcoefY``
-  * ``CMM_DIFFCOEF_Z`` →  ``cmmDiffcoefZ``
-  * ``CMM_TRANSPXS`` →  ``cmmTranspxs``
-  * ``CMM_TRANSPXS_X`` →  ``cmmTranspxsX``
-  * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
-  * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
-
-.. _rad-data-2-1-30:
-
-
-``rad-data``
-------------
-
-
-  * ``ACTINIDE_ACTIVITY`` →  ``actinideActivity``
-  * ``ACTINIDE_DECAY_HEAT`` →  ``actinideDecayHeat``
-  * ``ACTINIDE_ING_TOX`` →  ``actinideIngTox``
-  * ``ACTINIDE_INH_TOX`` →  ``actinideInhTox``
-  * ``ALPHA_DECAY_SOURCE`` →  ``alphaDecaySource``
-  * ``CS134_ACTIVITY`` →  ``cs134Activity``
-  * ``ELECTRON_DECAY_SOURCE`` →  ``electronDecaySource``
-  * ``FISSION_PRODUCT_ACTIVITY`` →  ``fissionProductActivity``
-  * ``FISSION_PRODUCT_DECAY_HEAT`` →  ``fissionProductDecayHeat``
-  * ``FISSION_PRODUCT_ING_TOX`` →  ``fissionProductIngTox``
-  * ``FISSION_PRODUCT_INH_TOX`` →  ``fissionProductInhTox``
-  * ``INGENSTION_TOXICITY`` →  ``ingenstionToxicity``
-  * ``INHALATION_TOXICITY`` →  ``inhalationToxicity``
-  * ``NEUTRON_DECAY_SOURCE`` →  ``neutronDecaySource``
-  * ``PHOTON_DECAY_SOURCE`` →  ``photonDecaySource``
-  * ``SR90_ACTIVITY`` →  ``sr90Activity``
-  * ``TE132_ACTIVITY`` →  ``te132Activity``
-  * ``TOT_ACTIVITY`` →  ``totActivity``
-  * ``TOT_DECAY_HEAT`` →  ``totDecayHeat``
-  * ``TOT_SF_RATE`` →  ``totSfRate``
-
-.. _n-balance-2-1-30:
-
-
-``n-balance``
--------------
-
-
-  * ``BALA_LOSS_NEUTRON_CAPT`` →  ``balaLossNeutronCapt``
-  * ``BALA_LOSS_NEUTRON_CUT`` →  ``balaLossNeutronCut``
-  * ``BALA_LOSS_NEUTRON_ERR`` →  ``balaLossNeutronErr``
-  * ``BALA_LOSS_NEUTRON_FISS`` →  ``balaLossNeutronFiss``
-  * ``BALA_LOSS_NEUTRON_LEAK`` →  ``balaLossNeutronLeak``
-  * ``BALA_LOSS_NEUTRON_TOT`` →  ``balaLossNeutronTot``
-  * ``BALA_NEUTRON_DIFF`` →  ``balaNeutronDiff``
-  * ``BALA_SRC_NEUTRON_FISS`` →  ``balaSrcNeutronFiss``
-  * ``BALA_SRC_NEUTRON_NXN`` →  ``balaSrcNeutronNxn``
-  * ``BALA_SRC_NEUTRON_SRC`` →  ``balaSrcNeutronSrc``
-  * ``BALA_SRC_NEUTRON_TOT`` →  ``balaSrcNeutronTot``
-  * ``BALA_SRC_NEUTRON_VR`` →  ``balaSrcNeutronVr``
-
-.. _six-ff-2-1-30:
-
-
-``six-ff``
-----------
-
-
-  * ``SIX_FF_EPSILON`` →  ``sixFfEpsilon``
-  * ``SIX_FF_ETA`` →  ``sixFfEta``
-  * ``SIX_FF_F`` →  ``sixFfF``
-  * ``SIX_FF_KEFF`` →  ``sixFfKeff``
-  * ``SIX_FF_KINF`` →  ``sixFfKinf``
-  * ``SIX_FF_LF`` →  ``sixFfLf``
-  * ``SIX_FF_LT`` →  ``sixFfLt``
-  * ``SIX_FF_P`` →  ``sixFfP``
-
-.. _optimization-2-1-30:
-
-
-``optimization``
-----------------
-
-
-  * ``DOUBLE_INDEXING`` →  ``doubleIndexing``
-  * ``MG_MAJORANT_MODE`` →  ``mgMajorantMode``
-  * ``OPTIMIZATION_MODE`` →  ``optimizationMode``
-  * ``RECONSTRUCT_MACROXS`` →  ``reconstructMacroxs``
-  * ``RECONSTRUCT_MICROXS`` →  ``reconstructMicroxs``
-  * ``SPECTRUM_COLLAPSE`` →  ``spectrumCollapse``
-
 .. _vars-2-1-29:
 
 ----------
@@ -120,65 +20,27 @@
   * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
   * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
 
-.. _rad-data-2-1-29:
+.. _vars-2-1-30:
+
+----------
+``2.1.30``
+----------
+
+.. _diffusion-2-1-30:
 
 
-``rad-data``
-------------
-
-
-  * ``ACTINIDE_ACTIVITY`` →  ``actinideActivity``
-  * ``ACTINIDE_DECAY_HEAT`` →  ``actinideDecayHeat``
-  * ``ACTINIDE_ING_TOX`` →  ``actinideIngTox``
-  * ``ACTINIDE_INH_TOX`` →  ``actinideInhTox``
-  * ``ALPHA_DECAY_SOURCE`` →  ``alphaDecaySource``
-  * ``BETA_DECAY_SOURCE`` →  ``betaDecaySource``
-  * ``CS134_ACTIVITY`` →  ``cs134Activity``
-  * ``FISSION_PRODUCT_ACTIVITY`` →  ``fissionProductActivity``
-  * ``FISSION_PRODUCT_DECAY_HEAT`` →  ``fissionProductDecayHeat``
-  * ``FISSION_PRODUCT_ING_TOX`` →  ``fissionProductIngTox``
-  * ``FISSION_PRODUCT_INH_TOX`` →  ``fissionProductInhTox``
-  * ``INGENSTION_TOXICITY`` →  ``ingenstionToxicity``
-  * ``INHALATION_TOXICITY`` →  ``inhalationToxicity``
-  * ``NEUTRON_DECAY_SOURCE`` →  ``neutronDecaySource``
-  * ``PHOTON_DECAY_SOURCE`` →  ``photonDecaySource``
-  * ``SR90_ACTIVITY`` →  ``sr90Activity``
-  * ``TE132_ACTIVITY`` →  ``te132Activity``
-  * ``TOT_ACTIVITY`` →  ``totActivity``
-  * ``TOT_DECAY_HEAT`` →  ``totDecayHeat``
-  * ``TOT_SF_RATE`` →  ``totSfRate``
-
-.. _n-balance-2-1-29:
-
-
-``n-balance``
+``diffusion``
 -------------
 
 
-  * ``BALA_LOSS_NEUTRON_CAPT`` →  ``balaLossNeutronCapt``
-  * ``BALA_LOSS_NEUTRON_CUT`` →  ``balaLossNeutronCut``
-  * ``BALA_LOSS_NEUTRON_FISS`` →  ``balaLossNeutronFiss``
-  * ``BALA_LOSS_NEUTRON_LEAK`` →  ``balaLossNeutronLeak``
-  * ``BALA_LOSS_NEUTRON_TOT`` →  ``balaLossNeutronTot``
-  * ``BALA_NEUTRON_DIFF`` →  ``balaNeutronDiff``
-  * ``BALA_SRC_NEUTRON_FISS`` →  ``balaSrcNeutronFiss``
-  * ``BALA_SRC_NEUTRON_NXN`` →  ``balaSrcNeutronNxn``
-  * ``BALA_SRC_NEUTRON_SRC`` →  ``balaSrcNeutronSrc``
-  * ``BALA_SRC_NEUTRON_TOT`` →  ``balaSrcNeutronTot``
-  * ``BALA_SRC_NEUTRON_VR`` →  ``balaSrcNeutronVr``
-
-.. _optimization-2-1-29:
-
-
-``optimization``
-----------------
-
-
-  * ``MG_MAJORANT_MODE`` →  ``mgMajorantMode``
-  * ``OPTIMIZATION_MODE`` →  ``optimizationMode``
-  * ``RECONSTRUCT_MACROXS`` →  ``reconstructMacroxs``
-  * ``RECONSTRUCT_MICROXS`` →  ``reconstructMicroxs``
-  * ``SPECTRUM_COLLAPSE`` →  ``spectrumCollapse``
+  * ``CMM_DIFFCOEF`` →  ``cmmDiffcoef``
+  * ``CMM_DIFFCOEF_X`` →  ``cmmDiffcoefX``
+  * ``CMM_DIFFCOEF_Y`` →  ``cmmDiffcoefY``
+  * ``CMM_DIFFCOEF_Z`` →  ``cmmDiffcoefZ``
+  * ``CMM_TRANSPXS`` →  ``cmmTranspxs``
+  * ``CMM_TRANSPXS_X`` →  ``cmmTranspxsX``
+  * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
+  * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
 
 .. _vars-base:
 
@@ -292,10 +154,8 @@
   * ``ADJ_PERT_GEN_TIME`` →  ``adjPertGenTime``
   * ``ADJ_PERT_LIFETIME`` →  ``adjPertLifetime``
   * ``ADJ_PERT_ROSSI_ALPHA`` →  ``adjPertRossiAlpha``
-  * ``BETA_EFF`` →  ``betaEff``
   * ``FWD_ANA_BETA_ZERO`` →  ``fwdAnaBetaZero``
   * ``FWD_ANA_LAMBDA`` →  ``fwdAnaLambda``
-  * ``LAMBDA`` →  ``lambda``
 
 .. _lifetime-base:
 
@@ -343,6 +203,25 @@
   * ``IMP_EALF`` →  ``impEalf``
   * ``NUBAR`` →  ``nubar``
 
+.. _n-balance-base:
+
+
+``n-balance``
+-------------
+
+
+  * ``BALA_LOSS_NEUTRON_CAPT`` →  ``balaLossNeutronCapt``
+  * ``BALA_LOSS_NEUTRON_CUT`` →  ``balaLossNeutronCut``
+  * ``BALA_LOSS_NEUTRON_FISS`` →  ``balaLossNeutronFiss``
+  * ``BALA_LOSS_NEUTRON_LEAK`` →  ``balaLossNeutronLeak``
+  * ``BALA_LOSS_NEUTRON_TOT`` →  ``balaLossNeutronTot``
+  * ``BALA_NEUTRON_DIFF`` →  ``balaNeutronDiff``
+  * ``BALA_SRC_NEUTRON_FISS`` →  ``balaSrcNeutronFiss``
+  * ``BALA_SRC_NEUTRON_NXN`` →  ``balaSrcNeutronNxn``
+  * ``BALA_SRC_NEUTRON_SRC`` →  ``balaSrcNeutronSrc``
+  * ``BALA_SRC_NEUTRON_TOT`` →  ``balaSrcNeutronTot``
+  * ``BALA_SRC_NEUTRON_VR`` →  ``balaSrcNeutronVr``
+
 .. _neutron-physics-base:
 
 
@@ -381,6 +260,19 @@
   * ``TOT_TRANSMU_REA`` →  ``totTransmuRea``
   * ``TOT_TRANSPORT_NUCLIDES`` →  ``totTransportNuclides``
 
+.. _optimization-base:
+
+
+``optimization``
+----------------
+
+
+  * ``MG_MAJORANT_MODE`` →  ``mgMajorantMode``
+  * ``OPTIMIZATION_MODE`` →  ``optimizationMode``
+  * ``RECONSTRUCT_MACROXS`` →  ``reconstructMacroxs``
+  * ``RECONSTRUCT_MICROXS`` →  ``reconstructMicroxs``
+  * ``SPECTRUM_COLLAPSE`` →  ``spectrumCollapse``
+
 .. _parallel-base:
 
 
@@ -418,29 +310,33 @@
   * ``UFS_MODE`` →  ``ufsMode``
   * ``UFS_ORDER`` →  ``ufsOrder``
 
-.. _poisons-base:
+.. _rad-data-base:
 
 
-``poisons``
------------
+``rad-data``
+------------
 
 
-  * ``I135_MICRO_ABS`` →  ``i135MicroAbs``
-  * ``I135_YIELD`` →  ``i135Yield``
-  * ``PM147_MICRO_ABS`` →  ``pm147MicroAbs``
-  * ``PM147_YIELD`` →  ``pm147Yield``
-  * ``PM148M_MICRO_ABS`` →  ``pm148mMicroAbs``
-  * ``PM148M_YIELD`` →  ``pm148mYield``
-  * ``PM148_MICRO_ABS`` →  ``pm148MicroAbs``
-  * ``PM148_YIELD`` →  ``pm148Yield``
-  * ``PM149_MICRO_ABS`` →  ``pm149MicroAbs``
-  * ``PM149_YIELD`` →  ``pm149Yield``
-  * ``SM149_MACRO_ABS`` →  ``sm149MacroAbs``
-  * ``SM149_MICRO_ABS`` →  ``sm149MicroAbs``
-  * ``SM149_YIELD`` →  ``sm149Yield``
-  * ``XE135_MACRO_ABS`` →  ``xe135MacroAbs``
-  * ``XE135_MICRO_ABS`` →  ``xe135MicroAbs``
-  * ``XE135_YIELD`` →  ``xe135Yield``
+  * ``ACTINIDE_ACTIVITY`` →  ``actinideActivity``
+  * ``ACTINIDE_DECAY_HEAT`` →  ``actinideDecayHeat``
+  * ``ACTINIDE_ING_TOX`` →  ``actinideIngTox``
+  * ``ACTINIDE_INH_TOX`` →  ``actinideInhTox``
+  * ``ALPHA_DECAY_SOURCE`` →  ``alphaDecaySource``
+  * ``BETA_DECAY_SOURCE`` →  ``betaDecaySource``
+  * ``CS134_ACTIVITY`` →  ``cs134Activity``
+  * ``FISSION_PRODUCT_ACTIVITY`` →  ``fissionProductActivity``
+  * ``FISSION_PRODUCT_DECAY_HEAT`` →  ``fissionProductDecayHeat``
+  * ``FISSION_PRODUCT_ING_TOX`` →  ``fissionProductIngTox``
+  * ``FISSION_PRODUCT_INH_TOX`` →  ``fissionProductInhTox``
+  * ``INGENSTION_TOXICITY`` →  ``ingenstionToxicity``
+  * ``INHALATION_TOXICITY`` →  ``inhalationToxicity``
+  * ``NEUTRON_DECAY_SOURCE`` →  ``neutronDecaySource``
+  * ``PHOTON_DECAY_SOURCE`` →  ``photonDecaySource``
+  * ``SR90_ACTIVITY`` →  ``sr90Activity``
+  * ``TE132_ACTIVITY`` →  ``te132Activity``
+  * ``TOT_ACTIVITY`` →  ``totActivity``
+  * ``TOT_DECAY_HEAT`` →  ``totDecayHeat``
+  * ``TOT_SF_RATE`` →  ``totSfRate``
 
 .. _sampling-base:
 
@@ -633,12 +529,8 @@
   * ``PM148M_YIELD`` →  ``pm148mYield``
   * ``PM148_MICRO_ABS`` →  ``pm148MicroAbs``
   * ``PM148_YIELD`` →  ``pm148Yield``
-  * ``PM149_MICRO_ABS`` →  ``pm149MicroAbs``
-  * ``PM149_YIELD`` →  ``pm149Yield``
-  * ``SM149_MACRO_ABS`` →  ``sm149MacroAbs``
   * ``SM149_MICRO_ABS`` →  ``sm149MicroAbs``
   * ``SM149_YIELD`` →  ``sm149Yield``
-  * ``XE135_MACRO_ABS`` →  ``xe135MacroAbs``
   * ``XE135_MICRO_ABS`` →  ``xe135MicroAbs``
   * ``XE135_YIELD`` →  ``xe135Yield``
 

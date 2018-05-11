@@ -4,22 +4,6 @@
 Changelog
 *********
 
-.. _vNext:
-
-Next
-====
-
-* :pull:`131` Updated variable groups between ``2.1.29`` and ``2.1.30`` - include
-  poison cross section, kinetic parameters, six factor formula (2.1.30 exclusive),
-  and minor differences
-
-.. _vDeprecated:
-
-Deprecation
------------
-
-* Variable group ``xs-yields`` will be removed. Use ``poisons`` instead
-
 .. _v0.4.0:
 
 :release-tag:`0.4.0`
