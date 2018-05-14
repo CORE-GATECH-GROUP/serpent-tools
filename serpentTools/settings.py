@@ -124,6 +124,12 @@ defaultSettings = {
         'description': 'If true, store the critical leakage cross sections.',
         'type': bool
     },
+    'xs.reshapeScatter': {
+        'default': False,
+        'description': 'If true, reshape the scattering matrices to square matrices. '
+                       'By default, these matrices are stored as vectors.',
+       'type': bool
+    },
     'xs.variableGroups': {
         'default': [],
         'description': ('Name of variable groups from variables.yaml to be '

@@ -9,11 +9,12 @@ Contents
 
 """
 from collections import OrderedDict
+from itertools import product
 
 from matplotlib import pyplot
-
 from numpy import array, arange, unique, log, divide, ones_like, hstack
 
+from serpentTools.settings import rc
 from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug
@@ -22,9 +23,16 @@ DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
             'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
 """Name of the columns of the data"""
 
+SCATTER_MATS = set()
+SCATTER_ORDERS = 8
+
+for xsSpectrum, xsType in product({'INF', 'B1'},
+                                  {'S', 'SP'}):
+    SCATTER_MATS.update({'{}_{}{}'.format(xsSpectrum, xsType, xx)
+                        for xx in range(SCATTER_ORDERS)})
 
 __all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
-           'DetectorBase')
+           'DetectorBase', 'SCATTER_MATS', 'SCATTER_ORDERS')
 
 
 def isNonNeg(value):
@@ -69,6 +77,11 @@ class HomogUniv(NamedObject):
         Relative uncertainties for leakage-corrected group constants
     metadata: dict
         Other values that do not not conform to inf/b1 dictionaries
+    reshapedMats: bool
+        ``True`` if scattering matrices have been reshaped to square
+        matrices. Otherwise, these matrices are stored as vectors. 
+    numGroups: None or int
+        Number of energy groups
 
     Raises
     ------
@@ -98,6 +111,12 @@ class HomogUniv(NamedObject):
         self.b1Unc = {}
         self.infUnc = {}
         self.metadata = {}
+        self.__reshaped = rc['xs.reshapeScatter']
+        self.numGroups = None
+
+    @property
+    def reshaped(self):
+        return self.__reshaped
 
     def __str__(self):
         extras = []
@@ -113,8 +132,14 @@ class HomogUniv(NamedObject):
                                   extras or '')
     
     def addData(self, variableName, variableValue, uncertainty=False):
-        """
-        sets the value of the variable and, optionally, the associate s.d.
+        r"""
+        Sets the value of the variable and, optionally, the associate s.d.
+
+        .. versionadded:: 0.5.0
+
+            Reshapes scattering matrices according to setting 
+            `xs.reshapeScatter`. Matrices are of the form
+            :math:`S[i, j]=\Sigma_{s,i\rightarrow j}`
 
         .. warning::
 
@@ -136,12 +161,27 @@ class HomogUniv(NamedObject):
             If the uncertainty flag is not boolean
 
         """
-
-        # 1. Check the input type
-        variableName = convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type {}, '
                             'should be boolean.'.format(type(uncertainty)))
+        ng = self.numGroups
+        if self.__reshaped and variableName in SCATTER_MATS:
+            if ng is None:
+                warning("Number of groups is unknown at this time. "
+                        "Will not reshape variable {}"
+                        .format(variableName))
+            else:
+                variableValue = variableValue.reshape(ng, ng)
+        incomingGroups = variableValue.shape[0] 
+        if ng is None:
+            self.numGroups = incomingGroups 
+        elif incomingGroups != ng:
+            warning("Variable {} appears to have different group structure. "
+                    "Current: {} vs. incoming: {}"
+                    .format(variableName, ng, incomingGroups))
+
+        variableName = convertVariableName(variableName)
+
         # 2. Pointer to the proper dictionary
         setter = self._lookup(variableName, uncertainty)
         # 3. Check if variable is already present. Then set the variable.
