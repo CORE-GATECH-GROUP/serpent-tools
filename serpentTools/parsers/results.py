@@ -59,6 +59,7 @@ class ResultsReader(XSReader):
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'xs')
         self.__fileObj = None
+        self.__serpentVersion = rc['serpentVersion']
         self._counter = {'meta': 0, 'rslt': 0, 'univ': 0}
         self._univlist = []
         self.metadata,  self.resdata, self.univdata = {}, {}, {}
@@ -204,11 +205,11 @@ class ResultsReader(XSReader):
     def _precheck(self):
         """do a quick scan to ensure this looks like a results file."""
         #MapStrVersions = self._mapSerpentVersion()
-        if rc['serpentVersion'] in MapStrVersions:
-            self._keysVersion = MapStrVersions[rc['serpentVersion']]
+        if self.__serpentVersion in MapStrVersions:
+            self._keysVersion = MapStrVersions[self.__serpentVersion]
         else:
             warning("Version {} is not supported by the "
-                                        "ResultsReader".format(rc['serpentVersion']))
+                                        "ResultsReader".format(self.__serpentVersion))
         with open(self.filePath) as fid:
             if fid is None:
                 raise IOError("Attempting to read on a closed file.\n"
@@ -216,9 +217,9 @@ class ResultsReader(XSReader):
             for tline in fid:
                 if self._keysVersion['meta'] in tline:
                     varType, varVals = self._getVarValues(tline)  # actual serpent version used
-                    if rc['serpentVersion'] not in varVals:
-                        warning("Version {} used is different from the defined in settings {} "
-                                                    .format(varVals, rc['serpentVersion']))
+                    if self.__serpentVersion not in varVals:
+                        warning("Version {} is used, but version {} is defined in settings"
+                                                    .format(varVals, self.__serpentVersion))
                 if self._keysVersion['univ'] in tline:
                     varType, varVals = self._getVarValues(tline)  # universe
                     self._univlist.append(varVals)

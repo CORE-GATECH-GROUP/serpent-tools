@@ -143,7 +143,7 @@ class TestFilterResults(TesterCommonResultsReader):
             rc['xs.getInfXS'] = True  # only store inf cross sections
             rc['xs.getB1XS'] = False
             self.reader = ResultsReader(self.file)
-        self.reader.read()
+            self.reader.read()
 
         self.expVarSettings = {'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
                     'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME', 'WORKING_DIRECTORY',
@@ -216,6 +216,8 @@ class TestReadAllResults(TesterCommonResultsReader):
     def setUp(self):
         self.file = os.path.join(TEST_ROOT, 'pwr_res_filter.m')
         # universe id, burnup, step, days
+        with rc:
+            rc['serpentVersion'] = '2.1.29'
         self.expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
         self.reader = ResultsReader(self.file)
         self.reader.read()
@@ -277,7 +279,7 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
             rc['xs.getInfXS'] = True  # only store inf cross sections
             rc['xs.getB1XS'] = False
             self.reader = ResultsReader(self.file)
-        self.reader.read()
+            self.reader.read()
 
         self.expVarSettings = {'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
                     'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME', 'WORKING_DIRECTORY',
