@@ -6,6 +6,7 @@ from six import iteritems
 from numpy import array, arange
 from numpy.testing import assert_allclose
 
+from serpentTools.settings import rc
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers import DepletionReader
 
@@ -20,29 +21,23 @@ class _HomogUnivTestHelper(unittest.TestCase):
     2D matrix.
     """
 
-    @classmethod
-    def setUpClass(cls):
-        cls.univ, vec, mat = cls.getParams()
+    def setUp(self):
+        self.univ, vec, mat = self.getParams()
         # Data definition
         rawData = {'B1_1': vec, 'B1_AS_LIST': list(range(NUM_GROUPS)),
-                  'INF_1': vec, 'INF_S0': mat, 'MACRO_E': vec}
-
+                  'INF_1': vec, 'INF_S0': mat}
+        meta = {'MACRO_E': vec}
         # Partial dictionaries
-        cls.b1Unc = cls.b1Exp = {'b11': vec}
-        cls.infUnc = cls.infExp = {'inf1': vec, 'infS0': mat}
-        cls.meta = {'macroE': vec}
+        self.b1Unc = self.b1Exp = {'b11': vec}
+        self.infUnc = self.infExp = {'inf1': vec, 'infS0': mat}
+        self.meta = {'macroE': vec}
 
         # Use addData
         for key, value in iteritems(rawData):
-            cls.univ.addData(key, value, uncertainty=False)
-            cls.univ.addData(key, value, uncertainty=True)
-
-    @staticmethod
-    def getParams():
-        univ = HomogUniv(0, 0, 0, 0)
-        vec = arange(NUM_GROUPS)
-        mat = arange(NUM_GROUPS ** 2)
-        return univ, vec, mat
+            self.univ.addData(key, value, uncertainty=False)
+            self.univ.addData(key, value, uncertainty=True)
+        for key, value in iteritems(meta):
+            self.univ.addData(key, value)
 
     def test_getB1Exp(self):
         """ Get Expected vales from B1 dictionary"""
@@ -100,22 +95,25 @@ class _HomogUnivTestHelper(unittest.TestCase):
         compareDictOfArrays(self.infUnc, uncertainties, 
                             'infinite uncertainties')
 
+
 class VectoredHomogUnivTester(_HomogUnivTestHelper):
     """Class for testing HomogUniv that does not reshape scatter matrices"""
 
-    @staticmethod
-    def getParams():
-        return getParams()
+    def getParams(self):
+        univ, vec, mat = getParams()
+        self.assertFalse(univ.reshaped)
+        return univ, vec, mat
+
 
 class ReshapedHomogUnivTester(_HomogUnivTestHelper):
     """Class for testing HomogUniv that does reshape scatter matrices"""
 
-    @staticmethod
-    def getParams():
+    def getParams(self):
         from serpentTools.settings import rc
         with rc:
             rc.setValue('xs.reshapeScatter', True)
             univ, vec, mat = getParams()
+            univ.numGroups = NUM_GROUPS
             self.assertTrue(univ.reshaped)
         return univ, vec, mat.reshape(NUM_GROUPS, NUM_GROUPS)
 
@@ -138,4 +136,7 @@ def compareDictOfArrays(expected, actualDict, dataType):
 del _HomogUnivTestHelper
 
 if __name__ == '__main__':
-    unittest.main()
+    from serpentTools import rc
+    with rc:
+        rc['verbosity'] = 'debug'
+        unittest.main()
