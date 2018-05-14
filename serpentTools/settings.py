@@ -260,9 +260,7 @@ class UserSettingsLoader(dict):
         self.__originals = {}
         dict.__init__(self, self._defaultLoader.retrieveDefaults())
 
-    def __setitem__(self, key, value):
-        self._checkStoreOriginal(key)
-        self.setValue(key, value)
+    __setitem__ = setValue
 
     def __enter__(self):
         self.__inside= True
@@ -273,10 +271,6 @@ class UserSettingsLoader(dict):
         for key, originalValue in iteritems(self.__originals):
             self[key] = originalValue
         self.__originals= {}
-
-    def _checkStoreOriginal(self, key):
-        if self.__inside:
-            self.__originals[key] = self[key]
 
     def setValue(self, name, value):
         """Set the value of a specific setting.
@@ -296,6 +290,8 @@ class UserSettingsLoader(dict):
             If the value is not of the correct type
 
         """
+        if self.__inside:
+            self.__originals[name] = self[name]
         if name not in self:
             raise KeyError('Setting {} does not exist'.format(name))
         self._defaultLoader[name].validate(value)
