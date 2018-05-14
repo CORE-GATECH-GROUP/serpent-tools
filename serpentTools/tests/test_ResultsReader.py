@@ -12,37 +12,20 @@ from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers import ResultsReader
 from serpentTools.messages import SerpentToolsException
 
-class _ResultsTesterHelperFull(unittest.TestCase):
-    """Test case to share setUpClass for testing Results Reader"""
-    @classmethod
-    def setUpClass(cls):
-        cls.file = os.path.join(TEST_ROOT, 'pwr_res_filter.m')
-        # universe id, burnup, step, days
-        cls.expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
-        cls.reader = ResultsReader(cls.file)
-        cls.reader.read()
 
-class _ResultsTesterHelper(unittest.TestCase):
-    """Test case to share setUpClass for testing Results Reader"""
-    @classmethod
-    def setUpClass(cls):
-        cls.file = os.path.join(TEST_ROOT, 'pwr_res.m')
-        # universe id, burnup, step, days
-        cls.expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
-        with rc:
-            rc['serpentVersion'] = '2.1.29'
-            rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
-                                       'diffusion', 'eig', 'burnup-coeff']
-            rc['xs.getInfXS'] = True  # only store inf cross sections
-            rc['xs.getB1XS'] = False
-            cls.reader = ResultsReader(cls.file)
-        cls.reader.read()
+class TestBadFiles(unittest.TestCase):
+    """
+    Test bad files.
 
-class ResultsTester(_ResultsTesterHelper):
-    """Class for testing the results reader."""
+    Tests:
+        1. test_noResults: file with no results
+        2. test_noUniverses: file with no universes
 
-    def test_raiseError(self):
-        """Verify that the reader raises an error for unexpected EOF"""
+    Raises SerpentToolsException
+    """
+
+    def test_noResults(self):
+        """Verify that the reader raises error when no results exist in the file"""
         badFile = os.path.join(TEST_ROOT, 'bad_results_file.m')
         with open(badFile, 'w') as badObj:
             for _line in range(5):
@@ -52,9 +35,118 @@ class ResultsTester(_ResultsTesterHelper):
             badReader.read()
         os.remove(badFile)
 
-    def test_variables(self):
-        """Verify that the correct settings and variables are obtained."""
-        expected = {'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
+    def test_noUniverses(self):
+        """Verify that the reader raises an error if no universes are stored on the file"""
+        univFile = os.path.join(TEST_ROOT, 'pwr_res_noUniv.m')
+        univReader = ResultsReader(univFile)
+        with self.assertRaises(SerpentToolsException):
+            univReader.read()
+
+
+class TesterCommonResultsReader(unittest.TestCase):
+    """
+    Class with common tests for the results reader.
+
+    Expected failures/errors:
+
+        1. test_varsMatchSettings:
+                        compares the keys
+                        defined by the user to those
+                        obtained by the reader
+            Raises SerpentToolsException
+        2. test_metadata:
+                        Check that metadata variables and
+                        their values are properly stored
+            Raises SerpentToolsException
+        3. test_resdata:
+                        Check that time-dependent results variables
+                        and their values are properly stored
+            Raises SerpentToolsException
+        4. test_univdata:
+                        Check that expected states are read
+                        i.e., ('univ', bu, buIdx, days)
+                        For a single state, check that
+                        infExp keys and values are stored.
+                        Check that infUnc and metadata are properly stored
+            Raises SerpentToolsException
+    """
+
+    def test_varsMatchSettings(self):
+        """Verify that the obtained variables match the settings."""
+        self.assertSetEqual(self.expVarSettings, self.reader.settings['variables'])
+
+    def test_metadata(self):
+        """Verify that user-defined metadata is properly stored."""
+        expectedKeys = set(self.expectedMetadata)
+        actualKeys = set(self.reader.metadata.keys())
+        self.assertSetEqual(expectedKeys, actualKeys)
+        for key, expectedValue in six.iteritems(self.expectedMetadata):
+            if isinstance(expectedValue, str):
+                self.assertSetEqual(set(self.reader.metadata[key]),
+                                       set(expectedValue))
+            else:
+                numpy.testing.assert_equal(self.reader.metadata[key],
+                                       expectedValue)
+
+    def test_resdata(self):
+        """Verify that user-defined metadata is properly stored."""
+        expectedKeys = set(self.expectedResdata)
+        actualKeys = set(self.reader.resdata.keys())
+        self.assertSetEqual(expectedKeys, actualKeys)
+        numpy.testing.assert_equal(self.reader.resdata['absKeff'],
+                                   self.expectedKeff)
+        numpy.testing.assert_equal(self.reader.resdata['burnDays'],
+                                   self.expectedDays)
+
+    def test_univdata(self):
+        """Verify that results for all the states ('univ', bu, buIdx, days) exist.
+            Verify that the containers for each state are properly created
+            and that the proper information is stored, e.g. infExp keys and values"""
+        expSt0,  expSt1= self.expectedStates[0], self.expectedStates[1]
+        actualStates = set(self.reader.univdata.keys())
+        self.assertSetEqual(set(self.expectedStates), actualStates)   # check that all states are read
+        self.assertSetEqual(set(self.reader.univdata[expSt1].infExp.keys()),
+                            set(self.expectedInfExp))
+        self.assertSetEqual(set(self.reader.univdata[expSt1].metadata.keys()),
+                            set(self.expectedMetaData))
+        numpy.testing.assert_equal(self.reader.univdata[expSt0].infExp['infAbs'],
+                                   self.expectedinfValAbsSt0)
+        numpy.testing.assert_equal(self.reader.univdata[expSt1].infExp['infAbs'],
+                                   self.expectedinfValAbsSt1)
+        numpy.testing.assert_equal(self.reader.univdata[expSt0].infUnc['infAbs'],
+                                   self.expectedinfUncAbsUn0)
+        numpy.testing.assert_equal(self.reader.univdata[expSt1].infUnc['infAbs'],
+                                   self.expectedinfUncAbsUn1)
+
+
+class TestFilterResults(TesterCommonResultsReader):
+    """
+    Test the ability to read and filter data.
+
+    Expected outcome:
+        1. test_varsMatchSettings:
+                        Results read are equal to results set
+        2. test_metadata:
+                        metadata is filtered
+        3. test_resdata:
+                        resdata is filtered
+        4. test_univdata:
+                        univ is filtered
+    """
+    def setUp(self):
+        self.file = os.path.join(TEST_ROOT, 'pwr_res.m')
+        # universe id, burnup, step, days
+        self.expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
+        with rc:
+            rc['serpentVersion'] = '2.1.29'
+            rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
+                                       'diffusion', 'eig', 'burnup-coeff']
+            rc['xs.getInfXS'] = True  # only store inf cross sections
+            rc['xs.getB1XS'] = False
+            self.reader = ResultsReader(self.file)
+        self.reader.read()
+
+        self.expVarSettings = {'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
                     'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME', 'WORKING_DIRECTORY',
                     'HOSTNAME', 'CPU_TYPE', 'CPU_MHZ', 'START_DATE', 'COMPLETE_DATE',
                     'GC_UNIVERSE_NAME', 'MICRO_NG', 'MICRO_E', 'MACRO_NG',
@@ -70,11 +162,8 @@ class ResultsTester(_ResultsTesterHelper):
                     'ABS_KEFF', 'ABS_KINF', 'GEOM_ALBEDO', 'BURN_MATERIALS',
                     'BURN_MODE', 'BURN_STEP', 'BURNUP', 'BURN_DAYS',
                     'COEF_IDX', 'COEF_BRANCH', 'COEF_BU_STEP'}
-        self.assertSetEqual(expected, self.reader.settings['variables'])
 
-    def test_metadata(self):
-        """Test the metadata storage for the reader."""
-        expectedMetadata = {'version': 'Serpent 2.1.29',
+        self.expectedMetadata = {'version': 'Serpent 2.1.29',
                             'compileDate': 'Jan  4 2018 17:22:46',
                             'debug': [0.],
                             'title': 'pwr pin',
@@ -86,83 +175,57 @@ class ResultsTester(_ResultsTesterHelper):
                             'cpuMhz': [194.],
                             'startDate': 'Mon Feb 19 15:39:23 2018',
                             'completeDate': 'Mon Feb 19 15:39:53 2018'}
-        expectedKeys = set(expectedMetadata)
-        actualKeys = set(self.reader.metadata.keys())
-        self.assertSetEqual(expectedKeys, actualKeys)
-        for key, expectedValue in six.iteritems(expectedMetadata):
-            if isinstance(expectedValue, str):
-                self.assertSetEqual(set(self.reader.metadata[key]),
-                                       set(expectedValue))
-            else:
-                numpy.testing.assert_equal(self.reader.metadata[key],
-                                       expectedValue)
 
-    def test_resdata(self):
-        """Test the resdata storage for the reader."""
-        expectedResdata = ['absKeff', 'absKinf', 'anaKeff', 'burnDays', 'burnMaterials', 'burnMode', 'burnStep',
+        self.expectedResdata = ['absKeff', 'absKinf', 'anaKeff', 'burnDays', 'burnMaterials', 'burnMode', 'burnStep',
                            'burnup', 'colKeff', 'geomAlbedo', 'impKeff', 'nubar']
 
-        expectedKeff =  numpy.array([[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]])
-        expectedDays = numpy.array([[0.00000E+00], [5.00000E+00]])
-        expectedKeys = set(expectedResdata)
-        actualKeys = set(self.reader.resdata.keys())
-        self.assertSetEqual(expectedKeys, actualKeys)
-        numpy.testing.assert_equal(self.reader.resdata['absKeff'],
-                                   expectedKeff)
-        numpy.testing.assert_equal(self.reader.resdata['burnDays'],
-                                   expectedDays)
+        self.expectedKeff = numpy.array([[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]])
+        self.expectedDays = numpy.array([[0.00000E+00], [5.00000E+00]])
 
-    def test_univdata(self):
-        """Verify that the correct universes and values are present."""
-        expectedInfExp= ['infAbs', 'infCapt', 'infChid', 'infChip', 'infChit', 'infDiffcoef', 'infFiss', 'infFissFlx',
+        self.expectedInfExp= ['infAbs', 'infCapt', 'infChid', 'infChip', 'infChit', 'infDiffcoef', 'infFiss', 'infFissFlx',
                            'infFlx', 'infInvv', 'infKappa', 'infKinf', 'infMicroFlx', 'infNsf', 'infNubar', 'infRabsxs',
                            'infRemxs', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7',
                            'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5', 'infScatt6',
                            'infScatt7', 'infTot', 'infTranspxs']
-        expectedMetaData = ['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
+        self.expectedMetaData = ['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
                             'cmmTranspxsY', 'cmmTranspxsZ', 'macroE', 'macroNg', 'microE', 'microNg']
-        expectedinfValAbsSt0 = numpy.array([1.05040E-02, 1.23260E-01])
-        expectedinfValAbsSt1 = numpy.array([1.01031E-02, 5.62564E-02])
-        expectedinfUncAbsUn0 = numpy.array([0.00482, 0.00202])
-        expectedinfUncAbsUn1 = numpy.array([0.00156, 0.00071])
-        actualStates = set(self.reader.univdata.keys())
-        self.assertSetEqual(set(self.expectedStates), actualStates)   # check that all states are read
-        self.assertSetEqual(set(self.reader.univdata[self.expectedStates[1]].infExp.keys()),
-                            set(expectedInfExp))
-        self.assertSetEqual(set(self.reader.univdata[self.expectedStates[1]].metadata.keys()),
-                            set(expectedMetaData))
-        numpy.testing.assert_equal(self.reader.univdata[self.expectedStates[0]].infExp['infAbs'],
-                                   expectedinfValAbsSt0)
-        numpy.testing.assert_equal(self.reader.univdata[self.expectedStates[1]].infExp['infAbs'],
-                                   expectedinfValAbsSt1)
-        numpy.testing.assert_equal(self.reader.univdata[self.expectedStates[0]].infUnc['infAbs'],
-                                   expectedinfUncAbsUn0)
-        numpy.testing.assert_equal(self.reader.univdata[self.expectedStates[1]].infUnc['infAbs'],
-                                   expectedinfUncAbsUn1)
+        self.expectedinfValAbsSt0 = numpy.array([1.05040E-02, 1.23260E-01])
+        self.expectedinfValAbsSt1 = numpy.array([1.01031E-02, 5.62564E-02])
+        self.expectedinfUncAbsUn0 = numpy.array([0.00482, 0.00202])
+        self.expectedinfUncAbsUn1 = numpy.array([0.00156, 0.00071])
 
 
-class ResultsTesterFull(_ResultsTesterHelperFull):
-    """Class for testing the results reader."""
+class TestReadAllResults(TesterCommonResultsReader):
+    """
+    Read the full results file and do NOT filter.
 
-    def test_raiseError(self):
-        """Verify that the reader raises an error for unexpected EOF"""
-        badFile = os.path.join(TEST_ROOT, 'bad_results_file.m')
-        with open(badFile, 'w') as badObj:
-            for _line in range(5):
-                badObj.write(str(_line))
-        badReader = ResultsReader(badFile)
-        with self.assertRaises(SerpentToolsException):
-            badReader.read()
-        os.remove(badFile)
+    Note:
+        The file was manually filtered to include
+        only the variables from 'TestFilterResults' class
+        No settings were defined and hence the reader
+        should read everything.
 
-    def test_variables(self):
-        """Verify that the correct settings and variables are obtained."""
-        expected = {}
-        self.assertSetEqual(set(expected), self.reader.settings['variables'])
+    Expected outcome:
+        - Same variables and values as in the 'TestFilterResults' class
+        1. test_varsMatchSettings:
+                        Results read are equal to results set
+        2. test_metadata:
+                        metadata is not filtered
+        3. test_resdata:
+                        resdata is not filtered
+        4. test_univdata:
+                        univ is not filtered
+    """
+    def setUp(self):
+        self.file = os.path.join(TEST_ROOT, 'pwr_res_filter.m')
+        # universe id, burnup, step, days
+        self.expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
+        self.reader = ResultsReader(self.file)
+        self.reader.read()
 
-    def test_metadata(self):
-        """Test the metadata storage for the reader."""
-        expectedMetadata = {'version': 'Serpent 2.1.29',
+        self.expVarSettings = set({})
+
+        self.expectedMetadata = {'version': 'Serpent 2.1.29',
                             'compileDate': 'Jan  4 2018 17:22:46',
                             'debug': [0.],
                             'title': 'pwr pin',
@@ -174,60 +237,27 @@ class ResultsTesterFull(_ResultsTesterHelperFull):
                             'cpuMhz': [194.],
                             'startDate': 'Mon Feb 19 15:39:23 2018',
                             'completeDate': 'Mon Feb 19 15:39:53 2018'}
-        expectedKeys = set(expectedMetadata)
-        actualKeys = set(self.reader.metadata.keys())
-        self.assertSetEqual(expectedKeys, actualKeys)
-        for key, expectedValue in six.iteritems(expectedMetadata):
-            if isinstance(expectedValue, str):
-                self.assertSetEqual(set(self.reader.metadata[key]),
-                                       set(expectedValue))
-            else:
-                numpy.testing.assert_equal(self.reader.metadata[key],
-                                       expectedValue)
 
-    def test_resdata(self):
-        """Test the resdata storage for the reader."""
-        expectedResdata = ['absKeff', 'absKinf', 'anaKeff', 'burnDays', 'burnMaterials', 'burnMode', 'burnStep',
+        self.expectedResdata = ['absKeff', 'absKinf', 'anaKeff', 'burnDays', 'burnMaterials', 'burnMode', 'burnStep',
                            'burnup', 'colKeff', 'geomAlbedo', 'impKeff', 'nubar', 'minMacroxs']
 
-        expectedKeff =  numpy.array([[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]])
-        expectedDays = numpy.array([[0.00000E+00], [5.00000E+00]])
-        expectedKeys = set(expectedResdata)
-        actualKeys = set(self.reader.resdata.keys())
-        self.assertSetEqual(expectedKeys, actualKeys)
-        numpy.testing.assert_equal(self.reader.resdata['absKeff'],
-                                   expectedKeff)
-        numpy.testing.assert_equal(self.reader.resdata['burnDays'],
-                                   expectedDays)
+        self.expectedKeff = numpy.array([[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]])
+        self.expectedDays = numpy.array([[0.00000E+00], [5.00000E+00]])
 
-    def test_univdata(self):
-        """Verify that the correct universes and values are present."""
-        expectedInfExp= ['infAbs', 'infCapt', 'infChid', 'infChip', 'infChit', 'infDiffcoef', 'infFiss', 'infFissFlx',
+        self.expectedInfExp= ['infAbs', 'infCapt', 'infChid', 'infChip', 'infChit', 'infDiffcoef', 'infFiss', 'infFissFlx',
                            'infFlx', 'infInvv', 'infKappa', 'infKinf', 'infMicroFlx', 'infNsf', 'infNubar', 'infRabsxs',
                            'infRemxs', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7',
                            'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5', 'infScatt6',
                            'infScatt7', 'infTot', 'infTranspxs']
-        expectedMetaData = ['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
+        self.expectedMetaData = ['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
                             'cmmTranspxsY', 'cmmTranspxsZ', 'macroE', 'macroNg', 'microE', 'microNg']
-        expectedinfValAbsSt0 = numpy.array([1.05040E-02, 1.23260E-01])
-        expectedinfValAbsSt1 = numpy.array([1.01031E-02, 5.62564E-02])
-        expectedinfUncAbsUn0 = numpy.array([0.00482, 0.00202])
-        expectedinfUncAbsUn1 = numpy.array([0.00156, 0.00071])
-        actualStates = set(self.reader.univdata.keys())
-        self.assertSetEqual(set(self.expectedStates), actualStates)   # check that all states are read
-        self.assertSetEqual(set(self.reader.univdata[self.expectedStates[1]].infExp.keys()),
-                            set(expectedInfExp))
-        self.assertSetEqual(set(self.reader.univdata[self.expectedStates[1]].metadata.keys()),
-                            set(expectedMetaData))
-        numpy.testing.assert_equal(self.reader.univdata[self.expectedStates[0]].infExp['infAbs'],
-                                   expectedinfValAbsSt0)
-        numpy.testing.assert_equal(self.reader.univdata[self.expectedStates[1]].infExp['infAbs'],
-                                   expectedinfValAbsSt1)
-        numpy.testing.assert_equal(self.reader.univdata[self.expectedStates[0]].infUnc['infAbs'],
-                                   expectedinfUncAbsUn0)
-        numpy.testing.assert_equal(self.reader.univdata[self.expectedStates[1]].infUnc['infAbs'],
-                                   expectedinfUncAbsUn1)
+        self.expectedinfValAbsSt0 = numpy.array([1.05040E-02, 1.23260E-01])
+        self.expectedinfValAbsSt1 = numpy.array([1.01031E-02, 5.62564E-02])
+        self.expectedinfUncAbsUn0 = numpy.array([0.00482, 0.00202])
+        self.expectedinfUncAbsUn1 = numpy.array([0.00156, 0.00071])
 
+
+del TesterCommonResultsReader
 
 if __name__ == '__main__':
     unittest.main()
