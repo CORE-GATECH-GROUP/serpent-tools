@@ -134,6 +134,10 @@ class BranchingReader(XSReader):
                 possibleEndOfFile=step == numVariables - 1)
             varName = splitList[0]
             varValues = [float(xx) for xx in splitList[2:]]
+            if not varValues:
+                debug("No data present for variable {}. Skipping"
+                      .format(varName))
+                continue
             if self._checkAddVariable(varName):
                 if self.settings['areUncsPresent']:
                     vals, uncs = splitItems(varValues)
