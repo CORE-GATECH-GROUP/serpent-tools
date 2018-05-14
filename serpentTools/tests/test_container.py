@@ -6,20 +6,25 @@ from six import iteritems
 from numpy import array, arange
 from numpy.testing import assert_allclose
 
-from serpentTools.objects import containers
+from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers import DepletionReader
 
+NUM_GROUPS = 5
 
-class HomogenizedUniverseTester(unittest.TestCase):
-    """ Class to test the Homogenized Universe """
+
+class _HomogUnivTestHelper(unittest.TestCase):
+    """Class that runs the tests for the two sub-classes
+    
+    Subclasses will differ in how the ``mat`` data
+    is arranged. For one case, the ``mat`` will be a 
+    2D matrix.
+    """
 
     @classmethod
     def setUpClass(cls):
-        cls.univ = containers.HomogUniv('dummy', 0, 0, 0)
-        vec = arange(5)
-        mat = arange(25)
+        cls.univ, vec, mat = cls.getParams()
         # Data definition
-        rawData = {'B1_1': vec, 'B1_AS_LIST': [0,1,2,3,4],
+        rawData = {'B1_1': vec, 'B1_AS_LIST': list(range(NUM_GROUPS)),
                   'INF_1': vec, 'INF_S0': mat, 'MACRO_E': vec}
 
         # Partial dictionaries
@@ -31,6 +36,13 @@ class HomogenizedUniverseTester(unittest.TestCase):
         for key, value in iteritems(rawData):
             cls.univ.addData(key, value, uncertainty=False)
             cls.univ.addData(key, value, uncertainty=True)
+
+    @staticmethod
+    def getParams():
+        univ = HomogUniv(0, 0, 0, 0)
+        vec = arange(NUM_GROUPS)
+        mat = arange(NUM_GROUPS ** 2)
+        return univ, vec, mat
 
     def test_getB1Exp(self):
         """ Get Expected vales from B1 dictionary"""
@@ -87,7 +99,33 @@ class HomogenizedUniverseTester(unittest.TestCase):
         compareDictOfArrays(self.infExp, expected, 'infinite values')
         compareDictOfArrays(self.infUnc, uncertainties, 
                             'infinite uncertainties')
-                            
+
+class VectoredHomogUnivTester(_HomogUnivTestHelper):
+    """Class for testing HomogUniv that does not reshape scatter matrices"""
+
+    @staticmethod
+    def getParams():
+        return getParams()
+
+class ReshapedHomogUnivTester(_HomogUnivTestHelper):
+    """Class for testing HomogUniv that does reshape scatter matrices"""
+
+    @staticmethod
+    def getParams():
+        from serpentTools.settings import rc
+        with rc:
+            rc.setValue('xs.reshapeScatter', True)
+            univ, vec, mat = getParams()
+            self.assertTrue(univ.reshaped)
+        return univ, vec, mat.reshape(NUM_GROUPS, NUM_GROUPS)
+
+
+def getParams():
+    """Return the universe, vector, and matrix for testing."""
+    univ = HomogUniv(300, 0, 0, 0)
+    vec = arange(NUM_GROUPS)
+    mat = arange(NUM_GROUPS ** 2)
+    return univ, vec, mat
 
 
 def compareDictOfArrays(expected, actualDict, dataType):
@@ -97,6 +135,7 @@ def compareDictOfArrays(expected, actualDict, dataType):
                 err_msg="Error in {} dictionary: key={}"
                 .format(dataType, key))
 
+del _HomogUnivTestHelper
 
 if __name__ == '__main__':
     unittest.main()
