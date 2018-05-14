@@ -6,8 +6,31 @@ from numpy import array
 from serpentTools.objects import splitItems
 from serpentTools.objects.containers import BranchContainer
 from serpentTools.objects.readers import XSReader
-from serpentTools.messages import debug, info, error
+from serpentTools.messages import debug, info, error, warning, willChange
 
+class BranchesWrapper(dict):
+    """Special dictionary that warns about the change in accessing branches."""
+
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self.__warned = False
+
+    def __getitem__(self, key):
+        if key in self:
+            return dict.__getitem__(self, key)
+        if isinstance(key, tuple) and len(key) == 1 and key[0] in self:
+            if not self.__warned:
+                self.__warn(key)
+                return dict.__getitem__(self, key[0]) 
+        raise KeyError(key)
+
+    @willChange("In the future, access a single item branch name with only "
+                "the string, ['name'] vs. [('name', )]")
+    def __warn(self, key):
+        warning("Future versions will not accept '{key}' but will accept "
+                "'{entry}'".format(key=key, entry=key[0]))
+        self.__warned = True
+        
 
 class BranchingReader(XSReader):
     """
@@ -17,6 +40,9 @@ class BranchingReader(XSReader):
     ----------
     filePath: str
         path to the depletion file
+
+    Attributes
+    ----------
     branches: dict
         Dictionary of branch names and their corresponding
         :py:class:`~serpentTools.objects.containers.BranchContainer`
@@ -26,19 +52,17 @@ class BranchingReader(XSReader):
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'branching')
         self.__fileObj = None
-        self.branches = {}
+        self.branches = BranchesWrapper() 
         self._whereAmI = {key: None for key in
                           {'runIndx', 'coefIndx', 'buIndx', 'universe'}}
         self._totalBranches = None
 
     def _read(self):
         """Read the branching file and store the coefficients."""
-        info('Preparing to read {}'.format(self.filePath))
         with open(self.filePath) as fObj:
             self.__fileObj = fObj
             while self.__fileObj is not None:
                 self._processBranchBlock()
-        info('Done reading branching file')
 
     def _advance(self, possibleEndOfFile=False):
         if self.__fileObj is None:
@@ -76,6 +100,8 @@ class BranchingReader(XSReader):
         self._whereAmI['runIndx'] = int(indx)
         self._whereAmI['coefIndx'] = int(coefIndx)
         branchNames = tuple(self._advance()[1:])
+        if len(branchNames) == 1:
+            branchNames = branchNames[0]
         if branchNames not in self.branches:
             branchState = self._processBranchStateData()
             self.branches[branchNames] = (
@@ -122,8 +148,7 @@ class BranchingReader(XSReader):
             yield bID, b
 
     def _precheck(self):
-        """Currently, just grabs total number of coeff calcs
-        """
+        """Currently, just grabs total number of coeff calcs."""
         with open(self.filePath) as fObj:
             try:
                 self._totalBranches = int(fObj.readline().split()[1])
@@ -132,10 +157,8 @@ class BranchingReader(XSReader):
                     self.filePath))
 
     def _postcheck(self):
-        """Make sure Serpent finished printing output.
-        """
+        """Make sure Serpent finished printing output."""
 
         if self._totalBranches != self._whereAmI['runIndx']:
-            # maybe this should be an exception?
             error("Serpent appears to have stopped printing coefficient\n"
                     "mode output early for file {}".format(self.filePath))

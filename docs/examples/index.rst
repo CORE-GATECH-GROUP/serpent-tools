@@ -9,3 +9,4 @@ Examples
    Branching.rst
    Detector.rst
    DepletionReader.rst
+   XSPlot.rst

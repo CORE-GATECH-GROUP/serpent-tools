@@ -203,16 +203,14 @@ class HomogUniv(NamedObject):
         return x, dx
 
     def _lookup(self, variableName, uncertainty):
-        if "inf" in variableName:
+        if 'inf' == variableName[:3]:
             if not uncertainty:
                 return self.infExp
-            else:
-                return self.infUnc
-        elif "b1" in variableName:
+            return self.infUnc
+        elif "b1" ==  variableName[:2]:
             if not uncertainty:
                 return self.b1Exp
-            else:
-                return self.b1Unc
+            return self.b1Unc
         else:
             return self.metadata
 
@@ -468,17 +466,10 @@ class DetectorBase(NamedObject):
                 yerr = None
         else: 
            yerr = None
-        if xdim is not None:
-            if xdim in self.indexes:
-                xdata = self.indexes[xdim]
-                xlabel = xlabel or xdim
-            else:
-                warning('Could not find key {} in indexes: Options: {}'
-                        .format(xdim, ', '.join(self.indexes.keys())))
-                xdata = arange(len(data))
-        else:
-            xdata = arange(len(data))
 
+        xdata, autoX = self._getPlotXData(xdim, data)
+        xlabel = xlabel or autoX
+        ylabel = ylabel or "Tally data" 
         ax = ax or pyplot.axes()
         
         if steps:
@@ -489,16 +480,14 @@ class DetectorBase(NamedObject):
                 kwargs['drawstyle'] = 'steps-post'
         ax = plot(xdata, data, ax, labels, yerr,**kwargs)
         
-        if xlabel is not None:
-            ax.set_xlabel(xlabel)
-        if ylabel is not None:
-            ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
         if loglog or logx:
             ax.set_xscale('log')
         if loglog or logy:
             ax.set_yscale('log')
         return ax
-    
+
     @magicPlotDocDecorator
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
                  cmap=None, logColor=False, xlabel=None, ylabel=None, 
@@ -577,15 +566,34 @@ class DetectorBase(NamedObject):
         return ax
 
     def _getGrid(self, qty):
-        if qty[0].upper() in self.grids:
-            grid = self.grids[qty[0].upper()]
-            lowBounds = grid[:, 0]
-            return hstack((lowBounds, grid[-1, 1]))
+        grids = self._inGridsAs(qty)
+        if grids is not None:
+            lowBounds = grids[:, 0]
+            return hstack((lowBounds, grids[-1, 1]))
         if qty not in self.indexes:
             raise KeyError("No index {} found on detector. Bin indexes: {}"
                            .format(qty, ', '.join(self.indexes.keys())))
         bins = self.indexes[qty]
         return hstack((bins, len(bins)))
+
+    def _dimInGrids(self, key):
+        return key[0].upper() in self.grids
+
+    def _inGridsAs(self, qty):
+        if self._dimInGrids(qty):
+            return self.grids[qty[0].upper()]
+        return None
+
+    def _getPlotXData(self, qty, ydata):
+        fallback = arange(len(ydata)), 'Bin Index'
+        if qty is None:
+            return fallback
+        xdata = self._inGridsAs(qty)
+        if xdata is not None:
+            return xdata[:, 0], qty
+        if qty in self.indexes:
+            return self.indexes[qty], qty
+        return fallback
 
 
 class Detector(DetectorBase):

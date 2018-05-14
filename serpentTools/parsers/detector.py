@@ -48,7 +48,6 @@ class DetectorReader(BaseReader):
         """Read the file and store the detectors."""
         keys = ['DET']
         separators = ['\n', '];']
-        info('Preparing to read {}'.format(self.filePath))
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
                 detString = chunk.pop(0).split(' ')[0][3:]
@@ -61,7 +60,6 @@ class DetectorReader(BaseReader):
                 else:
                     continue
                 self._addDetector(chunk, detName, binType)
-        info('Done')
 
     def _addDetector(self, chunk, detName, binType):
         if binType is None:
@@ -84,16 +82,16 @@ class DetectorReader(BaseReader):
               .format(binType, detName))
 
     def _precheck(self):
-        """ Count how many detectors are in the file
-        """
-        detCount = 0
+        """ Count how many detectors are in the file."""
         with open(self.filePath) as fh:
             for line in fh:
                 sline = line.split()
                 if not sline:
                     continue
                 elif 'DET' in sline[0]:
-                    detCount += 1
-        if not detCount :
-            error("No detectors found in {}".format(self.filePath))
+                    return
+        error("No detectors found in {}".format(self.filePath))
 
+    def _postcheck(self):
+        if not self.detectors:
+            warning("No detectors stored from file {}".format(self.filePath))

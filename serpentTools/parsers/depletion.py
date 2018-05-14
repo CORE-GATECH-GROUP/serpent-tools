@@ -1,17 +1,103 @@
 """Parser responsible for reading the ``*dep.m`` files"""
 import re
 
-import numpy
+from numpy import array
+from matplotlib import pyplot
 from six import iteritems
 
+from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools.messages import warning, info, debug, error
+from serpentTools.messages import (warning, info, debug, error,
+                                   SerpentToolsException)
 
 
-class DepletionReader(MaterialReader):
+class DepPlotMixin(object):
+
+    @magicPlotDocDecorator
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, materials=None,
+             ax=None, legend=True, logx=False, logy=False, loglog=False, 
+             labelFmt=None, xlabel=None, ylabel=None, **kwargs):
+        """
+        Plot properties for all materials in this file together.
+
+        Parameters
+        ----------
+        xUnits: str
+            name of x value to obtain, e.g. ``'days'``, ``'burnup'``
+        yUnits: str
+            name of y value to return, e.g. ``'adens'``, ``'burnup'``
+        timePoints: list or None
+            If given, select the time points according to those
+            specified here. Otherwise, select all points
+        names: str or list or None
+            If given, return y values corresponding to these isotope
+            names. Otherwise, return values for all isotopes.
+        materials: None or list
+            Selection of materials from ``self.materials`` to plot.
+            If None, plot all materials, potentially including ``tot``
+        {ax}
+        legend: bool
+            Automatically add the legend
+        {xlabel} Otherwise, use ``xUnits``
+        {ylabel} Otherwise, use ``yUnits``
+        {logx}
+        {logy}
+        {loglog}
+        {matLabelFmt}
+        {kwargs} :py:func:`matplotlib.pyplot.plot`
+
+        Returns
+        -------
+        {rax}
+
+        See Also
+        --------
+        * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
+        * :py:func:`matplotlib.pyplot.plot`
+        * :py:func:`str.format`
+        * :py:func:`~serpentTools.objects.materials.DepletedMaterial.plot`
+        
+        Raises
+        ------
+        KeyError
+            If x axis units are not ``'days'`` nor ``'burnup'``
+        SerpentToolsException
+            If the materials dictionary does not contain any items
+        """
+        if not self.materials:
+            raise SerpentToolsException("Material dictionary is empty")
+
+        if xUnits not in ('days', 'burnup'):
+            raise KeyError("Plot method only uses x-axis data from <days> and "
+                           "<burnup>, not {}".format(xUnits))
+        missing = set()
+        ax = ax or pyplot.axes()
+        materials = materials or self.materials.keys()
+        labelFmt = labelFmt or '{mat} {iso}'
+        for mat in materials:
+            if mat not in self.materials:
+                missing.add(mat)
+                continue
+            ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, ax,
+                    legend=False, xlabel=xlabel, ylabel=ylabel, logx=False,
+                    logy=False, loglog=False, labelFmt=labelFmt, **kwargs)
+        if missing:
+            warning("The following materials were not found in materials "
+                    "dictionary: {}".format(', '.join(missing)))
+        if legend:
+            ax.legend()
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
+
+        return ax
+
+
+class DepletionReader(DepPlotMixin, MaterialReader):
     """
     Parser responsible for reading and working with depletion files.
 
@@ -48,6 +134,7 @@ class DepletionReader(MaterialReader):
         # Captures variables for total block from string::
         #  TOT_ADENS --> ('ADENS', )
         #  ING_TOX --> ('ING_TOX', )
+        DepPlotMixin.__init__(self)
 
     def _makeMaterialRegexs(self):
         """Return the patterns by which to find the requested materials."""
@@ -59,7 +146,6 @@ class DepletionReader(MaterialReader):
 
     def _read(self):
         """Read through the depletion file and store requested data."""
-        info('Preparing to read {}'.format(self.filePath))
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
         keys.extend(self.settings['metadataKeys'])
         separators = ['\n', '];', '\r\n']
@@ -74,8 +160,6 @@ class DepletionReader(MaterialReader):
         if 'days' in self.metadata:
             for mKey in self.materials:
                 self.materials[mKey].days = self.metadata['days']
-        info('Done reading depletion file')
-        debug('  found {} materials'.format(len(self.materials)))
 
     def _addMetadata(self, chunk):
         options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
@@ -88,8 +172,8 @@ class DepletionReader(MaterialReader):
                         values = [item.split()[0][1:] for item in values]
                 else:
                     line = self._cleanSingleLine(chunk)
-                    values = numpy.array([float(item)
-                                          for item in line.split()])
+                    values = array([float(item)
+                                   for item in line.split()])
                 self.metadata[metadataKey] = values
                 return
 
@@ -122,7 +206,6 @@ class DepletionReader(MaterialReader):
         if name not in self.materials:
             debug('Adding material {}...'.format(name))
             self.materials[name] = DepletedMaterial(name, self.metadata)
-            debug('  added')
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
             cleaned = self._cleanSingleLine(chunk)
         else:
@@ -135,16 +218,14 @@ class DepletionReader(MaterialReader):
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a material file."""
-        materialCount = 0
         with open(self.filePath) as fh:
             for line in fh:
                 sline = line.split()
                 if not sline:
                     continue
                 elif 'MAT' == line.split('_')[0]:
-                    materialCount += 1
-        if materialCount == 0:
-            error("No materials found in {}".format(self.filePath))
+                    return
+        error("No materials found in {}".format(self.filePath))
 
     def _postcheck(self):
         """ensure the parser grabbed expected materials."""
@@ -157,3 +238,5 @@ class DepletionReader(MaterialReader):
                 'Unexpected key {}: {} in materials dictionary'.format(
                     mKey, type(mat))
             )
+        debug('  found {} materials'.format(len(self.materials)))
+

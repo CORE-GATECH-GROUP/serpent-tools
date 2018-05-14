@@ -2,6 +2,7 @@
 import os
 import six
 
+from six import iteritems
 import yaml
 
 from serpentTools import ROOT_DIR
@@ -9,6 +10,23 @@ from serpentTools import messages
 
 __all__ = ['defaultSettings', 'rc']
 
+SETTING_HEADER_CHAR = '-'
+SETTING_DOC_FMTR = """.. _{tag}:
+
+{header}
+``{name}``
+{header}
+
+{desc}
+::
+
+  Default: {default}
+  Type: {vtype}
+  {options}
+
+"""
+
+SETTING_OPTIONS_FMTR = "Options: [{}]"
 defaultSettings = {
     'branching.areUncsPresent': {
         'default': False,
@@ -92,7 +110,7 @@ defaultSettings = {
     },
     'serpentVersion': {
         'default': '2.1.29',
-        'options': ['2.1.29'],
+        'options': ['2.1.29', '2.1.30'],
         'description': 'Version of SERPENT',
         'type': str
     },
@@ -166,21 +184,21 @@ class DefaultSetting(object):
                                'options: {}'
                                .format(self.name, value, opts))
         return True
-
+        
 
 class DefaultSettingsLoader(dict):
     """Base class for loading all the default settings."""
 
     def __init__(self):
-        self.__locked__ = False
+        self.__locked = False
         dict.__init__(self, self._load())
-        self.__locked__ = True
+        self.__locked = True
 
     @staticmethod
     def _load():
         """Load the default setting objects."""
         defaults = {}
-        for name, value in defaultSettings.items():
+        for name, value in iteritems(defaultSettings):
             if 'options' in value:
                 options = (value['default'] if value['options'] == 'default'
                            else value['options'])
@@ -197,13 +215,13 @@ class DefaultSettingsLoader(dict):
         return defaults
 
     def __setitem__(self, key, value):
-        if self.__locked__:
+        if self.__locked:
             raise KeyError('Default settings cannot be updated once set.')
         self[key] = value
 
     def retrieveDefaults(self):
         """Return a dictionary with the default settings."""
-        return {key: setting.default for key, setting in self.items()}
+        return {key: setting.default for key, setting in iteritems(self)}
 
     def validateSetting(self, name, value):
         """Validate the setting.
@@ -232,8 +250,8 @@ class UserSettingsLoader(dict):
 
     def __init__(self):
         self._defaultLoader = DefaultSettingsLoader()
-        self.__inside__ = False
-        self.__originals__ = {}
+        self.__inside = False
+        self.__originals = {}
         dict.__init__(self, self._defaultLoader.retrieveDefaults())
 
     def __setitem__(self, key, value):
@@ -241,18 +259,18 @@ class UserSettingsLoader(dict):
         self.setValue(key, value)
 
     def __enter__(self):
-        self.__inside__ = True
+        self.__inside= True
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__inside__ = False
-        for key, originalValue in self.__originals__.items():
+        for key, originalValue in iteritems(self.__originals):
             self[key] = originalValue
-        self.__originals__ = {}
+        self.__originals= {}
 
     def _checkStoreOriginal(self, key):
-        if self.__inside__:
-            self.__originals__[key] = self[key]
+        if self.__inside:
+            self.__originals[key] = self[key]
 
     def setValue(self, name, value):
         """Set the value of a specific setting.
@@ -306,7 +324,7 @@ class UserSettingsLoader(dict):
         settingsPreffix = (
             [settingsPreffix] if isinstance(settingsPreffix, str)
             else settingsPreffix)
-        for setting, value in self.items():
+        for setting, value in iteritems(self):
             settingPath = setting.split('.')
             if settingPath[0] in settingsPreffix:
                 name = settingPath[1]
@@ -376,7 +394,7 @@ class UserSettingsLoader(dict):
         messages.debug('Loading settings onto object with strict:{}'
                        .format(strict))
 
-        for key, value in six.iteritems(configSettings):
+        for key, value in iteritems(configSettings):
             if isinstance(value, dict):
                 self.__recursiveLoad(value, strict, key)
             else:
@@ -384,7 +402,7 @@ class UserSettingsLoader(dict):
         messages.info('Done')
 
     def __recursiveLoad(self, curLevel, strict, preset):
-        for nextLevelKey, nextLevel in six.iteritems(curLevel):
+        for nextLevelKey, nextLevel in iteritems(curLevel):
             newSettingName = preset + '.' + nextLevelKey
             if isinstance(nextLevel, dict):
                 self.__recursiveLoad(nextLevel, strict, newSettingName)
@@ -402,5 +420,21 @@ class UserSettingsLoader(dict):
             else:
                 messages.error(str(error))
 
+    def prettyPrint(self):
+        out = ''
+        for key in sorted(self._defaultLoader.keys()):
+            setting = self._defaultLoader[key]
+            tag = '-'.join(setting.name.split('.'))
+            header = SETTING_HEADER_CHAR * (4 + len(setting.name))
+            optStr = (SETTING_OPTIONS_FMTR.format(', '.join(setting.options))
+                      if setting.options else '')
+            desc = setting.description
+            out += SETTING_DOC_FMTR.format(
+                header=header, name=setting.name, 
+                vtype=setting.type.__name__, default=setting.default,
+                desc=desc, options=optStr, tag=tag)
+        return out 
+
 
 rc = UserSettingsLoader()
+

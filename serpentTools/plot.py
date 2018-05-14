@@ -33,16 +33,41 @@ RETURNS_AX = """{}
 CMAP = """cmap: str or None
     Valid Matplotlib colormap to apply to the plot."""
 KWARGS = """kwargs:\n    Addition keyword arguments to pass to"""
+MAT_FMT_DOC = """labelFmt: str or None
+    Formattable string for labeling the individual plots. If not 
+    given, just label as isotope name, e.g. ``'U235'``.
+    Will make the following substitutions on the ``labelFmt`` string, 
+    if given:
+
+    +---------------+-------------------------+
+    |Keyword        | Replacement             |
+    +===============+=========================+
+    |``'mat'``      | name of this material   |
+    +---------------+-------------------------+
+    |``'iso'``      | specific isotope name   |
+    +---------------+-------------------------+
+    |``'zai'``      | specific isotope ZZAAAI |
+    +---------------+-------------------------+
+"""
+LEGEND = """legend: bool\n    Automatically label the plot"""
 
 PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
         'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
         'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
-        'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP}
+        'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP,
+        'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND}
 """Magic strings that, if found as {x}, will be replaced by the key of x"""
 
 
 def magicPlotDocDecorator(f):
-    """Decorator that replaces a lot magic strings used in plot functions"""
+    """
+    Decorator that replaces a lot magic strings used in plot functions.
+    
+    Allows docstrings to contain keyword that will be replaced with
+    a valid and proper explanation of the keyword.
+    Keywords must be wrapped in single brackets, i.e. ``{x}``
+    """
+    
     
     @wraps(f)
     def decorated(*args, **kwargs):

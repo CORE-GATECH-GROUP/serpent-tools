@@ -1,11 +1,5 @@
 """
 Package dedicated for reading ``SERPENT`` output files
-
-The :py:func:`serpentTools.parsers.read` function uses
-the following string arguments to infer the type of reader
-to be used.
-
-
 """
 from os import path
 import re
@@ -29,6 +23,8 @@ from serpentTools.parsers.detector import DetectorReader
 from serpentTools.parsers.bumat import BumatReader
 from serpentTools.parsers.results import ResultsReader
 from serpentTools.parsers.fissionMatrix import FissionMatrixReader
+from serpentTools.parsers.history import HistoryReader
+from serpentTools.parsers.xsplot import XSPlotReader
 
 READERS = {
     'dep': DepletionReader,
@@ -36,7 +32,9 @@ READERS = {
     'det': DetectorReader,
     'results': ResultsReader,
     'fission': FissionMatrixReader,
-    'bumat': BumatReader
+    'bumat': BumatReader,
+    'history': HistoryReader,
+    'xsplot' : XSPlotReader
 }
 
 REGEXES = {
@@ -45,7 +43,9 @@ REGEXES = {
     r'(.*_det\d+\.m)': DetectorReader,
     r'(.*_res\.m)': ResultsReader,
     r'(.*_fmtx\d+\.m)': FissionMatrixReader,
-    r'(.*\.bumat\d+)': BumatReader
+    r'(.*\.bumat\d+)': BumatReader,
+    r'(.*_his\d+\.m)': HistoryReader,
+    r'(.*_xs\d*\.m)' : XSPlotReader
 }
 
 __all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES',
@@ -70,8 +70,8 @@ def inferReader(filePath):
     for reg, reader in six.iteritems(REGEXES):
         match = re.match(reg, filePath)
         if match and match.group() == filePath:
-            info('Inferred reader for {}: {}'
-                 .format(filePath, reader.__name__))
+            debug('Inferred reader for {}: {}'
+                  .format(filePath, reader.__name__))
             return reader
     raise SerpentToolsException(
         'Failed to infer filetype and thus accurate reader from'
@@ -190,7 +190,7 @@ def depmtx(fileP):
     failMsg = 'File {} is ill-formed for depmtx reader\nLine: '.format(fileP)
 
     if not HAS_SCIPY:
-        warning('Decay matrix will be returned as full matrix')
+        debug('Decay matrix will be returned as full matrix')
 
     with open(fileP) as f:
         line = f.readline()
@@ -265,3 +265,4 @@ def _parseIsoBlock(stream, storage, match, line, regex):
         line = stream.readline()
         match = re.match(regex, line)
     return storage, line, items
+

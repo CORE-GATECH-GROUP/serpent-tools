@@ -3,12 +3,13 @@
 import numpy
 from matplotlib import pyplot
 
-from serpentTools import messages
+from serpentTools.messages import warning, debug
 from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
 
 
 class DepletedMaterialBase(NamedObject):
+    PLOT_XLABELS = {'days': "Days", 'burnup': r"Burnup $[MWd/kgU]$"}
     docParams = """name: str
         Name of this material
     metadata: dict
@@ -178,6 +179,25 @@ class DepletedMaterialBase(NamedObject):
             rowIDs[indx] = self.names.index(isotope)
         return rowIDs
 
+    def _formatLabel(self, labelFmt, names):
+        if isinstance(names, str):
+            names = [names]
+        elif names is None:
+            labels = self.names
+        fmtr = labelFmt if labelFmt else '{iso}'
+        labels = []
+        if '{zai' in fmtr and self.zai is None:
+            warning('ZAI not set for material {}. Labeling plot with isotope names'
+                    .format(self.name))
+            zaiLookup = self.names
+        else:
+            zaiLookup = self.zai
+        names = names or self.names
+        for name in names:
+            labels.append(fmtr.format(mat=self.name, iso=name,
+                          zai=zaiLookup[self.names.index(name)]))
+
+        return labels
 
 class DepletedMaterial(DepletedMaterialBase):
     __doc__ = DepletedMaterialBase.__doc__
@@ -194,7 +214,7 @@ class DepletedMaterial(DepletedMaterialBase):
             List of strings corresponding to the raw data from the file
         """
         newName = convertVariableName(variable)
-        messages.debug('Adding {} data to {}'.format(newName, self.name))
+        debug('Adding {} data to {}'.format(newName, self.name))
         if isinstance(rawData, str):
             scratch = [float(item) for item in rawData.split()]
         else:
@@ -207,7 +227,7 @@ class DepletedMaterial(DepletedMaterialBase):
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
              legend=True, xlabel=None, ylabel=None, logx=False, logy=False,
-             loglog=False, **kwargs):
+             loglog=False, labelFmt=None, **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -237,6 +257,8 @@ class DepletedMaterial(DepletedMaterialBase):
         {logx}
         {logy}
         {loglog}
+        {matLabelFmt}
+
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
@@ -247,26 +269,28 @@ class DepletedMaterial(DepletedMaterialBase):
         --------
         * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
         * :py:func:`matplotlib.pyplot.plot`
+        * :py:func:`str.format`
+
+        Raises
+        ------
+        KeyError
+            If x axis units are not ``'days'`` nor ``'burnup'``
         """
         if xUnits not in ('days', 'burnup'):
-            raise KeyError("Plot method only uses x-axis data from <days> and <burnup>, not "
-                           "{}".format(xUnits))
-        xVals = timePoints or (self.days if xUnits == 'days' else self.burnup)
+            raise KeyError("Plot method only uses x-axis data from <days> "
+                           "and <burnup>, not {}".format(xUnits))
+        xVals = timePoints if timePoints is not None else (
+            self.days if xUnits == 'days' else self.burnup)
         yVals = self.getValues(xUnits, yUnits, xVals, names)
         ax = ax or pyplot.axes()
-        if names is None:
-            labels = self.names
-        elif isinstance(names, str):
-            labels = [names]
-        else:
-            labels = names
+        labels = self._formatLabel(labelFmt, names)
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
 
         # format the plot
         if legend:
             ax.legend()
-        ax.set_xlabel(xlabel or xUnits)
+        ax.set_xlabel(xlabel or self.PLOT_XLABELS[xUnits])
         ax.set_ylabel(ylabel or yUnits)
         if loglog or logx:
             ax.set_xscale('log')
