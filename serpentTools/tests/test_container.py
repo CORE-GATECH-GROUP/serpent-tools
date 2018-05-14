@@ -19,8 +19,8 @@ class HomogenizedUniverseTester(unittest.TestCase):
         vec = arange(5)
         mat = arange(25)
         # Data definition
-        rawData = {'B1_1': vec, 'INF_1': vec, 'INF_S0': mat,
-                  'MACRO_E': vec}
+        rawData = {'B1_1': vec, 'B1_AS_LIST': [0,1,2,3,4],
+                  'INF_1': vec, 'INF_S0': mat, 'MACRO_E': vec}
 
         # Partial dictionaries
         cls.b1Unc = cls.b1Exp = {'b11': vec}

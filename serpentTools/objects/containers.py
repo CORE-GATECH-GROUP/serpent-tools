@@ -1,18 +1,20 @@
-""" Custom-built containers for storing data from serpent outputs
+""" 
+Custom-built containers for storing data from serpent outputs
 
 Contents
 --------
-:py:class:`~serpentTools.objects.containers.HomogUniv`
-:py:class:`~serpentTools.objects.containers.BranchContainer
-:py:class:`~serpentTools.objects.containers.DetectorBase`
-:py:class:`~serpentTools.objects.containers.Detector`
+* :py:class:`~serpentTools.objects.containers.HomogUniv`
+* :py:class:`~serpentTools.objects.containers.BranchContainer
+* :py:class:`~serpentTools.objects.containers.DetectorBase`
+* :py:class:`~serpentTools.objects.containers.Detector`
 
 """
 from collections import OrderedDict
 from itertools import product
 
 from matplotlib import pyplot
-from numpy import array, arange, unique, log, divide, ones_like, hstack
+from numpy import (array, arange, unique, log, divide, ones_like, hstack,
+                   ndarray)
 
 from serpentTools.settings import rc
 from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
@@ -152,8 +154,7 @@ class HomogUniv(NamedObject):
         variableValue:
             Variable Value
         uncertainty: bool
-            Set to ``True`` in order to retrieve the
-            uncertainty associated to the expected values
+            Set to ``True`` if this data is an uncertainty 
 
         Raises
         ------
@@ -164,6 +165,10 @@ class HomogUniv(NamedObject):
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type {}, '
                             'should be boolean.'.format(type(uncertainty)))
+        if not isinstance(variableValue, ndarray):
+            debug("Converting {} from {} to array".format(
+                variableName, type(variableValue)))
+            variableValue = array(variableValue)
         ng = self.numGroups
         if self.__reshaped and variableName in SCATTER_MATS:
             if ng is None:
@@ -175,7 +180,7 @@ class HomogUniv(NamedObject):
         incomingGroups = variableValue.shape[0] 
         if ng is None:
             self.numGroups = incomingGroups 
-        elif incomingGroups != ng:
+        elif incomingGroups != ng and variableName not in SCATTER_MATS:
             warning("Variable {} appears to have different group structure. "
                     "Current: {} vs. incoming: {}"
                     .format(variableName, ng, incomingGroups))
@@ -206,7 +211,7 @@ class HomogUniv(NamedObject):
         x:
             Variable Value
         dx:
-            Associated uncertainty
+            Associated uncertainty if ``uncertainty``
 
         Raises
         ------
