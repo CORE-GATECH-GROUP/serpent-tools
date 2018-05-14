@@ -16,7 +16,7 @@ Currently only versions 2.1.29 and 2.1.30 are supported
 """
 MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
                              'days': 'BURN_DAYS', 'burn': 'BURNUP', 'inxs': 'INF_', 'b1xs': 'B1_'},
-                  '2.1.30': {'meta': 'VERSION ', 'rslt': 'MEAN_SRC_WGT', 'univ': 'GC_UNIVERSE_NAME',
+                  '2.1.30': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
                              'days': 'BURN_DAYS', 'burn': 'BURNUP', 'inxs': 'INF_', 'b1xs': 'B1_'}}
 
 class ResultsReader(XSReader):
@@ -207,7 +207,7 @@ class ResultsReader(XSReader):
         if rc['serpentVersion'] in MapStrVersions:
             self._keysVersion = MapStrVersions[rc['serpentVersion']]
         else:
-            raise warning("Version {} is not supported by the "
+            warning("Version {} is not supported by the "
                                         "ResultsReader".format(rc['serpentVersion']))
         with open(self.filePath) as fid:
             if fid is None:
@@ -217,7 +217,7 @@ class ResultsReader(XSReader):
                 if self._keysVersion['meta'] in tline:
                     varType, varVals = self._getVarValues(tline)  # actual serpent version used
                     if rc['serpentVersion'] not in varVals:
-                        raise warning("Version {} used is different from the defined in settings {} "
+                        warning("Version {} used is different from the defined in settings {} "
                                                     .format(varVals, rc['serpentVersion']))
                 if self._keysVersion['univ'] in tline:
                     varType, varVals = self._getVarValues(tline)  # universe
@@ -230,6 +230,9 @@ class ResultsReader(XSReader):
             if not self._univlist:
                 raise SerpentToolsException("No universes are found in the "
                                             "file {}".format(self.filePath))
+            else:
+                self._counter['univ'] = 1
+                self._univlist = []
 
     def _postcheck(self):
         """ensure the parser grabbed expected materials."""

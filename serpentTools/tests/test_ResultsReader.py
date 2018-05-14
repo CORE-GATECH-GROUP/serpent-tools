@@ -95,28 +95,27 @@ class TesterCommonResultsReader(unittest.TestCase):
         self.assertSetEqual(expectedKeys, actualKeys)
         numpy.testing.assert_equal(self.reader.resdata['absKeff'],
                                    self.expectedKeff)
-        numpy.testing.assert_equal(self.reader.resdata['burnDays'],
+        try:
+            numpy.testing.assert_equal(self.reader.resdata['burnDays'],
                                    self.expectedDays)
+        except:
+            numpy.testing.assert_equal([], self.expectedDays)
 
     def test_univdata(self):
         """Verify that results for all the states ('univ', bu, buIdx, days) exist.
             Verify that the containers for each state are properly created
             and that the proper information is stored, e.g. infExp keys and values"""
-        expSt0,  expSt1= self.expectedStates[0], self.expectedStates[1]
+        expSt0 = self.expectedStates[0]
         actualStates = set(self.reader.univdata.keys())
         self.assertSetEqual(set(self.expectedStates), actualStates)   # check that all states are read
-        self.assertSetEqual(set(self.reader.univdata[expSt1].infExp.keys()),
+        self.assertSetEqual(set(self.reader.univdata[expSt0].infExp.keys()),
                             set(self.expectedInfExp))
-        self.assertSetEqual(set(self.reader.univdata[expSt1].metadata.keys()),
+        self.assertSetEqual(set(self.reader.univdata[expSt0].metadata.keys()),
                             set(self.expectedMetaData))
         numpy.testing.assert_equal(self.reader.univdata[expSt0].infExp['infAbs'],
-                                   self.expectedinfValAbsSt0)
-        numpy.testing.assert_equal(self.reader.univdata[expSt1].infExp['infAbs'],
-                                   self.expectedinfValAbsSt1)
+                                   self.expectedinfValAbs)
         numpy.testing.assert_equal(self.reader.univdata[expSt0].infUnc['infAbs'],
-                                   self.expectedinfUncAbsUn0)
-        numpy.testing.assert_equal(self.reader.univdata[expSt1].infUnc['infAbs'],
-                                   self.expectedinfUncAbsUn1)
+                                   self.expectedinfUncAbs)
 
 
 class TestFilterResults(TesterCommonResultsReader):
@@ -189,10 +188,8 @@ class TestFilterResults(TesterCommonResultsReader):
                            'infScatt7', 'infTot', 'infTranspxs']
         self.expectedMetaData = ['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
                             'cmmTranspxsY', 'cmmTranspxsZ', 'macroE', 'macroNg', 'microE', 'microNg']
-        self.expectedinfValAbsSt0 = numpy.array([1.05040E-02, 1.23260E-01])
-        self.expectedinfValAbsSt1 = numpy.array([1.01031E-02, 5.62564E-02])
-        self.expectedinfUncAbsUn0 = numpy.array([0.00482, 0.00202])
-        self.expectedinfUncAbsUn1 = numpy.array([0.00156, 0.00071])
+        self.expectedinfValAbs = numpy.array([1.05040E-02, 1.23260E-01])
+        self.expectedinfUncAbs = numpy.array([0.00482, 0.00202])
 
 
 class TestReadAllResults(TesterCommonResultsReader):
@@ -251,10 +248,81 @@ class TestReadAllResults(TesterCommonResultsReader):
                            'infScatt7', 'infTot', 'infTranspxs']
         self.expectedMetaData = ['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
                             'cmmTranspxsY', 'cmmTranspxsZ', 'macroE', 'macroNg', 'microE', 'microNg']
-        self.expectedinfValAbsSt0 = numpy.array([1.05040E-02, 1.23260E-01])
-        self.expectedinfValAbsSt1 = numpy.array([1.01031E-02, 5.62564E-02])
-        self.expectedinfUncAbsUn0 = numpy.array([0.00482, 0.00202])
-        self.expectedinfUncAbsUn1 = numpy.array([0.00156, 0.00071])
+        self.expectedinfValAbs = numpy.array([1.05040E-02, 1.23260E-01])
+        self.expectedinfUncAbs = numpy.array([0.00482, 0.00202])
+
+
+class TestFilterResultsNoBurnup(TesterCommonResultsReader):
+    """
+    Test the ability to read a file with no BU steps.
+
+    Expected outcome:
+        1. test_varsMatchSettings:
+                        Results read are equal to results set
+        2. test_metadata:
+                        metadata is filtered
+        3. test_resdata:
+                        resdata is filtered
+        4. test_univdata:
+                        univ is filtered
+    """
+    def setUp(self):
+        self.file = os.path.join(TEST_ROOT, 'pwr_res_noBU.m')
+        # universe id, Idx, Idx, Idx
+        self.expectedStates = (('0', 1, 1, 1), ('0', 1, 1, 1))
+        with rc:
+            rc['serpentVersion'] = '2.1.30'
+            rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
+                                       'diffusion', 'eig', 'burnup-coeff']
+            rc['xs.getInfXS'] = True  # only store inf cross sections
+            rc['xs.getB1XS'] = False
+            self.reader = ResultsReader(self.file)
+        self.reader.read()
+
+        self.expVarSettings = {'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
+                    'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME', 'WORKING_DIRECTORY',
+                    'HOSTNAME', 'CPU_TYPE', 'CPU_MHZ', 'START_DATE', 'COMPLETE_DATE',
+                    'GC_UNIVERSE_NAME', 'MICRO_NG', 'MICRO_E', 'MACRO_NG',
+                    'MACRO_E', 'INF_MICRO_FLX','INF_KINF', 'INF_FLX',
+                    'INF_FISS_FLX', 'TOT', 'CAPT', 'ABS', 'FISS', 'NSF',
+                    'NUBAR', 'KAPPA', 'INVV', 'TRANSPXS', 'DIFFCOEF', 'RABSXS',
+                    'REMXS', 'SCATT0', 'SCATT1', 'SCATT2', 'SCATT3', 'SCATT4',
+                    'SCATT5', 'SCATT6', 'SCATT7', 'S0', 'S1', 'S2', 'S3', 'S4',
+                    'S5', 'S6', 'S7', 'CHIT', 'CHIP', 'CHID', 'CMM_TRANSPXS',
+                    'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y', 'CMM_TRANSPXS_Z',
+                    'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X', 'CMM_DIFFCOEF_Y',
+                    'CMM_DIFFCOEF_Z', 'ANA_KEFF', 'IMP_KEFF', 'COL_KEFF',
+                    'ABS_KEFF', 'ABS_KINF', 'GEOM_ALBEDO', 'BURN_MATERIALS',
+                    'BURN_MODE', 'BURN_STEP', 'BURNUP', 'BURN_DAYS',
+                    'COEF_IDX', 'COEF_BRANCH', 'COEF_BU_STEP'}
+
+        self.expectedMetadata = {'version': 'Serpent 2.1.30',
+                            'compileDate': 'Apr  4 2018 08:55:27',
+                            'debug': [0.],
+                            'title': 'UO2 PIN MODEL',
+                            'confidentialData': [0.],
+                            'inputFileName': 'pwr',
+                            'workingDirectory': '/gpfs/pace1/project/me-kotlyar/dkotlyar6/Research/Serpent_test/FP_test',
+                            'hostname': 'rich133-c36-10-l.pace.gatech.edu',
+                            'cpuType': 'Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz',
+                            'cpuMhz': [184549409.0],
+                            'startDate': 'Mon May 14 11:20:06 2018',
+                            'completeDate': 'Mon May 14 11:20:36 2018'}
+
+        self.expectedResdata = ['absKeff', 'absKinf', 'anaKeff', 'colKeff', 'geomAlbedo', 'impKeff', 'nubar']
+
+        self.expectedKeff = numpy.array([1.15295E+00, 0.00094])
+        self.expectedDays = numpy.array([])
+
+        self.expectedInfExp= ['infAbs', 'infCapt', 'infChid', 'infChip', 'infChit', 'infDiffcoef', 'infFiss', 'infFissFlx',
+                           'infFlx', 'infInvv', 'infKappa', 'infKinf', 'infMicroFlx', 'infNsf', 'infNubar', 'infRabsxs',
+                           'infRemxs', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7',
+                           'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5', 'infScatt6',
+                           'infScatt7', 'infTot', 'infTranspxs']
+        self.expectedMetaData = ['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
+                            'cmmTranspxsY', 'cmmTranspxsZ', 'macroE', 'macroNg', 'microE', 'microNg']
+        self.expectedinfValAbs = numpy.array([9.16972E-03, 8.66231E-02])
+        self.expectedinfUncAbs = numpy.array([0.00090, 0.00129])
 
 
 del TesterCommonResultsReader
