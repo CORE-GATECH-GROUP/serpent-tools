@@ -21,13 +21,13 @@ class BranchesWrapper(dict):
         if isinstance(key, tuple) and len(key) == 1 and key[0] in self:
             if not self.__warned:
                 self.__warn(key)
-                return dict.__getitem__(self, key[0]) 
+            return dict.__getitem__(self, key[0]) 
         raise KeyError(key)
 
     @willChange("In the future, access a single item branch name with only "
                 "the string, ['name'] vs. [('name', )]")
     def __warn(self, key):
-        warning("Future versions will not accept '{key}' but will accept "
+        warning("Versions after 0.5.0 will not accept '{key}' but will accept "
                 "'{entry}'".format(key=key, entry=key[0]))
         self.__warned = True
         
