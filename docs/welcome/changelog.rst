@@ -19,6 +19,8 @@ Deprecation
 -----------
 
 * Variable group ``xs-yields`` will be removed. Use ``poisons`` instead
+* Branches of a single name will only be accessible through 
+  ``branches['nom']``, not ``branches[('nom'), ]`` as per :pull:`114`
 
 .. _v0.4.0:
 
