@@ -2,13 +2,15 @@
 serpent-tools
 =============
 
-.. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=develop
-    :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
-    :alt: Build status - develop
+.. only:: html
 
-.. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
-    :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+    .. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=develop
+        :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
+        :alt: Build status - develop
+
+    .. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
+        :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
+        :alt: Documentation Status
   
 A suite of parsers designed to make interacting with
 ``SERPENT`` [1]_ output files simple and flawless. 
@@ -49,16 +51,6 @@ Issues
 If you have issues installing the project, find a bug, or want to add a feature,
 the `GitHub issue page <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues>`_
 is the best place to do that.
-
-Contributors
-============
-
-Here are all the wonderful people that helped make this project happen
-
-* `Andrew Johnson <https://github.com/drewejohnson>`_
-* `Dr. Dan Kotlyar <https://github.com/CORE-GATECH>`_
-* `Stefano Terlizzi <https://github.com/sallustius>`_
-* `Gavin Ridley <https://github.com/gridley>`_
 
 References
 ==========
