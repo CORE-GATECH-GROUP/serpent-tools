@@ -35,7 +35,7 @@ class ResultsReader(XSReader):
         corresponding values. The data is unique for each burnup step.
         Some variables also contain uncertainties.
         e.g., 'absKeff': [[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]]
-    univdata: dict
+    universes: dict
         Dictionary of universe names and their corresponding
         :py:class:`~serpentTools.objects.containers.HomogUniv`
         objects. The keys describe a unique state:
@@ -62,7 +62,7 @@ class ResultsReader(XSReader):
         self.__serpentVersion = rc['serpentVersion']
         self._counter = {'meta': 0, 'rslt': 0, 'univ': 0}
         self._univlist = []
-        self.metadata,  self.resdata, self.univdata = {}, {}, {}
+        self.metadata,  self.resdata, self.universes = {}, {}, {}
         self._regexpStr = re.compile(r'\'.+\'')  # string
         self._regexpVec = re.compile(r'(?<==.)\[.+?\]')  # vector
         self._regexpScl = re.compile(r'=.+;')  # scalar
@@ -110,16 +110,16 @@ class ResultsReader(XSReader):
         """Process universes' data"""
         brState = self._getBUstate()  # obtain the branching tuple
         values = array(self._str2num(varVals))  # convert the string to float numbers
-        if not self.univdata or brState not in self.univdata.keys():
-            self.univdata[brState] = \
+        if not self.universes or brState not in self.universes.keys():
+            self.universes[brState] = \
                 HomogUniv(brState[0], brState[1], brState[2], brState[3])
             return
         if self._keysVersion['inxs'] in varNameSer or self._keysVersion['b1xs'] in varNameSer:
             vals, uncs = splitItems(values)
-            self.univdata[brState].addData(varNameSer, array(uncs), True)
-            self.univdata[brState].addData(varNameSer, array(vals), False)
+            self.universes[brState].addData(varNameSer, array(uncs), True)
+            self.universes[brState].addData(varNameSer, array(vals), False)
         else:
-            self.univdata[brState].addData(varNameSer, array(values), False)
+            self.universes[brState].addData(varNameSer, array(values), False)
 
     def _storeResData(self, varNamePy, varVals):
         """Process time-dependent results data"""
@@ -237,7 +237,7 @@ class ResultsReader(XSReader):
 
     def _postcheck(self):
         """ensure the parser grabbed expected materials."""
-        if not self.resdata and not self.metadata and not self.univdata:
+        if not self.resdata and not self.metadata and not self.universes:
             raise SerpentToolsException("No results were collected "
                                         "from {}".format(self.filePath))
         if divmod(self._counter['meta'],self._counter['univ'])[0] != self._counter['rslt']:

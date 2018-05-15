@@ -62,7 +62,7 @@ class TesterCommonResultsReader(unittest.TestCase):
                         Check that time-dependent results variables
                         and their values are properly stored
             Raises SerpentToolsException
-        4. test_univdata:
+        4. test_universes:
                         Check that expected states are read
                         i.e., ('univ', bu, buIdx, days)
                         For a single state, check that
@@ -101,20 +101,20 @@ class TesterCommonResultsReader(unittest.TestCase):
         except:
             numpy.testing.assert_equal([], self.expectedDays)
 
-    def test_univdata(self):
+    def test_universes(self):
         """Verify that results for all the states ('univ', bu, buIdx, days) exist.
             Verify that the containers for each state are properly created
             and that the proper information is stored, e.g. infExp keys and values"""
         expSt0 = self.expectedStates[0]
-        actualStates = set(self.reader.univdata.keys())
+        actualStates = set(self.reader.universes.keys())
         self.assertSetEqual(set(self.expectedStates), actualStates)   # check that all states are read
-        self.assertSetEqual(set(self.reader.univdata[expSt0].infExp.keys()),
+        self.assertSetEqual(set(self.reader.universes[expSt0].infExp.keys()),
                             set(self.expectedInfExp))
-        self.assertSetEqual(set(self.reader.univdata[expSt0].metadata.keys()),
+        self.assertSetEqual(set(self.reader.universes[expSt0].metadata.keys()),
                             set(self.expectedMetaData))
-        numpy.testing.assert_equal(self.reader.univdata[expSt0].infExp['infAbs'],
+        numpy.testing.assert_equal(self.reader.universes[expSt0].infExp['infAbs'],
                                    self.expectedinfValAbs)
-        numpy.testing.assert_equal(self.reader.univdata[expSt0].infUnc['infAbs'],
+        numpy.testing.assert_equal(self.reader.universes[expSt0].infUnc['infAbs'],
                                    self.expectedinfUncAbs)
 
 
@@ -129,7 +129,7 @@ class TestFilterResults(TesterCommonResultsReader):
                         metadata is filtered
         3. test_resdata:
                         resdata is filtered
-        4. test_univdata:
+        4. test_universes:
                         univ is filtered
     """
     def setUp(self):
@@ -210,7 +210,7 @@ class TestReadAllResults(TesterCommonResultsReader):
                         metadata is not filtered
         3. test_resdata:
                         resdata is not filtered
-        4. test_univdata:
+        4. test_universes:
                         univ is not filtered
     """
     def setUp(self):
@@ -265,7 +265,7 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
                         metadata is filtered
         3. test_resdata:
                         resdata is filtered
-        4. test_univdata:
+        4. test_universes:
                         univ is filtered
     """
     def setUp(self):
