@@ -195,7 +195,7 @@ class SensitivityReader(BaseReader):
                                         "stored on reader")
 
 def reshapePermuteSensMat(vec, newShape):
-    reshaped = numpy.reshape(vec, newShape)
+    reshaped = numpy.reshape(vec, newShape, order='F')
     newAx = list(reversed(range(len(newShape))))
     return numpy.transpose(reshaped, newAx)
 
