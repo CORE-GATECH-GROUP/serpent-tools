@@ -260,8 +260,6 @@ class UserSettingsLoader(dict):
         self.__originals = {}
         dict.__init__(self, self._defaultLoader.retrieveDefaults())
 
-    __setitem__ = setValue
-
     def __enter__(self):
         self.__inside= True
         return self
@@ -300,6 +298,8 @@ class UserSettingsLoader(dict):
             value = self._defaultLoader[name].updater(value)
         dict.__setitem__(self, name, value)
         messages.debug('Updated setting {} to {}'.format(name, value))
+
+    __setitem__ = setValue
 
     def getReaderSettings(self, settingsPreffix):
         """Get all module-wide and reader-specific settings.
