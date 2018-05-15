@@ -12,6 +12,9 @@ Next
 * :pull:`131` Updated variable groups between ``2.1.29`` and ``2.1.30`` - include
   poison cross section, kinetic parameters, six factor formula (2.1.30 exclusive),
   and minor differences
+* :pull:`141` - Setting :ref:`xs-reshapeScatter` can be used to reshape scatter
+  matrices on :py:class:`~serpentTools.objects.containers.HomogUniv` 
+  objects to square matrices
 
 .. _vDeprecated:
 
@@ -19,6 +22,8 @@ Deprecation
 -----------
 
 * Variable group ``xs-yields`` will be removed. Use ``poisons`` instead
+* Branches of a single name will only be accessible through 
+  ``branches['nom']``, not ``branches[('nom'), ]`` as per :pull:`114`
 
 .. _v0.4.0:
 
