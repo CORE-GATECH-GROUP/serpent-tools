@@ -206,6 +206,19 @@ If true, store the infinite medium cross sections.
   Type: bool
   
 
+.. _xs-reshapeScatter:
+
+---------------------
+``xs.reshapeScatter``
+---------------------
+
+If true, reshape the scattering matrices to square matrices. By default, these matrices are stored as vectors.
+::
+
+  Default: False
+  Type: bool
+  
+
 .. _xs-variableExtras:
 
 ---------------------
