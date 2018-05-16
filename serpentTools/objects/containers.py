@@ -283,9 +283,15 @@ class HomogUniv(NamedObject):
 
     def __bool__(self):
         """Return True if data is stored on the object."""
-        attrs = {"infExp", "infUnc", "b1Exp", "b1Unc", "metadata"}
+        attrs = {"infExp", "infUnc", "b1Exp", "b1Unc", "gc", "gcUnc",
+                 "groups", "microGroups"}
         for key in attrs:
-            if getattr(self, key):
+            value = getattr(self, key)
+            if isinstance(value, dict) and value:
+                return True
+            if isinstance(value, ndarray) and value.any():
+                return True
+            if value:
                 return True
         return False
 
