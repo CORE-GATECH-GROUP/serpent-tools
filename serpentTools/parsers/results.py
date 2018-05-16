@@ -45,16 +45,6 @@ class ResultsReader(XSReader):
         'universe', burnup (MWd/kg), burnup index, time (days)
         ('0', 0.0, 1, 0.0)
 
-    Methods
-    ------------
-    getUniv:
-        Returns data set for a specific universe and time of interest
-        The method is called by .getUniv('univ', burnup, index, timeDays)
-        The universe (string) and at least one time parameter (e.g., index)
-        must be given. The method allows to input more than one time parameter,
-        however only one is used to extract the data.
-        e.g., .getUniv('0',0.1, 1, 10), .getUniv('0',burnup=0.1), getUniv('0',timeDays=10)
-
     Parameters
     ----------
     filePath: str
@@ -263,12 +253,14 @@ class ResultsReader(XSReader):
             warning("Version {} is not supported by the "
                                         "ResultsReader".format(self.__serpentVersion))
         univSet = set()
+        verWarning= True
         with open(self.filePath) as fid:
             if fid is None:
                 raise IOError("Attempting to read on a closed file.\n"
                               "Parser: {}\nFile: {}".format(self, self.filePath))
             for tline in fid:
-                if self._keysVersion['meta'] in tline:
+                if verWarning and self._keysVersion['meta'] in tline:
+                    verWarning = False
                     varType, varVals = self._getVarValues(tline)  # version
                     if self.__serpentVersion not in varVals:
                         warning("Version {} is used, but version {} is defined"
@@ -298,3 +290,4 @@ class ResultsReader(XSReader):
                 if not dictUniv.hasData():
                     raise SerpentToolsException("metadata, resdata and universes are all empty "
                                         "from {}".format(self.filePath))
+
