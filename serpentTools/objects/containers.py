@@ -281,6 +281,18 @@ class HomogUniv(NamedObject):
             return self.b1Unc
         return self.gcUnc if uncertainty else self.gc
 
+    def __bool__(self):
+        """Return True if data is stored on the object."""
+        attrs = {"infExp", "infUnc", "b1Exp", "b1Unc", "metadata"}
+        for key in attrs:
+            if getattr(self, key):
+                return True
+        return False
+
+    __nonzero__ = __bool__
+
+    hasData = __bool__
+
 class DetectorBase(NamedObject):
     """
     Base class for classes that store detector data
