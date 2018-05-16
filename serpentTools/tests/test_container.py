@@ -4,8 +4,8 @@ import unittest
 from itertools import product
 
 from six import iteritems
-from numpy import array, arange
-from numpy.testing import assert_allclose
+from numpy import array, arange, ndarray
+from numpy.testing import assert_array_equal
 
 from serpentTools.settings import rc
 from serpentTools.objects.containers import HomogUniv
@@ -24,21 +24,27 @@ class _HomogUnivTestHelper(unittest.TestCase):
 
     def setUp(self):
         self.univ, vec, mat = self.getParams()
+        groupStructure = arange(NUM_GROUPS  + 1)
+        testK = vec[0]
         # Data definition
-        rawData = {'B1_1': vec, 'B1_AS_LIST': list(range(NUM_GROUPS)),
-                  'INF_1': vec, 'INF_S0': mat}
-        meta = {'MACRO_E': vec}
+        rawData = {'B1_1': vec, 'B1_AS_LIST': list(vec),
+                   'INF_1': vec, 'INF_S0': mat, 'CMM_TRANSP_X': vec,
+                   'INF_KEFF': vec, 'B1_KINF': vec, 'IMP_KEFF': vec,
+                   'INF_KINF': vec}
+        attrs = {'MACRO_E': groupStructure}
         # Partial dictionaries
-        self.b1Unc = self.b1Exp = {'b11': vec}
-        self.infUnc = self.infExp = {'inf1': vec, 'infS0': mat}
-        self.meta = {'macroE': vec}
-
+        self.b1Unc = self.b1Exp = {'b11': vec, 'b1AsList': vec, 'b1Kinf': testK}
+        self.infUnc = self.infExp = {
+                'inf1': vec, 'infS0': mat, 'infKeff': testK, 'infKinf': testK,
+                }
+        self.gcUnc = self.gc = {'cmmTranspX': vec, 'impKeff': testK}
+        self.expAttrs = {'groups': groupStructure, 'numGroups': NUM_GROUPS} 
         # Use addData
+        for key, value in iteritems(attrs):
+            self.univ.addData(key, value)
         for key, value in iteritems(rawData):
             self.univ.addData(key, value, uncertainty=False)
             self.univ.addData(key, value, uncertainty=True)
-        for key, value in iteritems(meta):
-            self.univ.addData(key, value)
 
     def test_getB1Exp(self):
         """ Get Expected vales from B1 dictionary"""
@@ -74,13 +80,14 @@ class _HomogUnivTestHelper(unittest.TestCase):
             d[kk] = self.univ.get(kk, True)[1]
         compareDictOfArrays(self.infUnc, d, 'infinite uncertainties')
 
-    def test_getMeta(self):
+    def test_attributes(self):
         """ Get metaData from corresponding dictionary"""
-        d = {}
-        # Comparison
-        for kk in self.univ.metadata:
-            d[kk] = self.univ.get(kk, False)
-        compareDictOfArrays(self.meta, d, 'metadata')
+        for key, value in iteritems(self.expAttrs):
+            actual = getattr(self.univ, key)
+            if isinstance(value, ndarray):
+                assert_array_equal(value, actual, err_msg=key)
+            else:
+                self.assertEqual(value, actual, msg=key)
 
     def test_getBothInf(self):
         """
@@ -114,7 +121,6 @@ class ReshapedHomogUnivTester(_HomogUnivTestHelper):
         with rc:
             rc.setValue('xs.reshapeScatter', True)
             univ, vec, mat = getParams()
-            univ.numGroups = NUM_GROUPS
             self.assertTrue(univ.reshaped)
         return univ, vec, mat.reshape(NUM_GROUPS, NUM_GROUPS)
 
@@ -130,7 +136,7 @@ def getParams():
 def compareDictOfArrays(expected, actualDict, dataType):
     for key, value in iteritems(expected):
         actual = actualDict[key]
-        assert_allclose(value, actual, 
+        assert_array_equal(value, actual, 
                 err_msg="Error in {} dictionary: key={}"
                 .format(dataType, key))
 
