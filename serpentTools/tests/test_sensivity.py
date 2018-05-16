@@ -1,11 +1,13 @@
-from os import join
+from os.path import join
 import unittest
 
 from six import iteritems
+from numpy import array, inf
+from numpy.testing import assert_allclose
 
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.sensitivity import SensitivityReader
-
+from serpentTools.tests.test_container import compareDictOfArrays
 
 TEST_FILE = join(TEST_ROOT, 'bwr_sens0.m')
 
@@ -104,10 +106,12 @@ class SensitivityTester(unittest.TestCase):
          [[  0.00000000e+00,   0.00000000e+00],
           [  2.17649000e-03,   5.30000000e-01]]]]])
          }
+        compareDictOfArrays(expected, self.reader.sensitivities, 
+                            'sensitivities')
 
     def test_integratedSensitivities(self):
         """Verify the energy integrated sensitivities are correct."""
-         expected= {
+        expected= {
  'fis2flx': array([[
         [[ -3.65771000e-01,   5.50000000e-02],
          [ -1.08269000e-03,   1.00000000e+00],
@@ -140,13 +144,25 @@ class SensitivityTester(unittest.TestCase):
          [  4.75881000e-02,   1.10000000e-01],
          [  2.17649000e-03,   5.30000000e-01]]]])
         }
+        compareDictOfArrays(expected, self.reader.energyIntegratedSens,
+                            'energy integrated sensitivities')
 
     def test_parameters(self):
         expected = {'nMat': 1, 'nEne': 2, 'nZai': 2, 'nPert': 7}
         for key, value in iteritems(expected):
             actual = getattr(self.reader, key)
-            self.assertEqual(expected, actual, 
+            self.assertEqual(value, actual, 
                              msg="Parameter: {}".format(key))
+
+    def test_energyBounds(self):
+        """Verify the energy bounds are stored properly."""
+        expectedBounds = array([0, 6.250E-7, 1.0E37])
+        expectedLethWidths = array([inf, 9.94812E+1])
+        for expected, actualStr in zip(
+                (expectedBounds, expectedLethWidths),
+                ('energies', 'lethargyWidths')):
+            actual = getattr(self.reader, actualStr)
+            assert_allclose(expected, actual, err_msg=actualStr)
 
 if __name__ == '__main__':
     unittest.main()
