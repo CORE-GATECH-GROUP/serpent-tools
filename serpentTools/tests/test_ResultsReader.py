@@ -42,6 +42,24 @@ class TestBadFiles(unittest.TestCase):
         with self.assertRaises(SerpentToolsException):
             univReader.read()
 
+class TestEmptyAttributes(unittest.TestCase):
+    """
+    Test a case, in which some results do exist in the file,
+    however the read procedure assigns no results into the attributes.
+    Hence metadata, resdata and universes are all empty
+
+    Raises SerpentToolsException
+    """
+
+    def test_emptyAttributes(self):
+        """Verify that the reader raises error when all attributes are empty"""
+        testFile = os.path.join(TEST_ROOT, 'pwr_res_emptyAttributes.m')
+        with self.assertRaises(SerpentToolsException):
+            with rc:
+                rc['xs.variableExtras'] = ['GC_UNIVERSE_NAME']
+                testReader = ResultsReader(testFile)
+                testReader.read()
+
 class TestGetUniv(unittest.TestCase):
     """
     Test the getUniv method.

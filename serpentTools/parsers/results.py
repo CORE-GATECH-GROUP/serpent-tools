@@ -15,10 +15,8 @@ from serpentTools.messages import (warning, debug, SerpentToolsException)
 
 MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
                              'days': 'BURN_DAYS', 'burn': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
-                             'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E']},
-                  '2.1.30': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
-                             'days': 'BURN_DAYS', 'burn': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
                              'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E']}}
+MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
 """
 Assigns search strings for different Serpent versions
 Versions 2.1.29 and 2.1.30 are supported
@@ -46,6 +44,16 @@ class ResultsReader(XSReader):
         objects. The keys describe a unique state:
         'universe', burnup (MWd/kg), burnup index, time (days)
         ('0', 0.0, 1, 0.0)
+
+    Methods
+    ------------
+    getUniv:
+        Returns data set for a specific universe and time of interest
+        The method is called by .getUniv('univ', burnup, index, timeDays)
+        The universe (string) and at least one time parameter (e.g., index)
+        must be given. The method allows to input more than one time parameter,
+        however only one is used to extract the data.
+        e.g., .getUniv('0',0.1, 1, 10), .getUniv('0',burnup=0.1), getUniv('0',timeDays=10)
 
     Parameters
     ----------
@@ -280,17 +288,13 @@ class ResultsReader(XSReader):
 
     def _postcheck(self):
         """ensure the parser grabbed expected materials."""
-        if not self.resdata and not self.metadata:
-            raise SerpentToolsException("No results were collected "
-                                        "from {}".format(self.filePath))
         if divmod(self._counter['meta'],self._counter['univ'])[0] != self._counter['rslt']:
             raise SerpentToolsException(
                 "The file {} is not complete. The reader found {} universes, "
                 "{} time-points, and {} overall result points ".format(self.filePath,
                 self._counter['univ'], self._counter['rslt'], self._counter['meta']))
-
-if __name__ == '__main__':
-    filePath = "C:\\Users\\dkotlyar6\\Dropbox (GaTech)\\Reactor-Simulation-tools\\Serpent Tools\\serpent-tools\\serpentTools\\tests\\pwr_res.m"
-    res = ResultsReader(filePath)
-    res.read()
-    a = 1
+        if not self.resdata and not self.metadata:
+            for keys, dictUniv in six.iteritems(self.universes):
+                if not dictUniv.hasData():
+                    raise SerpentToolsException("metadata, resdata and universes are all empty "
+                                        "from {}".format(self.filePath))
