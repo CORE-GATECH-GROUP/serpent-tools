@@ -9,6 +9,7 @@ Contents
 * :py:class:`~serpentTools.objects.containers.Detector`
 
 """
+from re import compile
 from collections import OrderedDict
 from itertools import product
 
@@ -19,7 +20,7 @@ from numpy import (array, arange, unique, log, divide, ones_like, hstack,
 from serpentTools.settings import rc
 from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
-from serpentTools.messages import warning, SerpentToolsException, debug
+from serpentTools.messages import warning, SerpentToolsException, debug, info
 
 DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
             'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
@@ -33,8 +34,15 @@ for xsSpectrum, xsType in product({'INF', 'B1'},
     SCATTER_MATS.update({'{}_{}{}'.format(xsSpectrum, xsType, xx)
                         for xx in range(SCATTER_ORDERS)})
 
+HOMOG_VAR_TO_ATTR = {
+    'MICRO_E': 'microGroups', 'MICRO_NG': '_numMicroGroups',
+    'MACRO_E': 'groups', 'MACRO_NG': '_numGroups'}
+
 __all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
            'DetectorBase', 'SCATTER_MATS', 'SCATTER_ORDERS')
+
+
+CRIT_RE = compile('K[EI][NF]F')
 
 
 def isNonNeg(value):
@@ -77,13 +85,22 @@ class HomogUniv(NamedObject):
         Expected values for leakage corrected group constants
     b1Unc: dict
         Relative uncertainties for leakage-corrected group constants
-    metadata: dict
-        Other values that do not not conform to inf/b1 dictionaries
-    reshapedMats: bool
+    gc: dict
+        Expected values for group constants that do not fit
+        the ``INF_`` nor ``B1_`` pattern
+    gcUnc: dict
+        Relative uncertainties for group constants that do not fit
+        the ``INF_`` nor ``B1_`` pattern
+    reshaped: bool
         ``True`` if scattering matrices have been reshaped to square
         matrices. Otherwise, these matrices are stored as vectors. 
+    groups: None or :py:class:`numpy.array`
+        Group boundaries from highest to lowest
     numGroups: None or int
-        Number of energy groups
+        Number of energy groups bounded by ``groups``
+    microGroups: None or :py:class:`numpy.array`
+        Micro group structure used to produce group constants.
+        Listed from lowest to highest
 
     Raises
     ------
@@ -112,13 +129,29 @@ class HomogUniv(NamedObject):
         self.infExp = {}
         self.b1Unc = {}
         self.infUnc = {}
-        self.metadata = {}
+        self.gc = {}
+        self.gcUnc = {}
         self.__reshaped = rc['xs.reshapeScatter']
-        self.numGroups = None
+        self._numGroups = None
+        self.groups = None
+        self.microGroups = None
+        self._numMicroGroups = None
 
     @property
     def reshaped(self):
         return self.__reshaped
+
+    @property
+    def numGroups(self):
+        if self._numGroups is None and self.groups is not None:
+            self._numGroups = self.groups.size - 1
+        return self._numGroups
+
+    @property
+    def numMicroGroups(self):
+        if self._numMicroGroups is None and self.microGroups is not None:
+            self._numMicroGroups = self.microGroups.size - 1
+        return self._numMicroGroups 
 
     def __str__(self):
         extras = []
@@ -140,7 +173,7 @@ class HomogUniv(NamedObject):
         .. versionadded:: 0.5.0
 
             Reshapes scattering matrices according to setting 
-            `xs.reshapeScatter`. Matrices are of the form
+            ``xs.reshapeScatter``. Matrices are of the form
             :math:`S[i, j]=\Sigma_{s,i\rightarrow j}`
 
         .. warning::
@@ -165,35 +198,43 @@ class HomogUniv(NamedObject):
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type {}, '
                             'should be boolean.'.format(type(uncertainty)))
-        if not isinstance(variableValue, ndarray):
-            debug("Converting {} from {} to array".format(
-                variableName, type(variableValue)))
-            variableValue = array(variableValue)
-        ng = self.numGroups
-        if self.__reshaped and variableName in SCATTER_MATS:
-            if ng is None:
-                warning("Number of groups is unknown at this time. "
-                        "Will not reshape variable {}"
-                        .format(variableName))
-            else:
-                variableValue = variableValue.reshape(ng, ng)
-        incomingGroups = variableValue.shape[0] 
-        if ng is None:
-            self.numGroups = incomingGroups 
-        elif incomingGroups != ng and variableName not in SCATTER_MATS:
-            warning("Variable {} appears to have different group structure. "
-                    "Current: {} vs. incoming: {}"
-                    .format(variableName, ng, incomingGroups))
+        
+        value = self._cleanData(variableName, variableValue)
+        if variableName in HOMOG_VAR_TO_ATTR:
+            value = value if variableValue.size > 1 else value[0]
+            setattr(self, HOMOG_VAR_TO_ATTR[variableName], value)
+            return
 
-        variableName = convertVariableName(variableName)
-
+        name = convertVariableName(variableName)
         # 2. Pointer to the proper dictionary
-        setter = self._lookup(variableName, uncertainty)
+        setter = self._lookup(name, uncertainty)
         # 3. Check if variable is already present. Then set the variable.
-        if variableName in setter:
-            warning("The variable {} will be overwritten".format(variableName))
-        setter[variableName] = variableValue
+        if name in setter:
+            warning("The variable {} will be overwritten".format(name))
+        setter[name] = value
 
+    def _cleanData(self, name, value):
+        """
+        Return the new value to be stored after some cleaning.
+
+        Makes sure all vectors, everything but keff/kinf data, are
+        converted to numpy arrays. Reshapes scattering matrices
+        if number of groups is known and ``xs.reshapeScatter``
+        """
+        if not isinstance(value, ndarray):
+            value = array(value)
+        if CRIT_RE.search(name):
+            return value[0]
+        ng = self.numGroups
+        if self.__reshaped and name in SCATTER_MATS:
+            if ng is None:
+                info("Number of groups is unknown at this time. "
+                        "Will not reshape variable {}"
+                        .format(name))
+            else:
+                value = value.reshape(ng, ng)
+        return value
+        
     def get(self, variableName, uncertainty=False):
         """
         Gets the value of the variable VariableName from the dictionaries
@@ -236,9 +277,6 @@ class HomogUniv(NamedObject):
         # 3. Return the value of the variable
         if not uncertainty:
             return x
-        if setter is self.metadata:
-            warning('No uncertainty is associated to metadata')
-            return x
         setter = self._lookup(variableName, True)
         if variableName not in setter:
             raise KeyError(
@@ -256,14 +294,19 @@ class HomogUniv(NamedObject):
             if not uncertainty:
                 return self.b1Exp
             return self.b1Unc
-        else:
-            return self.metadata
+        return self.gcUnc if uncertainty else self.gc
 
     def __bool__(self):
         """Return True if data is stored on the object."""
-        attrs = {"infExp", "infUnc", "b1Exp", "b1Unc", "metadata"}
+        attrs = {"infExp", "infUnc", "b1Exp", "b1Unc", "gc", "gcUnc",
+                 "groups", "microGroups"}
         for key in attrs:
-            if getattr(self, key):
+            value = getattr(self, key)
+            if isinstance(value, dict) and value:
+                return True
+            if isinstance(value, ndarray) and value.any():
+                return True
+            if value:
                 return True
         return False
 
