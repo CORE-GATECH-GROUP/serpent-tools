@@ -196,10 +196,6 @@ class HomogUniv(NamedObject):
         incomingGroups = variableValue.shape[0] 
         if ng is None:
             self.numGroups = incomingGroups 
-        elif incomingGroups != ng and variableName not in SCATTER_MATS:
-            warning("Variable {} appears to have different group structure. "
-                    "Current: {} vs. incoming: {}"
-                    .format(variableName, ng, incomingGroups))
 
         variableName = convertVariableName(variableName)
 
