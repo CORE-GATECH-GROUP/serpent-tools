@@ -1,5 +1,6 @@
 from os.path import join
 import unittest
+from collections import OrderedDict
 
 from six import iteritems
 from numpy import array, inf
@@ -163,6 +164,29 @@ class SensitivityTester(unittest.TestCase):
                 ('energies', 'lethargyWidths')):
             actual = getattr(self.reader, actualStr)
             assert_allclose(expected, actual, err_msg=actualStr)
+
+    def test_perts(self):
+        """Verify the ordered dictionary of perturbations is correct."""
+        expected = OrderedDict([
+            ('total xs', 0), ('ela scatt xs', 1), ('sab scatt xs', 2),
+            ('inl scatt xs', 3), ('capture xs', 4), ('fission xs', 5),
+            ('nxn xs', 6)])
+        actual = self.reader.perts
+        self.assertDictEqual(expected, actual)
+
+    def test_zai(self):
+        """Verify the ordered dictionary of perturbed isotopes is correct."""
+        expected = OrderedDict([
+            ('922350', 0), ('922380', 1)])
+        actual = self.reader.zais
+        self.assertDictEqual(expected, actual)
+
+    def test_materials(self):
+        """Verify the ordered dictionary of perturbed materials is correct."""
+        expected = OrderedDict([
+            ('total', 0)])
+        actual = self.reader.materials
+        self.assertDictEqual(expected, actual)
 
 if __name__ == '__main__':
     unittest.main()
