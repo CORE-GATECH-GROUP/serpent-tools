@@ -54,7 +54,7 @@ class SensitivityReader(BaseReader):
         self.energies = None
         self.lethargyWidths = None
         self.sensitivities = {}
-        self.energiesrgyIntegratedSens = {}
+        self.energyIntegratedSens = {}
 
     def read(self):
         self._precheck()
@@ -135,17 +135,16 @@ class SensitivityReader(BaseReader):
         else:
             raise SerpentToolsException("Could not find SENS parameter "
                                         "in energy chunk {}".format(chunk[:3]))
-            splitLine = line.split()
-            varName = splitLine[0].split('_')[1:]
-            varValues = splitLine[3:-1]
-            if varName[0] == 'E':
-                self.energies = varValues
-            elif varName == ['LETHARGY', 'WIDTHS']:
-                self.lethargyWidths = varValues
-            else:
-
-                warning("Unanticipated energy setting {}"
-                        .format(splitLine[0]))
+        splitLine = line.split()
+        varName = splitLine[0].split('_')[1:]
+        varValues = strListToVec(splitLine[3:-1])
+        if varName[0] == 'E':
+            self.energies = varValues
+        elif varName == ['LETHARGY', 'WIDTHS']:
+            self.lethargyWidths = varValues
+        else:
+            warning("Unanticipated energy setting {}"
+                    .format(splitLine[0]))
 
     def __processSensChunk(self, chunk):
         varName = None
@@ -166,7 +165,7 @@ class SensitivityReader(BaseReader):
                 varName = None
 
     def __addSens(self, varName, vec, isEnergyIntegrated):
-        dest = (self.energiesrgyIntegratedSens if isEnergyIntegrated
+        dest = (self.energyIntegratedSens if isEnergyIntegrated
                 else self.sensitivities)
         newShape = [2, self.nPert, self.nZai, self.nMat]
         if not isEnergyIntegrated:
@@ -190,7 +189,7 @@ class SensitivityReader(BaseReader):
     def _postcheck(self):
         if not self.sensitivities:
             raise SerpentToolsException("No sensitivity data stored on reader")
-        if not self.energiesrgyIntegratedSens:
+        if not self.energyIntegratedSens:
             raise SerpentToolsException("No energy integrated sensitivities "
                                         "stored on reader")
 
