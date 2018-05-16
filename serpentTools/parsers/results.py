@@ -1,6 +1,8 @@
 """Parser responsible for reading the ``*res.m`` files"""
 import re
 
+import six
+
 from numpy import array, vstack
 
 from serpentTools.settings import rc
@@ -8,16 +10,19 @@ from serpentTools.objects import splitItems, convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.objects.readers import XSReader
 
-from serpentTools.messages import (info, warning, debug, SerpentToolsException)
+from serpentTools.messages import (warning, debug, SerpentToolsException)
 
+
+MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
+                             'days': 'BURN_DAYS', 'burn': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
+                             'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E']},
+                  '2.1.30': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
+                             'days': 'BURN_DAYS', 'burn': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
+                             'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E']}}
 """
 Assigns search strings for different Serpent versions
-Currently only versions 2.1.29 and 2.1.30 are supported
+Versions 2.1.29 and 2.1.30 are supported
 """
-MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
-                             'days': 'BURN_DAYS', 'burn': 'BURNUP', 'inxs': 'INF_', 'b1xs': 'B1_'},
-                  '2.1.30': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
-                             'days': 'BURN_DAYS', 'burn': 'BURNUP', 'inxs': 'INF_', 'b1xs': 'B1_'}}
 
 class ResultsReader(XSReader):
     """
@@ -58,7 +63,6 @@ class ResultsReader(XSReader):
 
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'xs')
-        self.__fileObj = None
         self.__serpentVersion = rc['serpentVersion']
         self._counter = {'meta': 0, 'rslt': 0, 'univ': 0}
         self._univlist = []
@@ -70,11 +74,9 @@ class ResultsReader(XSReader):
 
     def _read(self):
         """Read through the results file and store requested data."""
-        info('Preparing to read {}'.format(self.filePath))
         with open(self.filePath, 'r') as fObject:
             for tline in fObject:
                 self._processResults(tline)
-        info('Done reading results file')
 
     def _processResults(self, tline):
         """Performs the main processing of the results."""
@@ -114,7 +116,7 @@ class ResultsReader(XSReader):
             self.universes[brState] = \
                 HomogUniv(brState[0], brState[1], brState[2], brState[3])
             return
-        if self._keysVersion['inxs'] in varNameSer or self._keysVersion['b1xs'] in varNameSer:
+        if varNameSer not in self._keysVersion['varsUnc']:
             vals, uncs = splitItems(values)
             self.universes[brState].addData(varNameSer, array(uncs), True)
             self.universes[brState].addData(varNameSer, array(vals), False)
@@ -152,7 +154,7 @@ class ResultsReader(XSReader):
     def _getBUstate(self):
         """Define unique branch state"""
         days, burnup, burnIdx = self._counter['meta'], self._counter['meta'],\
-                                self._counter['rslt']  # reset values
+                                self._counter['rslt']  # assign indices
         if convertVariableName(self._keysVersion['days']) in self.resdata.keys():
             varPyDays = convertVariableName(self._keysVersion['days'])  # Py style
             if burnIdx > 1:
@@ -167,13 +169,8 @@ class ResultsReader(XSReader):
                 burnup = self.resdata[varPyBU][-1]
         return (self._univlist[-1], burnup, burnIdx, days)
 
-    def _getNumUniv(self):
-        """Removes the repetitive components in the list."""
-        univset = set(self._univlist)
-        uniquelist = list(univset)
-        return len(uniquelist)
-
-    def _str2num(self, varVals):
+    @staticmethod
+    def _str2num(varVals):
         """Converts a string to a list of numbers."""
         num_list = [float(x) for x in varVals.split()]
         return num_list
@@ -187,61 +184,113 @@ class ResultsReader(XSReader):
 
     def _getVarValues(self, tline):
         """Obtains the values of any variable."""
-        str, vec, scl = self._regexpStr.search(tline),\
+        strMatch, vecMatch, sclMatch = self._regexpStr.search(tline),\
                         self._regexpVec.search(tline),\
                         self._regexpScl.search(tline)
         varType, varVals = [], []
-        if str is not None:
+        if strMatch is not None:
             varType = 'string'
-            varVals = tline[str.span()[0]+1:str.span()[1]-1]
-        elif vec is not None:
+            varVals = tline[strMatch.span()[0]+1:strMatch.span()[1]-1]
+        elif vecMatch is not None:
             varType = 'vector'
-            varVals = tline[vec.span()[0]+1:vec.span()[1]-2]
-        elif scl is not None:
+            varVals = tline[vecMatch.span()[0]+1:vecMatch.span()[1]-2]
+        elif sclMatch is not None:
             varType = 'scalar'
-            varVals = tline[scl.span()[0]+1:scl.span()[1]-2]
+            varVals = tline[sclMatch.span()[0]+1:sclMatch.span()[1]-2]
         return varType, varVals
+
+    def getUniv(self, univ, burnup=None, index=None, timeDays=None):
+        """
+        Return a specific universe given the ID and time of interest
+
+        If more than one time parameter is given, the hierarchy of search is:
+        index (highest priority), burnup, timeDays (lowest priority)
+
+        Parameters
+        ----------
+        univ: str
+            Unique str for the desired universe
+        burnup: float or int
+            Burnup [MWd/kgU] of the desired universe
+        timeDays: float or int
+            Time [days] of the desired universe
+        index: int
+            Point of interest in the burnup/days index
+
+        Returns
+        -------
+        :py:class:`~serpentTools.objects.containers.HomogUniv`
+            Requested universe
+
+        Raises
+        ------
+        KeyError:
+            If the requested universe could not be found
+        SerpentToolsException:
+            If burnup, days and index are not given
+        """
+        if index is None and burnup is None and timeDays is None:
+            raise SerpentToolsException('Burnup, time or index are required inputs')
+        searchIndex = 2 if index is not None else 1 if burnup is not None else 3
+        searchValue = index if index is not None else burnup if burnup is not None else timeDays
+        if searchIndex == 2 and searchValue < 1:  # index must be non-zero
+            raise KeyError(
+                'Index read is {}, however only integers above zero are allowed'
+                    .format(searchValue))
+        for key, dictUniv in six.iteritems(self.universes):
+            if key[0] == univ and key[searchIndex] == searchValue:
+                debug('Found universe that matches with keys {}'
+                      .format(key))
+                return self.universes[key]
+        searchName = 'index ' if index else 'burnup ' if burnup else 'timeDays '
+        raise KeyError(
+            'Could not find a universe that matched requested universe {} and '
+            '{} {}'.format(univ, searchName, searchValue))
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a results file."""
-        #MapStrVersions = self._mapSerpentVersion()
         if self.__serpentVersion in MapStrVersions:
             self._keysVersion = MapStrVersions[self.__serpentVersion]
         else:
             warning("Version {} is not supported by the "
                                         "ResultsReader".format(self.__serpentVersion))
+        univSet = set()
         with open(self.filePath) as fid:
             if fid is None:
                 raise IOError("Attempting to read on a closed file.\n"
                               "Parser: {}\nFile: {}".format(self, self.filePath))
             for tline in fid:
                 if self._keysVersion['meta'] in tline:
-                    varType, varVals = self._getVarValues(tline)  # actual serpent version used
+                    varType, varVals = self._getVarValues(tline)  # version
                     if self.__serpentVersion not in varVals:
-                        warning("Version {} is used, but version {} is defined in settings"
-                                                    .format(varVals, self.__serpentVersion))
+                        warning("Version {} is used, but version {} is defined"
+                                " in settings".format(varVals,
+                                                      self.__serpentVersion))
                 if self._keysVersion['univ'] in tline:
                     varType, varVals = self._getVarValues(tline)  # universe
-                    self._univlist.append(varVals)
-                    nUniv = self._getNumUniv()
-                    if len(self._univlist) > nUniv:
-                        self._counter['univ'] = nUniv
-                        self._univlist = []
-                        return
-            if not self._univlist:
+                    if varVals in univSet:
+                        break
+                    else:
+                        univSet.add(varVals)  # add the new universe
+            if not univSet:
                 raise SerpentToolsException("No universes are found in the "
                                             "file {}".format(self.filePath))
             else:
-                self._counter['univ'] = 1
-                self._univlist = []
+                self._counter['univ'] = len(univSet)
 
     def _postcheck(self):
         """ensure the parser grabbed expected materials."""
-        if not self.resdata and not self.metadata and not self.universes:
+        if not self.resdata and not self.metadata:
             raise SerpentToolsException("No results were collected "
                                         "from {}".format(self.filePath))
         if divmod(self._counter['meta'],self._counter['univ'])[0] != self._counter['rslt']:
-            debug('  found {} universes, {} time-points, and {} overall result points'.
-                  format(self._counter['univ'], self._counter['rslt'], self._counter['meta']))
-            raise SerpentToolsException("The file {} is not complete ".format(self.filePath))
+            raise SerpentToolsException(
+                "The file {} is not complete. The reader found {} universes, "
+                "{} time-points, and {} overall result points ".format(self.filePath,
+                self._counter['univ'], self._counter['rslt'], self._counter['meta']))
 
+if __name__ == '__main__':
+    filePath = "C:\\Users\\dkotlyar6\\Dropbox (GaTech)\\Reactor-Simulation-tools\\Serpent Tools\\serpent-tools\\serpentTools\\tests\\pwr_res.m"
+    res = ResultsReader(filePath)
+    res.read()
+    a = 1
