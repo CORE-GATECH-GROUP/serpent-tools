@@ -1,6 +1,7 @@
 """Test the container object. """
 
 import unittest
+from itertools import product
 
 from six import iteritems
 from numpy import array, arange
@@ -135,8 +136,35 @@ def compareDictOfArrays(expected, actualDict, dataType):
 
 del _HomogUnivTestHelper
 
+class UnivTruthTester(unittest.TestCase):
+    """Class that tests the various boolean evaluations for HomogUniv"""
+
+    def setUp(self):
+        """Verify that an empty universe evalutes to False."""
+        self.assertFalse(self.getUniv())
+
+    def test_loadedUnivTrue(self):
+        """Verify that universes with some data evalue to True."""
+        keys = {"INF_TOT", "B1_TOT", "CMM_TRANSP_X"}
+        data = arange(NUM_GROUPS)
+        for uflag, key in product((True, False), keys):
+            univ = self.getUniv()
+            univ.addData(key, data, uflag)
+            self.evalUniv(univ, msg="Key = {}, Uflag={}".format(key, uflag))
+        univ = self.getUniv()
+        univ.addData("MACRO_E", data)
+        self.evalUniv(univ, msg="Key = MACRO_E")
+
+    @staticmethod
+    def getUniv():
+        return HomogUniv('truth', 0, 0, 0)
+
+    def evalUniv(self, univ, msg):
+        """Shortcut for testing the truth of a universe."""
+        self.assertTrue(univ, msg=msg)
+        self.assertTrue(univ.hasData, msg=msg)
+
+
+
 if __name__ == '__main__':
-    from serpentTools import rc
-    with rc:
-        rc['verbosity'] = 'debug'
-        unittest.main()
+    unittest.main()
