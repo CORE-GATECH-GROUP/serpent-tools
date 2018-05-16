@@ -33,6 +33,10 @@ for xsSpectrum, xsType in product({'INF', 'B1'},
     SCATTER_MATS.update({'{}_{}{}'.format(xsSpectrum, xsType, xx)
                         for xx in range(SCATTER_ORDERS)})
 
+HOMOG_VAR_TO_ATTR = {
+    'MICRO_E': 'microGroups', 'MICRO_NG': 'numMicroGroups',
+    'MACRO_E': 'groups', 'MACRO_NG': 'numGroups'}
+
 __all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
            'DetectorBase', 'SCATTER_MATS', 'SCATTER_ORDERS')
 
@@ -82,8 +86,13 @@ class HomogUniv(NamedObject):
     reshapedMats: bool
         ``True`` if scattering matrices have been reshaped to square
         matrices. Otherwise, these matrices are stored as vectors. 
+    groups: None or :py:class:`numpy.array`
+        Group boundaries from highest to lowest
     numGroups: None or int
-        Number of energy groups
+        Number of energy groups bounded by ``groups``
+    microGroups: None or :py:class:`numpy.array`
+        Micro group structure used to produce group constants.
+        Listed from lowest to highest
 
     Raises
     ------
@@ -115,6 +124,9 @@ class HomogUniv(NamedObject):
         self.metadata = {}
         self.__reshaped = rc['xs.reshapeScatter']
         self.numGroups = None
+        self.groups = None
+        self.microGroups = None
+        self.numMicroGroups = None
 
     @property
     def reshaped(self):
@@ -140,7 +152,7 @@ class HomogUniv(NamedObject):
         .. versionadded:: 0.5.0
 
             Reshapes scattering matrices according to setting 
-            `xs.reshapeScatter`. Matrices are of the form
+            ``xs.reshapeScatter``. Matrices are of the form
             :math:`S[i, j]=\Sigma_{s,i\rightarrow j}`
 
         .. warning::
@@ -169,6 +181,10 @@ class HomogUniv(NamedObject):
             debug("Converting {} from {} to array".format(
                 variableName, type(variableValue)))
             variableValue = array(variableValue)
+        if variableName in HOMOG_VAR_TO_ATTR:
+            value = variableValue if variableName.size > 1 else variableValue[0]
+            setattr(self, HOMOG_VAR_TO_ATTR[variableName], value)
+            return
         ng = self.numGroups
         if self.__reshaped and variableName in SCATTER_MATS:
             if ng is None:
