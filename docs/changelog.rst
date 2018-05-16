@@ -1,3 +1,5 @@
+.. |homogUniv| replace:: :py:class:`~serpentTools.objects.containers.HomogUniv`
+
 .. _changelog:
 
 *********
@@ -13,11 +15,23 @@ Next
   poison cross section, kinetic parameters, six factor formula (2.1.30 exclusive),
   and minor differences
 * :pull:`141` - Setting :ref:`xs-reshapeScatter` can be used to reshape scatter
-  matrices on :py:class:`~serpentTools.objects.containers.HomogUniv` 
+  matrices on |homogUniv|
   objects to square matrices
 * :pull:`145` - :py:meth:`~serpentTools.objects.containers.HomogUniv.hasData` 
-  added to check if :py:class:`~serpentTools.objects.containers.HomogUniv` 
+  added to check if |homogUniv| 
   objects have any data stored on them
+* :pull:`146` - |homogUniv| object
+  stores group structure on the object. New dictionaries for storing group constant
+  data that is not ``INF`` nor ``B1`` - 
+  :py:attr:`~serpentTools.objects.containers.HomogUniv.gc` and 
+  :py:attr:`~serpentTools.objects.containers.HomogUniv.gcUnc` 
+ 
+.. _vAPI-changes:
+
+API Changes
+-----------
+
+* :pull:`146` removed ``metadata`` dictionaries on |homogUniv| objects.
 
 .. _vDeprecated:
 
