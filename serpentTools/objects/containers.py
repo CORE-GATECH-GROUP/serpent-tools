@@ -9,6 +9,7 @@ Contents
 * :py:class:`~serpentTools.objects.containers.Detector`
 
 """
+from re import compile
 from collections import OrderedDict
 from itertools import product
 
@@ -39,6 +40,9 @@ HOMOG_VAR_TO_ATTR = {
 
 __all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
            'DetectorBase', 'SCATTER_MATS', 'SCATTER_ORDERS')
+
+
+CRIT_RE = compile('K[EI][NF]F')
 
 
 def isNonNeg(value):
@@ -194,32 +198,43 @@ class HomogUniv(NamedObject):
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type {}, '
                             'should be boolean.'.format(type(uncertainty)))
-        if not isinstance(variableValue, ndarray):
-            debug("Converting {} from {} to array".format(
-                variableName, type(variableValue)))
-            variableValue = array(variableValue)
+        
+        value = self._cleanData(variableName, variableValue)
         if variableName in HOMOG_VAR_TO_ATTR:
-            value = variableValue if variableValue.size > 1 else variableValue[0]
+            value = value if variableValue.size > 1 else value[0]
             setattr(self, HOMOG_VAR_TO_ATTR[variableName], value)
             return
+
+        name = convertVariableName(variableName)
+        # 2. Pointer to the proper dictionary
+        setter = self._lookup(name, uncertainty)
+        # 3. Check if variable is already present. Then set the variable.
+        if name in setter:
+            warning("The variable {} will be overwritten".format(name))
+        setter[name] = value
+
+    def _cleanData(self, name, value):
+        """
+        Return the new value to be stored after some cleaning.
+
+        Makes sure all vectors, everything but keff/kinf data, are
+        converted to numpy arrays. Reshapes scattering matrices
+        if number of groups is known and ``xs.reshapeScatter``
+        """
+        if not isinstance(value, ndarray):
+            value = array(value)
+        if CRIT_RE.search(name):
+            return value[0]
         ng = self.numGroups
-        if self.__reshaped and variableName in SCATTER_MATS:
+        if self.__reshaped and name in SCATTER_MATS:
             if ng is None:
                 info("Number of groups is unknown at this time. "
                         "Will not reshape variable {}"
-                        .format(variableName))
+                        .format(name))
             else:
-                variableValue = variableValue.reshape(ng, ng)
+                value = value.reshape(ng, ng)
+        return value
         
-        variableName = convertVariableName(variableName)
-
-        # 2. Pointer to the proper dictionary
-        setter = self._lookup(variableName, uncertainty)
-        # 3. Check if variable is already present. Then set the variable.
-        if variableName in setter:
-            warning("The variable {} will be overwritten".format(variableName))
-        setter[variableName] = variableValue
-
     def get(self, variableName, uncertainty=False):
         """
         Gets the value of the variable VariableName from the dictionaries

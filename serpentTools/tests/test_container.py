@@ -25,14 +25,19 @@ class _HomogUnivTestHelper(unittest.TestCase):
     def setUp(self):
         self.univ, vec, mat = self.getParams()
         groupStructure = arange(NUM_GROUPS  + 1)
+        testK = vec[0]
         # Data definition
         rawData = {'B1_1': vec, 'B1_AS_LIST': list(vec),
-                   'INF_1': vec, 'INF_S0': mat, 'CMM_TRANSP_X': vec}
+                   'INF_1': vec, 'INF_S0': mat, 'CMM_TRANSP_X': vec,
+                   'INF_KEFF': vec, 'B1_KINF': vec, 'IMP_KEFF': vec,
+                   'INF_KINF': vec}
         attrs = {'MACRO_E': groupStructure}
         # Partial dictionaries
-        self.b1Unc = self.b1Exp = {'b11': vec, 'b1AsList': vec}
-        self.infUnc = self.infExp = {'inf1': vec, 'infS0': mat}
-        self.gcUnc = self.gc = {'cmmTranspX': vec}
+        self.b1Unc = self.b1Exp = {'b11': vec, 'b1AsList': vec, 'b1Kinf': testK}
+        self.infUnc = self.infExp = {
+                'inf1': vec, 'infS0': mat, 'infKeff': testK, 'infKinf': testK,
+                }
+        self.gcUnc = self.gc = {'cmmTranspX': vec, 'impKeff': testK}
         self.expAttrs = {'groups': groupStructure, 'numGroups': NUM_GROUPS} 
         # Use addData
         for key, value in iteritems(attrs):
