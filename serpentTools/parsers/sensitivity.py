@@ -3,11 +3,8 @@ Class to read Sensitivity file
 """
 from collections import OrderedDict
 
-import numpy
-from numpy import empty, float64
-from scipy.sparse import csr_matrix
+from numpy import transpose, array
 
-import serpentTools
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.objects import convertVariableName
@@ -234,13 +231,13 @@ def reshapePermuteSensMat(vec, newShape):
     """
     Return an array that has been reshaped and permuted like the sens file.
     """
-    reshaped = numpy.reshape(vec, newShape, order='F')
+    reshaped = vec.reshape(newShape, order='F')
     newAx = list(reversed(range(len(newShape))))
-    return numpy.transpose(reshaped, newAx)
+    return transpose(reshaped, newAx)
 
 
 def strListToVec(strList):
     """Convert a string of list of strings to vector."""
     split = strList.split() if isinstance(strList, str) else strList
-    return numpy.array([float(xx) for xx in split])
+    return array([float(xx) for xx in split])
 
