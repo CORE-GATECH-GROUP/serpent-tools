@@ -6,16 +6,20 @@
 Welcome to serpentTools's documentation!
 ========================================
 
+.. include:: ../README.rst
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   welcome/index.rst
-   examples/index.rst
-   settingsTop.rst
-   variableGroupsTop.rst
-   api/index.rst
-   develop/index.rst
+   changelog
+   examples/index
+   settingsTop
+   variableGroupsTop
+   api/index
+   develop/index
+   license
+   contributors
 
 Indices and tables
 ==================

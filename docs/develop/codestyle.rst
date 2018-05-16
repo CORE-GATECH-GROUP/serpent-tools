@@ -16,8 +16,8 @@ For the most part, this project follows the
 
 Some of the specific style points for this project are included below
 
-* mixedCase for variables, methods, and functions
-* CamelCase for classes::
+* ``mixedCase`` for variables, methods, and functions
+* ``CamelCase`` for classes::
 
     class DemoClass(object):
 
@@ -46,3 +46,5 @@ Some of the specific style points for this project are included below
     # not preferred
     import really
     really.long.path.to.a.function()
+
+

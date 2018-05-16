@@ -1,15 +1,4 @@
 
-Copyright (c) 2017-2018 Andrew Johnson, Dan Kotlyar, Stefano Terlizzi,
-Gavin Ridley, GTRC
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 Cross Section Reader/Plotter
 ============================
 
@@ -23,7 +12,7 @@ as documented on the Serpent wiki. ``serpentTools`` can then read the
 output, figuring out its filetype automatically as with other readers.
 Let’s plot some data used in the ``serpentTools`` regression suite.
 
-.. code:: ipython3
+.. code::
 
     import os
     import serpentTools
@@ -45,7 +34,7 @@ This file contains some cross sections from a Serpent case containing a
 chunk of plutonium metal reflected by beryllium. Let’s see what cross
 sections are available from the file:
 
-.. code:: ipython3
+.. code::
 
     xsreader.xsections.keys()
 
@@ -67,20 +56,20 @@ printed in the yourInputFileName_xs.m file.
 
 Plotting the entries is very easy, check this out:
 
-.. code:: ipython3
+.. code::
 
     fig = xsreader.xsections['i4009_03c'].plot()
 
 
 
-.. image:: XSPlot_files/XSPlot_8_0.png
+.. image:: images/XSPlot_files/XSPlot_8_0.png
 
 
 This is nice to have an automatically generated legend, but gets
 somewhat busy quickly. So, it’s easy to check which MT numbers are
 available, and plot only a few:
 
-.. code:: ipython3
+.. code::
 
     xsreader.xsections['i4009_03c'].showMT()
 
@@ -100,20 +89,20 @@ available, and plot only a few:
     104   (n,d)
 
 
-.. code:: ipython3
+.. code::
 
     fig2 = xsreader.xsections['i4009_03c'].plot(mts=[2, 16], title='Less busy!')
 
 
 
-.. image:: XSPlot_files/XSPlot_11_0.png
+.. image:: images/XSPlot_files/XSPlot_11_0.png
 
 
 Of course, the same process can be applied to materials, but Serpent has
 some special unique negative MT numbers. The code will give you their
 meaning without requiring your reference back to the wiki.
 
-.. code:: ipython3
+.. code::
 
     xsreader.xsections['mfissile'].showMT()
 
@@ -131,25 +120,7 @@ meaning without requiring your reference back to the wiki.
 
 
 Note that any extra arguments passed to the plot method get passed on to
-matplotlib’s plotting, and not figure instantiations. So, if you want to
-change figure options, this goes in its own dictionary:
-
-.. code:: ipython3
-
-    xsreader.xsections['mfissile'].plot(mts=[-3, -6, -16])
-
-
-
-
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x7ffb37cd47f0>
-
-
-
-
-.. image:: XSPlot_files/XSPlot_15_1.png
-
+matplotlib’s plotting, and not figure instantiations.
 
 Lastly, there are two ways to directly access data from Serpent’s xsplot
 output. Firstly, if you’d like to see the data as-stored, just check the
@@ -161,7 +132,7 @@ The other method regards presenting tabular data in a visually appealing
 way. It uses pandas though, so make sure you have that installed to
 obtain pretty tables.
 
-.. code:: ipython3
+.. code::
 
     xsreader.xsections['mfissile'].xsdata
 
@@ -193,7 +164,7 @@ obtain pretty tables.
 
 
 
-.. code:: ipython3
+.. code::
 
     xsreader.xsections['mfissile'].tabulate()
 
