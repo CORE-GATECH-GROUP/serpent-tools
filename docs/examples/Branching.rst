@@ -167,13 +167,24 @@ the :py:meth:`~serpentTools.objects.containers.BranchContainer.getUniv` method
     >>> univ2 = b0.getUniv(0, index=1)
     >>> assert univ0 is univ1 is univ2
 
-Group constant data is stored in five dictionaries:
+Group constant data is spread out across the following sub-dictionaries:
 
-1. :py:attr:`~serpentTools.objects.containers.HomogUniv.infExp`: Expected values for infinite medium group constants
-2. :py:attr:`~serpentTools.objects.containers.HomogUniv.infUnc`: Relative uncertainties for infinite medium group constants
-3. :py:attr:`~serpentTools.objects.containers.HomogUniv.b1Exp`: Expected values for leakge-corrected group constants
-4. :py:attr:`~serpentTools.objects.containers.HomogUniv.b1Unc`: Relative uncertainties for leakge-corrected group constants
-5. :py:attr:`~serpentTools.objects.containers.HomogUniv.metaData`: items that do not fit the in the above categories
+1. :py:attr:`~serpentTools.objects.containers.HomogUniv.infExp`: 
+   Expected values for infinite medium group constants
+2. :py:attr:`~serpentTools.objects.containers.HomogUniv.infUnc`: 
+   Relative uncertainties for infinite medium group constants
+3. :py:attr:`~serpentTools.objects.containers.HomogUniv.b1Exp`: 
+   Expected values for leakge-corrected group constants
+4. :py:attr:`~serpentTools.objects.containers.HomogUniv.b1Unc`: 
+   Relative uncertainties for leakge-corrected group constants
+5. :py:attr:`~serpentTools.objects.containers.HomogUniv.gc`: 
+   Group constant data that does not match the ``INF`` nor ``B1`` scheme
+6. :py:attr:`~serpentTools.objects.containers.HomogUnib.gcUnc`: 
+   Relative uncertainties for data in :py:attr:`~serpentTools.objects.containers.HomogUniv.gc`: 
+
+For this problem, only expected values for infinite and critical
+spectrum (b1) group constants are returned, so only the ``infExp`` and
+``b1Exp`` dictionaries contain data
 
 .. code:: 
 
@@ -193,7 +204,7 @@ Group constant data is stored in five dictionaries:
      'b1S0': array([ 0.301766  ,  0.0021261 ,  0.00283866,  0.470114  ]),
      'b1S1': array([ 0.0856397 ,  0.00051071,  0.00062781,  0.106232  ]),
      'b1Tot': array([ 0.314521,  0.618361])}
-    >>> univ0.metaData
+    >>> univ.gc 
     {}
 
 Group constants and their associated uncertainties can be obtained using
@@ -247,6 +258,7 @@ control, and the |branchReader|  includes similar control.
   * :ref:`branching-intVariables`
   * :ref:`xs-getB1XS`
   * :ref:`xs-getInfXS`
+  * :ref:`xs-reshapeScatter`
   * :ref:`xs-variableExtras`
   * :ref:`xs-variableGroups`
 
