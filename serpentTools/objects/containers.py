@@ -19,7 +19,7 @@ from numpy import (array, arange, unique, log, divide, ones_like, hstack,
 from serpentTools.settings import rc
 from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
 from serpentTools.objects import NamedObject, convertVariableName
-from serpentTools.messages import warning, SerpentToolsException, debug
+from serpentTools.messages import warning, SerpentToolsException, debug, info
 
 DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
             'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
@@ -34,8 +34,8 @@ for xsSpectrum, xsType in product({'INF', 'B1'},
                         for xx in range(SCATTER_ORDERS)})
 
 HOMOG_VAR_TO_ATTR = {
-    'MICRO_E': 'microGroups', 'MICRO_NG': 'numMicroGroups',
-    'MACRO_E': 'groups', 'MACRO_NG': 'numGroups'}
+    'MICRO_E': 'microGroups', 'MICRO_NG': '_numMicroGroups',
+    'MACRO_E': 'groups', 'MACRO_NG': '_numGroups'}
 
 __all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
            'DetectorBase', 'SCATTER_MATS', 'SCATTER_ORDERS')
@@ -81,9 +81,13 @@ class HomogUniv(NamedObject):
         Expected values for leakage corrected group constants
     b1Unc: dict
         Relative uncertainties for leakage-corrected group constants
-    metadata: dict
-        Other values that do not not conform to inf/b1 dictionaries
-    reshapedMats: bool
+    gc: dict
+        Expected values for group constants that do not fit
+        the ``INF_`` nor ``B1_`` pattern
+    gcUnc: dict
+        Relative uncertainties for group constants that do not fit
+        the ``INF_`` nor ``B1_`` pattern
+    reshaped: bool
         ``True`` if scattering matrices have been reshaped to square
         matrices. Otherwise, these matrices are stored as vectors. 
     groups: None or :py:class:`numpy.array`
@@ -121,16 +125,29 @@ class HomogUniv(NamedObject):
         self.infExp = {}
         self.b1Unc = {}
         self.infUnc = {}
-        self.metadata = {}
+        self.gc = {}
+        self.gcUnc = {}
         self.__reshaped = rc['xs.reshapeScatter']
-        self.numGroups = None
+        self._numGroups = None
         self.groups = None
         self.microGroups = None
-        self.numMicroGroups = None
+        self._numMicroGroups = None
 
     @property
     def reshaped(self):
         return self.__reshaped
+
+    @property
+    def numGroups(self):
+        if self._numGroups is None and self.groups is not None:
+            self._numGroups = self.groups.size - 1
+        return self._numGroups
+
+    @property
+    def numMicroGroups(self):
+        if self._numMicroGroups is None and self.microGroups is not None:
+            self._numMicroGroups = self.microGroups.size - 1
+        return self._numMicroGroups 
 
     def __str__(self):
         extras = []
@@ -182,21 +199,18 @@ class HomogUniv(NamedObject):
                 variableName, type(variableValue)))
             variableValue = array(variableValue)
         if variableName in HOMOG_VAR_TO_ATTR:
-            value = variableValue if variableName.size > 1 else variableValue[0]
+            value = variableValue if variableValue.size > 1 else variableValue[0]
             setattr(self, HOMOG_VAR_TO_ATTR[variableName], value)
             return
         ng = self.numGroups
         if self.__reshaped and variableName in SCATTER_MATS:
             if ng is None:
-                warning("Number of groups is unknown at this time. "
+                info("Number of groups is unknown at this time. "
                         "Will not reshape variable {}"
                         .format(variableName))
             else:
                 variableValue = variableValue.reshape(ng, ng)
-        incomingGroups = variableValue.shape[0] 
-        if ng is None:
-            self.numGroups = incomingGroups 
-
+        
         variableName = convertVariableName(variableName)
 
         # 2. Pointer to the proper dictionary
@@ -248,9 +262,6 @@ class HomogUniv(NamedObject):
         # 3. Return the value of the variable
         if not uncertainty:
             return x
-        if setter is self.metadata:
-            warning('No uncertainty is associated to metadata')
-            return x
         setter = self._lookup(variableName, True)
         if variableName not in setter:
             raise KeyError(
@@ -268,9 +279,7 @@ class HomogUniv(NamedObject):
             if not uncertainty:
                 return self.b1Exp
             return self.b1Unc
-        else:
-            return self.metadata
-
+        return self.gcUnc if uncertainty else self.gc
 
 class DetectorBase(NamedObject):
     """
