@@ -15,6 +15,9 @@ Next
 * :pull:`141` - Setting :ref:`xs-reshapeScatter` can be used to reshape scatter
   matrices on :py:class:`~serpentTools.objects.containers.HomogUniv` 
   objects to square matrices
+* :pull:`145` - :py:meth:`~serpentTools.objects.containers.HomogUniv.hasData` 
+  added to check if :py:class:`~serpentTools.objects.containers.HomogUniv` 
+  objects have any data stored on them
 
 .. _vDeprecated:
 
