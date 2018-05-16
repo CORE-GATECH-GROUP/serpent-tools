@@ -149,7 +149,7 @@ class SensitivityTester(unittest.TestCase):
                             'energy integrated sensitivities')
 
     def test_parameters(self):
-        expected = {'nMat': 1, 'nEne': 2, 'nZai': 2, 'nPert': 7}
+        expected = {'nMat': 1, 'nEne': 2, 'nZai': 2, 'nPert': 7, 'latGen': 14}
         for key, value in iteritems(expected):
             actual = getattr(self.reader, key)
             self.assertEqual(value, actual, 
