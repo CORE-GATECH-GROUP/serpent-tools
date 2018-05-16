@@ -44,12 +44,12 @@ class SensitivityReader(BaseReader):
         self.nPert = None
         self.nEne = None
         self.nMu = None
-        self.mats = OrderedDict()
+        self.materials = OrderedDict()
         self.zais = OrderedDict()
         self.perts = OrderedDict()
         self.latGen = None
         self._indxMap = {
-            'materials': self.mats, 'nuclides': self.zais,
+            'materials': self.materials, 'nuclides': self.zais,
             'reactions': self.perts}
         self.energies = None
         self.lethargyWidths = None
