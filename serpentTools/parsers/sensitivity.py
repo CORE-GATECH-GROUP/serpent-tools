@@ -14,9 +14,28 @@ from serpentTools.objects import convertVariableName
 from serpentTools.objects.readers import BaseReader
 
 class SensitivityReader(BaseReader):
-    #TODO Class documentation
     """
     Class for reading sensitivity files
+
+    The arrays that are stored in ``sensitivities`` and
+    ``energyIntegratedSens`` are stored under converted names.
+    The original names from SERPENT are of the form
+    ``ADJ_PERT_KEFF_SENS`` or ``ADJ_PERT_KEFF_SENS_E_INT``, 
+    respectively. Since this reader stores the resulting arrays
+    in unique locations, the names are converted to a succint form.
+    The two arrays listed above would be stored both as ``keff`` 
+    in ``sensitivities`` and ``energyIntegratedSens``. 
+    All names are converted to ``mixedCaseNames`` to fit the
+    style of the project.
+
+    Ordered dictionaries ``materials``, ``zais``, and 
+    ``perts`` contain keys of the names of their respective
+    data, and the corresponding index, ``iSENS_ZAI_zzaaai``, 
+    in the sensitivity arrays. These arrays are zero-indexed,
+    so the first item will have an index of zero. The data stored
+    in the ``sensitivities`` and ``energyIntegratedSens`` dictionaries
+    has the exact same structure as if the arrays were loaded into
+    ``MATLAB``/``Octave``, but with zero-indexing.
 
     Parameters
     ----------
@@ -35,6 +54,29 @@ class SensitivityReader(BaseReader):
         Number of energy groups
     nMu: None or int
         Number of perturbed materials
+    materials: :py:class:`~collections.OrderedDict`
+        Ordered dictionary of materials that have
+        been perturbed. 
+    zais: :py:class:`~collections.OrderedDict`
+        Ordered dictionary of nuclides that
+        have been perturbed
+    perts: :py:class:`~collections.OrderedDict`
+        Ordered dictionary of reactions that 
+        have been perturbed, e.g `'total xs'`
+    latGen: int
+        Number of latent generations used to generate
+        these sensitivities
+    energies: None or :py:class:`numpy.array`
+        Array of energy bounds for the sensitivities, from
+        lowest to highest
+    lethargyWidths: None or :py:class:`numpy.array`
+        Array of lethargy widths of each energy group.
+    sensitivities: dict
+        Dictionary of names of sensitivities and their corresponding
+        arrays. 
+    energyIntegratedSens: dict
+        Dictionary of names of the sensitivities that have been integrated
+        against energy, and their corresponding arrays
     """
 
     def __init__(self, filePath):
@@ -55,11 +97,6 @@ class SensitivityReader(BaseReader):
         self.lethargyWidths = None
         self.sensitivities = {}
         self.energyIntegratedSens = {}
-
-    def read(self):
-        self._precheck()
-        self._read()
-        self._postcheck()
 
     def _precheck(self):
         # maybe check if "SENS" is in the first few lines
@@ -194,12 +231,16 @@ class SensitivityReader(BaseReader):
                                         "stored on reader")
 
 def reshapePermuteSensMat(vec, newShape):
+    """
+    Return an array that has been reshaped and permuted like the sens file.
+    """
     reshaped = numpy.reshape(vec, newShape, order='F')
     newAx = list(reversed(range(len(newShape))))
     return numpy.transpose(reshaped, newAx)
 
 
 def strListToVec(strList):
+    """Convert a string of list of strings to vector."""
     split = strList.split() if isinstance(strList, str) else strList
     return numpy.array([float(xx) for xx in split])
 
