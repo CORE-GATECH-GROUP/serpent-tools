@@ -30,7 +30,7 @@ class _HomogUnivTestHelper(unittest.TestCase):
                    'INF_1': vec, 'INF_S0': mat, 'CMM_TRANSP_X': vec}
         attrs = {'MACRO_E': groupStructure}
         # Partial dictionaries
-        self.b1Unc = self.b1Exp = {'b11': vec}
+        self.b1Unc = self.b1Exp = {'b11': vec, 'b1AsList': vec}
         self.infUnc = self.infExp = {'inf1': vec, 'infS0': mat}
         self.gcUnc = self.gc = {'cmmTranspX': vec}
         self.expAttrs = {'groups': groupStructure, 'numGroups': NUM_GROUPS} 
