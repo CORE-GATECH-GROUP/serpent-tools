@@ -1,3 +1,14 @@
+.. |resReader| replace:: :py:class:`~serpentTools.parsers.results.ResultsReader`
+
+.. |homogUniv| replace:: :py:class:`~serpentTools.objects.containers.HomogUniv`
+
+.. |getUniv| replace:: :py:meth:`~serpentTools.parsers.results.ResultsReader.getUniv`
+
+.. |resdata| replace:: :py:attr:`~serpentTools.parsers.results.ResultsReader.resdata`
+
+.. |metadata| replace:: :py:attr:`~serpentTools.parsers.results.ResultsReader.metadata`
+
+.. |universes| replace:: :py:attr:`~serpentTools.parsers.results.ResultsReader.universes`
 
 Copyright (c) 2017-2018 `Serpent-Tools developer
 team <https://github.com/CORE-GATECH-GROUP/serpent-tools/graphs/contributor>`__,
@@ -22,18 +33,18 @@ Serpent results files. SERPENT [1] produces a result file (i.e.
 ``_res.m``), containing general results (e.g. ``k-eff``), metadata (e.g.
 ``title``) and homogenized cross-sections. The homogenized cross-section
 sets are printed in the results file for all the requested universes.
-The ResultsReader is capable of reading this file, and storing the data
-inside univ objects. Each such object has methods and attributes that
+The |resReader| is capable of reading this file, and storing the data
+inside |homogUniv| objects. Each such object has methods and attributes that
 should ease the analyses.
 
- 
+.. code:: 
 
     import numpy as np
     import serpentTools
     from serpentTools.settings import rc
     rc['serpentVersion'] = '2.1.30'
 
- 
+.. code:: 
 
     %time
     resFile = 'InnerAssembly_res.m'
@@ -48,11 +59,11 @@ should ease the analyses.
 Metadata (``metadata``)
 =======================
 
-``metadata`` is a collective data that describes the problem. The
+|metadata| is a collective data that describes the problem. The
 following data is included: titles, data paths, and other descriptive
 data exist on the reader
 
- 
+.. code:: 
 
     print(res.metadata['version'])  # Serpent version used for the execution
     print(res.metadata['decayDataFilePath'])  # Directory path for data libraries
@@ -68,7 +79,7 @@ data exist on the reader
 
 Obtain all the variables in the metadata via ``.keys()``
 
- 
+.. code:: 
 
     res.metadata.keys()
 
@@ -81,7 +92,7 @@ Obtain all the variables in the metadata via ``.keys()``
 
 
 
- 
+.. code:: 
 
     # Grep the value of a certain key, e.g. simulation start date
     res.metadata['startDate']
@@ -95,7 +106,7 @@ Obtain all the variables in the metadata via ``.keys()``
 
 
 
- 
+.. code:: 
 
     # statistics used for the execution (histories, inactive and active cycles)
     print(res.metadata['pop'], res.metadata['skip']  , res.metadata['cycles'])
@@ -106,7 +117,7 @@ Obtain all the variables in the metadata via ``.keys()``
     [ 5000.] [ 10.] [ 50.]
     
 
- 
+.. code:: 
 
     # Obtain the version defined in the settings
     print('User defined version: {}'.format(rc['serpentVersion']))
@@ -125,11 +136,11 @@ Results Data (``resdata``)
 
 Results are stored as a function of time/burnup/index and include
 integral parameters of the system. Results, such as ``k-eff``, total
-``flux``, execution times are included in ``.resdata``. Some results
+``flux``, execution times are included in |resdata|. Some results
 include values and uncertainities (e.g. criticality) and some just the
 values (e.g. CPU resources).
 
- 
+.. code:: 
 
     # All the variables can be obtained by using 'resdata.keys()'
     AllVariables = res.resdata.keys() # contains all the variable as a dict_keys
@@ -145,7 +156,7 @@ values (e.g. CPU resources).
 
 
 
- 
+.. code:: 
 
     # Time-dependent variables, such as k-eff, are stored in 'resdata'
     print(res.resdata['absKeff'])  # Values (1st col.) + std (2nd col.) 
@@ -161,7 +172,7 @@ values (e.g. CPU resources).
      [  1.29140000e+00   7.80000000e-04]]
     
 
- 
+.. code:: 
 
     # Obtain only the values for 'absKeff'
     res.resdata['absKeff'][:,0]
@@ -175,7 +186,7 @@ values (e.g. CPU resources).
 
 
 
- 
+.. code:: 
 
     # Obtain only the uncertainties for 'absKeff'
     res.resdata['absKeff'][:,1]
@@ -189,7 +200,7 @@ values (e.g. CPU resources).
 
 
 
- 
+.. code:: 
 
     # Burnup data is not written by default, a burnup mode is defined within the input file
     # Extract burnup related quantities
@@ -213,7 +224,7 @@ values (e.g. CPU resources).
      [ 48.0192 ]]
     
 
- 
+.. code:: 
 
     # Some variables are stored with no uncertainties
     print(res.resdata['totCpuTime']) # total CPU time,  
@@ -229,12 +240,12 @@ values (e.g. CPU resources).
      [ 58.6448]]
     
 
-Plotting Results Data (``resdata``)
+Plotting Results Data (|resdata|)
 -----------------------------------
 
 Basic 1-D plotting capabilities are not yet avaialble in the parser.
 
- 
+.. code:: 
 
     %matplotlib inline
     import matplotlib.pyplot as plt
@@ -248,8 +259,8 @@ Basic 1-D plotting capabilities are not yet avaialble in the parser.
 
 .. parsed-literal::
 
-    (<matplotlib.text.Text at 0x216bc3459b0>,
-     <matplotlib.text.Text at 0x216bc362048>)
+    (<matplotlib.text.Text at 0x1e4c9d8d400>,
+     <matplotlib.text.Text at 0x1e4c9da4ac8>)
 
 
 
@@ -257,7 +268,7 @@ Basic 1-D plotting capabilities are not yet avaialble in the parser.
 .. image:: images/ResultsReader_24_1.png
 
 
-Universe Data (``universes``)
+Universe Data (|universes|)
 =============================
 
 Universe data is stored for each state point, i.e.
@@ -266,10 +277,10 @@ Universe data is stored for each state point, i.e.
 | ``'univ'``: universe ID (e.g., ``'0'``), ``burnup``: in MWd/kg,
   ``burnupIdx``: step index, ``time``: in days.
 | Results, such as infinite cross-sections, b1-leakage corrected
-  cross-sections, kinetic parameters, are included in ``.universes``.
+  cross-sections, kinetic parameters, are included in |universes|.
   All the results include values and uncertainties.
 
- 
+.. code:: 
 
     # The different states are obtained by:
     res.universes.keys()
@@ -284,7 +295,7 @@ Universe data is stored for each state point, i.e.
 
 
 
- 
+.. code:: 
 
     # Let's use the following unique state
     print(res.universes[('3102', 0.0, 1, 0.0)])
@@ -319,7 +330,7 @@ http://serpent-tools.readthedocs.io/en/latest/api/containers.html#serpentTools.o
 Get Universe Data (``.getUniv``)
 --------------------------------
 
-A method to obtain the data for a specific universe and time of
+The |getUniv| method obtains the data for a specific universe and time of
 interest. In order to obtain the data, the user needs to pass the
 ``universe id`` and the ``time point``:
 
@@ -334,14 +345,14 @@ The method requires to insert the universe and burnup or time or index
 one time parameter is given, the hierarchy of search is: index (highest
 priority), burnup, time (lowest priority)
 
- 
+.. code:: 
 
     # Examples to use various time entries
     univ3101 = res.getUniv('3101', index=4) # obtain the results for universe=3101 and index=4 
     univ3102 = res.getUniv('3102', burnup=0.1) # obtain the results for universe=3102 and index=0.1 MWd/kgU
     univ0 = res.getUniv('0', timeDays=24.0096) # obtain the results for universe=0 and index=24.0096 days
 
- 
+.. code:: 
 
     # The full states are printed below
     print(univ3101)
@@ -356,7 +367,7 @@ priority), burnup, time (lowest priority)
     <HomogUniv 0: burnup: 2.000 MWd/kgu, step: 4, 24.010 days>
     
 
- 
+.. code:: 
 
     # obtain the results for universe=0 and index=1 (burnup and timeDays are inserted but not used)
     univ0 = res.getUniv('0', burnup=0.0, index=1, timeDays=0.0)  
@@ -368,7 +379,7 @@ priority), burnup, time (lowest priority)
     <HomogUniv 0: burnup: 0.000 MWd/kgu, step: 1, 0.000 days>
     
 
- 
+.. code:: 
 
     # The parser reads all the variables by default
     # Each field is a dictionary, with variables as keys and corresponding values.
@@ -383,7 +394,7 @@ priority), burnup, time (lowest priority)
 
 
 
- 
+.. code:: 
 
     # The values are all energy dependent 
     univ0.infExp['infAbs'] # obtain the infinite macroscopic xs for ('0', 0.0, 1, 0.0)
@@ -401,7 +412,7 @@ priority), burnup, time (lowest priority)
 
 
 
- 
+.. code:: 
 
     # Obtain the infinite flux for ('0', 0.0, 1, 0.0)
     univ0.infExp['infFlx']
@@ -422,7 +433,7 @@ priority), burnup, time (lowest priority)
 
 
 
- 
+.. code:: 
 
     # Uncertainties can be obtained in a similar was by using the 'infUnc' field. 
     # The variables will be identical to those defined in 'infExp'
@@ -447,7 +458,7 @@ http://serpent.vtt.fi/mediawiki/index.php/Input\_syntax\_manual#set\_fum
 If this card is not enabled by the user, the ``B1_`` variables will all
 be zeros.
 
- 
+.. code:: 
 
     # The parser reads all the variables by default
     # Each field is a dictionary, with variables as keys and corresponding values.
@@ -462,7 +473,7 @@ be zeros.
 
 
 
- 
+.. code:: 
 
     # Obtain the b1 fluxes for ('3101', 0.0, 1, 0.0)
     univ3101.b1Exp['b1Flx']
@@ -483,7 +494,7 @@ be zeros.
 
 
 
- 
+.. code:: 
 
     # Obtain the b1 fluxes for ('3101', 0.0, 1, 0.0)
     univ3101.b1Exp['b1Abs']
@@ -506,7 +517,7 @@ under the ``gc`` and ``gcUnc`` fields.
 
 Criticality, kinetic, and other variables are stored under this field.
 
- 
+.. code:: 
 
     univ3101.gc.keys() # obtain all the variables stored in 'gc' field
 
@@ -519,7 +530,7 @@ Criticality, kinetic, and other variables are stored under this field.
 
 
 
- 
+.. code:: 
 
     # The data included in the 'gc' field contains only the values (no uncertainties)
     univ3101.gc['betaEff'] # obtain beta-effective
@@ -538,7 +549,7 @@ Criticality, kinetic, and other variables are stored under this field.
 ``Macro`` and ``Micro`` energy group structures are stored directly in
 the universe.
 
- 
+.. code:: 
 
     # Obtain the macro energy structure in MeV
     univ3101.groups
@@ -560,7 +571,7 @@ the universe.
 
 
 
- 
+.. code:: 
 
     # Obtain the micro energy structure in MeV
     univ3101.microGroups[:5:] # print only the five first values
@@ -578,7 +589,7 @@ the universe.
 Plotting universes
 ------------------
 
- 
+.. code:: 
 
     # obtain the energy grid in descending order (high to low energy)
     xdata = univ3101.groups[1:] 
@@ -586,7 +597,7 @@ Plotting universes
     ydataInf = univ3101.infExp['infAbs']
     ydataB1 = univ3101.b1Exp['b1Abs']
 
- 
+.. code:: 
 
     plt.plot(xdata, ydataInf,'r', label='INF')
     plt.plot(xdata, ydataB1,'*g', label='B1')
@@ -598,8 +609,8 @@ Plotting universes
 
 .. parsed-literal::
 
-    (<matplotlib.text.Text at 0x216bc66d8d0>,
-     <matplotlib.text.Text at 0x216bc6a50f0>)
+    (<matplotlib.text.Text at 0x1e4ca0c8a20>,
+     <matplotlib.text.Text at 0x1e4ca334cf8>)
 
 
 
@@ -607,7 +618,7 @@ Plotting universes
 .. image:: images/ResultsReader_51_1.png
 
 
- 
+.. code:: 
 
     # obtain the energy grid in descending order (high to low energy)
     xdata = univ3101.groups[1:] 
@@ -615,7 +626,7 @@ Plotting universes
     ydata3101 = univ3101.infExp['infFiss'] # for universe 3101 and index=2
     ydata3102 = univ3102.infExp['infFiss'] # for universe 3102 and index=4
 
- 
+.. code:: 
 
     plt.plot(xdata, ydata3101,'r', label='universe 3101')
     plt.plot(xdata, ydata3102,'*g', label='universe 3102')
@@ -627,8 +638,8 @@ Plotting universes
 
 .. parsed-literal::
 
-    (<matplotlib.text.Text at 0x216bc7a8e80>,
-     <matplotlib.text.Text at 0x216bc794940>)
+    (<matplotlib.text.Text at 0x1e4ca430ef0>,
+     <matplotlib.text.Text at 0x1e4ca40e9e8>)
 
 
 
@@ -643,14 +654,14 @@ The user is able to filter the required information by using the
 settings option.
 
 A detailed description on how to use the settings can be found on:
-http://serpent-tools.readthedocs.io/en/latest/api/settings.html
+http://serpent-tools.readthedocs.io/en/latest/settingsTop.html
 
- 
+.. code:: 
 
     # Setting are all defined in 'rc'
     from serpentTools.settings import rc
 
- 
+.. code:: 
 
     # Obtain the user defined keys
     rc.keys()
@@ -664,9 +675,9 @@ http://serpent-tools.readthedocs.io/en/latest/api/settings.html
 
 
 
-The user can modify the settings and only then use the ``ResultsReader``
+The user can modify the settings and only then use |resReader|
 
- 
+.. code:: 
 
     # Change the serpent version to 2.1.30
     versionOriginal = rc['serpentVersion']
@@ -681,24 +692,24 @@ The user can modify the settings and only then use the ``ResultsReader``
     The version set by the user is 2.1.30
     
 
- 
+.. code:: 
 
     # Explicitly state which groups of variables should be stored
     # The variables for these groups are defined according to the .yaml file
     rc['xs.variableGroups'] = ['versions', 'xs', 'eig', 'burnup-coeff']
 
- 
+.. code:: 
 
     # The user can state which cross-sections to store
     rc['xs.getInfXS'] = True # Obtain the infinite xs
     rc['xs.getB1XS'] = False # Do not store the leakage corrected xs
 
- 
+.. code:: 
 
     # Read the file again with the updated settings
     resFilt = serpentTools.read(resFile)
 
- 
+.. code:: 
 
     # Print all the stored variables in metadata
     resFilt.metadata.keys()
@@ -712,7 +723,7 @@ The user can modify the settings and only then use the ``ResultsReader``
 
 
 
- 
+.. code:: 
 
     # All the variables can be obtained by using 'resdata.keys()'
     resFilt.resdata.keys() # contains all the variable as a dict_keys
@@ -726,12 +737,12 @@ The user can modify the settings and only then use the ``ResultsReader``
 
 
 
- 
+.. code:: 
 
     # obtain the results for universe=0 and index=1 (burnup and timeDays are inserted but not used)
     univ0Filt = resFilt.getUniv('0', burnup=0.0, index=1, timeDays=0.0)  
 
- 
+.. code:: 
 
     # Obtain all the variables stored in 'infExp' field
     univ0Filt.infExp.keys() 
@@ -745,7 +756,7 @@ The user can modify the settings and only then use the ``ResultsReader``
 
 
 
- 
+.. code:: 
 
     # Obtain all the variables stored in 'gc' field
     univ0Filt.gc.keys() 
@@ -757,4 +768,23 @@ The user can modify the settings and only then use the ``ResultsReader``
 
     dict_keys([])
 
+Conclusion
+----------
 
+The |resReader| is capable of reading and storing all the data
+from the SERPENT ``_res.m`` file. Upon reading, the reader creates
+custom |homogUniv| objects that are responsible for storing the universe 
+related data. In addition, |metadata| and |resdata| are stored on the reader. 
+These objects also have a handy |getUniv| method for
+quick analysis of results corresponding to a specific universe and time point. 
+Use of the 
+:py:class:`~serpentTool.settings.rc` settings control object allows
+increased control over the data selected from the output file.
+
+References
+----------
+
+1. J. Leppänen, M. Pusa, T. Viitanen, V. Valtavirta, and T.
+   Kaltiaisenaho. "The Serpent Monte Carlo code: Status, development and
+   applications in 2013." Ann. Nucl. Energy, `82 (2015)
+   142-150 <https://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
