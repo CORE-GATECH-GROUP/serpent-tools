@@ -160,8 +160,10 @@ class SensitivityReader(BaseReader):
                 return
             if store:
                 start = line.index('\'') + 1 if '\'' in line else 0
-                stop = -2
-                key = line[start:stop].rstrip()
+                stop = -1
+                key = line[start:stop].replace('\'', '').strip()
+                if '%' in key:
+                    key = key.split('% ')[1]
                 datum[key] = indx
                 indx += 1
         raise SerpentToolsException(
