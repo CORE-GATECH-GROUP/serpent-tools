@@ -36,11 +36,5 @@ variable names converted to ``mixedCaseNames``. This conversion is done
 to fit the style of the project and reduce a few keystrokes for accessing
 variable names.
 
-.. note::
-    
-    Variable  group ``xs-yields`` will be deprecated in favor of 
-    ``poisons`` at version ``0.5.0`` :ref:`vDeprecated`. Both groups exist now and
-    contain identical variables. 
-
 .. include:: ./variableGroups.rst
 
