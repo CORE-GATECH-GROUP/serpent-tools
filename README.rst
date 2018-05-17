@@ -2,15 +2,13 @@
 serpent-tools
 =============
 
-.. only:: html
+.. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=develop
+    :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
+    :alt: Build status - develop
 
-    .. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=develop
-        :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
-        :alt: Build status - develop
-
-    .. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
-        :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
+.. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
+    :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
   
 A suite of parsers designed to make interacting with
 ``SERPENT`` [1]_ output files simple and flawless. 
