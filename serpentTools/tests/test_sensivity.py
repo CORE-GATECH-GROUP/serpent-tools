@@ -177,7 +177,7 @@ class SensitivityTester(unittest.TestCase):
     def test_zai(self):
         """Verify the ordered dictionary of perturbed isotopes is correct."""
         expected = OrderedDict([
-            ('922350', 0), ('922380', 1)])
+            (922350, 0), (922380, 1)])
         actual = self.reader.zais
         self.assertDictEqual(expected, actual)
 
