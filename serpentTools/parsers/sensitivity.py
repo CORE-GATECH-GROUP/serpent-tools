@@ -129,6 +129,14 @@ class SensitivityReader(BaseReader):
                         throughParams = True 
                     continue
                 self.__processSensChunk(chunk)
+        if self.zais:
+            old = self.zais
+            self.zais = OrderedDict()
+            for key, value in iteritems(old):
+                if key == 'total':
+                    self.zais[key] = value
+                    continue
+                self.zais[int(key)] = value
 
     def __processNumChunk(self, chunk):
         chunk = [line for line in chunk if 'SENS' in line]
@@ -253,7 +261,7 @@ class SensitivityReader(BaseReader):
         resp: str
             Name of the specific response to be examined. Must be a key
             in ``sensitivities`` and ``energyIntegratedSens``
-        zai: None or str or list of strings
+        zai: None or str or int or iterable
             Plot sensitivities due to these isotopes. Passing ``None`` 
             will plot against all isotopes.
         pert: None or str or list of strings
@@ -299,8 +307,8 @@ class SensitivityReader(BaseReader):
                 raise KeyError("Response {} missing from {}"
                                .format(resp, subDict))
         labelFmt = labelFmt or "mat: {m} zai: {z} pert: {p}"
-        if isinstance(zai, int):
-            zai = {str(zai), }
+        if isinstance(zai, (str, int)):
+            zai = {zai, }
         zais = self._getCleanedPertOpt('zais', zai)
         perts = self._getCleanedPertOpt('perts', pert)
         mats = self._getCleanedPertOpt('materials', mat)
