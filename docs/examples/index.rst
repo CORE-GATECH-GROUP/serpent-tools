@@ -9,4 +9,5 @@ Examples
    Branching.rst
    Detector.rst
    DepletionReader.rst
+   Sensitivity.rst
    XSPlot.rst
