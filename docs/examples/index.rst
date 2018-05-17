@@ -11,3 +11,4 @@ Examples
    DepletionReader.rst
    Sensitivity.rst
    XSPlot.rst
+   ResultsReader.rst

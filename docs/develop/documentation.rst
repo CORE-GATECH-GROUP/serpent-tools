@@ -1,3 +1,7 @@
+.. |jconvert| replace:: ``jupyter nbconvert --to=rst <file>``
+
+.. |rst| replace:: ``.rst``
+
 .. _documentation:
 
 =============
@@ -149,6 +153,8 @@ or::
             Capitalized x
         """
 
+.. _docs-deprecate:
+
 Deprecation
 -----------
 
@@ -169,11 +175,15 @@ Specifically, all readers should be demonstrated as Jupyter notebooks
 that detail the typical usage, user control settings, and examples
 of how the data is stored and accessed.
 
+.. _docs-convert:
+
 Converting
 ----------
 
-These Jupyter notebooks can be converted to ``.rst`` files for inclusion
-in the manual with the command ``jupyter nbconvert --to=rst``.
+These Jupyter notebooks can be converted to |rst| files for inclusion
+in the manual with the command |jconvert| .
+However, there are some tweaks that should be made so that the documentation
+renders properly and has helpful links to objects in the project.
 
 The ``nbconvert`` command will place the following blocks around python code::
 
@@ -187,25 +197,58 @@ The ``nbconvert`` command will place the following blocks around python code::
 
 When building this documentation on `readthedocs <serpent-tools.readthedocs.io/latest>`_,
 the ``ipython3`` statement can cause the code not to be rendered. 
-This is summarized in some comments on :issue:`123`, but it appears that
-the ``ipython3`` lexer `is not trivially installed <https://github.com/jupyter/nbconvert/issues/528>`_
+This is summarized 
+`here <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues/123#issuecomment-387788909>`_
+, but it appears that the ``ipython3`` lexer 
+`is not trivially installed <https://github.com/jupyter/nbconvert/issues/528>`_
 and is not found on readthedocs.
-For now, all these instances should be removed from the ``.rst`` version of the notebook so that
+For now, all these instances of ``ipython3`` should be removed from the |rst| version of the notebook so that
 the wonderful code examples are proudly displayed in our documentation.
+The above code block should be replaced with::
+
+    .. code:: 
+
+        print('hello world!')
+
+    .. parsed-literal::
+
+        hello world!
 
 Upon conversion, move the file into the ``docs/examples`` directory and include the 
 file name in ``docs/examples/index.rst``.
 
+.. _docs-images:
+
 Images
 ------
 
-Executing ``jupyter nbconvert --to=rst`` will create a directory containing the images
+Executing |jconvert| will create a directory containing the images
 contained in the notebook.
-When moving the ``.rst`` version of the notebook into the ``docs/examples`` folder, make sure
+When moving the |rst| version of the notebook into the ``docs/examples`` folder, make sure
 that all links to images are correct.
 
+.. _docs-API-link:
+
+Linking to the API
+------------------
+
+When referring to python classes, attributes, functions, or methods, it is 
+strongly recommended to utilize 
+`python object references <http://www.sphinx-doc.org/en/stable/domains.html#python-roles>`_.
+This creates direct links from your text to the object declaration in our
+`api section <http://serpent-tools.readthedocs.io/en/latest/api/index.html>`_ that allows
+people to get more detail on whatever you are referencing, powered by the 
+``docstrings`` on that object. Two such examples are given below:
+
+* ``:py:class:`serpentTools.parsers.depletion.DepletionReader```
+  becomes :py:class:`serpentTools.parsers.depletion.DepletionReader`
+* ``:py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot``` is shortened to
+  :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot`
+
+.. _docs-verify:
+
 Verifying
----------
+=========
 
 You worked hard on this documentation, and we want your great work to be properly displayed 
 once completed.
@@ -231,6 +274,8 @@ look.
     `the sphinx team has a great guide already <http://www.sphinx-doc.org/en/master/usage/installation.html>`_.
     Check this out if you are having issues running the ``make clean install`` commands from the 
     docs directory.
+
+.. _docs-add-API:
 
 Adding Objects to API
 =====================
