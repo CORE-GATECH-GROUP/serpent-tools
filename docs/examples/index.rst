@@ -10,3 +10,4 @@ Examples
    Detector.rst
    DepletionReader.rst
    XSPlot.rst
+   ResultsReader.rst
