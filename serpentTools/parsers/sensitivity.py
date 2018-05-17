@@ -8,7 +8,7 @@ from six import iteritems
 from numpy import transpose, array, hstack
 from matplotlib.pyplot import axes
 
-from serpentTools.plot import magicPlotDocDecorator
+from serpentTools.plot import magicPlotDocDecorator, placeLegend
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.objects import convertVariableName
@@ -246,7 +246,7 @@ class SensitivityReader(BaseReader):
     def plot(self, resp, zai=None, pert=None, mat=None, sigma=3, 
              normalize=True, ax=None, labelFmt=None, titleFmt=None, 
              title=None, logx=True, logy=False, loglog=False, xlabel=None,
-             ylabel=None, legend=True):
+             ylabel=None, legend=True, ncol=1):
         """
         Plot sensitivities due to some or all perturbations.
 
@@ -289,7 +289,13 @@ class SensitivityReader(BaseReader):
         {loglog}
         {xlabel}
         {ylabel}
-        {legend}
+        legend: bool or str
+            If ``True``, add a label to this plot. 
+            Also accepts string arguments ``'right'`` and ``'above'``
+            to place the legend outside the figure
+        ncol: int or None
+            Number of columns for legend. Useful if plotting many
+            sensitivity profiles
 
         Returns
         -------
@@ -347,7 +353,10 @@ class SensitivityReader(BaseReader):
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         if legend:
-            ax.legend()
+            if isinstance(legend, str):
+                ax = placeLegend(ax, legend, ncol)
+            else:
+                ax.legend()
         return ax
 
     def _getCleanedPertOpt(self, key, value):

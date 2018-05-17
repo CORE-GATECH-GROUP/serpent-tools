@@ -227,17 +227,28 @@ label used for each plot. The following replacements will be made:
 
 
 The argument ``normalize`` is used to turn on/off normalization per unit
-lethargy, while ``legend`` can be used to turn off the legend.
+lethargy, while ``legend`` can be used to turn off the legend, or set
+the legend outside the plot.
 
 .. code:: 
 
-    sens.plot('keff', zai='total', pert='total xs', labelFmt="{z} -  {p}", legend=False, 
+    sens.plot('keff', zai='total', pert='total xs', labelFmt="{z} -  {p}", legend='right', 
                        normalize=False)
     pyplot.xlim(1E4, 1E8);
 
 
 
 .. image:: Sensitivity_files/Sensitivity_24_0.png
+
+.. code:: 
+
+    sens.plot('keff', zai='total', pert=['total xs', 'fission xs'], labelFmt="{z} -  {p}", 
+                       legend='above', ncol=2, normalize=False)
+    pyplot.xlim(1E4, 1E8);
+
+
+
+.. image:: Sensitivity_files/Sensitivity_25_0.png
 
 
 Conclusion

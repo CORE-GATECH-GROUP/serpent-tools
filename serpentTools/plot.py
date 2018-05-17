@@ -214,3 +214,47 @@ def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
 
     return ax
 
+
+LEGEND_KWARGS = {
+        'above': {'bbox_to_anchor': (0., 1.02, 1., 1.02),
+                  'loc': 3, 'mode': 'expand'},
+        'right': {'bbox_to_anchor': (1.02, 1),
+                  'loc': 2}
+        }
+"""
+Settings for modifying the position of the legend
+source: `<https://matplotlib.org/users/legend_guide.html>`_
+"""
+
+
+@magicPlotDocDecorator
+def placeLegend(ax, key, ncol=1):
+    """
+    Add a legend to the figure outside the plot.
+
+    Parameters
+    ----------
+    {ax}
+    key: str
+        Where to palce the legend. Options:
+
+            1. ``'right'`` outside the plot on the right
+            2. ``'above'`` above the plot - may interfere with titles
+
+    ncol: int
+        Number of columns to apply to the legend.
+
+    Returns
+    -------
+    {rax}
+
+    Raises
+    ------
+    KeyError
+        If ``key`` is not in :py:attr:`~serpentTools.plot.LEGEND_KWARGS`
+    """
+    ncol = max(1, int(ncol)) if ncol else 1
+    kwargs = LEGEND_KWARGS[key]
+    ax.legend(borderaxespad=0., ncol=ncol, **kwargs)
+
+    return ax
