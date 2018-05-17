@@ -2,13 +2,18 @@
 Class to read Sensitivity file
 """
 from collections import OrderedDict
+from itertools import product
 
-from numpy import transpose, array
+from six import iteritems
+from numpy import transpose, array, hstack
+from matplotlib.pyplot import axes
 
+from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.objects import convertVariableName
 from serpentTools.objects.readers import BaseReader
+
 
 class SensitivityReader(BaseReader):
     """
@@ -226,6 +231,128 @@ class SensitivityReader(BaseReader):
         if not self.energyIntegratedSens:
             raise SerpentToolsException("No energy integrated sensitivities "
                                         "stored on reader")
+
+    @magicPlotDocDecorator
+    def plot(self, resp, zai=None, pert=None, mat=None, sigma=3, 
+             normalize=True, ax=None, labelFmt=None, titleFmt=None, 
+             title=None, logx=True, logy=False, loglog=False, xlabel=None,
+             ylabel=None, legend=True):
+        """
+        Plot sensitivities due to some or all perturbations.
+
+        .. note::
+
+            Without passing ``zai``, ``pert``, or ``mat`` 
+            arguments, this method will plot all permutations of 
+            sensitivities for a given response.
+
+        Parameters
+        ----------
+        resp: str
+            Name of the specific response to be examined. Must be a key
+            in ``sensitivities`` and ``energyIntegratedSens``
+        zai: None or str or list of strings
+            Plot sensitivities due to these isotopes. Passing ``None`` 
+            will plot against all isotopes.
+        pert: None or str or list of strings
+            Plot sensitivities due to these perturbations. Passing ``None`` 
+            will plot against all perturbations.
+        mat: None or str or list of strings
+            Plot sensitivities due to these materials. Passing ``None`` 
+            will plot against all materials.
+        {sigma}
+        normalize: True
+            Normalize plotted data per unit lethargy
+        {ax}
+        labelFmt: None or str
+            Formattable string to be applied to the labels. 
+            The following entries will be formatted for each plot
+            permuation::
+
+                {m} - name of the material
+                {z} - isotope zai
+                {p} - specific perturbation
+                {r} - response being plotted
+
+        {logx}
+        {logy}
+        {loglog}
+        {xlabel}
+        {ylabel}
+        {legend}
+
+        Returns
+        -------
+        {rax}
+
+        Raises
+        ------
+        KeyError 
+            If response or any passed perturbation settings are not 
+            present on the object
+
+        """
+        for subDict in {'sensitivities', 'energyIntegratedSens'}:
+            if resp not in getattr(self, subDict):
+                raise KeyError("Response {} missing from {}"
+                               .format(resp, subDict))
+        labelFmt = labelFmt or "mat: {m} zai: {z} pert: {p}"
+        if isinstance(zai, int):
+            zai = {str(zai), }
+        zais = self._getCleanedPertOpt('zais', zai)
+        perts = self._getCleanedPertOpt('perts', pert)
+        mats = self._getCleanedPertOpt('materials', mat)
+
+        ax = ax or axes() 
+
+        sigma = max(int(sigma), 0)
+        resMat = self.sensitivities[resp]
+        values = resMat[..., 0]
+        if normalize:
+            values = values.copy() / self.lethargyWidths
+
+        errors = resMat[..., 1] * values * sigma
+
+        energies = self.energies * 1E6
+        for z, m, p in product(zais, mats, perts):
+            iZ = self.zais[z]
+            iM = self.materials[m]
+            iP = self.perts[p]
+            yVals = values[iM, iZ, iP]
+            yVals = hstack((yVals, yVals[-1]))
+            yErrs = errors[iM, iZ, iP]
+            yErrs = hstack((yErrs, yErrs[-1]))
+            label = labelFmt.format(r=resp, z=z, m=m, p=p)
+            ax.errorbar(energies, yVals, yErrs, label=label, drawstyle='steps-post')
+
+        xlabel = xlabel or 'Energy [eV]'
+        ylabel = ylabel or (
+            'Sensitivity {} {}'.format(
+                'per unit lethargy' if normalize else '',
+                r'$\pm{}\sigma$'.format(sigma) if sigma else ''))
+        if loglog or logx:
+            ax.set_xscale('log')
+        if loglog or logy:
+            ax.set_yscale('log')
+        ax.set_xlabel(xlabel)
+        ax.set_ylabel(ylabel)
+        if legend:
+            ax.legend()
+        return ax
+
+    def _getCleanedPertOpt(self, key, value):
+        """Return a set of all or some of the requested perturbations."""
+        assert hasattr(self, key), key
+        opts = set(getattr(self, key).keys())
+        if value is None:
+            return opts
+        requested = set([value, ]) if isinstance(value, str) else set(value)
+        missing = requested.difference(opts)
+        if missing:
+            raise KeyError("Could not find the following perturbations: "
+                           "{}".format(', '.join(missing)))
+        return requested
+
 
 def reshapePermuteSensMat(vec, newShape):
     """
