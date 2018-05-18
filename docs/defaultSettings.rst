@@ -102,6 +102,45 @@ List of detectors to store. Empty list -> store all detectors
   Type: list
   
 
+.. _microxs-getFY:
+
+-----------------
+``microxs.getFY``
+-----------------
+
+If true, store the fission yields.
+::
+
+  Default: True
+  Type: bool
+  
+
+.. _microxs-getFlx:
+
+------------------
+``microxs.getFlx``
+------------------
+
+If true, store the group flux ratios.
+::
+
+  Default: True
+  Type: bool
+  
+
+.. _microxs-getXS:
+
+-----------------
+``microxs.getXS``
+-----------------
+
+If true, store the micro-group cross sections.
+::
+
+  Default: True
+  Type: bool
+  
+
 .. _sampler-allExist:
 
 --------------------
