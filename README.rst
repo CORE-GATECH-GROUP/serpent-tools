@@ -9,14 +9,14 @@ serpent-tools
 .. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
     :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
-  
+
 A suite of parsers designed to make interacting with
-``SERPENT`` [1]_ output files simple and flawless. 
+``SERPENT`` [1]_ output files simple and flawless.
 
 The ``SERPENT`` Monte Carlo code
 is developed by VTT Technical Research Centre of Finland, Ltd.
 More information, including distribution and licensing of ``SERPENT`` can be
-found at `<montecarlo.vtt.fi>`_
+found at `<http://montecarlo.vtt.fi>`_
 
 Installation
 ============
