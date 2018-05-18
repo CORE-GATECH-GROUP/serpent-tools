@@ -26,6 +26,7 @@ Next
   :py:attr:`~serpentTools.objects.containers.HomogUniv.gc` and 
   :py:attr:`~serpentTools.objects.containers.HomogUniv.gcUnc` 
 * :pull:`130` Added the ability to read results file
+* :pull:`149` - Add the ability to read sensitivity files
    
 .. _vAPI-changes:
 

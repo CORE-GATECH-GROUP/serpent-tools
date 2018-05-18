@@ -21,4 +21,5 @@ API
    history.rst
    results.rst
    sampler.rst
+   sensitivity.rst
    xsplot.rst

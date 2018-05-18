@@ -333,10 +333,6 @@ class UserSettingsLoader(dict):
             else:
                 continue
             settings[name] = value
-        if not settings:
-            messages.warning('Could not obtain settings for the following '
-                             'reader names: {}'
-                             .format(', '.join(settingsPreffix)))
         return settings
 
     def expandVariables(self):
