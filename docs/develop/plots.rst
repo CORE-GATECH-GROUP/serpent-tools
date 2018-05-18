@@ -58,4 +58,3 @@ Magic Plot Decorator Options
 
 .. include:: ./magicPlotOpts.rst
 
-
