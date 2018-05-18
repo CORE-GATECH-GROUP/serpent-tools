@@ -25,6 +25,7 @@ from serpentTools.parsers.results import ResultsReader
 from serpentTools.parsers.fissionMatrix import FissionMatrixReader
 from serpentTools.parsers.history import HistoryReader
 from serpentTools.parsers.xsplot import XSPlotReader
+from serpentTools.parsers.microxs import MicroXSReader
 
 READERS = {
     'dep': DepletionReader,
@@ -34,7 +35,8 @@ READERS = {
     'fission': FissionMatrixReader,
     'bumat': BumatReader,
     'history': HistoryReader,
-    'xsplot' : XSPlotReader
+    'xsplot' : XSPlotReader,
+    'mdx': MicroXSReader
 }
 
 REGEXES = {
@@ -45,12 +47,13 @@ REGEXES = {
     r'(.*_fmtx\d+\.m)': FissionMatrixReader,
     r'(.*\.bumat\d+)': BumatReader,
     r'(.*_his\d+\.m)': HistoryReader,
-    r'(.*_xs\d*\.m)' : XSPlotReader
+    r'(.*_xs\d*\.m)' : XSPlotReader,
+    r'(.*_mdx\d+\.m)': MicroXSReader,
 }
 
 __all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES',
            'DepletionReader', 'BranchingReader', 'DetectorReader',
-           'BumatReader', 'ResultsReader', 'FissionMatrixReader']
+           'BumatReader', 'ResultsReader', 'FissionMatrixReader', 'MicroXSReader']
 
 
 def inferReader(filePath):
@@ -110,6 +113,7 @@ def read(filePath, reader='infer'):
         results         ``ResultsReader``
         bumat           ``BumatReader``
         fission         ``FissionMatrixReader``
+        mdx             ``MdxReader``
         =============== ==========================================
 
     Returns
