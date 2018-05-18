@@ -232,7 +232,7 @@ class HomogUniv(NamedObject):
                         "Will not reshape variable {}"
                         .format(name))
             else:
-                value = value.reshape(ng, ng)
+                value = value.reshape(ng, ng, order="F")
         return value
         
     def get(self, variableName, uncertainty=False):
