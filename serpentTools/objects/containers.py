@@ -35,8 +35,8 @@ for xsSpectrum, xsType in product({'INF', 'B1'},
                         for xx in range(SCATTER_ORDERS)})
 
 HOMOG_VAR_TO_ATTR = {
-    'MICRO_E': 'microGroups', 'MICRO_NG': '_numMicroGroups',
-    'MACRO_E': 'groups', 'MACRO_NG': '_numGroups'}
+    'MICRO_E': 'microGroups', 'MICRO_NG': 'numMicroGroups',
+    'MACRO_E': 'groups', 'MACRO_NG': 'numGroups'}
 
 __all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
            'DetectorBase', 'SCATTER_MATS', 'SCATTER_ORDERS')
@@ -147,11 +147,21 @@ class HomogUniv(NamedObject):
             self._numGroups = self.groups.size - 1
         return self._numGroups
 
+    @numGroups.setter
+    def numGroups(self, value):
+        value = value if isinstance(value, int) else int(value)
+        self._numGroups = value
+
     @property
     def numMicroGroups(self):
         if self._numMicroGroups is None and self.microGroups is not None:
             self._numMicroGroups = self.microGroups.size - 1
         return self._numMicroGroups 
+
+    @numMicroGroups.setter
+    def numMicroGroups(self, value):
+        value = value if isinstance(value, int) else int(value)
+        self._numMicroGroups = value
 
     def __str__(self):
         extras = []
