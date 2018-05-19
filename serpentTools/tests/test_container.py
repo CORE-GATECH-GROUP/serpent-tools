@@ -122,7 +122,7 @@ class ReshapedHomogUnivTester(_HomogUnivTestHelper):
             rc.setValue('xs.reshapeScatter', True)
             univ, vec, mat = getParams()
             self.assertTrue(univ.reshaped)
-        return univ, vec, mat.reshape(NUM_GROUPS, NUM_GROUPS)
+        return univ, vec, mat.reshape(NUM_GROUPS, NUM_GROUPS, order="F")
 
 
 def getParams():
