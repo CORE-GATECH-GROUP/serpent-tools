@@ -4,7 +4,7 @@ import unittest
 from itertools import product
 
 from six import iteritems
-from numpy import array, arange, ndarray
+from numpy import array, arange, ndarray, float64
 from numpy.testing import assert_array_equal
 
 from serpentTools.settings import rc
@@ -171,6 +171,37 @@ class UnivTruthTester(unittest.TestCase):
         self.assertTrue(univ.hasData, msg=msg)
 
 
+class HomogUnivIntGroupsTester(unittest.TestCase):
+    """Class that ensures number of groups is stored as ints."""
+
+    def setUp(self):
+        self.univ = HomogUniv('intGroups', 0, 0, 0)
+        self.numGroups = 2
+        self.numMicroGroups = 4
+
+    def test_univGroupsFromFloats(self):
+        """Vefify integer groups are stored when passed as floats."""
+        self.setAs(float)
+        self._tester()
+
+    def test_univGroupsFromNPFloats(self):
+        """Vefify integer groups are stored when passed as numpy floats."""
+        self.setAs(float64)
+        self._tester()
+
+    def _tester(self):
+        for attr in {'numGroups', 'numMicroGroups'}:
+            actual = getattr(self.univ, attr)
+            msg ='Attribute: {}'.format(attr)
+            self.assertIsInstance(actual, int, msg=msg)
+            expected = getattr(self, attr)
+            self.assertEqual(expected, actual, msg=msg)
+    
+    def setAs(self, func):
+        """Set the number of groups to be as specific type."""
+        for attr in {'numGroups', 'numMicroGroups'}:
+            expected = getattr(self, attr)
+            setattr(self.univ, attr, func(expected))
 
 if __name__ == '__main__':
     unittest.main()
