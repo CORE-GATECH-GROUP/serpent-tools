@@ -17,7 +17,7 @@ Plot Formatters
 
 .. autofunction:: serpentTools.plot.magicPlotDocDecorator
 
-.. autofunction:: serpentTools.plot.plotFormatter
+.. autofunction:: serpentTools.plot.formatPlot
 
 .. autoattribute:: serpentTools.plot.PLOT_FORMAT_DEFAULTS
 

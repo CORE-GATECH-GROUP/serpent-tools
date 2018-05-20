@@ -4,7 +4,7 @@ from matplotlib import pyplot
 
 from serpentTools import messages
 from serpentTools.objects import NamedObject, convertVariableName
-from serpentTools.plot import magicPlotDocDecorator, plotFormatter 
+from serpentTools.plot import magicPlotDocDecorator, formatPlot 
 
 class XSData(NamedObject):
     docParams = """name: str
@@ -258,9 +258,9 @@ class XSData(NamedObject):
 
         ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso 
                             else 'cm$^{-1}$'))
-        ax = plotFormatter(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                           legend=legend, title=title, xlabel=xlabel,
-                           ylabel=ylabel)
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        legend=legend, title=title, xlabel=xlabel,
+                        ylabel=ylabel)
 
         return ax
 

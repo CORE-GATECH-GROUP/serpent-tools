@@ -108,7 +108,7 @@ PLOT_FORMAT_DEFAULTS = {
 
 
 @magicPlotDocDecorator
-def plotFormatter(ax, **kwargs):
+def formatPlot(ax, **kwargs):
     """
     Apply a range of formatting options to the plot.
 

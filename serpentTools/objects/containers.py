@@ -18,7 +18,7 @@ from numpy import (array, arange, unique, log, divide, ones_like, hstack,
                    ndarray)
 
 from serpentTools.settings import rc
-from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator, plotFormatter
+from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator, formatPlot
 from serpentTools.objects import NamedObject, convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug, info
 
@@ -508,9 +508,9 @@ class DetectorBase(NamedObject):
             ylabel += ' normalized per unit lethargy' if normalize else ''
             ylabel += ' $\pm${}$\sigma$'.format(sigma) if sigma else ''
         
-        ax = plotFormatter(ax, loglog=loglog, logx=logx, ncol=ncol,
-                           xlabel=xlabel or "Energy [MeV]", ylabel=ylabel, 
-                           legend=legend, title=title)
+        ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
+                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel, 
+                        legend=legend, title=title)
         return ax
     
     @magicPlotDocDecorator
@@ -595,9 +595,9 @@ class DetectorBase(NamedObject):
             else:
                 kwargs['drawstyle'] = 'steps-post'
         ax = plot(xdata, data, ax, labels, yerr,**kwargs)
-        ax = plotFormatter(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                           xlabel=xlabel, ylabel=ylabel, legend=legend, 
-                           title=title)
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        xlabel=xlabel, ylabel=ylabel, legend=legend, 
+                        title=title)
         return ax
 
     @magicPlotDocDecorator
@@ -670,9 +670,9 @@ class DetectorBase(NamedObject):
             data = data.T
 
         ax = cartMeshPlot(data, xgrid, ygrid, ax, cmap, logColor, **kwargs)
-        ax = plotFormatter(ax, loglog=loglog, logx=logx, logy=logy,
-                           xlabel=xlabel or xdim, ylabel=ylabel or ydim,
-                           title=title)
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
+                        xlabel=xlabel or xdim, ylabel=ylabel or ydim,
+                        title=title)
         return ax
 
     def _getGrid(self, qty):

@@ -8,7 +8,7 @@ from six import iteritems
 from numpy import transpose, array, hstack
 from matplotlib.pyplot import axes
 
-from serpentTools.plot import magicPlotDocDecorator, plotFormatter
+from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.objects import convertVariableName
@@ -341,8 +341,8 @@ class SensitivityReader(BaseReader):
             'Sensitivity {} {}'.format(
                 'per unit lethargy' if normalize else '',
                 r'$\pm{}\sigma$'.format(sigma) if sigma else ''))
-        ax = plotFormatter(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                           legend=legend, xlabel=xlabel, ylabel=ylabel)
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        legend=legend, xlabel=xlabel, ylabel=ylabel)
         return ax
 
     def _getCleanedPertOpt(self, key, value):

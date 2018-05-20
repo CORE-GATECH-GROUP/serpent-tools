@@ -4,7 +4,7 @@ import numpy
 from matplotlib import pyplot
 
 from serpentTools.messages import warning, debug
-from serpentTools.plot import magicPlotDocDecorator, plotFormatter
+from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.objects import NamedObject, convertVariableName
 
 
@@ -288,8 +288,8 @@ class DepletedMaterial(DepletedMaterialBase):
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
         
-        ax = plotFormatter(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                           xlabel=xlabel or self.PLOT_XLABELS[xUnits],
-                           ylabel=yUnits, title=title)
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        xlabel=xlabel or self.PLOT_XLABELS[xUnits],
+                        ylabel=yUnits, title=title)
         return ax
 
