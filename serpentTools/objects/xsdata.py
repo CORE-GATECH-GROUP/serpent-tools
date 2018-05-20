@@ -20,7 +20,17 @@ class XSData(NamedObject):
 
     Attributes
     ----------
-
+    isIso: bool
+        Whether this describes individual isotope XS, or whole-material XS
+    MT: list
+        Macroscopic cross section integers
+    MTdescip: list
+        Descriptions of reactions in ``MT``
+    xsdata: :py:class:`numpy.ndarray`
+    hasNuData: bool
+        True if nu data is present
+    metadata: dict
+        file-wide metadata from the reader
     """.format(params=docParams)
 
     MTdescriptions= {
@@ -47,8 +57,6 @@ class XSData(NamedObject):
     def __init__(self, name, metadata, isIso=False):
         NamedObject.__init__(self, name)
 
-        # Whether this describes individual isotope XS, or whole-material XS
-        # serpent starts their names with an "m" if it's a whole-material XS
         self.isIso = isIso
 
         # metadata reference
