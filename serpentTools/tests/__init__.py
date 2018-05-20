@@ -4,6 +4,8 @@ Module for testing the ``serpentTools`` package
 from os import path
 
 from numpy import stack
+from numpy.testing import assert_array_equal
+from six import iteritems
 
 from serpentTools import ROOT_DIR
 
@@ -38,3 +40,11 @@ def computeMeansErrors(*arrays):
     """
     workMat = stack(arrays)
     return workMat.mean(axis=0), workMat.std(axis=0)
+
+def compareDictOfArrays(expected, actualDict, dataType):
+    for key, value in iteritems(expected):
+        actual = actualDict[key]
+        assert_array_equal(value, actual, 
+                err_msg="Error in {} dictionary: key={}"
+                .format(dataType, key))
+
