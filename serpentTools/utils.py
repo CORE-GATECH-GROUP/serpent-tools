@@ -100,11 +100,36 @@ def splitValsUncs(iterable, copy=False):
 
 
 def convertVariableName(variable):
-    """Convert a SERPENT variable to camelCase"""
+    """
+    Return the mixedCase version of a SERPENT variable.
+    
+    Parameters
+    ----------
+    variable: str
+        ``SERPENT_STYLE`` variable name to be converted
+
+    Returns
+    -------
+    str:
+        Variable name that has been split at underscores and
+        converted to ``mixedCase``
+
+    Examples
+    --------
+    ::
+
+        >>> v = "INF_KINF"
+        >>> convertVariableName(v)
+        infKinf
+
+        >>> v = "VERSION"
+        >>> convertVariableName(v)
+        version
+
+    """
     lowerSplits = [item.lower() for item in variable.split('_')]
     if len(lowerSplits) == 1:
         return lowerSplits[0]
-    else:
-        return lowerSplits[0] + ''.join([item.capitalize()
-                                         for item in lowerSplits[1:]])
+    return lowerSplits[0] + ''.join([item.capitalize()
+                                     for item in lowerSplits[1:]])
 
