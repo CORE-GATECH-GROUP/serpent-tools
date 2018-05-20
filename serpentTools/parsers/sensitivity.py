@@ -11,7 +11,7 @@ from matplotlib.pyplot import axes
 from serpentTools.plot import magicPlotDocDecorator, placeLegend
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
-from serpentTools.utils import convertVariableName
+from serpentTools.utils import convertVariableName, str2vec
 from serpentTools.objects.readers import BaseReader
 
 
@@ -186,7 +186,7 @@ class SensitivityReader(BaseReader):
                                         "in energy chunk {}".format(chunk[:3]))
         splitLine = line.split()
         varName = splitLine[0].split('_')[1:]
-        varValues = strListToVec(splitLine[3:-1])
+        varValues = str2vec(splitLine[3:-1])
         if varName[0] == 'E':
             self.energies = varValues
         elif varName == ['LETHARGY', 'WIDTHS']:
@@ -210,7 +210,7 @@ class SensitivityReader(BaseReader):
                 varName = '_'.join(split[pertIndx + 1: sensIndx])
                 isEnergyIntegrated = split[-2:] == ['E', 'INT']
             elif varName is not None:
-                self.__addSens(varName, strListToVec(line), isEnergyIntegrated)
+                self.__addSens(varName, str2vec(line), isEnergyIntegrated)
                 varName = None
 
     def __addSens(self, varName, vec, isEnergyIntegrated):
@@ -381,9 +381,4 @@ def reshapePermuteSensMat(vec, newShape):
     newAx = list(reversed(range(len(newShape))))
     return transpose(reshaped, newAx)
 
-
-def strListToVec(strList):
-    """Convert a string of list of strings to vector."""
-    split = strList.split() if isinstance(strList, str) else strList
-    return array([float(xx) for xx in split])
 
