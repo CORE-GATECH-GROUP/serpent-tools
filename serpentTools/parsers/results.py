@@ -6,10 +6,10 @@ import six
 from numpy import array, vstack
 
 from serpentTools.settings import rc
-from serpentTools.objects import splitItems, convertVariableName
+from serpentTools.objects import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.objects.readers import XSReader
-from serpentTools.utils import str2vec
+from serpentTools.utils import str2vec, splitValsUncs
 from serpentTools.messages import (warning, debug, SerpentToolsException)
 
 
@@ -115,9 +115,9 @@ class ResultsReader(XSReader):
                 HomogUniv(brState[0], brState[1], brState[2], brState[3])
             return
         if varNameSer not in self._keysVersion['varsUnc']:
-            vals, uncs = splitItems(values)
-            self.universes[brState].addData(varNameSer, array(uncs), True)
-            self.universes[brState].addData(varNameSer, array(vals), False)
+            vals, uncs = splitValsUncs(values)
+            self.universes[brState].addData(varNameSer, uncs, True)
+            self.universes[brState].addData(varNameSer, vals, False)
         else:
             self.universes[brState].addData(varNameSer, array(values), False)
 
