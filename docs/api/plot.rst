@@ -17,8 +17,11 @@ Plot Formatters
 
 .. autofunction:: serpentTools.plot.magicPlotDocDecorator
 
+.. autofunction:: serpentTools.plot.plotFormatter
+
+.. autoattribute:: serpentTools.plot.PLOT_FORMAT_DEFAULTS
+
 .. autoattribute:: serpentTools.plot.LEGEND_KWARGS
-    :annotation: Keyword arguments needed to place the legend outside plots
 
 .. autofunction:: serpentTools.plot.placeLegend
 

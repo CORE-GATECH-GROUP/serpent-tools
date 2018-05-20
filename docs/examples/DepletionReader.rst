@@ -154,33 +154,36 @@ replacements
 | ``'zai'`` | ZZAAAI of the isotope, e.g. 922350   |
 +-----------+--------------------------------------+
 
+.. code::
+
+    >>> fuel.plot('days', 'adens', dayPoints, iso, 
+    >>>           ylabel='Atomic Density [#/cc]');
+
+.. image:: DepletionReader_files/DepletionReader_22_0.png
+
 .. code:: 
 
-    >>> fuel.plot('days', 'ingTox', dayPoints, iso,
-                  ylabel='Ingenstion Toxicity')
-
-.. image:: images/DepletionReader_22_0.png
-
-.. code::
-    
     >>> fuel.plot('burnup', 'ingTox', names='Xe135', logy=True,
-                  labelFmt="{iso}")
+    >>>           labelFmt="{iso}");
 
-.. image:: images/DepletionReader_23_0.png
+.. image:: DepletionReader_files/DepletionReader_23_0.png
 
 This type of plotting can also be applied to the |depReader| 
 :py:func:`~serpentTools.parsers.depletion.DepletionReader.plot` method
 , with similar options for formatting and retrieving data. The
 materials to be plotted can be filtered using the ``materials``
-argument.
+argument
 
 .. code:: 
 
-    dep.plot('days', 'adens', names=iso, 
-             materials=['fuel0', 'total'],
-             labelFmt="{mat}: {iso}", logy=True);
+    >>> dep.plot('burnup', 'adens', names=iso, 
+    >>>          materials=['fuel0', 'total'],
+    >>>          labelFmt="{mat}: {iso}", loglog=True);
 
-.. image:: images/DepletionReader_25_0.png
+
+
+.. image:: DepletionReader_files/DepletionReader_25_0.png
+
 
 Limitations
 -----------
