@@ -6,7 +6,7 @@ from numpy import array, ndarray
 
 from serpentTools.messages import critical
 
-def str2vec(iterable, of=float, out=array, splitAt=' '):
+def str2vec(iterable, of=float, out=array):
     """
     Convert a string or other iterable to vector.
 
@@ -45,13 +45,9 @@ def str2vec(iterable, of=float, out=array, splitAt=' '):
         array([1., 2., 3., 4.,])
 
     """
-    vec = iterable.split(splitAt) if isinstance(iterable, str) else iterable
-    try:
-        return out([of(xx) for xx in vec], **kwargs)
-    except Exception as ee:
-        critical("Failed to convert {} to vector - out type: {} "
-                 "value type: {}".format(iterable, type(out), type(of)))
-        raise ee
+    vec = (iterable.split() if isinstance(iterable, str) 
+           else iterable)
+    return out([of(xx) for xx in vec])
 
 
 def splitValsUncs(iterable, copy=False):
