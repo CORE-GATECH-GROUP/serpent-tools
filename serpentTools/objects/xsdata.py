@@ -4,7 +4,7 @@ from matplotlib import pyplot
 
 from serpentTools import messages
 from serpentTools.objects import NamedObject, convertVariableName
-from serpentTools.plot import magicPlotDocDecorator # make nice docstring
+from serpentTools.plot import magicPlotDocDecorator, plotFormatter 
 
 class XSData(NamedObject):
     docParams = """name: str
@@ -178,8 +178,8 @@ class XSData(NamedObject):
         return frame
 
     @magicPlotDocDecorator
-    def plot(self, mts='all', ax=None, loglog=True, xlabel=None, ylabel=None,
-             labels=None, cmap=None, logx=False, logy=False, title=None,
+    def plot(self, mts='all', ax=None, loglog=False, xlabel=None, ylabel=None,
+             logx=True, logy=False, title=None, legend=True, ncol=1, 
              **kwargs):
         """
         Return a matplotlib figure for plotting XS.
@@ -194,6 +194,14 @@ class XSData(NamedObject):
             A single int indicates one MT reaction number.
             A list should be a list of MT numbers to plot.
         {ax}
+        {loglog}
+        {logx}
+        {logy}
+        {xlabel}
+        {ylabel}
+        {title}
+        {legend}
+        {ncol}
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
@@ -205,9 +213,6 @@ class XSData(NamedObject):
         TypeError:
             if MT numbers that don't make sense come up
         """
-        # check input
-        if logx and logy:
-            loglog=True
 
         if mts == 'all':
             mts = self.MT
@@ -232,28 +237,22 @@ class XSData(NamedObject):
         # list of MT number descriptions
         descriplist = []
 
+        x = self.metadata['egrid']
         for mt in mts:
             for i, MT in enumerate(self.MT):
                 if mt == MT:
-                    x = self.metadata['egrid']
                     y = self.xsdata[:,i]
-                    if loglog:
-                        ax.loglog(x, y, drawstyle='steps')
-                    elif logy:
-                        ax.semilogy(x, y, drawstyle='steps')
-                    elif logx:
-                        ax.semilogx(x, y, drawstyle='steps')
-                    else:
-                        ax.plot(x, y, drawstyle='steps')
-                    descriplist.append(self.MTdescrip[i])
+                    ax.plot(x, y, drawstyle='steps', label=self.MTdescrip[i])
 
-        ax.legend(descriplist)
-        if title:
-            ax.set_title(title)
-        else:
-            ax.set_title('{} cross section{}'.format(self.name,'s' if len(mts)>1 else ''))
-        ax.set_xlabel('Energy (MeV)')
-        ax.set_ylabel('Cross Section ({})'.format('b' if self.isIso else 'cm$^{-1}$'))
+        title = title or '{} cross section{}'.format(
+            self.name, 's' if len(mts)>1 else '')
+        xlabel = xlabel or "Energy [MeV]"
+
+        ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso 
+                            else 'cm$^{-1}$'))
+        ax = plotFormatter(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                           legend=legend, title=title, xlabel=xlabel,
+                           ylabel=ylabel)
 
         return ax
 
@@ -280,3 +279,4 @@ class XSData(NamedObject):
             return outstr
         else:
             print(outstr)
+
