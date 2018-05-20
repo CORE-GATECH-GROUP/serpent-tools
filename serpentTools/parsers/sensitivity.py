@@ -11,7 +11,7 @@ from matplotlib.pyplot import axes
 from serpentTools.plot import magicPlotDocDecorator, placeLegend
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
-from serpentTools.objects import convertVariableName
+from serpentTools.utils import convertVariableName
 from serpentTools.objects.readers import BaseReader
 
 

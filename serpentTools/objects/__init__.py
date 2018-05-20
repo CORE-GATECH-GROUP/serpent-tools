@@ -11,13 +11,3 @@ class NamedObject(object):
         return '<{} {}>'.format(self.__class__.__name__, self.name)
 
 
-def convertVariableName(variable):
-    """Convert a SERPENT variable to camelCase"""
-    lowerSplits = [item.lower() for item in variable.split('_')]
-    if len(lowerSplits) == 1:
-        return lowerSplits[0]
-    else:
-        return lowerSplits[0] + ''.join([item.capitalize()
-                                         for item in lowerSplits[1:]])
-
-

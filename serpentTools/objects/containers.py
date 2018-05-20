@@ -19,7 +19,8 @@ from numpy import (array, arange, unique, log, divide, ones_like, hstack,
 
 from serpentTools.settings import rc
 from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
-from serpentTools.objects import NamedObject, convertVariableName
+from serpentTools.objects import NamedObject
+from serpentTools.utils import convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug, info
 
 DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',

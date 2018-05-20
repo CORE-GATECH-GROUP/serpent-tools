@@ -5,7 +5,8 @@ from matplotlib import pyplot
 
 from serpentTools.messages import warning, debug
 from serpentTools.plot import magicPlotDocDecorator
-from serpentTools.objects import NamedObject, convertVariableName
+from serpentTools.objects import NamedObject
+from serpentTools.utils import convertVariableName
 
 
 class DepletedMaterialBase(NamedObject):

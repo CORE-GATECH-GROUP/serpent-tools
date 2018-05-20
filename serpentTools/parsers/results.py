@@ -6,7 +6,7 @@ import six
 from numpy import array, vstack
 
 from serpentTools.settings import rc
-from serpentTools.objects import convertVariableName
+from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.objects.readers import XSReader
 from serpentTools.utils import str2vec, splitValsUncs

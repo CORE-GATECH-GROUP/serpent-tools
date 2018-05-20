@@ -8,7 +8,7 @@ file
 
 from numpy import empty, asfortranarray, array
 
-from serpentTools.objects import convertVariableName
+from serpentTools.utils import convertVariableName
 from serpentTools.objects.readers import BaseReader
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, error
