@@ -25,22 +25,21 @@ all the arrays and perturbation parameters contained therein. A basic
 plot method is also contained on the reader.
 
 .. code:: 
-
-    %matplotlib inline
-    from matplotlib import pyplot
-    import serpentTools
+    
+    >>> %matplotlib inline
+    >>> from matplotlib import pyplot
+    >>> import serpentTools
 
 .. code:: 
-
-    %time
-    sens = serpentTools.read('flattop_sens.m')
-
-
+    
+    >>> %time
+    >>> sens = serpentTools.read('flattop_sens.m')
 
 .. parsed-literal::
+ 
 
-    CPU times: user 2 µs, sys: 0 ns, total: 2 µs
-    Wall time: 3.81 µs
+    CPU times: user 4 µs, sys: 0 ns, total: 4 µs
+    Wall time: 7.87 µs
 
 
 The arrays that are stored in |sens| and |eneSens| 
@@ -56,29 +55,26 @@ These arrays are quite large, so only their shapes will be shown in this
 notebook.
 
 .. code:: 
-
-    print(sens.sensitivities.keys(), sens.energyIntegratedSens.keys())
-
+    
+    >>> print(sens.sensitivities.keys(), sens.energyIntegratedSens.keys())
 
 .. parsed-literal::
+ 
 
     dict_keys(['keff']) dict_keys(['keff'])
 
-
 .. code:: 
-
-    print(sens.sensitivities['keff'].shape)
-
+    
+    >>> print(sens.sensitivities['keff'].shape)
 
 .. parsed-literal::
+ 
 
     (1, 2, 7, 175, 2)
 
-
 .. code:: 
-
-    print(sens.energyIntegratedSens['keff'].shape)
-
+    
+    >>> print(sens.energyIntegratedSens['keff'].shape)
 
 .. parsed-literal::
 
@@ -90,46 +86,38 @@ The energy grid structure and lethargy widths are stored on the reader, as
 :py:attr:`~serpentTools.parsers.sensitivity.SensitivityReader.lethargyWidths`.
 
 .. code:: 
-
-    print(sens.energies.shape)
-
+    
+    >>> print(sens.energies.shape)
 
 .. parsed-literal::
 
     (176,)
 
-
 .. code:: 
-
-    print(sens.energies[:10])
-
+    
+    >>> print(sens.energies[:10])
 
 .. parsed-literal::
 
     [1.00001e-11 1.00001e-07 4.13994e-07 5.31579e-07 6.82560e-07 8.76425e-07
-     1.12300e-06 1.44000e-06 1.85539e-06 2.38237e-06]
-
+    1.12300e-06 1.44000e-06 1.85539e-06 2.38237e-06]
 
 .. code:: 
-
-    print(sens.lethargyWidths.shape)
-
+    
+    >>> print(sens.lethargyWidths.shape)
 
 .. parsed-literal::
 
     (175,)
 
-
 .. code:: 
-
-    print(sens.lethargyWidths[:10])
-
+    
+    >>> print(sens.lethargyWidths[:10])
 
 .. parsed-literal::
 
     [9.21034  1.42067  0.25     0.249999 0.250001 0.247908 0.248639 0.253452
-     0.250001 0.249999]
-
+    0.250001 0.249999]
 
 Ordered dictionaries 
 :py:attr:`~serpentTools.parsers.sensitivity.SensitivityReader.materials`,
@@ -143,34 +131,29 @@ dictionaries has the exact same structure as if the arrays were loaded
 into ``MATLAB``/``Octave``, but with zero-indexing.
 
 .. code:: 
-
-    print(sens.materials)
-
+    
+    >>> print(sens.materials)
 
 .. parsed-literal::
 
     OrderedDict([('total', 0)])
 
-
 .. code:: 
-
-    print(sens.zais)
-
+    
+    >>> print(sens.zais)
 
 .. parsed-literal::
 
     OrderedDict([('total', 0), (922380, 1)])
 
-
 .. code:: 
-
-    print(sens.perts)
-
+    
+    >>> print(sens.perts)
 
 .. parsed-literal::
 
-    OrderedDict([('total xs', 0), ('ela scatt xs', 1), ('sab scatt xs', 2), ('inl scatt xs', 3), ('capture xs', 4), ('fission xs', 5), ('nxn xs', 6)])
-
+    OrderedDict([('total xs', 0), ('ela scatt xs', 1), ('sab scatt xs', 2), ('inl
+    scatt xs', 3), ('capture xs', 4), ('fission xs', 5), ('nxn xs', 6)])
 
 Plotting
 --------
@@ -187,7 +170,7 @@ sensitivities.
 
 .. code:: 
 
-    sens.plot('keff');
+    >>> sens.plot('keff');
 
 
 
@@ -217,11 +200,9 @@ label used for each plot. The following replacements will be made:
 
 .. code:: 
 
-    ax = sens.plot('keff', 922380, mat='total', sigma=0,
-                                labelFmt="{r}: {z} {p}")
-    ax.set_xlim(1E4);  # set the lower limit to be closer to what we care about
-
-
+    >>> ax = sens.plot('keff', 922380, mat='total', sigma=0,
+    ...                labelFmt="{r}: {z} {p}")
+    >>> ax.set_xlim(1E4);  # set the lower limit to be closer to what we care about
 
 .. image:: Sensitivity_files/Sensitivity_22_0.png
 
@@ -232,9 +213,10 @@ the legend outside the plot.
 
 .. code:: 
 
-    sens.plot('keff', zai='total', pert='total xs', labelFmt="{z} -  {p}", legend='right', 
-                       normalize=False)
-    pyplot.xlim(1E4, 1E8);
+    >>> ax = sens.plot('keff', 922380, mat='total', sigma=0,
+    ...                labelFmt="{r}: {z} {p}", legend='right')
+    >>> ax.set_xlim(1E4);  # set the lower limit to be closer to what we care about
+
 
 
 
@@ -242,9 +224,9 @@ the legend outside the plot.
 
 .. code:: 
 
-    sens.plot('keff', zai='total', pert=['total xs', 'fission xs'], labelFmt="{z} -  {p}", 
-                       legend='above', ncol=2, normalize=False)
-    pyplot.xlim(1E4, 1E8);
+    >>> sens.plot('keff', zai='total', pert=['total xs', 'fission xs'], labelFmt="{z} -  {p}", 
+    ...           legend='above', ncol=2, normalize=False)
+    >>> pyplot.xlim(1E4, 1E8);
 
 
 
