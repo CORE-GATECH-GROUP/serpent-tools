@@ -83,4 +83,6 @@ class SplitValsTester(unittest.TestCase):
             assert_array_equal(view, copy,err_msg=msg)
             self.assertFalse(view is copy, msg=msg)
 
-        
+if __name__ == '__main__':
+    unittest.main()
+
