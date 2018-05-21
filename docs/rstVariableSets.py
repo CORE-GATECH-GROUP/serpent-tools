@@ -4,7 +4,7 @@ Script to display the variable groups used by the project
 
 from sys import version_info as pyVersInfo
 from serpentTools import __version__ as sssPackVers
-from serpentTools.objects import convertVariableName
+from serpentTools.utils import convertVariableName
 
 import yaml
 from six import iteritems

@@ -6,10 +6,10 @@ import six
 from numpy import array, vstack
 
 from serpentTools.settings import rc
-from serpentTools.objects import splitItems, convertVariableName
+from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.objects.readers import XSReader
-
+from serpentTools.utils import str2vec, splitValsUncs
 from serpentTools.messages import (warning, debug, SerpentToolsException)
 
 
@@ -109,21 +109,21 @@ class ResultsReader(XSReader):
     def _storeUnivData(self, varNameSer, varVals):
         """Process universes' data"""
         brState = self._getBUstate()  # obtain the branching tuple
-        values = array(self._str2num(varVals))  # convert the string to float numbers
+        values = str2vec(varVals) # convert the string to float numbers
         if not self.universes or brState not in self.universes.keys():
             self.universes[brState] = \
                 HomogUniv(brState[0], brState[1], brState[2], brState[3])
             return
         if varNameSer not in self._keysVersion['varsUnc']:
-            vals, uncs = splitItems(values)
-            self.universes[brState].addData(varNameSer, array(uncs), True)
-            self.universes[brState].addData(varNameSer, array(vals), False)
+            vals, uncs = splitValsUncs(values)
+            self.universes[brState].addData(varNameSer, uncs, True)
+            self.universes[brState].addData(varNameSer, vals, False)
         else:
             self.universes[brState].addData(varNameSer, array(values), False)
 
     def _storeResData(self, varNamePy, varVals):
         """Process time-dependent results data"""
-        vals = array(self._str2num(varVals))  # convert the string to float numbers
+        vals = str2vec(varVals) # convert the string to float numbers
         if varNamePy in self.resdata.keys():  # extend existing matrix
             currVar = self.resdata[varNamePy]
             ndim = 1
@@ -146,7 +146,7 @@ class ResultsReader(XSReader):
         if varType == 'string':
             self.metadata[varNamePy] = varVals
         else:  # vector or scalar
-            vals = array(self._str2num(varVals))  # convert string to floats
+            vals = str2vec(varVals) # convert string to floats
             self.metadata[varNamePy] = array(vals)  # overwrite existing data
 
     def _getBUstate(self):
@@ -166,12 +166,6 @@ class ResultsReader(XSReader):
             else:
                 burnup = self.resdata[varPyBU][-1]
         return (self._univlist[-1], burnup, burnIdx, days)
-
-    @staticmethod
-    def _str2num(varVals):
-        """Converts a string to a list of numbers."""
-        num_list = [float(x) for x in varVals.split()]
-        return num_list
 
     def _getVarName(self, tline):
         """Obtains the variable name and converts it to a python-style name."""
