@@ -4,7 +4,7 @@
 
 .. |detectorReader| replace:: :py:class:`~serpentTools.parsers.detector.DetectorReader`
 
-.. |detBins| replace:: :py:attr:`~serpentTools.objects.containersBase.Detector.bins`
+.. |detBins| replace:: :py:attr:`~serpentTools.objects.containers.Detector.bins`
 
 .. |detIndx| replace:: :py:attr:`~serpentTools.objects.containers.Detector.indexes`
 
@@ -14,11 +14,11 @@
 
 .. |detGrids| replace:: :py:attr:`~serpentTools.objects.containers.Detector.grids`
 
-.. |detSlice| replace:: :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+.. |detSlice| replace:: :py:meth:`~serpentTools.objects.containers.Detector.slice`
 
-.. |plot| replace:: :py:meth:`~serpentTools.objects.containers.DetectorBase.plot`
+.. |plot| replace:: :py:meth:`~serpentTools.objects.containers.Detector.plot`
 
-.. |mesh| replace:: :py:meth:`~serpentTools.objects.containers.DetectorBase.meshPlot`
+.. |mesh| replace:: :py:meth:`~serpentTools.objects.containers.Detector.meshPlot`
 
 .. |spectrum| replace:: :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
 

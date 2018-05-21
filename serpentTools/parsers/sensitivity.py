@@ -302,6 +302,10 @@ class SensitivityReader(BaseReader):
             If response or any passed perturbation settings are not 
             present on the object
 
+        See Also
+        --------
+        * :py:meth:`str.format` - used for formatting labels
+
         """
         for subDict in {'sensitivities', 'energyIntegratedSens'}:
             if resp not in getattr(self, subDict):
