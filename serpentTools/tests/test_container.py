@@ -1,43 +1,51 @@
 """Test the container object. """
 
 import unittest
-from serpentTools.objects import containers
+from itertools import product
+
+from six import iteritems
+from numpy import array, arange, ndarray, float64
+from numpy.testing import assert_array_equal
+
+from serpentTools.settings import rc
+from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers import DepletionReader
+from serpentTools.tests import compareDictOfArrays
+
+NUM_GROUPS = 5
 
 
-class HomogenizedUniverseTester(unittest.TestCase):
-    """ Class to test the Homogenized Universe """
+class _HomogUnivTestHelper(unittest.TestCase):
+    """Class that runs the tests for the two sub-classes
+    
+    Subclasses will differ in how the ``mat`` data
+    is arranged. For one case, the ``mat`` will be a 
+    2D matrix.
+    """
 
-    @classmethod
-    def setUpClass(cls):
-        cls.univ = containers.HomogUniv('dummy', 0, 0, 0)
-        cls.Exp = {}
-        cls.Unc = {}
+    def setUp(self):
+        self.univ, vec, mat = self.getParams()
+        groupStructure = arange(NUM_GROUPS  + 1)
+        testK = vec[0]
         # Data definition
-        cls.Exp = {'B1_1': 1, 'B1_2': [1, 2], 'B1_3': [1, 2, 3],
-                   'INF_1': 3, 'INF_2': [4, 5], 'INF_3': [6, 7, 8],
-                   'MACRO_E': (.1, .2, .3, .1, .2, .3), 'Test_1': 'ciao'}
-        cls.Unc = {'B1_1': 1e-1, 'B1_2': [1e-1, 2e-1], 'B1_3': [1e-1, 2e-1,
-                                                                3e-1],
-                   'INF_1': 3e-1, 'INF_2': [4e-1, 5e-1], 'INF_3': [6e-1, 7e-1,
-                                                                   8e-1],
-                   'MACRO_E': (.1e-1, .2e-1, .3e-1, .1e-1, .2e-1, .3e-1),
-                   'Test_1': 'addio'}
-
+        rawData = {'B1_1': vec, 'B1_AS_LIST': list(vec),
+                   'INF_1': vec, 'INF_S0': mat, 'CMM_TRANSP_X': vec,
+                   'INF_KEFF': vec, 'B1_KINF': vec, 'IMP_KEFF': vec,
+                   'INF_KINF': vec}
+        attrs = {'MACRO_E': groupStructure}
         # Partial dictionaries
-        cls.b1Exp = {'b11': 1, 'b12': [1, 2], 'b13': [1, 2, 3]}
-        cls.b1Unc = {'b11': (1, 0.1), 'b12': ([1, 2], [.1, .2]), 'b13':
-            ([1, 2, 3], [.1, .2, .3])}
-        cls.infExp = {'inf1': 3, 'inf2': [4, 5], 'inf3': [6, 7, 8]}
-        cls.infUnc = {'inf1': (3, .3), 'inf2': ([4, 5], [.4, .5]), 'inf3':
-            ([6, 7, 8], [.6, .7, .8])}
-        cls.meta = {'macroE': (.1e-1, .2e-1, .3e-1, .1e-1, .2e-1, .3e-1),
-                    'test1': 'addio'}
+        self.b1Unc = self.b1Exp = {'b11': vec, 'b1AsList': vec, 'b1Kinf': testK}
+        self.infUnc = self.infExp = {
+                'inf1': vec, 'infS0': mat, 'infKeff': testK, 'infKinf': testK,
+                }
+        self.gcUnc = self.gc = {'cmmTranspX': vec, 'impKeff': testK}
+        self.expAttrs = {'groups': groupStructure, 'numGroups': NUM_GROUPS} 
         # Use addData
-        for kk in cls.Exp:
-            cls.univ.addData(kk, cls.Exp[kk], False)
-        for kk in cls.Unc:
-            cls.univ.addData(kk, cls.Unc[kk], True)
+        for key, value in iteritems(attrs):
+            self.univ.addData(key, value)
+        for key, value in iteritems(rawData):
+            self.univ.addData(key, value, uncertainty=False)
+            self.univ.addData(key, value, uncertainty=True)
 
     def test_getB1Exp(self):
         """ Get Expected vales from B1 dictionary"""
@@ -45,16 +53,16 @@ class HomogenizedUniverseTester(unittest.TestCase):
         # Comparison
         for kk in self.univ.b1Exp:
             d[kk] = self.univ.get(kk, False)
-        self.assertDictEqual(self.b1Exp, d)
-
+        compareDictOfArrays(self.b1Exp, d, 'b1 values')
+        
     def test_getB1Unc(self):
         """ Get Expected vales and associated uncertainties from B1 dictionary
         """
         d = {}
         # Comparison
         for kk in self.univ.b1Exp:
-            d[kk] = self.univ.get(kk, True)
-        self.assertDictEqual(self.b1Unc, d)
+            d[kk] = self.univ.get(kk, True)[1]
+        compareDictOfArrays(self.b1Unc, d, 'b1 uncertainties')
 
     def test_getInfExp(self):
         """ Get Expected vales from Inf dictionary"""
@@ -62,7 +70,7 @@ class HomogenizedUniverseTester(unittest.TestCase):
         # Comparison
         for kk in self.univ.infExp:
             d[kk] = self.univ.get(kk, False)
-        self.assertDictEqual(self.infExp, d)
+        compareDictOfArrays(self.infExp, d, 'infinite values')
 
     def test_getInfUnc(self):
         """ Get Expected vales and associated uncertainties from Inf dictionary
@@ -70,17 +78,124 @@ class HomogenizedUniverseTester(unittest.TestCase):
         d = {}
         # Comparison
         for kk in self.univ.infUnc:
-            d[kk] = self.univ.get(kk, True)
-        self.assertDictEqual(self.infUnc, d)
+            d[kk] = self.univ.get(kk, True)[1]
+        compareDictOfArrays(self.infUnc, d, 'infinite uncertainties')
 
-    def test_getMeta(self):
+    def test_attributes(self):
         """ Get metaData from corresponding dictionary"""
-        d = {}
-        # Comparison
-        for kk in self.univ.metadata:
-            d[kk] = self.univ.get(kk, False)
-        self.assertDictEqual(self.meta, d)
+        for key, value in iteritems(self.expAttrs):
+            actual = getattr(self.univ, key)
+            if isinstance(value, ndarray):
+                assert_array_equal(value, actual, err_msg=key)
+            else:
+                self.assertEqual(value, actual, msg=key)
 
+    def test_getBothInf(self):
+        """
+        Verify that the value and the uncertainty are returned if the
+        flag is passed.
+        """
+        expected, uncertainties = {}, {}
+        for key in self.infExp.keys():
+            value, unc = self.univ.get(key, True)
+            expected[key] = value
+            uncertainties[key] = unc
+        compareDictOfArrays(self.infExp, expected, 'infinite values')
+        compareDictOfArrays(self.infUnc, uncertainties, 
+                            'infinite uncertainties')
+
+
+class VectoredHomogUnivTester(_HomogUnivTestHelper):
+    """Class for testing HomogUniv that does not reshape scatter matrices"""
+
+    def getParams(self):
+        univ, vec, mat = getParams()
+        self.assertFalse(univ.reshaped)
+        return univ, vec, mat
+
+
+class ReshapedHomogUnivTester(_HomogUnivTestHelper):
+    """Class for testing HomogUniv that does reshape scatter matrices"""
+
+    def getParams(self):
+        from serpentTools.settings import rc
+        with rc:
+            rc.setValue('xs.reshapeScatter', True)
+            univ, vec, mat = getParams()
+            self.assertTrue(univ.reshaped)
+        return univ, vec, mat.reshape(NUM_GROUPS, NUM_GROUPS, order="F")
+
+
+def getParams():
+    """Return the universe, vector, and matrix for testing."""
+    univ = HomogUniv(300, 0, 0, 0)
+    vec = arange(NUM_GROUPS)
+    mat = arange(NUM_GROUPS ** 2)
+    return univ, vec, mat
+
+
+del _HomogUnivTestHelper
+
+class UnivTruthTester(unittest.TestCase):
+    """Class that tests the various boolean evaluations for HomogUniv"""
+
+    def setUp(self):
+        """Verify that an empty universe evalutes to False."""
+        self.assertFalse(self.getUniv())
+
+    def test_loadedUnivTrue(self):
+        """Verify that universes with some data evalue to True."""
+        keys = {"INF_TOT", "B1_TOT", "CMM_TRANSP_X"}
+        data = arange(NUM_GROUPS)
+        for uflag, key in product((True, False), keys):
+            univ = self.getUniv()
+            univ.addData(key, data, uflag)
+            self.evalUniv(univ, msg="Key = {}, Uflag={}".format(key, uflag))
+        univ = self.getUniv()
+        univ.addData("MACRO_E", data)
+        self.evalUniv(univ, msg="Key = MACRO_E")
+
+    @staticmethod
+    def getUniv():
+        return HomogUniv('truth', 0, 0, 0)
+
+    def evalUniv(self, univ, msg):
+        """Shortcut for testing the truth of a universe."""
+        self.assertTrue(univ, msg=msg)
+        self.assertTrue(univ.hasData, msg=msg)
+
+
+class HomogUnivIntGroupsTester(unittest.TestCase):
+    """Class that ensures number of groups is stored as ints."""
+
+    def setUp(self):
+        self.univ = HomogUniv('intGroups', 0, 0, 0)
+        self.numGroups = 2
+        self.numMicroGroups = 4
+
+    def test_univGroupsFromFloats(self):
+        """Vefify integer groups are stored when passed as floats."""
+        self.setAs(float)
+        self._tester()
+
+    def test_univGroupsFromNPFloats(self):
+        """Vefify integer groups are stored when passed as numpy floats."""
+        self.setAs(float64)
+        self._tester()
+
+    def _tester(self):
+        for attr in {'numGroups', 'numMicroGroups'}:
+            actual = getattr(self.univ, attr)
+            msg ='Attribute: {}'.format(attr)
+            self.assertIsInstance(actual, int, msg=msg)
+            expected = getattr(self, attr)
+            self.assertEqual(expected, actual, msg=msg)
+    
+    def setAs(self, func):
+        """Set the number of groups to be as specific type."""
+        for attr in {'numGroups', 'numMicroGroups'}:
+            expected = getattr(self, attr)
+            setattr(self.univ, attr, func(expected))
 
 if __name__ == '__main__':
     unittest.main()

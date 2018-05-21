@@ -7,6 +7,7 @@ from six import iteritems
 import numpy
 from numpy import meshgrid, where
 from matplotlib import pyplot
+from matplotlib.axes import Axes
 from matplotlib.colors import LogNorm, Normalize
 
 #
@@ -17,6 +18,7 @@ _LOG_BASE = """log{}: bool\n    Apply a log scale to {}."""
 LOG_LOG = _LOG_BASE.format('log', 'both axes')
 LOGX = _LOG_BASE.format('x', 'x axis')
 LOGY = _LOG_BASE.format('y', 'y axis')
+TITLE = """title: str\n    Title to apply to the figure."""
 LABELS = """labels: None or iterable
     Labels to apply to each line drawn. This can be used to identify
     which bin is plotted as what line."""
@@ -49,13 +51,32 @@ MAT_FMT_DOC = """labelFmt: str or None
     |``'zai'``      | specific isotope ZZAAAI |
     +---------------+-------------------------+
 """
-LEGEND = """legend: bool\n    Automatically label the plot"""
+
+
+LEGEND_KWARGS = {
+        'above': {'bbox_to_anchor': (0., 1.02, 1., 1.02),
+                  'loc': 3, 'mode': 'expand'},
+        'right': {'bbox_to_anchor': (1.02, 1),
+                  'loc': 2}
+        }
+"""
+Settings for modifying the position of the legend
+source: `<https://matplotlib.org/users/legend_guide.html>`_
+"""
+
+
+LEGEND = """legend: bool or str
+    Automatically label the plot. Pass one of the following values
+    to place the legend outside the plot: {}""".format(
+        ', '.join(LEGEND_KWARGS.keys()))
+
+NCOL = """ncol: int\n    Integer number of columns to apply to the legend."""
 
 PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
         'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
         'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
-        'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP,
-        'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND}
+        'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP, 'title': TITLE,
+        'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND, 'ncol': NCOL}
 """Magic strings that, if found as {x}, will be replaced by the key of x"""
 
 
@@ -80,6 +101,67 @@ def magicPlotDocDecorator(f):
     decorated.__doc__ = doc
     return decorated
 
+PLOT_FORMAT_DEFAULTS = {
+    'xlabel': None, 'ylabel': None, 'legend': True,
+    'loglog': False, 'logy': False, 'logx': False,
+    'ncol': 1, 'title': None}
+
+
+@magicPlotDocDecorator
+def formatPlot(ax, **kwargs):
+    """
+    Apply a range of formatting options to the plot.
+
+    Parameters
+    ----------
+    {ax}
+    {xlabel}
+    {ylabel}
+    {loglog}
+    {logx}
+    {logy}
+    {legend}
+    {ncol}
+    {title}
+
+    Returns
+    -------
+    {rax}
+
+    Raises
+    ------
+    TypeError
+        If the ``ax`` argument is not an instance of
+        :py:class:`matplotlib.pyplot.axes.Axes`
+
+    """
+
+    if not isinstance(ax, Axes):
+        raise TypeError("Expected {} got {}".format(type(Axes), type(ax)))
+    loglog = kwargs.get('loglog', PLOT_FORMAT_DEFAULTS['loglog'])
+    logx = kwargs.get('logx', PLOT_FORMAT_DEFAULTS['logx'])
+    logy = kwargs.get('logy', PLOT_FORMAT_DEFAULTS['logy'])
+    xlabel = kwargs.get('xlabel', PLOT_FORMAT_DEFAULTS['xlabel'])
+    ylabel = kwargs.get('ylabel', PLOT_FORMAT_DEFAULTS['ylabel'])
+    legend = kwargs.get('legend', PLOT_FORMAT_DEFAULTS['legend'])
+    title = kwargs.get('title', PLOT_FORMAT_DEFAULTS['title'])
+    ncol = kwargs.get('ncol', PLOT_FORMAT_DEFAULTS['ncol'])
+
+    if loglog or logx:
+        ax.set_xscale('log')
+    if loglog or logy:
+        ax.set_yscale('log')
+    if xlabel:
+        ax.set_xlabel(xlabel)
+    if ylabel:
+        ax.set_ylabel(ylabel)
+    if legend:
+        ax = placeLegend(ax, legend, ncol) 
+    if title:
+        ax.set_title(title)
+
+    return ax
+
 
 @magicPlotDocDecorator
 def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
@@ -99,10 +181,10 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     {cmap}
     logScale: bool
         If true, apply a logarithmic coloring 
-    normalizer: callable or Normalize
+    normalizer: callable or :py:class:`matplotlib.colors.Normalize`
         Custom normalizer for this plot.
-        If an instance of ``Normalize``, use directly.
-        Otherwise, assume a callable object and call as 
+        If an instance of :py:class:`matplotlib.colors.Normalize`, 
+        use directly.  Otherwise, assume a callable object and call as 
         ``norm = normalizer(data, xticks, yticks)``
     cbarLabel: None or str
         Label to apply to colorbar
@@ -211,6 +293,39 @@ def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
 
     if any(labels):
         ax.legend()
+
+    return ax
+
+
+@magicPlotDocDecorator
+def placeLegend(ax, legend, ncol=1):
+    """
+    Add a legend to the figure outside the plot.
+
+    Parameters
+    ----------
+    {ax}
+    {legend}
+    {ncol}
+
+    Returns
+    -------
+    {rax}
+
+    Raises
+    ------
+    KeyError
+        If ``key`` is not in :py:attr:`~serpentTools.plot.LEGEND_KWARGS`
+    """
+    handles, labels = ax.get_legend_handles_labels()
+    if not (handles and labels):
+        return ax
+    ncol = max(1, int(ncol)) if ncol else 1
+    if not isinstance(legend, str):
+        ax.legend(ncol=ncol)
+        return ax
+    kwargs = LEGEND_KWARGS[legend]
+    ax.legend(borderaxespad=0., ncol=ncol, **kwargs)
 
     return ax
 

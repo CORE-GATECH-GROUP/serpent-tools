@@ -1,30 +1,50 @@
-""" Custom-built containers for storing data from serpent outputs
+""" 
+Custom-built containers for storing data from serpent outputs
 
 Contents
 --------
-:py:class:`~serpentTools.objects.containers.HomogUniv`
-:py:class:`~serpentTools.objects.containers.BranchContainer
-:py:class:`~serpentTools.objects.containers.DetectorBase`
-:py:class:`~serpentTools.objects.containers.Detector`
+* :py:class:`~serpentTools.objects.containers.HomogUniv`
+* :py:class:`~serpentTools.objects.containers.BranchContainer
+* :py:class:`~serpentTools.objects.containers.DetectorBase`
+* :py:class:`~serpentTools.objects.containers.Detector`
 
 """
+from re import compile
 from collections import OrderedDict
+from itertools import product
 
 from matplotlib import pyplot
+from numpy import (array, arange, unique, log, divide, ones_like, hstack,
+                   ndarray)
 
-from numpy import array, arange, unique, log, divide, ones_like, hstack
-
-from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
-from serpentTools.objects import NamedObject, convertVariableName
-from serpentTools.messages import warning, SerpentToolsException, debug
+from serpentTools.settings import rc
+from serpentTools.plot import (cartMeshPlot, plot, magicPlotDocDecorator,
+                               formatPlot)
+from serpentTools.objects import NamedObject
+from serpentTools.utils import convertVariableName
+from serpentTools.messages import warning, SerpentToolsException, debug, info
 
 DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
             'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
 """Name of the columns of the data"""
 
+SCATTER_MATS = set()
+SCATTER_ORDERS = 8
+
+for xsSpectrum, xsType in product({'INF', 'B1'},
+                                  {'S', 'SP'}):
+    SCATTER_MATS.update({'{}_{}{}'.format(xsSpectrum, xsType, xx)
+                        for xx in range(SCATTER_ORDERS)})
+
+HOMOG_VAR_TO_ATTR = {
+    'MICRO_E': 'microGroups', 'MICRO_NG': 'numMicroGroups',
+    'MACRO_E': 'groups', 'MACRO_NG': 'numGroups'}
 
 __all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
-           'DetectorBase')
+           'DetectorBase', 'SCATTER_MATS', 'SCATTER_ORDERS')
+
+
+CRIT_RE = compile('K[EI][NF]F')
 
 
 def isNonNeg(value):
@@ -67,8 +87,22 @@ class HomogUniv(NamedObject):
         Expected values for leakage corrected group constants
     b1Unc: dict
         Relative uncertainties for leakage-corrected group constants
-    metadata: dict
-        Other values that do not not conform to inf/b1 dictionaries
+    gc: dict
+        Expected values for group constants that do not fit
+        the ``INF_`` nor ``B1_`` pattern
+    gcUnc: dict
+        Relative uncertainties for group constants that do not fit
+        the ``INF_`` nor ``B1_`` pattern
+    reshaped: bool
+        ``True`` if scattering matrices have been reshaped to square
+        matrices. Otherwise, these matrices are stored as vectors. 
+    groups: None or :py:class:`numpy.array`
+        Group boundaries from highest to lowest
+    numGroups: None or int
+        Number of energy groups bounded by ``groups``
+    microGroups: None or :py:class:`numpy.array`
+        Micro group structure used to produce group constants.
+        Listed from lowest to highest
 
     Raises
     ------
@@ -97,7 +131,39 @@ class HomogUniv(NamedObject):
         self.infExp = {}
         self.b1Unc = {}
         self.infUnc = {}
-        self.metadata = {}
+        self.gc = {}
+        self.gcUnc = {}
+        self.__reshaped = rc['xs.reshapeScatter']
+        self._numGroups = None
+        self.groups = None
+        self.microGroups = None
+        self._numMicroGroups = None
+
+    @property
+    def reshaped(self):
+        return self.__reshaped
+
+    @property
+    def numGroups(self):
+        if self._numGroups is None and self.groups is not None:
+            self._numGroups = self.groups.size - 1
+        return self._numGroups
+
+    @numGroups.setter
+    def numGroups(self, value):
+        value = value if isinstance(value, int) else int(value)
+        self._numGroups = value
+
+    @property
+    def numMicroGroups(self):
+        if self._numMicroGroups is None and self.microGroups is not None:
+            self._numMicroGroups = self.microGroups.size - 1
+        return self._numMicroGroups 
+
+    @numMicroGroups.setter
+    def numMicroGroups(self, value):
+        value = value if isinstance(value, int) else int(value)
+        self._numMicroGroups = value
 
     def __str__(self):
         extras = []
@@ -113,8 +179,14 @@ class HomogUniv(NamedObject):
                                   extras or '')
     
     def addData(self, variableName, variableValue, uncertainty=False):
-        """
-        sets the value of the variable and, optionally, the associate s.d.
+        r"""
+        Sets the value of the variable and, optionally, the associate s.d.
+
+        .. versionadded:: 0.5.0
+
+            Reshapes scattering matrices according to setting 
+            ``xs.reshapeScatter``. Matrices are of the form
+            :math:`S[i, j]=\Sigma_{s,i\rightarrow j}`
 
         .. warning::
 
@@ -127,8 +199,7 @@ class HomogUniv(NamedObject):
         variableValue:
             Variable Value
         uncertainty: bool
-            Set to ``True`` in order to retrieve the
-            uncertainty associated to the expected values
+            Set to ``True`` if this data is an uncertainty 
 
         Raises
         ------
@@ -136,19 +207,46 @@ class HomogUniv(NamedObject):
             If the uncertainty flag is not boolean
 
         """
-
-        # 1. Check the input type
-        variableName = convertVariableName(variableName)
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type {}, '
                             'should be boolean.'.format(type(uncertainty)))
-        # 2. Pointer to the proper dictionary
-        setter = self._lookup(variableName, uncertainty)
-        # 3. Check if variable is already present. Then set the variable.
-        if variableName in setter:
-            warning("The variable {} will be overwritten".format(variableName))
-        setter[variableName] = variableValue
+        
+        value = self._cleanData(variableName, variableValue)
+        if variableName in HOMOG_VAR_TO_ATTR:
+            value = value if variableValue.size > 1 else value[0]
+            setattr(self, HOMOG_VAR_TO_ATTR[variableName], value)
+            return
 
+        name = convertVariableName(variableName)
+        # 2. Pointer to the proper dictionary
+        setter = self._lookup(name, uncertainty)
+        # 3. Check if variable is already present. Then set the variable.
+        if name in setter:
+            warning("The variable {} will be overwritten".format(name))
+        setter[name] = value
+
+    def _cleanData(self, name, value):
+        """
+        Return the new value to be stored after some cleaning.
+
+        Makes sure all vectors, everything but keff/kinf data, are
+        converted to numpy arrays. Reshapes scattering matrices
+        if number of groups is known and ``xs.reshapeScatter``
+        """
+        if not isinstance(value, ndarray):
+            value = array(value)
+        if CRIT_RE.search(name):
+            return value[0]
+        ng = self.numGroups
+        if self.__reshaped and name in SCATTER_MATS:
+            if ng is None:
+                info("Number of groups is unknown at this time. "
+                        "Will not reshape variable {}"
+                        .format(name))
+            else:
+                value = value.reshape(ng, ng, order="F")
+        return value
+        
     def get(self, variableName, uncertainty=False):
         """
         Gets the value of the variable VariableName from the dictionaries
@@ -166,7 +264,7 @@ class HomogUniv(NamedObject):
         x:
             Variable Value
         dx:
-            Associated uncertainty
+            Associated uncertainty if ``uncertainty``
 
         Raises
         ------
@@ -191,9 +289,6 @@ class HomogUniv(NamedObject):
         # 3. Return the value of the variable
         if not uncertainty:
             return x
-        if setter is self.metadata:
-            warning('No uncertainty is associated to metadata')
-            return x
         setter = self._lookup(variableName, True)
         if variableName not in setter:
             raise KeyError(
@@ -211,9 +306,25 @@ class HomogUniv(NamedObject):
             if not uncertainty:
                 return self.b1Exp
             return self.b1Unc
-        else:
-            return self.metadata
+        return self.gcUnc if uncertainty else self.gc
 
+    def __bool__(self):
+        """Return True if data is stored on the object."""
+        attrs = {"infExp", "infUnc", "b1Exp", "b1Unc", "gc", "gcUnc",
+                 "groups", "microGroups"}
+        for key in attrs:
+            value = getattr(self, key)
+            if isinstance(value, dict) and value:
+                return True
+            if isinstance(value, ndarray) and value.any():
+                return True
+            if value:
+                return True
+        return False
+
+    __nonzero__ = __bool__
+
+    hasData = __bool__
 
 class DetectorBase(NamedObject):
     """
@@ -324,7 +435,8 @@ class DetectorBase(NamedObject):
     @magicPlotDocDecorator
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
                      ylabel=None, steps=True, logx=True, logy=False, loglog=False, 
-                     sigma=3, labels=None, **kwargs):
+                     sigma=3, labels=None, legend=False, ncol=1, title=None, 
+                     **kwargs):
         """
         Quick plot of the detector value as a function of energy.
 
@@ -344,6 +456,9 @@ class DetectorBase(NamedObject):
         {loglog}
         {sigma}
         {labels}
+        {legend}
+        {ncol}
+        {title}
         {kwargs} :py:func:`matplotlib.pyplot.plot` or 
             :py:func:`matplotlib.pyplot.errorbar`
 
@@ -390,21 +505,21 @@ class DetectorBase(NamedObject):
         else:
             slicedErrors = None
         ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, yerr=slicedErrors, **kwargs)     
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
-        ax.set_xlabel(xlabel or 'Energy [MeV]')
-        ylabel = ylabel or 'Tally data' + (' normalized per unit lethargy'
-                                             if normalize else '')
-        ax.set_ylabel(ylabel)
-
+        if ylabel is None:
+            ylabel = 'Tally data'
+            ylabel += ' normalized per unit lethargy' if normalize else ''
+            ylabel += ' $\pm${}$\sigma$'.format(sigma) if sigma else ''
+        
+        ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
+                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel, 
+                        legend=legend, title=title)
         return ax
     
     @magicPlotDocDecorator
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
-             xlabel=None, ylabel=None, steps=False, labels=None, 
-             logx=False, logy=False, loglog=False, **kwargs):
+             xlabel=None, ylabel=None, steps=False, labels=None, logx=False, 
+             logy=False, loglog=False, legend=False, ncol=1, title=None,
+             **kwargs):
         """
         Simple plot routine for 1- or 2-D data
 
@@ -430,6 +545,9 @@ class DetectorBase(NamedObject):
         {logx}
         {logy}
         {loglog}
+        {legend}
+        {ncol}
+        {title}
         {kwargs} :py:func:`~matplotlib.pyplot.plot` or
             :py:func:`~matplotlib.pyplot.errorbar` function.
 
@@ -479,19 +597,15 @@ class DetectorBase(NamedObject):
             else:
                 kwargs['drawstyle'] = 'steps-post'
         ax = plot(xdata, data, ax, labels, yerr,**kwargs)
-        
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        xlabel=xlabel, ylabel=ylabel, legend=legend, 
+                        title=title)
         return ax
 
     @magicPlotDocDecorator
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
                  cmap=None, logColor=False, xlabel=None, ylabel=None, 
-                 logx=False, logy=False, loglog=False, **kwargs):
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -515,6 +629,7 @@ class DetectorBase(NamedObject):
         {logx}
         {logy}
         {loglog}
+        {title}
         {kwargs} :py:func:`~matplotlib.pyplot.pcolormesh`
 
         Returns
@@ -557,12 +672,9 @@ class DetectorBase(NamedObject):
             data = data.T
 
         ax = cartMeshPlot(data, xgrid, ygrid, ax, cmap, logColor, **kwargs)
-        ax.set_xlabel(xlabel or xdim)
-        ax.set_ylabel(ylabel or ydim)
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
+                        xlabel=xlabel or xdim, ylabel=ylabel or ydim,
+                        title=title)
         return ax
 
     def _getGrid(self, qty):
@@ -843,3 +955,4 @@ class BranchContainer(object):
             raise AttributeError("Need to load at least one universe with "
                                  "non-zero burnup first.""")
         return self.__hasDays
+

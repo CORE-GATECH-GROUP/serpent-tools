@@ -1,14 +1,8 @@
+.. |reader| replace:: :py:class:`~serpentTools.parsers.xsplot.XSPlotReader
 
-Copyright (c) 2017-2018 Andrew Johnson, Dan Kotlyar, Stefano Terlizzi,
-Gavin Ridley, GTRC
+.. |xsections| replace:: :py:attr:`~serpentTools.parsers.xsplot.XSPlotReader.xsections`
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+.. |xsdata| replace:: :py:class:`~serpentTools.objects.xsdata.XSData`
 
 Cross Section Reader/Plotter
 ============================
@@ -25,20 +19,11 @@ Let’s plot some data used in the ``serpentTools`` regression suite.
 
 .. code::
 
-    import os
     import serpentTools
-    import matplotlib.pyplot as plt
     %matplotlib inline
     
     xsreader = serpentTools.read('../serpentTools/tests/plut_xs0.m')
 
-
-.. parsed-literal::
-
-    INFO    : serpentTools: Inferred reader for ../serpentTools/tests/plut_xs0.m: XSPlotReader
-    WARNING : serpentTools: Could not obtain settings for the following reader names: xsplot
-    INFO    : serpentTools: Preparing to read ../serpentTools/tests/plut_xs0.m
-    INFO    : serpentTools: Done reading xsplot file
 
 
 This file contains some cross sections from a Serpent case containing a
@@ -58,8 +43,8 @@ sections are available from the file:
 
 
 
-Notice that the important part of the reader is the ``xsections``
-attribute, which contains a dictionary of named XSData objects. Entries
+Notice that the important part of the reader is the |xsections|
+attribute, which contains a dictionary of named |xsdata| objects. Entries
 starting with “i” are isotopes, while “m” preceded names are materials.
 Notably, materials not appearing in the neutronics calculation, e.g.,
 external tanks in Serpent continuous reprocessing calculations, are not
@@ -69,7 +54,7 @@ Plotting the entries is very easy, check this out:
 
 .. code::
 
-    fig = xsreader.xsections['i4009_03c'].plot()
+    xsreader.xsections['i4009_03c'].plot(legend='right');
 
 
 
@@ -133,10 +118,19 @@ meaning without requiring your reference back to the wiki.
 Note that any extra arguments passed to the plot method get passed on to
 matplotlib’s plotting, and not figure instantiations.
 
+.. code:: 
+
+    xsreader.xsections['mfissile'].plot(mts=[-3, -6, -16], loglog=True)
+
+
+.. image:: images/XSPlot_files/XSPlot_15_1.png
+
+
 Lastly, there are two ways to directly access data from Serpent’s xsplot
 output. Firstly, if you’d like to see the data as-stored, just check the
-attribute called “data” belonging to the XSData object. Its columns
-correspond to MT reactions, ordered in the same way as showMT presents.
+attribute called “data” belonging to the |xsdata| object. Its columns
+correspond to MT reactions, ordered in the same way as 
+:py:meth:`~serpentTools.object.xsdata.XSData.showMT` presents.
 The rows correspond to values at the energies in metadata[‘egrid’].
 
 The other method regards presenting tabular data in a visually appealing

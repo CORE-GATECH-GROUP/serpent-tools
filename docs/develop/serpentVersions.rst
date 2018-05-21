@@ -125,3 +125,32 @@ layout of output files, such that present readers will not work, then
 version-specific read methods will have to be written.
 If/when this happens, a procedure will be developed and added here.
 
+MapStrVersions
+----------------
+
+This is a mapping variable located in the ResultsReader parser. 
+The variable is a nested dictionary, where the keys describe the version and the nested
+dictionary describes the various data blocks within the results file (``_res.m``). 
+
+In general the results file is divided into three main blocks:
+- ``metadata``: general description of the simulation
+- ``resdata``: time-dependent values, e.g. ``k-eff``
+- ``universes``: universe dependent values, such as cross-sections
+The mapping through the variable ``MapStrVersions`` should reflect this. 
+
+The basic mapping definition relies on the following structure::
+
+		MapStrVersions = {'2.1.29':                        	# serpent version
+		{'meta': 'VERSION',				# The starting keyword of the metadata block
+		'rslt': 'MIN_MACROXS',          # The starting keyword of the resdata block
+		'univ': 'GC_UNIVERSE_NAME',     # The starting keyword of the universes block
+		'days': 'BURN_DAYS', 			# A keyword used in Serpent to describe time, days
+		'burn': 'BURNUP',               # A keyword used in Serpent to describe burnup, MWd/kgU
+		'infxs': 'INF_',                # A prefix in Serpent used to describe infinite cross-sections
+		'b1xs': 'B1_',					# A prefix in Serpent used to describe b1 cross-sections
+		'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E']}} # Only the variables that have no uncertainties in the universe block
+					
+In order to support different serpent versions, these keywords would need to be updated.
+							 
+
+
