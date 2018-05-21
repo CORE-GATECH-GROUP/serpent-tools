@@ -135,8 +135,8 @@ class MicroXSReader(BaseReader):
                 values = str2vec(tline)
                 # isotope, reaction type and isomeric state
                 reactionData = (int(values[0]), int(values[1]), int(values[2]))
-                currXS[reactionData], currUnc[reactionData] = \
-                    array(splitValsUncs(values[3:]))
+                currXS[reactionData], currUnc[reactionData] = splitValsUncs(
+                    values[3:])
         self.xsVal[univ] = currXS
         self.xsUnc[univ] = currUnc
 
@@ -240,12 +240,6 @@ class MicroXSReader(BaseReader):
                     Group-wise cross-section values
         xsUnc: numpy.ndarray
                     Group-wise uncertainty values
-
-        Returns
-        -------
-        Group-wise micro cross-sections: list
-            if the isotope, reaction or isomeric state
-            do not exist, an empty list is returned
 
         Raises
         ------

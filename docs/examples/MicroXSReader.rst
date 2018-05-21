@@ -16,6 +16,7 @@
 
 .. |settings| replace::  :py:class:`~serpentTools.settings.rc`
 
+
 =============
 MicroXSReader
 =============
@@ -365,12 +366,12 @@ to store all the data from the output file.
     >>> rc['microxs.getXS'] = True # True/False only
     >>> rc['microxs.getFlx'] = True # True/False only
 
-``microxs.getFY``: True or False, store fission yields
+:ref:`microxs-getFY`: True or False, store fission yields
 
-``microxs.getXS``: True or False, store group cross-sections and
+:ref:`microxs-getXS`: True or False, store group cross-sections and
 uncertainties
 
-``microxs.getFlx``: True or False, store flux ratios and uncertainties
+:ref:`microxs-getFlx`: True or False, store flux ratios and uncertainties
 
 .. code:: 
     
