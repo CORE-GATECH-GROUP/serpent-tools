@@ -7,8 +7,9 @@
 #. ``labels``: labels: None or iterable
     Labels to apply to each line drawn. This can be used to identify
     which bin is plotted as what line.
-#. ``legend``: legend: bool
-    Automatically label the plot
+#. ``legend``: legend: bool or str
+    Automatically label the plot. Pass one of the following values
+    to place the legend outside the plot: above, right
 #. ``loglog``: loglog: bool
     Apply a log scale to both axes.
 #. ``logx``: logx: bool
@@ -31,11 +32,15 @@
     |``'zai'``      | specific isotope ZZAAAI |
     +---------------+-------------------------+
 
+#. ``ncol``: ncol: int
+    Integer number of columns to apply to the legend.
 #. ``rax``: :py:class:`matplotlib.axes.Axes`
     Ax on which the data was plotted.
 #. ``sigma``: sigma: int
     Confidence interval to apply to errors. If not given or ``0``, 
     no errors will be drawn.
+#. ``title``: title: str
+    Title to apply to the figure.
 #. ``xlabel``: xlabel: str or None
     Label for x-axis.
 #. ``ylabel``: yabel: str or None
