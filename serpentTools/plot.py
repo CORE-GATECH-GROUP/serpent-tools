@@ -213,7 +213,7 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     if not logScale and normalizer is None:
         norm = None
     elif normalizer is not None:
-        norm =  (normalizer if isinstance(normalizer, Normlize) 
+        norm =  (normalizer if isinstance(normalizer, Normalize)
                  else normalizer(data, xticks, yticks))
     else:
         smallestPos = data[where(data > 0)].min()
