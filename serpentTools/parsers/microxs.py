@@ -1,12 +1,10 @@
-"""
-Parser responsible for reading the ``mdx[i].m`` files
-"""
+"""Parser responsible for reading the ``mdx[i].m`` files"""
 import re
 
 from numpy import array
 
 from serpentTools.engines import KeywordParser
-from serpentTools.objects import splitItems
+from serpentTools.utils import splitValsUncs, str2vec
 from serpentTools.objects.readers import BaseReader
 
 from serpentTools.messages import SerpentToolsException
@@ -92,19 +90,19 @@ class MicroXSReader(BaseReader):
         fissProd, indYield, cumYield = [], [], []
         currVar = self._strtok.search(chunk[0]).group()  # NFY_902270_1
         # Obtain the parent ID: AAZZZ0/1, e.g., 922350
-        parentFY = int(self._str2num(currVar.split('_')[-2]))
+        parentFY = int(str2vec(currVar.split('_')[-2]))
         if 'E' in currVar.split('_')[-1]:  # e.g., NFY_902270_1E
             sclVal = self._regexpScl.search(chunk[0])
             # energy must be stored on the reader
-            self._energyFY = self._str2num(chunk[0][sclVal.span()[0] +
-                                                    1:sclVal.span()[1] - 2])
+            self._energyFY = float(str2vec(
+                chunk[0][sclVal.span()[0] + 1:sclVal.span()[1] - 2]))
             return  # thermal/epi/fast
         for tline in chunk:
             if '[' in tline or ']' in tline:
                 continue
             tline = tline[:tline.find('%')]
             if len(tline.split()) == 3:
-                val1, val2, val3 = self._str2num(tline)
+                val1, val2, val3 = str2vec(tline, out=list)
                 fissProd.append(val1)
                 indYield.append(val2)
                 cumYield.append(val3)
@@ -119,8 +117,8 @@ class MicroXSReader(BaseReader):
         univ = currVar.split('_')[-1]
         vals = self._regexpVec.search(chunk[0])  # group flux values
         self.fluxRatio[univ], self.fluxUnc[univ] = \
-            splitItems(self._str2num(chunk[0][vals.span()[0] +
-                                              1:vals.span()[1] - 2]))
+            splitValsUncs(str2vec(chunk[0][vals.span()[0] +
+                                           1:vals.span()[1] - 2]))
 
     def _storeMicroXS(self, chunk):
         """store micro cross-section and uncertainty values"""
@@ -134,21 +132,13 @@ class MicroXSReader(BaseReader):
             if '%' in tline:
                 tline = tline[:tline.index('%')]
             if len(tline.split()) > 3:
-                values = self._str2num(tline)
+                values = str2vec(tline)
                 # isotope, reaction type and isomeric state
                 reactionData = (int(values[0]), int(values[1]), int(values[2]))
                 currXS[reactionData], currUnc[reactionData] = \
-                    array(splitItems(values[3:]))
+                    array(splitValsUncs(values[3:]))
         self.xsVal[univ] = currXS
         self.xsUnc[univ] = currUnc
-
-    @staticmethod
-    def _str2num(tline):
-        """converts a string to a list of numbers."""
-        vals = [float(x) for x in tline.split()]
-        if len(tline.split()) < 2:
-            vals = vals[0]
-        return vals
 
     def _precheck(self):
         """do a quick scan to ensure this looks like mdx file."""
@@ -191,10 +181,10 @@ class MicroXSReader(BaseReader):
 
         Returns
         -------
-        Independent and cumulative fission yields: float or None
-            IndYield and CumYield
-            if fission product exists, float values are returned,
-            otherwise None values are returned
+        indYield: float
+                    Independent fission yield
+        cumYield: float
+                    Cumulative fission yield
 
         Raises
         ------
@@ -246,6 +236,13 @@ class MicroXSReader(BaseReader):
 
         Returns
         -------
+        xsVal: numpy.ndarray
+                    Group-wise cross-section values
+        xsUnc: numpy.ndarray
+                    Group-wise uncertainty values
+
+        Returns
+        -------
         Group-wise micro cross-sections: list
             if the isotope, reaction or isomeric state
             do not exist, an empty list is returned
@@ -271,4 +268,3 @@ class MicroXSReader(BaseReader):
                                     " and isomeric flag {2} in {3}"
                                     .format(isotope, reaction, isomeric,
                                             self.filePath))
-
