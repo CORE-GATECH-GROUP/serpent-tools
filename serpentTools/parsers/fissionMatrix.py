@@ -29,7 +29,7 @@ def dimCheck(dims):
 
 class FissionMatrixReader(BaseReader):
     """
-    Class for reading 1D Fission Matrix output files.
+    Parser for 1D Fission Matrix output files.
 
     Parameters
     ----------
@@ -51,7 +51,7 @@ class FissionMatrixReader(BaseReader):
     eigValVec: np.array
         Fission Matrix Eigenvalues
     eigVecMat: np.array
-        Eigenvectors Matrix
+        Eigenvector Matrix
     """
 
     def __init__(self, filePath):
@@ -79,8 +79,7 @@ class FissionMatrixReader(BaseReader):
         Raises
         -------
         ValueError
-        Negative fission matrix entries
-
+            Negative fission matrix entries
 
         """
         dims = self.metaFind(dimsEx)
@@ -127,8 +126,8 @@ class FissionMatrixReader(BaseReader):
 
     def fMatUPlot(self, title=None, xlabel=None, ylabel=None, cmap=None):
         """
-        Plots the sparsity pattern of the uncertainty matrix associated to
-        the fission matrix entries
+        Plots sparsity pattern of the uncertainty matrix associated to
+        fission matrix entries
 
         Parameters
         ----------
@@ -172,7 +171,7 @@ class FissionMatrixReader(BaseReader):
         return self.domEigVal, self.domEigVec
 
     def eigVecNorm(self, w):
-        # Flips and Normalizes the eigenvectors
+        # Flips and normalizes eigenvectors
         cont = 0
         z = w[:, 0]
         lunghezza = len(z)
@@ -185,7 +184,7 @@ class FissionMatrixReader(BaseReader):
             error('The Dominant Eigenvector is not Positive')
         return w
 
-    def eigVecPlot(self, eigNum, xdata=None, ax=None,
+    def eigVecPlot(self, eigNum, xdata=None, ax=None, linewidth=2, color='b',
                    title='Neutron fission source', xlabel=None, ylabel=None,
                    cmap=None):
         """
@@ -197,6 +196,10 @@ class FissionMatrixReader(BaseReader):
             Mode number (eigNum>0)
         xdata: np.array
             x axis data
+        linewidth: float
+            Line width
+        color: str
+            Line-style
         ax: object
             Axis object
         title: str
@@ -211,25 +214,32 @@ class FissionMatrixReader(BaseReader):
         Returns
         -------
         ax: object
-            axis object
+            Axis object
+
+        Raises
+        -------
+        ValueError
+            eigNum is not consistent with total number of eigenvectors
+
         """
 
-        assert (isinstance(eigNum, int), 'The number must be integer')
         lunghezza = len(self.domEigVec)
-        if eigNum < 1 or eigNum > lunghezza:
-            error('The number must be a positive integer between 1 and {}'
-                  .format(lunghezza))
+        if eigNum < 1 or eigNum > lunghezza or isinstance(eigNum, int) is \
+                False:
+            raise ValueError('The number must be a positive integer between 1 '
+                             'and {}'.format(lunghezza))
         # Plot
         if xdata is None:
             xdata = range(0, len(self.domEigVec))
         plt.figure()
         ax = ax or plt.axes()
-        ax.plot(xdata, self.eigVecMat[:, eigNum - 1])
+        ax.plot(xdata, self.eigVecMat[:, eigNum - 1], color,
+                linewidth=linewidth)
         ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel,
                         cmap=cmap)
         return ax
 
-    def eigValPlot(self, ax=None, title='Fission Matrix Spectrum',
+    def eigValPlot(self, ax=None, color='ro', title='Fission Matrix Spectrum',
                    xlabel=None, ylabel=None, cmap=None, grid=True):
         """
         The function plots the fission matrix spectrum on the Argand-Gauss
@@ -239,6 +249,8 @@ class FissionMatrixReader(BaseReader):
         ----------
         ax: object
             Axis object
+        color: str
+            Line-style
         title: str
             Plot title
         xlabel: str
@@ -246,18 +258,18 @@ class FissionMatrixReader(BaseReader):
         ylabel: str
             y-axis label
         cmap: str
-            color map
+            Color map
         grid: bool
-            grid (True), no grid (False)
+            Grid (True), no Grid (False)
 
         Returns
         -------
         ax: object
-            axis object
+            Axis object
         """
         plt.figure()
         ax = ax or plt.axes()
-        ax.plot(self.eigValVec.real, self.eigValVec.imag, 'ro')
+        ax.plot(self.eigValVec.real, self.eigValVec.imag, color)
         ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel,
                         cmap=cmap)
         plt.grid(grid)
