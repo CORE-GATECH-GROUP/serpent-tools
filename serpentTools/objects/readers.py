@@ -1,7 +1,8 @@
 from serpentTools.settings import rc
 from serpentTools.messages import info
+from serpentTools.objects import BaseObject
 
-class BaseReader:
+class BaseReader(BaseObject):
     """Parent class from which all parsers will inherit.
 
     Parameters

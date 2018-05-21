@@ -27,6 +27,14 @@ class MismatchedContainersError(SamplerError):
     """Attempting to sample from dissimilar containers"""
     pass
 
+class ComparisonError(SerpentToolsException):
+    """Base exception for errors raised while comparing objects."""
+    pass
+
+class MissingDataError(ComparisonError):
+    """One object is missing data contained on the other."""
+    pass
+
 
 LOG_OPTS = ['critical', 'error', 'warning', 'info', 'debug']
 

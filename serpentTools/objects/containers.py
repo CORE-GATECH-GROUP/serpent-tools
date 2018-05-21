@@ -21,7 +21,7 @@ from numpy import (array, arange, unique, log, divide, ones_like, hstack,
 from serpentTools.settings import rc
 from serpentTools.plot import (cartMeshPlot, plot, magicPlotDocDecorator,
                                formatPlot)
-from serpentTools.objects import NamedObject
+from serpentTools.objects import NamedObject, BaseObject
 from serpentTools.utils import convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug, info
 
@@ -911,7 +911,7 @@ class Detector(DetectorBase):
         return shape
 
 
-class BranchContainer(object):
+class BranchContainer(BaseObject):
     """
     Class that stores data for a single branch.
 
