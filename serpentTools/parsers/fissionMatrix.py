@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from serpentTools.objects.readers import BaseReader
 from serpentTools.messages import warning, error
 from serpentTools.plot import cartMeshPlot, formatPlot
+from serpentTools.utils import str2vec
 
 # Regular Expressions
 fMVal = r'fmtx_t\s+\(\s*(\d+),\s*(\d+)\)\s+=\s+([\d\+\.E-]+)\s;\s ' \
@@ -90,7 +91,7 @@ class FissionMatrixReader(BaseReader):
             for lineNo, line in enumerate(fp):
                 m = re.match(fMVal, line)
                 if m is not None:
-                    lista = [float(i) for i in m.groups()]
+                    lista = str2vec(m.groups())
                     signCheck(lista, self.filePath)
                     FissMat[int(lista[0]) - 1, int(lista[1]) - 1] = lista[2]
                     FissMatUnc[int(lista[0]) - 1, int(lista[1]) - 1] = lista[5]
@@ -103,7 +104,7 @@ class FissionMatrixReader(BaseReader):
             for lineNo, line in enumerate(fp):
                 metaString = re.match(regEx, line)
                 if metaString is not None:
-                    metaList = [float(i) for i in metaString.groups()]
+                    metaList = str2vec(metaString.groups())
                     return metaList
 
     def fMatPlot(self, title=None, xlabel=None, ylabel=None, cmap=None):
