@@ -48,17 +48,10 @@ lattice bins.
 
     >>> from matplotlib import pyplot
     >>> import serpentTools
-    INFO    : serpentTools: Using version 0.2.1
     >>> pinFile = 'fuelPin_det0.m'
     >>> bwrFile = 'bwr_det0.m'
     >>> pin = serpentTools.read(pinFile)
-    INFO    : serpentTools: Inferred reader for fuelPin_det0.m: DetectorReader
-    INFO    : serpentTools: Preparing to read fuelPin_det0.m
-    INFO    : serpentTools: Done
     >>> bwr = serpentTools.read(bwrFile)
-    INFO    : serpentTools: Inferred reader for bwr_det0.m: DetectorReader
-    INFO    : serpentTools: Preparing to read bwr_det0.m
-    INFO    : serpentTools: Done
     >>> print(pin.detectors)
     {'nodeFlx': 
         <serpentTools.objects.containers.Detector object at 0x7fb3ae1db978>}
@@ -286,29 +279,34 @@ simple 1D and 2D plotting routines. The simplest 1D plot method is simply |plot|
 however a wide range of plot options are supported.
 Below are keyword arguments that can be used to format the plots.
 
-+--------------+------------------------------------------------+
-| Option       | Description                                    |
-+==============+================================================+
-| ``what``     | What data to plot                              |
-+--------------+------------------------------------------------+
-| ``ax``       | Preprepared figure on which to add this plot   |
-+--------------+------------------------------------------------+
-| ``xdim``     | Quantity from |detIndx| to use as x-axis       |
-+--------------+------------------------------------------------+
-| ``sigma``    | Confidence interval to place on errors - 1D    |
-+--------------+------------------------------------------------+
-| ``steps``    | Draw tally values as constant inside bin - 1D  |
-+--------------+------------------------------------------------+
-| ``xlabel``   | Label to apply to x-axis                       |
-+--------------+------------------------------------------------+
-| ``ylabel``   | Label to apply to y-axis                       |
-+--------------+------------------------------------------------+
-| ``loglog``   | Use a log scalling on both of the axes         |
-+--------------+------------------------------------------------+
-| ``logx``     | Use a log scaling on the x-axis                |
-+--------------+------------------------------------------------+
-| ``logy``     | Use a log scaling on the y-axis                |
-+--------------+------------------------------------------------+
+
++------------+-----------------------------------------------+
+| option     | description                                   |
++============+===============================================+
+| ``what``   | what data to plot                             |
++------------+-----------------------------------------------+
+| ``ax``     | preprepared figure on which to add this plot  |
++------------+-----------------------------------------------+
+| ``xdim``   | quantity from ``indexes`` to use as x-axis    |
++------------+-----------------------------------------------+
+| ``sigma``  | confidence interval to place on errors - 1d   |
++------------+-----------------------------------------------+
+| ``steps``  | draw tally values as constant inside bin - 1d |
++------------+-----------------------------------------------+
+| ``xlabel`` | label to apply to x-axis                      |
++------------+-----------------------------------------------+
+| ``ylabel`` | label to apply to y-axis                      |
++------------+-----------------------------------------------+
+| ``loglog`` | use a log scalling on both of the axes        |
++------------+-----------------------------------------------+
+| ``logx``   | use a log scaling on the x-axis               |
++------------+-----------------------------------------------+
+| ``logy``   | use a log scaling on the y-axis               |
++------------+-----------------------------------------------+
+| ``legend`` | place a legend on the figure                  |
++------------+-----------------------------------------------+
+| ``ncol``   | number of columns to apply to the legend      |
++------------+-----------------------------------------------+
 
 The plot routine also accepts various options, which can be found in the
 `matplotlib.pyplot.plot
@@ -319,17 +317,17 @@ documentation <https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html>`_
     >>> nodeFlx.plot()
 
 
-.. image:: images/Detector_31_0.png
+.. image:: Detector_files/Detector_31_0.png
 
 
 .. code:: 
 
     >>> ax = nodeFlx.plot(steps=True, label='steps')
     >>> ax = nodeFlx.plot(sigma=100, ax=ax, c='k', alpha=0.6, 
-                          marker='x', label='sigma')
+    >>>                   marker='x', label='sigma')
 
 
-.. image:: images/Detector_32_0.png
+.. image:: Detector_files/Detector_32_0.png
 
 Passing ``what='errors'`` to the plot method plots the associated
 relative errors, rather than the tally data on the y-axis. 
@@ -342,7 +340,7 @@ as the ``xdim`` argument sets the x-axis to be that specific index.
     >>>              ylabel='Relative tally error [%]')
 
 
-.. image:: images/Detector_34_0.png
+.. image:: Detector_files/Detector_34_0.png
 
 Mesh Plots
 ~~~~~~~~~~
@@ -378,13 +376,12 @@ we must pick an energy group to plot.
 
 .. code:: 
 
-    >>> ax = xy.meshPlot('x', 'y', fixed={'energy': 0}, 
-    >>>                  cbarLabel='Mesh-integrated flux $[n/cm^2/s]$');
-    >>> ax.set_title("Fast spectrum flux $[>0.625 eV]$");
+    >>> xy.meshPlot('x', 'y', fixed={'energy': 0}, 
+    >>>             cbarLabel='Mesh-integrated flux $[n/cm^2/s]$',
+    >>>             title="Fast spectrum flux $[>0.625 eV]$");
 
 
-
-.. image:: images/Detector_36_0.png
+.. image:: Detector_files/Detector_36_0.png
 
 
 The |mesh| also supports a range of labeling and plot options.
@@ -409,7 +406,7 @@ being plotted.
     >>>                    verticalalignment='center');
 
 
-.. image:: images/Detector_38_0.png
+.. image:: Detector_files/Detector_38_0.png
 
 
 Using the ``slicing`` arguments allows access to the 1D plot methods
@@ -422,7 +419,7 @@ from before
     >>>         ylabel='Thermal flux along x={}'
     >>>         .format(xy.grids['X'][1, 0]));
 
-.. image:: images/Detector_40_0.png
+.. image:: Detector_files/Detector_40_0.png
 
 
 Spectrum Plots
@@ -470,7 +467,7 @@ down to one-dimension with the ``fixed`` command.
     >>> spectrum.spectrumPlot(fixed=fix, ax=axes[1], normalize=False);
     >>> spectrum.spectrumPlot(fixed=fix, ax=axes[2]);
 
-.. image:: images/Detector_44_0.png
+.. image:: Detector_files/Detector_44_0.png
 
 
 Multiple line plots
@@ -489,14 +486,14 @@ label each individual plot in the order of the bin index.
     >>>     r'$\sigma_f^{U-235}\psi$')  # render as mathtype
     >>> spectrum.plot(labels=labels, loglog=True);
 
-.. image:: images/Detector_46_0.png
+.. image:: Detector_files/Detector_46_0.png
 
 
 .. code:: 
 
-    >>> spectrum.spectrumPlot(labels=labels);
+    >>> spectrum.spectrumPlot(labels=labels, legend='above', ncol=2);
 
-.. image:: images/Detector_47_0.png
+.. image:: Detector_files/Detector_47_0.png
 
 Conclusion
 ----------
