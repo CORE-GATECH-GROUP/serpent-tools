@@ -109,7 +109,7 @@ meaning without requiring your reference back to the wiki.
 
 .. code:: 
 
-    xsreader.xsections['mfissile'].plot(mts=[-3, -6, -16], loglog=True)
+    >>> xsreader.xsections['mfissile'].plot(mts=[-3, -6, -16], loglog=True)
 
 
 .. image:: images/XSPlot_files/XSPlot_15_1.png
@@ -128,7 +128,7 @@ obtain pretty tables.
 
 .. code::
 
-    xsreader.xsections['mfissile'].xsdata
+    >>> xsreader.xsections['mfissile'].xsdata
 
 
 
@@ -160,10 +160,7 @@ obtain pretty tables.
 
 .. code::
 
-    xsreader.xsections['mfissile'].tabulate()
-
-
-
+    >>> xsreader.xsections['mfissile'].tabulate()
 
 .. raw:: html
 
