@@ -15,7 +15,7 @@ from itertools import product
 
 from matplotlib import pyplot
 from numpy import (array, arange, unique, log, divide, ones_like, hstack,
-                   ndarray)
+                   ndarray, zeros_like)
 
 from serpentTools.settings import rc
 from serpentTools.plot import (cartMeshPlot, plot, magicPlotDocDecorator,
@@ -307,13 +307,125 @@ class HomogUniv(NamedObject):
                 return self.b1Exp
             return self.b1Unc
         return self.gcUnc if uncertainty else self.gc
+    
+    @magicPlotDocDecorator
+    def plot(self, qtys, limitE=True, ax=None, logx=True, logy=True, 
+             loglog=False, sigma=3, xlabel=None, ylabel=None, legend=None,
+             ncol=1, steps=True, labelFmt=None, labels=None):
+        """
+        Plot
+
+        Paramters
+        ---------
+        qtys: str or iterable
+            Plot this or these value against energy. 
+        limitE: bool
+            If given, set the maximum energy value to be 
+            that of the micro group structure. By default, 
+            SERPENT macro group structures can reach
+            1E37, leading for a very large tail on the plots.
+        {ax}
+        {labels}
+        {logx}
+        {logy}
+        {loglog}
+        {sigma}
+        {xlabel}
+        {ylabel}
+        {legend}
+        {ncol}
+        steps: bool
+            If ``True``, plot values as constant within 
+            energy bins.
+        labelFmt: str or None
+            <update>
+            
+
+        Returns
+        -------
+        {rax}
+
+        See Also
+        --------
+        * :py:meth:`serpentTools.objects.containers.HomogUniv.get`
+
+        """
+        qtys = [qtys, ] if isinstance(qtys, str) else qtys
+        ax = ax or pyplot.axes()
+        onlyXS = True
+        sigma = max(0, int(sigma))
+        drawstyle = 'steps-post' if steps else None
+        limitE = limitE and (self.groups is not None 
+                             and self.microGroups is not None)
+        macroBins = self.numGroups + 1 if self.numGroups is not None else None
+        microBins = (self.numMicroGroups + 1 
+                     if self.numMicroGroups is not None else None)
+        if limitE:
+            eneCap = min(self.microGroups.max(), self.groups.max())
+        
+        if isinstance(labels, str):
+            labels = [labels, ]
+        if labels is None:
+            labels = [None, ] * len(qtys)
+        else:
+            if len(labels) != len(qtys):
+                raise IndexError(
+                    "Need equal number of labels for plot quantities. "
+                    "Given {} expected: {}".format(len(labels), len(qtys)))
+        for key, label in zip(qtys, labels):
+            try:
+                yVals = self.get(key, False)
+            except KeyError:
+                warning("Could not obtain data for {}. Will not plot"
+                        .format(key))
+                continue
+            try:
+                _v, yUncs = self.get(key, True)
+            except KeyError:
+                yUncs = zeros_like(yVals)
+            if len(yVals.shape) != 1 and 1 not in yVals.shape:
+                warning("Data for {} is not 1D. Will not plot"
+                        .format(key))
+                continue
+            if 'Flx' in key:
+                onlyXS = False
+            yVals = hstack((yVals, yVals[-1]))
+            nbins = yVals.size
+            yUncs = hstack((yUncs, yUncs[-1])) * yVals * sigma
+            xdata = self.__getEGrid(nbins, macroBins, microBins)
+            if limitE:
+                xdata = xdata.copy()
+                xdata[xdata.argmax()] = eneCap
+            ax.errorbar(xdata, yVals, yerr=yUncs, label=label or key, 
+                        drawstyle=drawstyle)
+
+        if ylabel is None:
+            ylabel, yUnits = (("Cross Section", "[cm$^{-1}$]") if onlyXS 
+                      else ("Group Constant", ""))
+            sigStr = r" $\pm{}\sigma$".format(sigma) if sigma else ""
+            ylabel = ' '.join((ylabel, sigStr, yUnits))
+
+        if legend is None:
+            legend = len(qtys) > 1
+        formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                   legend=legend, xlabel=xlabel or "Energy [MeV]",
+                   ylabel=ylabel)
+        return ax
+
+    def __getEGrid(self, nbins, macroBins, microBins):
+        """Attempt to obtian the correct energy group for plotting."""
+        if macroBins is not None and nbins == macroBins:
+            return self.groups
+        if microBins is not None and nbins == microBins:
+            return self.microGroups
+        return arange(nbins)
 
     def __bool__(self):
         """Return True if data is stored on the object."""
         attrs = {"infExp", "infUnc", "b1Exp", "b1Unc", "gc", "gcUnc",
                  "groups", "microGroups"}
         for key in attrs:
-            value = getattr(self, key)
+            ealue = getattr(self, key)
             if isinstance(value, dict) and value:
                 return True
             if isinstance(value, ndarray) and value.any():
