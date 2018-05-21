@@ -181,7 +181,10 @@ Converting
 ----------
 
 These Jupyter notebooks can be converted to |rst| files for inclusion
-in the manual with the command |jconvert| .
+in the manual with the command |jconvert|, with::
+
+    $ jupyter nbconvert --to=rst Notebook.ipynb
+
 However, there are some tweaks that should be made so that the documentation
 renders properly and has helpful links to objects in the project.
 
@@ -214,6 +217,12 @@ The above code block should be replaced with::
 
         hello world!
 
+It is recommended to use the template in ``examples/rstTemplate.tpl`` to ease this conversion process.
+This can be passed to with ::
+
+    
+    $ jupyter nbconvert --to=rst --template=rstTemplate.tpl Notebook.ipynb
+
 Upon conversion, move the file into the ``docs/examples`` directory and include the 
 file name in ``docs/examples/index.rst``.
 
@@ -222,7 +231,7 @@ file name in ``docs/examples/index.rst``.
 Images
 ------
 
-Executing |jconvert| will create a directory containing the images
+Executing ``nbconvert`` will create a directory containing the images
 contained in the notebook.
 When moving the |rst| version of the notebook into the ``docs/examples`` folder, make sure
 that all links to images are correct.
@@ -289,6 +298,7 @@ docstrings to automatically document new features.
 This is most simply done by calling ``.. autoclass::`` or ``..autofunction::`` like::
 
     .. autofunction:: serpentTools.plot.plot
+
     .. autoclass:: serpentTools.parsers.results.ResultsReader
 
 For new readers, those should be included in their own file, such as ``docs/api/myNewReader.rst``, 
