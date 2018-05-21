@@ -15,10 +15,9 @@ dimsEx = r'fmtx_t\s+=\s+zeros\((\d+),(\d+)\)'
 
 
 def signCheck(lista, filePath):
-    for x in lista:
-        if x < 0:
-            raise ValueError("Negative Values in Fission Matrix {}".format(
-                filePath))
+    if lista.min() < 0:
+        raise ValueError("Negative Values in Fission Matrix {}".format(
+            filePath))
 
 
 def dimCheck(dims):
@@ -223,7 +222,6 @@ class FissionMatrixReader(BaseReader):
             eigNum is not consistent with total number of eigenvectors
 
         """
-
         lunghezza = len(self.domEigVec)
         if eigNum < 1 or eigNum > lunghezza or isinstance(eigNum, int) is \
                 False:
