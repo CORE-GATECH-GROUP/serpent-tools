@@ -17,14 +17,13 @@ as documented on the Serpent wiki. ``serpentTools`` can then read the
 output, figuring out its filetype automatically as with other readers.
 Let’s plot some data used in the ``serpentTools`` regression suite.
 
-.. code::
 
-    import serpentTools
-    %matplotlib inline
+.. code:: 
     
-    xsreader = serpentTools.read('../serpentTools/tests/plut_xs0.m')
-
-
+    >>> import serpentTools
+    >>> %matplotlib inline
+    >>> 
+    >>> xsreader = serpentTools.read('../serpentTools/tests/plut_xs0.m')
 
 This file contains some cross sections from a Serpent case containing a
 chunk of plutonium metal reflected by beryllium. Let’s see what cross
@@ -32,16 +31,12 @@ sections are available from the file:
 
 .. code::
 
-    xsreader.xsections.keys()
-
-
-
+    >>> xsreader.xsections.keys()
 
 .. parsed-literal::
-
-    dict_keys(['i4009_03c', 'i7014_03c', 'i8016_03c', 'i94239_03c', 'mbe', 'mfissile'])
-
-
+ 
+    dict_keys(['i4009_03c', 'i7014_03c', 'i8016_03c', 'i94239_03c', 'mbe',
+    'mfissile'])
 
 Notice that the important part of the reader is the |xsections|
 attribute, which contains a dictionary of named |xsdata| objects. Entries
@@ -54,7 +49,7 @@ Plotting the entries is very easy, check this out:
 
 .. code::
 
-    xsreader.xsections['i4009_03c'].plot(legend='right');
+    >>> xsreader.xsections['i4009_03c'].plot(legend='right');
 
 
 
@@ -67,7 +62,7 @@ available, and plot only a few:
 
 .. code::
 
-    xsreader.xsections['i4009_03c'].showMT()
+    >>> xsreader.xsections['i4009_03c'].showMT()
 
 
 .. parsed-literal::
@@ -87,9 +82,7 @@ available, and plot only a few:
 
 .. code::
 
-    fig2 = xsreader.xsections['i4009_03c'].plot(mts=[2, 16], title='Less busy!')
-
-
+    >>> xsreader.xsections['i4009_03c'].plot(mts=[2, 16], title='Less busy!');
 
 .. image:: images/XSPlot_files/XSPlot_11_0.png
 
@@ -100,7 +93,7 @@ meaning without requiring your reference back to the wiki.
 
 .. code::
 
-    xsreader.xsections['mfissile'].showMT()
+    >>> xsreader.xsections['mfissile'].showMT()
 
 
 .. parsed-literal::
@@ -113,10 +106,6 @@ meaning without requiring your reference back to the wiki.
     -6   Macro total fission
     -7   Macro total fission neutron production
     -16  Macro total scattering neutron production
-
-
-Note that any extra arguments passed to the plot method get passed on to
-matplotlib’s plotting, and not figure instantiations.
 
 .. code:: 
 
