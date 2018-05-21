@@ -8,7 +8,7 @@ from numpy.testing import assert_allclose
 
 from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.sensitivity import SensitivityReader
-from serpentTools.tests.test_container import compareDictOfArrays
+from serpentTools.tests import compareDictOfArrays
 
 TEST_FILE = join(TEST_ROOT, 'bwr_sens0.m')
 

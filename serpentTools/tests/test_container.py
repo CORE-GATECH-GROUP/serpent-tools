@@ -10,6 +10,7 @@ from numpy.testing import assert_array_equal
 from serpentTools.settings import rc
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers import DepletionReader
+from serpentTools.tests import compareDictOfArrays
 
 NUM_GROUPS = 5
 
@@ -132,13 +133,6 @@ def getParams():
     mat = arange(NUM_GROUPS ** 2)
     return univ, vec, mat
 
-
-def compareDictOfArrays(expected, actualDict, dataType):
-    for key, value in iteritems(expected):
-        actual = actualDict[key]
-        assert_array_equal(value, actual, 
-                err_msg="Error in {} dictionary: key={}"
-                .format(dataType, key))
 
 del _HomogUnivTestHelper
 

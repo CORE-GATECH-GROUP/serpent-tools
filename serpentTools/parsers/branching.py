@@ -3,7 +3,7 @@
 from six import iteritems
 from numpy import array
 
-from serpentTools.objects import splitItems
+from serpentTools.utils import splitValsUncs
 from serpentTools.objects.containers import BranchContainer
 from serpentTools.objects.readers import XSReader
 from serpentTools.messages import debug, info, error, warning, willChange
@@ -140,7 +140,7 @@ class BranchingReader(XSReader):
                 continue
             if self._checkAddVariable(varName):
                 if self.settings['areUncsPresent']:
-                    vals, uncs = splitItems(varValues)
+                    vals, uncs = splitValsUncs(varValues)
                     univ.addData(varName, array(vals), uncertaity=False)
                     univ.addData(varName, array(uncs), unertainty=True)
                 else:

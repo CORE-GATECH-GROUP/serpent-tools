@@ -3,7 +3,8 @@ import numpy as np
 from matplotlib import pyplot
 
 from serpentTools import messages
-from serpentTools.objects import NamedObject, convertVariableName
+from serpentTools.objects import NamedObject
+from serpentTools.utils import convertVariableName
 from serpentTools.plot import magicPlotDocDecorator, formatPlot 
 
 class XSData(NamedObject):
