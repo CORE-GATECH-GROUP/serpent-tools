@@ -18,7 +18,7 @@ from numpy import (array, arange, unique, log, divide, ones_like, hstack,
                    ndarray)
 
 from serpentTools.settings import rc
-from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator
+from serpentTools.plot import cartMeshPlot, plot, magicPlotDocDecorator, formatPlot
 from serpentTools.objects import NamedObject, convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug, info
 
@@ -433,7 +433,8 @@ class DetectorBase(NamedObject):
     @magicPlotDocDecorator
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
                      ylabel=None, steps=True, logx=True, logy=False, loglog=False, 
-                     sigma=3, labels=None, **kwargs):
+                     sigma=3, labels=None, legend=False, ncol=1, title=None, 
+                     **kwargs):
         """
         Quick plot of the detector value as a function of energy.
 
@@ -453,6 +454,9 @@ class DetectorBase(NamedObject):
         {loglog}
         {sigma}
         {labels}
+        {legend}
+        {ncol}
+        {title}
         {kwargs} :py:func:`matplotlib.pyplot.plot` or 
             :py:func:`matplotlib.pyplot.errorbar`
 
@@ -499,21 +503,21 @@ class DetectorBase(NamedObject):
         else:
             slicedErrors = None
         ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, yerr=slicedErrors, **kwargs)     
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
-        ax.set_xlabel(xlabel or 'Energy [MeV]')
-        ylabel = ylabel or 'Tally data' + (' normalized per unit lethargy'
-                                             if normalize else '')
-        ax.set_ylabel(ylabel)
-
+        if ylabel is None:
+            ylabel = 'Tally data'
+            ylabel += ' normalized per unit lethargy' if normalize else ''
+            ylabel += ' $\pm${}$\sigma$'.format(sigma) if sigma else ''
+        
+        ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
+                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel, 
+                        legend=legend, title=title)
         return ax
     
     @magicPlotDocDecorator
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
-             xlabel=None, ylabel=None, steps=False, labels=None, 
-             logx=False, logy=False, loglog=False, **kwargs):
+             xlabel=None, ylabel=None, steps=False, labels=None, logx=False, 
+             logy=False, loglog=False, legend=False, ncol=1, title=None,
+             **kwargs):
         """
         Simple plot routine for 1- or 2-D data
 
@@ -539,6 +543,9 @@ class DetectorBase(NamedObject):
         {logx}
         {logy}
         {loglog}
+        {legend}
+        {ncol}
+        {title}
         {kwargs} :py:func:`~matplotlib.pyplot.plot` or
             :py:func:`~matplotlib.pyplot.errorbar` function.
 
@@ -588,19 +595,15 @@ class DetectorBase(NamedObject):
             else:
                 kwargs['drawstyle'] = 'steps-post'
         ax = plot(xdata, data, ax, labels, yerr,**kwargs)
-        
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        xlabel=xlabel, ylabel=ylabel, legend=legend, 
+                        title=title)
         return ax
 
     @magicPlotDocDecorator
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
                  cmap=None, logColor=False, xlabel=None, ylabel=None, 
-                 logx=False, logy=False, loglog=False, **kwargs):
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
         """
         Plot tally data as a function of two mesh dimensions
 
@@ -624,6 +627,7 @@ class DetectorBase(NamedObject):
         {logx}
         {logy}
         {loglog}
+        {title}
         {kwargs} :py:func:`~matplotlib.pyplot.pcolormesh`
 
         Returns
@@ -666,12 +670,9 @@ class DetectorBase(NamedObject):
             data = data.T
 
         ax = cartMeshPlot(data, xgrid, ygrid, ax, cmap, logColor, **kwargs)
-        ax.set_xlabel(xlabel or xdim)
-        ax.set_ylabel(ylabel or ydim)
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
+                        xlabel=xlabel or xdim, ylabel=ylabel or ydim,
+                        title=title)
         return ax
 
     def _getGrid(self, qty):
@@ -952,3 +953,4 @@ class BranchContainer(object):
             raise AttributeError("Need to load at least one universe with "
                                  "non-zero burnup first.""")
         return self.__hasDays
+

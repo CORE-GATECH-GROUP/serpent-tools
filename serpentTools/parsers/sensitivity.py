@@ -8,7 +8,7 @@ from six import iteritems
 from numpy import transpose, array, hstack
 from matplotlib.pyplot import axes
 
-from serpentTools.plot import magicPlotDocDecorator, placeLegend
+from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.objects import convertVariableName
@@ -289,13 +289,8 @@ class SensitivityReader(BaseReader):
         {loglog}
         {xlabel}
         {ylabel}
-        legend: bool or str
-            If ``True``, add a label to this plot. 
-            Also accepts string arguments ``'right'`` and ``'above'``
-            to place the legend outside the figure
-        ncol: int or None
-            Number of columns for legend. Useful if plotting many
-            sensitivity profiles
+        {legend}
+        {ncol}
 
         Returns
         -------
@@ -346,17 +341,8 @@ class SensitivityReader(BaseReader):
             'Sensitivity {} {}'.format(
                 'per unit lethargy' if normalize else '',
                 r'$\pm{}\sigma$'.format(sigma) if sigma else ''))
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        if legend:
-            if isinstance(legend, str):
-                ax = placeLegend(ax, legend, ncol)
-            else:
-                ax.legend()
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        legend=legend, xlabel=xlabel, ylabel=ylabel)
         return ax
 
     def _getCleanedPertOpt(self, key, value):
@@ -366,7 +352,7 @@ class SensitivityReader(BaseReader):
         if value is None:
             return opts
         requested = set([value, ]) if isinstance(value, str) else set(value)
-        missing = requested.difference(opts)
+        missing = {str(xx) for xx in requested.difference(opts)}
         if missing:
             raise KeyError("Could not find the following perturbations: "
                            "{}".format(', '.join(missing)))

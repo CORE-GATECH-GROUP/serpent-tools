@@ -4,7 +4,7 @@ import numpy
 from matplotlib import pyplot
 
 from serpentTools.messages import warning, debug
-from serpentTools.plot import magicPlotDocDecorator
+from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.objects import NamedObject, convertVariableName
 
 
@@ -227,7 +227,7 @@ class DepletedMaterial(DepletedMaterialBase):
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
              legend=True, xlabel=None, ylabel=None, logx=False, logy=False,
-             loglog=False, labelFmt=None, **kwargs):
+             loglog=False, labelFmt=None, ncol=1, title=None, **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -250,14 +250,15 @@ class DepletedMaterial(DepletedMaterialBase):
             If given, return y values corresponding to these isotope
             names. Otherwise, return values for all isotopes.
         {ax}
-        legend: bool
-            Automatically add the legend
+        {legend}
         {xlabel} Otherwise, use ``xUnits``
         {ylabel} Otherwise, use ``yUnits``
         {logx}
         {logy}
         {loglog}
         {matLabelFmt}
+        {ncol}
+        {title}
 
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
@@ -286,15 +287,9 @@ class DepletedMaterial(DepletedMaterialBase):
         labels = self._formatLabel(labelFmt, names)
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
-
-        # format the plot
-        if legend:
-            ax.legend()
-        ax.set_xlabel(xlabel or self.PLOT_XLABELS[xUnits])
-        ax.set_ylabel(ylabel or yUnits)
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        xlabel=xlabel or self.PLOT_XLABELS[xUnits],
+                        ylabel=yUnits, title=title)
         return ax
 
