@@ -12,53 +12,105 @@ data contained in each of the various output files. However, the
 over what data is obtained through the
 `rc <https://unix.stackexchange.com/questions/3467/what-does-rc-in-bashrc-stand-for>`_
 class. 
-The full list of default settings can be found in :ref:`defaultSettings`.
+
+All the settings are given in :ref:`default-settings` 
+showing their default values and possible options.
 
 Basic Usage
-===========
-
-The |rc| class acts as a dictionary, and updating a value is
-as simple as
+-----------
 
 .. code:: 
-
-    >> rc['verbosity'] = 'debug'
-    DEBUG   : serpentTools: Updated setting verbosity to debug
     
+    >>> import serpentTools
+    >>> from serpentTools.settings import rc
 
-The |rc| object automatically checks to make sure the value is of the
+The |rc| object can be used like a dictionary, polling all possible settings
+with the ``.keys`` method.
+.. code:: 
+    
+    >>> rc.keys()
+
+
+.. parsed-literal::
+ 
+
+    dict_keys(['depletion.processTotal', 'verbosity', 'xs.getInfXS',
+    'branching.intVariables', 'branching.areUncsPresent', 'serpentVersion',
+    'sampler.raiseErrors', 'xs.getB1XS', 'xs.variableGroups', 'xs.variableExtras',
+    'depletion.materialVariables', 'depletion.metadataKeys', 'sampler.freeAll',
+    'sampler.allExist', 'depletion.materials', 'sampler.skipPrecheck',
+    'xs.reshapeScatter', 'branching.floatVariables', 'detector.names'])
+
+Settings such as :ref:`depletion-materials` are specific for the
+:py:class:`~serpentTools.parsers.depletion.DepletionReader`, 
+while settings that are led with ``xs`` are sent to
+the :py:class:`~serpentTools.parsers.results.ResultsReader` and 
+:py:class:`~serpentTools.parsers.branching.BranchingReader` as well as their specific
+settings.
+Updating a setting is similar to setting a value in a dictionary
+
+.. code:: 
+    
+    >>> rc['verbosity'] = 'debug'
+
+
+.. parsed-literal::
+ 
+
+    DEBUG   : serpentTools: Updated setting verbosity to debug
+
+
+The ``rc`` object automatically checks to make sure the value is of the
 correct type, and is an allowable option, if given.
 
 .. code:: 
-
+    
     >>> try:
     ...     rc['depletion.metadataKeys'] = False
-    ... except TypeError as te:
+    >>> except TypeError as te:
     ...     print(te)
-    Setting depletion.metadataKeys should be of type 
-    <class 'list'>, not <class 'bool'>
+
+
+.. parsed-literal::
+ 
+
+    Setting depletion.metadataKeys should be of type <class 'list'>, not <class
+    'bool'>
+
+
+.. code:: 
+    
     >>> try:
     ...     rc['serpentVersion'] = '1.2.3'
-    ... except KeyError as ke:
+    >>> except KeyError as ke:
     ...     print(ke)
-    "Setting serpentVersion is
-    1.2.3
-    and not one of the allowed options:
-    ['2.1.29']"
 
-The |rc| object can also be used inside a context manager to revert
+
+.. parsed-literal::
+ 
+
+    'Setting serpentVersion is 1.2.3 and not one of the allowed options: 2.1.29,
+    2.1.30'
+
+
+The ``rc`` module can also be used inside a context manager to revert
 changes.
 
 .. code:: 
-
+    
     >>> with rc:
     ...     rc['depletion.metadataKeys'] = ['ZAI', 'BU']
-    >>>
+    ...     
     >>> rc['depletion.metadataKeys']
     >>> rc['verbosity'] = 'info'
+
+
+.. parsed-literal::
+ 
+
     DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI', 'BU']
-    DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI', 'NAMES', 'DAYS', 'BU']
-    ['ZAI', 'NAMES', 'DAYS', 'BU']
+    DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI',
+    'NAMES', 'DAYS', 'BU']
 
 .. _group-const-variables:
 
@@ -73,32 +125,43 @@ extracted from the results and coefficient files.
 2. :ref:`xs-variableGroups`: Select keywords that represent blocks of
    common variables
 
-These variable groups are stored in 
-`variables.yaml <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/develop/serpentTools/variables.yaml>`_
+These variable groups are described in :ref:`varialble-groups` 
 and rely upon the ``SERPENT`` version to properly expand the groups.
 
-.. code:: 
 
+.. code:: 
+    
     >>> rc['serpentVersion']
+
+.. parsed-literal::
+ 
+
     '2.1.29'
+
+.. code:: 
+    
     >>> rc['xs.variableGroups'] = ['kinetics', 'xs', 'diffusion']
     >>> rc['xs.variableExtras'] = ['XS_DATA_FILE_PATH']
     >>> varSet = rc.expandVariables()
     >>> print(sorted(varSet))
-    ['ABS', 'ADJ_IFP_ANA_BETA_EFF', 'ADJ_IFP_ANA_LAMBDA', 'ADJ_IFP_GEN_TIME',
-     'ADJ_IFP_IMP_BETA_EFF', 'ADJ_IFP_IMP_LAMBDA', 'ADJ_IFP_LIFETIME',
-     'ADJ_IFP_ROSSI_ALPHA', 'ADJ_INV_SPD', 'ADJ_MEULEKAMP_BETA_EFF',
-     'ADJ_MEULEKAMP_LAMBDA', 'ADJ_NAUCHI_BETA_EFF', 'ADJ_NAUCHI_GEN_TIME',
-     'ADJ_NAUCHI_LAMBDA', 'ADJ_NAUCHI_LIFETIME', 'ADJ_PERT_BETA_EFF',
-     'ADJ_PERT_GEN_TIME', 'ADJ_PERT_LIFETIME', 'ADJ_PERT_ROSSI_ALPHA', 'CAPT',
-     'CHID', 'CHIP', 'CHIT', 'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X', 'CMM_DIFFCOEF_Y',
-     'CMM_DIFFCOEF_Z', 'CMM_TRANSPXS', 'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y',
-     'CMM_TRANSPXS_Z', 'DIFFCOEF', 'FISS', 'FWD_ANA_BETA_ZERO',
-     'FWD_ANA_LAMBDA', 'INVV', 'KAPPA', 'NSF', 'NUBAR', 'RABSXS', 'REMXS',
-     'S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'SCATT0', 'SCATT1',
-     'SCATT2', 'SCATT3', 'SCATT4', 'SCATT5', 'SCATT6', 'SCATT7', 'TOT',
-     'TRANSPXS', 'XS_DATA_FILE_PATH']
 
+
+.. parsed-literal::
+ 
+
+    ['ABS', 'ADJ_IFP_ANA_BETA_EFF', 'ADJ_IFP_ANA_LAMBDA', 'ADJ_IFP_GEN_TIME',
+    'ADJ_IFP_IMP_BETA_EFF', 'ADJ_IFP_IMP_LAMBDA', 'ADJ_IFP_LIFETIME',
+    'ADJ_IFP_ROSSI_ALPHA', 'ADJ_INV_SPD', 'ADJ_MEULEKAMP_BETA_EFF',
+    'ADJ_MEULEKAMP_LAMBDA', 'ADJ_NAUCHI_BETA_EFF', 'ADJ_NAUCHI_GEN_TIME',
+    'ADJ_NAUCHI_LAMBDA', 'ADJ_NAUCHI_LIFETIME', 'ADJ_PERT_BETA_EFF',
+    'ADJ_PERT_GEN_TIME', 'ADJ_PERT_LIFETIME', 'ADJ_PERT_ROSSI_ALPHA', 'BETA_EFF',
+    'CAPT', 'CHID', 'CHIP', 'CHIT', 'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X',
+    'CMM_DIFFCOEF_Y', 'CMM_DIFFCOEF_Z', 'CMM_TRANSPXS', 'CMM_TRANSPXS_X',
+    'CMM_TRANSPXS_Y', 'CMM_TRANSPXS_Z', 'DIFFCOEF', 'FISS', 'FWD_ANA_BETA_ZERO',
+    'FWD_ANA_LAMBDA', 'INVV', 'KAPPA', 'LAMBDA', 'NSF', 'NUBAR', 'RABSXS', 'REMXS',
+    'S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'SCATT0', 'SCATT1', 'SCATT2',
+    'SCATT3', 'SCATT4', 'SCATT5', 'SCATT6', 'SCATT7', 'TOT', 'TRANSPXS',
+    'XS_DATA_FILE_PATH']
 
 However, one might see that the full group constant cross sections are
 not present in this set
@@ -133,15 +196,59 @@ desired setting value as the values.
 The loader also attempts to expand nested settings, like reader-specific
 settings, that may be lumped in a second level.
 
-.. code:: yaml
+::
 
     verbosity: warning
     xs.getInfXS: False
+
+However, the loader can also expand a nested dictionary structure, as
+
+::
+
     branching:
-        areUncsPresent: False
-        floatVariables: [Fhi, Blo]
+      areUncsPresent: False
+      floatVariables: [Fhi, Blo]
     depletion:
-        materials: [fuel*]
-        materialVariables:
-            [ADENS, MDENS, VOLUME]
+      materials: [fuel*]
+      materialVariables:
+        [ADENS, MDENS, VOLUME]
+
+.. code:: 
+    
+    >>> %cat myConfig.yaml
+
+
+.. parsed-literal::
+ 
+
+    xs.getInfXS: False
+    xs.getB1XS: True
+    xs.variableGroups: [gc-meta, kinetics,
+    xs]
+    branching:
+      areUncsPresent: False
+      floatVariables: [Fhi, Blo]
+    depletion:
+      materials: [fuel*]
+      metadataKeys: [NAMES, BU]
+    materialVariables:
+        [ADENS, MDENS, VOLUME]
+    serpentVersion: 2.1.29
+
+
+.. code:: 
+    
+    >>> myConf = 'myConfig.yaml'
+    >>> rc.loadYaml(myConf)
+    >>> rc['branching.areUncsPresent']
+
+.. parsed-literal::
+ 
+
+    INFO    : serpentTools: Done
+
+.. parsed-literal::
+ 
+
+    False
 
