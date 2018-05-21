@@ -1,4 +1,6 @@
-"""Parser responsible for reading the ``*mdx[i].m`` files"""
+"""
+Parser responsible for reading the ``mdx[i].m`` files
+"""
 import re
 
 from numpy import array
@@ -24,26 +26,26 @@ class MicroXSReader(BaseReader):
         The values are nested dictionaries with the following structure:
             'fissProd': array
                 contains the fission product ids
-                e.g., [541350, 551350, ... ]
+                e.g., ``[541350, 551350]``
             'indYield': array
                 contains the independent yields
-                e.g., [0.053, 0.015, ... ]
+                e.g., ``[0.053, 0.015]``
             'cumYield': array
                 contains the cumulative yields
-                e.g., [0.060, 0.016, ... ]
+                e.g., ``[0.060, 0.016]``
     fluxRatio: dict
         Dictionary with universes id as keys and the
         corresponding group-wise flux values.
-        e.g., fluxRatio['0']= [9.91938E+14, 1.81729E+15, ...]
+        e.g., ``fluxRatio['0']= [9.91938E+14, 1.81729E+15]``
     fluxUnc: dict
         Dictionary with universes id as keys and the
         corresponding group-wise flux uncertainty values.
-        e.g., fluxRatio['0']= [0.00023, 0.00042, ...]
+        e.g., ``fluxRatio['0']= [0.00023, 0.00042]``
     xsVal: dict
         Nested dictionary with universes as as keys, e.g. '0'.
         The values are nested dictionary with tuples as keys
         (isotope, reaction, flag) and group xs as values.
-        e.g., (922350, 18, 0)
+        e.g., ``(922350, 18, 0)``
     xsUnc: dict
         Nested dictionary with universes as as keys, e.g. '0'.
         The values are nested dictionary with tuples as keys
@@ -88,33 +90,33 @@ class MicroXSReader(BaseReader):
     def _storeFissionYields(self, chunk):
         """store fission yields data"""
         fissProd, indYield, cumYield = [], [], []
-        currVar = self._strtok.search(chunk[0])
+        currVar = self._strtok.search(chunk[0]).group()  # NFY_902270_1
         # Obtain the parent ID: AAZZZ0/1, e.g., 922350
-        parentFY = self._str2num(re.split('_', currVar.group())[-1 -1])
-        if 'E' in re.split('_', currVar.group())[-1]:  # e.g., NFY_902270_1E
+        parentFY = int(self._str2num(currVar.split('_')[-2]))
+        if 'E' in currVar.split('_')[-1]:  # e.g., NFY_902270_1E
             sclVal = self._regexpScl.search(chunk[0])
             # energy must be stored on the reader
             self._energyFY = self._str2num(chunk[0][sclVal.span()[0] +
                                                     1:sclVal.span()[1] - 2])
             return  # thermal/epi/fast
-        else:
-            for tline in chunk:
-                if '[' in tline or ']' in tline:
-                    continue
-                if '%' in tline:
-                    tline = tline[:tline.index('%')]
-                if len(tline.split()) == 3:
-                    val1, val2, val3 = self._str2num(tline)
-                    fissProd.append(val1), indYield.append(val2), cumYield.append(val3)
-            self.nfy[(parentFY, self._energyFY)] = {'fissProd': array(fissProd),
-                                                    'indYield': array(indYield),
-                                                    'cumYield': array(cumYield)}
+        for tline in chunk:
+            if '[' in tline or ']' in tline:
+                continue
+            tline = tline[:tline.find('%')]
+            if len(tline.split()) == 3:
+                val1, val2, val3 = self._str2num(tline)
+                fissProd.append(val1)
+                indYield.append(val2)
+                cumYield.append(val3)
+        self.nfy[(parentFY, self._energyFY)] = {'fissProd': array(fissProd),
+                                                'indYield': array(indYield),
+                                                'cumYield': array(cumYield)}
 
     def _storeFluxRatio(self, chunk):
         """store flux ratios"""
-        currVar = self._strtok.search(chunk[0])
+        currVar = self._strtok.search(chunk[0]).group()
         # obtain the universe id
-        univ = re.split('_', currVar.group())[-1]
+        univ = currVar.split('_')[-1]
         vals = self._regexpVec.search(chunk[0])  # group flux values
         self.fluxRatio[univ], self.fluxUnc[univ] = \
             splitItems(self._str2num(chunk[0][vals.span()[0] +
@@ -123,9 +125,9 @@ class MicroXSReader(BaseReader):
     def _storeMicroXS(self, chunk):
         """store micro cross-section and uncertainty values"""
         currXS, currUnc = {}, {}
-        currVar = self._strtok.search(chunk[0])
+        currVar = self._strtok.search(chunk[0]).group()
         # obtain the universe id
-        univ = re.split('_', currVar.group())[-1]
+        univ = currVar.split('_')[-1]
         for tline in chunk:
             if '[' in tline or ']' in tline:
                 continue
@@ -134,9 +136,9 @@ class MicroXSReader(BaseReader):
             if len(tline.split()) > 3:
                 values = self._str2num(tline)
                 # isotope, reaction type and isomeric state
-                reactionData = (values[0], values[1], values[2])
+                reactionData = (int(values[0]), int(values[1]), int(values[2]))
                 currXS[reactionData], currUnc[reactionData] = \
-                    splitItems(values[3:])
+                    array(splitItems(values[3:]))
         self.xsVal[univ] = currXS
         self.xsUnc[univ] = currUnc
 
@@ -153,7 +155,8 @@ class MicroXSReader(BaseReader):
         with open(self.filePath) as fid:
             if fid is None:
                 raise IOError("Attempting to read on a closed file.\n"
-                              "Parser: {}\nFile: {}".format(self, self.filePath))
+                              "Parser: {}\nFile: {}".format(self,
+                                                            self.filePath))
             for tline in fid:
                 if 'NFY' in tline:
                     return
@@ -188,10 +191,10 @@ class MicroXSReader(BaseReader):
 
         Returns
         -------
-        Independent and cumulative fission yields: float or empty
+        Independent and cumulative fission yields: float or None
             IndYield and CumYield
             if fission product exists, float values are returned,
-            otherwise empty values are returned
+            otherwise None values are returned
 
         Raises
         ------
@@ -199,30 +202,30 @@ class MicroXSReader(BaseReader):
             If energy is a negative number
             If parent or fission product are not found
         """
-        IndYield, CumYield = 0, 0
         if energy < 0:
             raise SerpentToolsException("Energy entry {0} must be positive"
-                                        " in {1}".format(energy, self.filePath))
-        eneList = []
+                                        " in {1}".format(energy,
+                                                         self.filePath))
         if flagEnergy:
             # obtain the different energies for a specific parent
-            eneList = [items[1] for items in self.nfy.keys() if parent == items[0]]
+            eneList = [items[1] for items in self.nfy.keys() if
+                       parent == items[0]]
             # obtain the closest energy value
             energy = min(eneList,
                          key=lambda x: abs(x - energy)) if eneList else energy
         if (parent, energy) not in self.nfy.keys():
             raise SerpentToolsException("There is no parent {0} with energy "
-                                        "{1} in {2}".format(parent,energy,
+                                        "{1} in {2}".format(parent, energy,
                                                             self.filePath))
-
         FP = self.nfy[(parent, energy)]['fissProd']
         IndYield = self.nfy[(parent, energy)]['indYield']
         CumYield = self.nfy[(parent, energy)]['cumYield']
-        if daughter:
-            IndYield = IndYield[FP == daughter]
-            CumYield = CumYield[FP == daughter]
-        return IndYield, CumYield
-
+        if daughter in FP:
+            return float(IndYield[FP == daughter]), \
+                   float(CumYield[FP == daughter])
+        raise SerpentToolsException(
+            "There is no fission product {0} for parent {1} at energy {2} in "
+            "{3}".format(daughter, parent, energy, self.filePath))
 
     def getXS(self, universe, isotope, reaction, isomeric=0):
         """
@@ -260,12 +263,12 @@ class MicroXSReader(BaseReader):
             raise SerpentToolsException("Isotope {0} is not properly formatted"
                                         " ZZAAA0/1 in {1}"
                                         .format(isotope, self.filePath))
-        if (isotope, reaction, isomeric) in self.xsVal[universe]:
-            return self.xsVal[universe][(isotope, reaction, isomeric)], \
-                   self.xsUnc[universe][(isotope, reaction, isomeric)]
-        else:
-            return [], []
-
-
-
+        key = (isotope, reaction, isomeric)
+        if key in self.xsVal[universe]:
+            return self.xsVal[universe][key], \
+                   self.xsUnc[universe][key]
+        raise SerpentToolsException("There is no isotope {0} with reaction {1}"
+                                    " and isomeric flag {2} in {3}"
+                                    .format(isotope, reaction, isomeric,
+                                            self.filePath))
 
