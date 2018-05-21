@@ -188,9 +188,10 @@ provided in the ``DET_COLS`` tuple.
 
 
 .. parsed-literal::
+ 
 
-    ('value', 'energy', 'universe', 'cell', 'material', 'lattice', 
-     'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
+    ('value', 'energy', 'universe', 'cell', 'material', 'lattice', 'reaction',
+    'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
     3
 
 
@@ -220,13 +221,17 @@ meshes ``DET<name>E``, these arrays are stored in the |detGrids| dictionary
     
     >>> spectrum = bwr.detectors['spectrum']
     >>> print(spectrum.grids['E'][:5, :])
- parsed-literal::
+
+
+.. parsed-literal::
+ 
 
     [[1.00002e-11 4.13994e-07 2.07002e-07]
      [4.13994e-07 5.31579e-07 4.72786e-07]
-     [5.31579e-07 6.25062e-07 5.78320e-07]
+    [5.31579e-07 6.25062e-07 5.78320e-07]
      [6.25062e-07 6.82560e-07 6.53811e-07]
-     [6.82560e-07 8.33681e-07 7.58121e-07]]
+    [6.82560e-07 8.33681e-07 7.58121e-07]]
+
 
 Multi-dimensional Detectors
 ---------------------------
