@@ -436,7 +436,7 @@ class HomogUniv(NamedObject):
         attrs = {"infExp", "infUnc", "b1Exp", "b1Unc", "gc", "gcUnc",
                  "groups", "microGroups"}
         for key in attrs:
-            ealue = getattr(self, key)
+            value = getattr(self, key)
             if isinstance(value, dict) and value:
                 return True
             if isinstance(value, ndarray) and value.any():
