@@ -28,6 +28,8 @@ Next
 * :pull:`130` Added the ability to read results file
 * :pull:`149` - Add the ability to read sensitivity files
 * :pull:`161` - Add the :py:mod:`~serpentTools.utils` module
+* :pull:`165` - Add the :py:meth:`serpentTools.objects.containers.HomogUniv.plot` 
+  method
    
 .. _vAPI-changes:
 
