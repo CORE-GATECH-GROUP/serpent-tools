@@ -1,10 +1,12 @@
 """ Fission Matrix Reader. Mono-dimensional case"""
 
 import re
-import numpy as np
+
 import matplotlib.pyplot as plt
-from serpentTools.objects.readers import BaseReader
+import numpy as np
+
 from serpentTools.messages import warning, error
+from serpentTools.objects.readers import BaseReader
 from serpentTools.plot import cartMeshPlot, formatPlot
 from serpentTools.utils import str2vec
 
@@ -15,16 +17,45 @@ dimsEx = r'fmtx_t\s+=\s+zeros\((\d+),(\d+)\)'
 
 
 def signCheck(lista, filePath):
+    """
+    Checks the presence of negative values in the Fission Matrix
+
+    Parameters
+    ----------
+    lista: np.array
+        Data vector
+    filePath: str
+        File Path
+    Raises
+    -------
+    ValueError:
+        If negative values in the array
+    """
     if lista.min() < 0:
         raise ValueError("Negative Values in Fission Matrix {}".format(
             filePath))
 
 
 def dimCheck(dims):
-    if dims[0] <= 0 or dims[1] <= 0:
-        error('Fission Matrix has Negative Dimensions')
+    """
+    Checks if there are inconsistencies in the matrix dimensions
+
+    Parameters
+    ----------
+    dims: np.array
+        Array dimensions
+
+    Raises
+    ----------
+    ValueError:
+    If negative or zero dimensions
+    ValueError:
+    If the matrix is rectangular
+    """
+    if dims[0] == 0 or dims[1] == 0:
+        raise ValueError('Fission Matrix has Zero Dimensions')
     elif dims[0] != dims[1]:
-        error('The Fission Matrix is Rectangular')
+        raise ValueError('The Fission Matrix is Rectangular')
 
 
 class FissionMatrixReader(BaseReader):
@@ -172,12 +203,9 @@ class FissionMatrixReader(BaseReader):
 
     def eigVecNorm(self, w):
         # Flips and normalizes eigenvectors
-        cont = 0
         z = w[:, 0]
         lunghezza = len(z)
-        for x in np.nditer(z):
-            if x < 0:
-                cont = cont + 1
+        cont = len(z[z < 0])
         if cont == lunghezza or cont == 0:
             w = w / np.sum(w[:, 0])
         else:
