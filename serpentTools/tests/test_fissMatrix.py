@@ -111,19 +111,22 @@ class FissionMatrixReaderTester(unittest.TestCase):
 
     def test_ReadNegativeValue(self):
         """ Value error if negative values are read"""
-        fmtxRead = fm('neg_fmtx0.m')
+        filePath = os.path.join(TEST_ROOT, 'neg_fmtx0.m')
+        fmtxRead = fm(filePath)
         with self.assertRaises(ValueError):
             _ = fmtxRead.read()
 
     def test_DimsConsistencyError(self):
         """ Value error if fission matrix is square"""
-        fmtxRead = fm('refrect_fmtx0.m')
+        filePath = os.path.join(TEST_ROOT, 'refrect_fmtx0.m')
+        fmtxRead = fm(filePath)
         with self.assertRaises(ValueError):
             _ = fmtxRead.read()
 
     def test_DimsZeroError(self):
         """ Value error if fission matrix has zero dimensions"""
-        fmtxRead = fm('refzero_fmtx0.m')
+        filePath = os.path.join(TEST_ROOT, 'refzero_fmtx0.m')
+        fmtxRead = fm(filePath)
         with self.assertRaises(ValueError):
             _ = fmtxRead.read()
 
