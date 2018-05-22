@@ -41,19 +41,18 @@ files, the user must set the ``mdep`` card in the input
     
     >>> import serpentTools
     >>> from serpentTools.settings import rc
+    >>> mdxFile = '../serpentTools/tests/ref_mdx0.m'
 
 .. code:: 
     
     >>> %time
-    >>> mdxFile = 'ref_mdx0.m'
     >>> mdx = serpentTools.read(mdxFile)
 
 
 .. parsed-literal::
  
-
-    Wall time: 0 ns
-
+    CPU times: user 0 ns, sys: 0 ns, total: 0 ns
+    Wall time: 4.53 µs
 
 The fission yields read in from the file are stored in the |nfy|
 dictionary, where the keys represent a specific (parent, energy) pair
@@ -375,7 +374,6 @@ uncertainties
 
 .. code:: 
     
-    >>> mdxFile = 'ref_mdx0.m'
     >>> mdx = serpentTools.read(mdxFile)
 
 .. code:: 
