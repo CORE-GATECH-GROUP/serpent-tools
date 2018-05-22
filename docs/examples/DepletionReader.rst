@@ -6,7 +6,7 @@
 
 .. |matData| replace:: :py:attr:`~serpentTools.objects.materials.DepletedMaterial.data`
 
-.. |getValues| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
+.. |getValues| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues`
 
 .. |depMatPlot| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot` 
 

@@ -597,7 +597,7 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+        :py:meth:`~serpentTools.objects.containers.Detector.slice`
         """
         slicedTallies = self.slice(fixed, 'tallies').copy()
         if len(slicedTallies.shape) > 2:
@@ -686,7 +686,7 @@ class DetectorBase(NamedObject):
         See Also
         --------
         * :py:meth:`~serpentTools.objects.containers.Detector.slice`
-        * :py:meth:`~serpentTools.objects.containers.DetectorBase.spectrumPlot`
+        * :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
            better options for plotting energy spectra
         """
 
@@ -771,7 +771,7 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        * :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+        * :py:meth:`~serpentTools.objects.containers.Detector.slice`
         * :py:func:`matplotlib.pyplot.pcolormesh`
         * :py:func:`~serpentTools.plot.cartMeshPlot`
         """
