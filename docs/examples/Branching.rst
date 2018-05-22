@@ -4,6 +4,8 @@
 
 .. |homogUniv| replace:: :py:class:`~serpentTools.objects.containers.HomogUniv`
 
+.. |homogUnivPlot| replace:: :py:meth:`~serpentTools.objects.containers.HomogUniv.plot`
+
 .. _branching-ex:
 
 Branching Reader
@@ -39,6 +41,7 @@ The simplest way to read these files is using the
 
 .. code:: 
     
+    >>> %matplotlib inline
     >>> import serpentTools
     >>> branchFile = 'demo.coe'
 
@@ -303,6 +306,34 @@ the :py:meth:`~serpentTools.objects.containers.HomogUniv.get` method.
 .. parsed-literal::
 
     'Variable infS0 absent from uncertainty dictionary'
+
+Plotting Universe Data
+----------------------
+
+|homogUniv| objects are capable of plotting homogenized data using the
+|homogUnivPlot| method. This method is tuned to plot group constants, such as
+cross sections, for a known group structure. This is reflected in the
+default axis scaling, but can be adjusted on a per case basis. If the
+group structure is not known, then the data is plotted simply against
+bin-index.
+
+.. code:: 
+    
+    >>> univ0.plot('infFiss');
+
+.. image:: Branching_files/Branching_32_1.png
+
+
+.. code:: 
+    
+    >>> univ0.plot(['infFiss', 'b1Tot'], loglog=False, xlabel="Energy Group");
+
+.. image:: Branching_files/Branching_33_0.png
+
+
+The ``ResultsReader``  example 
+has a more thorough example of this |homogUnivPlot|  method, including
+formatting the line labels - :ref:`ex-res-plotUniv`.
 
 Iteration
 ---------
