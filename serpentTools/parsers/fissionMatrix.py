@@ -4,7 +4,6 @@ import re
 
 import matplotlib.pyplot as plt
 import numpy as np
-
 from serpentTools.messages import warning, error
 from serpentTools.objects.readers import BaseReader
 from serpentTools.plot import cartMeshPlot, formatPlot
@@ -212,9 +211,9 @@ class FissionMatrixReader(BaseReader):
             error('The Dominant Eigenvector is not Positive')
         return w
 
-    def eigVecPlot(self, eigNum, xdata=None, ax=None, linewidth=2, color='b',
+    def eigVecPlot(self, eigNum=1, xdata=None, ax=None, linewidth=2, color='b',
                    title='Neutron fission source', xlabel=None, ylabel=None,
-                   cmap=None):
+                   grid=False):
         """
         Plots the spatial distribution of the eigNum-th mode
 
@@ -236,8 +235,8 @@ class FissionMatrixReader(BaseReader):
             x-axis label
         ylabel: str
             y-axis label
-        cmap: str
-            Color map
+        grid: bool
+            Grid (True), no Grid (False)
 
         Returns
         -------
@@ -262,12 +261,12 @@ class FissionMatrixReader(BaseReader):
         ax = ax or plt.axes()
         ax.plot(xdata, self.eigVecMat[:, eigNum - 1], color,
                 linewidth=linewidth)
-        ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel,
-                        cmap=cmap)
+        ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel)
+        plt.grid(grid)
         return ax
 
     def eigValPlot(self, ax=None, color='ro', title='Fission Matrix Spectrum',
-                   xlabel=None, ylabel=None, cmap=None, grid=True):
+                   xlabel=None, ylabel=None, grid=True):
         """
         The function plots the fission matrix spectrum on the Argand-Gauss
         plain.
@@ -284,8 +283,6 @@ class FissionMatrixReader(BaseReader):
             x-axis label
         ylabel: str
             y-axis label
-        cmap: str
-            Color map
         grid: bool
             Grid (True), no Grid (False)
 
@@ -297,7 +294,6 @@ class FissionMatrixReader(BaseReader):
         plt.figure()
         ax = ax or plt.axes()
         ax.plot(self.eigValVec.real, self.eigValVec.imag, color)
-        ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel,
-                        cmap=cmap)
+        ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel)
         plt.grid(grid)
         return ax
