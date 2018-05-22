@@ -12,3 +12,4 @@ Examples
    Sensitivity.rst
    XSPlot.rst
    ResultsReader.rst
+   MicroXSReader.rst

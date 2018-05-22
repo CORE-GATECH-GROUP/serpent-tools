@@ -12,5 +12,3 @@ Depletion Reader
 
 .. autoclass:: serpentTools.parsers.depletion.DepletionReader
 
-.. autoclass:: serpentTools.parsers.depletion.DepPlotMixin
-

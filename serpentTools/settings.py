@@ -140,6 +140,21 @@ defaultSettings = {
         'default': [],
         'description': 'Full SERPENT name of variables to be read',
         'type': list
+    },
+    'microxs.getFlx': {
+        'default': True,
+        'description': 'If true, store the group flux ratios.',
+        'type': bool
+    },
+    'microxs.getXS': {
+        'default': True,
+        'description': 'If true, store the micro-group cross sections.',
+        'type': bool
+    },
+    'microxs.getFY': {
+        'default': True,
+        'description': 'If true, store the fission yields.',
+        'type': bool
     }
 }
 

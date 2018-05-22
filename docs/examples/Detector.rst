@@ -4,7 +4,7 @@
 
 .. |detectorReader| replace:: :py:class:`~serpentTools.parsers.detector.DetectorReader`
 
-.. |detBins| replace:: :py:attr:`~serpentTools.objects.containersBase.Detector.bins`
+.. |detBins| replace:: :py:attr:`~serpentTools.objects.containers.Detector.bins`
 
 .. |detIndx| replace:: :py:attr:`~serpentTools.objects.containers.Detector.indexes`
 
@@ -14,11 +14,11 @@
 
 .. |detGrids| replace:: :py:attr:`~serpentTools.objects.containers.Detector.grids`
 
-.. |detSlice| replace:: :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+.. |detSlice| replace:: :py:meth:`~serpentTools.objects.containers.Detector.slice`
 
-.. |plot| replace:: :py:meth:`~serpentTools.objects.containers.DetectorBase.plot`
+.. |plot| replace:: :py:meth:`~serpentTools.objects.containers.Detector.plot`
 
-.. |mesh| replace:: :py:meth:`~serpentTools.objects.containers.DetectorBase.meshPlot`
+.. |mesh| replace:: :py:meth:`~serpentTools.objects.containers.Detector.meshPlot`
 
 .. |spectrum| replace:: :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
 
@@ -44,22 +44,30 @@ Here, all energy and spatial grid data are stored,
 including other binning information such as reaction, universe, and
 lattice bins.
 
-.. code::
-
+.. code:: 
+    
+    >>> %matplotlib inline
     >>> from matplotlib import pyplot
     >>> import serpentTools
+
+.. code:: 
+    
     >>> pinFile = 'fuelPin_det0.m'
     >>> bwrFile = 'bwr_det0.m'
     >>> pin = serpentTools.read(pinFile)
     >>> bwr = serpentTools.read(bwrFile)
+
+.. code:: 
+    
     >>> print(pin.detectors)
-    {'nodeFlx': 
-        <serpentTools.objects.containers.Detector object at 0x7fb3ae1db978>}
     >>> print(bwr.detectors)
-    {'spectrum':
-        <serpentTools.objects.containers.Detector object at 0x7fb3ae1db9e8>,
-     'xymesh':
-         <serpentTools.objects.containers.Detector object at 0x7fb3ae1dba20>}
+
+
+.. parsed-literal::
+
+    {'nodeFlx': <serpentTools.objects.containers.Detector object at 0x7f6df2162b70>}
+    {'xymesh': <serpentTools.objects.containers.Detector object at 0x7f6df2162a90>, 
+     'spectrum': <serpentTools.objects.containers.Detector object at 0x7f6df2162b00>}
 
 These detectors were defined for a single fuel pin with 16 axial layers
 and a separate BWR assembly, with a description of the detectors provided in
@@ -90,23 +98,33 @@ the full tally matrix is stored in the
 |detBins| array.
 
 .. code:: 
-
+    
     >>> nodeFlx = pin.detectors['nodeFlx']
     >>> print(nodeFlx.bins.shape)
+    >>> nodeFlx.bins[:3,:].T
+
+
+.. parsed-literal::
+
     (16, 12)
-    >>> nodeFlx.bins[:3, :].T
-    array([[  1.00000000e+00,   2.00000000e+00,   3.00000000e+00],
-           [  1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
-           [  1.00000000e+00,   2.00000000e+00,   3.00000000e+00],
-           [  1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
-           [  1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
-           [  1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
-           [  1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
-           [  1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
-           [  1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
-           [  1.00000000e+00,   1.00000000e+00,   1.00000000e+00],
-           [  2.34759000e-02,   5.75300000e-02,   8.47000000e-02],
-           [  4.53000000e-03,   3.38000000e-03,   2.95000000e-03]])
+
+
+
+
+.. parsed-literal::
+
+    array([[1.00000e+00, 2.00000e+00, 3.00000e+00],
+           [1.00000e+00, 1.00000e+00, 1.00000e+00],
+           [1.00000e+00, 2.00000e+00, 3.00000e+00],
+           [1.00000e+00, 1.00000e+00, 1.00000e+00],
+           [1.00000e+00, 1.00000e+00, 1.00000e+00],
+           [1.00000e+00, 1.00000e+00, 1.00000e+00],
+           [1.00000e+00, 1.00000e+00, 1.00000e+00],
+           [1.00000e+00, 1.00000e+00, 1.00000e+00],
+           [1.00000e+00, 1.00000e+00, 1.00000e+00],
+           [1.00000e+00, 1.00000e+00, 1.00000e+00],
+           [2.34759e-02, 5.75300e-02, 8.47000e-02],
+           [4.53000e-03, 3.38000e-03, 2.95000e-03]])
 
 Here, only three columns, shown as rows for readability, are changing:
 
@@ -119,12 +137,6 @@ Here, only three columns, shown as rows for readability, are changing:
     For SERPENT-1, there would be an additional column 12 that
     contained the scores for each bin
 
-.. code:: 
-
-    >>> nodeFlx.bins[:, 0]
-    array([  1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.,   9.,  10.,  
-            11.,  12.,  13.,  14.,  15.,  16.])
-
 Once each detector is given this binned tally data, the
 :py:meth:`~serpentTools.objects.containers.Detector.reshape`
 method is called to recast the
@@ -135,18 +147,28 @@ since the only variable bin quantity is that of the universe, these
 will all be 1D arrays.
 
 .. code:: 
-
+    
     >>> assert nodeFlx.tallies.shape == (16, )
     >>> assert nodeFlx.errors.shape == (16, )
     >>> nodeFlx.tallies
-    array([ 0.0234759 ,  0.05753   ,  0.0847    ,  0.102034  ,  0.110384  ,
-            0.110174  ,  0.102934  ,  0.0928861 ,  0.0810541 ,  0.067961  ,
-            0.0550446 ,  0.0422486 ,  0.0310226 ,  0.0211475 ,  0.0125272 ,
-            0.00487726])
+
+
+.. parsed-literal::
+
+    array([0.0234759 , 0.05753   , 0.0847    , 0.102034  , 0.110384  ,
+           0.110174  , 0.102934  , 0.0928861 , 0.0810541 , 0.067961  ,
+           0.0550446 , 0.0422486 , 0.0310226 , 0.0211475 , 0.0125272 ,
+           0.00487726])
+
+.. code:: 
+    
     >>> nodeFlx.errors
-    array([ 0.00453,  0.00338,  0.00295,  0.00263,  0.00231,  0.00222,
-            0.00238,  0.00251,  0.00282,  0.00307,  0.00359,  0.00415,
-            0.00511,  0.00687,  0.00809,  0.01002])
+
+.. parsed-literal::
+
+    array([0.00453, 0.00338, 0.00295, 0.00263, 0.00231, 0.00222, 0.00238,
+           0.00251, 0.00282, 0.00307, 0.00359, 0.00415, 0.00511, 0.00687,
+           0.00809, 0.01002])
 
 Bin information is retained through the |detIndx| attribute. This is an 
 :py:class:`~collections.OrderedDict` as the keys are placed according to their column
@@ -159,17 +181,28 @@ provided in the ``DET_COLS`` tuple.
     is accessed with ``array[0]``, rather than ``array[1]``.
 
 .. code:: 
-
+    
     >>> from serpentTools.objects.containers import DET_COLS
     >>> print(DET_COLS)
-    ('value', 'energy', 'universe', 'cell', 'material', 'lattice', 
-     'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
     >>> print(DET_COLS.index('cell'))
+
+
+.. parsed-literal::
+ 
+
+    ('value', 'energy', 'universe', 'cell', 'material', 'lattice', 'reaction',
+    'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
     3
+
+
+.. code:: 
+    
     >>> nodeFlx.indexes
+
+.. parsed-literal::
+
     OrderedDict([('universe',
-                  array([  1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.,   
-                           9.,  10.,  11.,  12.,  13.,  14.,  15.,  16.]))])
+                  array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15]))])
 
 
 Each item in the |detIndx| ordered dictionary corresponds to the
@@ -185,14 +218,20 @@ For detectors that include some grid matrices, such as spatial or energy
 meshes ``DET<name>E``, these arrays are stored in the |detGrids| dictionary
 
 .. code:: 
-
+    
     >>> spectrum = bwr.detectors['spectrum']
     >>> print(spectrum.grids['E'][:5, :])
-    [[  1.00002000e-11   4.13994000e-07   2.07002000e-07]
-     [  4.13994000e-07   5.31579000e-07   4.72786000e-07]
-     [  5.31579000e-07   6.25062000e-07   5.78320000e-07]
-     [  6.25062000e-07   6.82560000e-07   6.53811000e-07]
-     [  6.82560000e-07   8.33681000e-07   7.58121000e-07]]
+
+
+.. parsed-literal::
+ 
+
+    [[1.00002e-11 4.13994e-07 2.07002e-07]
+     [4.13994e-07 5.31579e-07 4.72786e-07]
+    [5.31579e-07 6.25062e-07 5.78320e-07]
+     [6.25062e-07 6.82560e-07 6.53811e-07]
+    [6.82560e-07 8.33681e-07 7.58121e-07]]
+
 
 Multi-dimensional Detectors
 ---------------------------
@@ -205,10 +244,14 @@ In the following example, the detector has been configured to tally the
 fission and capture rates (two ``dr`` arguments) in an XY mesh.
 
 .. code:: 
-
+    
     >>> xy = bwr.detectors['xymesh']
     >>> for key in xy.indexes:
-    >>>     print(key, xy.indexes[key])
+    ...     print(key, xy.indexes[key])
+
+
+.. parsed-literal::
+
     energy [0 1]
     ymesh [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
     xmesh [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
@@ -219,17 +262,19 @@ changing ``ymesh`` values, and the final axis reflects changes in
 ``xmesh``.
 
 .. code:: 
-
+    
     >>> print(xy.bins.shape)
-    (800, 12)
     >>> print(xy.tallies.shape)
-    (2, 20, 20)
     >>> print(xy.bins[:5, 10])
-    [  8.19312000e+17   7.18519000e+17   6.90079000e+17   6.22241000e+17
-       5.97257000e+17]
     >>> print(xy.tallies[0, 0, :5])
-    [  8.19312000e+17   7.18519000e+17   6.90079000e+17   6.22241000e+17
-       5.97257000e+17]
+
+
+.. parsed-literal::
+
+    (800, 12)
+    (2, 20, 20)
+    [8.19312e+17 7.18519e+17 6.90079e+17 6.22241e+17 5.97257e+17]
+    [8.19312e+17 7.18519e+17 6.90079e+17 6.22241e+17 5.97257e+17]
 
 Slicing
 ~~~~~~~
@@ -240,7 +285,7 @@ complicated. This retrieval can be simplified using the |detSlice| method.
 This method takes an argument indicating what bins (keys in |detIndx|)
 to fix at what position.
 
-If we want to retrive the tally data for the fission reaction in the
+If we want to retrieve the tally data for the fission reaction in the
 ``spectrum`` detector, you would instruct the
 |detSlice| method to use column 1 along the axis that corresponds to the reaction bin, 
 as the fission reaction corresponded to reaction tally 2 in the original
@@ -248,28 +293,32 @@ matrix. Since python and numpy arrays are zero indexed, the second
 reaction tally is stored in column 1.
 
 .. code:: 
-
+    
     >>> print(spectrum.indexes['reaction'])
-    [0 1]
     >>> spectrum.slice({'reaction': 1})[:20]
-    array([  3.66341000e+22,   6.53587000e+20,   3.01655000e+20,
-             1.51335000e+20,   3.14546000e+20,   7.45742000e+19,
-             4.73387000e+20,   2.82554000e+20,   9.89379000e+19,
-             9.49670000e+19,   8.98272000e+19,   2.04606000e+20,
-             3.58272000e+19,   1.44708000e+20,   7.25499000e+19,
-             6.31722000e+20,   2.89445000e+20,   2.15484000e+20,
-             3.59303000e+20,   3.15000000e+20])
 
-This method also works for slicing the error and score matrices by using
-``what='errors'`` or ``'scores'``, respectively.
+.. parsed-literal::
+
+    [0 1]
+
+.. parsed-literal::
+
+    array([3.66341e+22, 6.53587e+20, 3.01655e+20, 1.51335e+20, 3.14546e+20,
+           7.45742e+19, 4.73387e+20, 2.82554e+20, 9.89379e+19, 9.49670e+19,
+           8.98272e+19, 2.04606e+20, 3.58272e+19, 1.44708e+20, 7.25499e+19,
+           6.31722e+20, 2.89445e+20, 2.15484e+20, 3.59303e+20, 3.15000e+20])
+
+This method also works for slicing the error, or score, matrix
 
 .. code:: 
-
+    
     >>> spectrum.slice({'reaction': 1}, 'errors')[:20]
-    array([ 0.00692,  0.01136,  0.01679,  0.02262,  0.01537,  0.02915,
-            0.01456,  0.01597,  0.01439,  0.01461,  0.01634,  0.01336,
-            0.01549,  0.01958,  0.02165,  0.0192 ,  0.02048,  0.01715,
-            0.02055,  0.0153 ]) 
+
+.. parsed-literal::
+
+    array([0.00692, 0.01136, 0.01679, 0.02262, 0.01537, 0.02915, 0.01456,
+           0.01597, 0.01439, 0.01461, 0.01634, 0.01336, 0.01549, 0.01958,
+           0.02165, 0.0192 , 0.02048, 0.01715, 0.02055, 0.0153 ])
 
 Plotting Routines
 -----------------
@@ -324,7 +373,7 @@ documentation <https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html>`_
 
     >>> ax = nodeFlx.plot(steps=True, label='steps')
     >>> ax = nodeFlx.plot(sigma=100, ax=ax, c='k', alpha=0.6, 
-    >>>                   marker='x', label='sigma')
+    ...                   marker='x', label='sigma')
 
 
 .. image:: Detector_files/Detector_32_0.png
@@ -337,7 +386,7 @@ as the ``xdim`` argument sets the x-axis to be that specific index.
 .. code:: 
 
     >>> nodeFlx.plot(xdim='universe', what='errors', 
-    >>>              ylabel='Relative tally error [%]')
+    ...              ylabel='Relative tally error [%]')
 
 
 .. image:: Detector_files/Detector_34_0.png
@@ -377,8 +426,8 @@ we must pick an energy group to plot.
 .. code:: 
 
     >>> xy.meshPlot('x', 'y', fixed={'energy': 0}, 
-    >>>             cbarLabel='Mesh-integrated flux $[n/cm^2/s]$',
-    >>>             title="Fast spectrum flux $[>0.625 eV]$");
+    ...             cbarLabel='Mesh-integrated flux $[n/cm^2/s]$',
+    ...             title="Fast spectrum flux $[>0.625 eV]$");
 
 
 .. image:: Detector_files/Detector_36_0.png
@@ -397,10 +446,10 @@ being plotted.
 .. code:: 
 
     >>> ax = spectrum.meshPlot('e', 'reaction', what='errors', 
-    >>>                        ylabel='Reaction type', cmap='PuBu_r',
-    >>>                        cbarLabel="Relative error $[\%]$",
-    >>>                        xlabel='Energy [MeV]', logColor=True,
-    >>>                        logx=True);
+    ...                        ylabel='Reaction type', cmap='PuBu_r',
+    ...                        cbarLabel="Relative error $[\%]$",
+    ...                        xlabel='Energy [MeV]', logColor=True,
+    ...                        logx=True);
     >>> ax.set_yticks([0.5, 1.5]);
     >>> ax.set_yticklabels([r'$\psi$', r'$U-235 \sigma_f$'], rotation=90,
     >>>                    verticalalignment='center');
@@ -415,9 +464,9 @@ from before
 .. code:: 
 
     >>> xy.plot(fixed={'energy': 1, 'xmesh': 1}, 
-    >>>         xlabel='Y position',
-    >>>         ylabel='Thermal flux along x={}'
-    >>>         .format(xy.grids['X'][1, 0]));
+    ...         xlabel='Y position',
+    ...         ylabel='Thermal flux along x={}'
+    ...         .format(xy.grids['X'][1, 0]));
 
 .. image:: Detector_files/Detector_40_0.png
 
@@ -482,8 +531,8 @@ label each individual plot in the order of the bin index.
 .. code:: 
 
     >>> labels = (
-    >>>     'flux',
-    >>>     r'$\sigma_f^{U-235}\psi$')  # render as mathtype
+    ...     'flux',
+    ...     r'$\sigma_f^{U-235}\psi$')  # render as mathtype
     >>> spectrum.plot(labels=labels, loglog=True);
 
 .. image:: Detector_files/Detector_46_0.png

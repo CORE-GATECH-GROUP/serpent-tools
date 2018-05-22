@@ -28,23 +28,22 @@ inside |homogUniv| objects. Each such object has methods and attributes that
 should ease the analyses.
 
 .. code:: 
-
-    import numpy as np
-    import serpentTools
-    from serpentTools.settings import rc
-    rc['serpentVersion'] = '2.1.30'
+    
+    >>> import numpy as np
+    >>> import serpentTools
+    >>> from serpentTools.settings import rc
+    >>> rc['serpentVersion'] = '2.1.30'
 
 .. code:: 
-
-    %time
-    resFile = 'InnerAssembly_res.m'
-    res = serpentTools.read(resFile)
+    
+    >>> %time
+    >>> resFile = 'InnerAssembly_res.m'
+    >>> res = serpentTools.read(resFile)
 
 
 .. parsed-literal::
 
     Wall time: 0 ns
-    
 
 Metadata (``metadata``)
 =======================
@@ -55,9 +54,9 @@ data exist on the reader
 
 .. code:: 
 
-    print(res.metadata['version'])  # Serpent version used for the execution
-    print(res.metadata['decayDataFilePath'])  # Directory path for data libraries
-    print(res.metadata['inputFileName'])  # Directory path for data libraries
+    >>> print(res.metadata['version'])  # Serpent version used for the execution
+    >>> print(res.metadata['decayDataFilePath'])  # Directory path for data libraries
+    >>> print(res.metadata['inputFileName'])  # Directory path for data libraries
 
 
 .. parsed-literal::
@@ -71,55 +70,54 @@ Obtain all the variables in the metadata via ``.keys()``
 
 .. code:: 
 
-    res.metadata.keys()
-
-
-
+    >>> res.metadata.keys()
 
 .. parsed-literal::
-
-    dict_keys(['version', 'compileDate', 'debug', 'title', 'confidentialData', 'inputFileName', 'workingDirectory', 'hostname', 'cpuType', 'cpuMhz', 'startDate', 'completeDate', 'pop', 'cycles', 'skip', 'batchInterval', 'srcNormMode', 'seed', 'ufsMode', 'ufsOrder', 'neutronTransportMode', 'photonTransportMode', 'groupConstantGeneration', 'b1Calculation', 'b1BurnupCorrection', 'implicitReactionRates', 'optimizationMode', 'reconstructMicroxs', 'reconstructMacroxs', 'doubleIndexing', 'mgMajorantMode', 'spectrumCollapse', 'mpiTasks', 'ompThreads', 'mpiReproducibility', 'ompReproducibility', 'ompHistoryProfile', 'shareBufArray', 'shareRes2Array', 'xsDataFilePath', 'decayDataFilePath', 'sfyDataFilePath', 'nfyDataFilePath', 'braDataFilePath'])
+ 
+    dict_keys(['version', 'compileDate', 'debug', 'title', 'confidentialData',
+    'inputFileName', 'workingDirectory', 'hostname', 'cpuType', 'cpuMhz',
+    'startDate', 'completeDate', 'pop', 'cycles', 'skip', 'batchInterval',
+    'srcNormMode', 'seed', 'ufsMode', 'ufsOrder', 'neutronTransportMode',
+    'photonTransportMode', 'groupConstantGeneration', 'b1Calculation',
+    'b1BurnupCorrection', 'implicitReactionRates', 'optimizationMode',
+    'reconstructMicroxs', 'reconstructMacroxs', 'doubleIndexing', 'mgMajorantMode',
+    'spectrumCollapse', 'mpiTasks', 'ompThreads', 'mpiReproducibility',
+    'ompReproducibility', 'ompHistoryProfile', 'shareBufArray', 'shareRes2Array',
+    'xsDataFilePath', 'decayDataFilePath', 'sfyDataFilePath', 'nfyDataFilePath',
+    'braDataFilePath'])
 
 
 
 .. code:: 
-
-    # Grep the value of a certain key, e.g. simulation start date
-    res.metadata['startDate']
-
-
-
+    
+    >>> # Grep the value of a certain key, e.g. simulation start date
+    >>> res.metadata['startDate']
 
 .. parsed-literal::
-
+ 
     'Sat Apr 28 06:09:54 2018'
 
-
-
 .. code:: 
-
-    # statistics used for the execution (histories, inactive and active cycles)
-    print(res.metadata['pop'], res.metadata['skip']  , res.metadata['cycles'])
-
-
-.. parsed-literal::
-
-    [ 5000.] [ 10.] [ 50.]
     
+    >>> # statistics used for the execution (histories, inactive and active cycles)
+    >>> print(res.metadata['pop'], res.metadata['skip']  , res.metadata['cycles'])
+
+.. parsed-literal::
+ 
+    [ 5000.] [ 10.] [ 50.]
 
 .. code:: 
-
-    # Obtain the version defined in the settings
-    print('User defined version: {}'.format(rc['serpentVersion']))
-    # Obtain the version actually used in the execution
-    print('Used version: {}'.format(res.metadata['version']))
+    
+    >>> # Obtain the version defined in the settings
+    >>> print('User defined version: {}'.format(rc['serpentVersion']))
+    >>> # Obtain the version actually used in the execution
+    >>> print('Used version: {}'.format(res.metadata['version']))
 
 
 .. parsed-literal::
-
+ 
     User defined version: 2.1.30
     Used version: Serpent 2.1.30
-    
 
 Results Data (``resdata``)
 ==========================
@@ -131,25 +129,20 @@ include values and uncertainities (e.g. criticality) and some just the
 values (e.g. CPU resources).
 
 .. code:: 
-
-    # All the variables can be obtained by using 'resdata.keys()'
-    AllVariables = res.resdata.keys() # contains all the variable as a dict_keys
-    # The example below shows only the first five variables in the resdata dictionary
-    list(AllVariables)[0:5]
-
-
-
+    
+    >>> # All the variables can be obtained by using 'resdata.keys()'
+    >>> AllVariables = res.resdata.keys() # contains all the variable as a dict_keys
+    >>> # The example below shows only the first five variables in the resdata dictionary
+    >>> list(AllVariables)[0:5]
 
 .. parsed-literal::
-
+ 
     ['minMacroxs', 'dtThresh', 'stFrac', 'dtFrac', 'dtEff']
 
-
-
 .. code:: 
-
-    # Time-dependent variables, such as k-eff, are stored in 'resdata'
-    print(res.resdata['absKeff'])  # Values (1st col.) + std (2nd col.) 
+    
+    >>> # Time-dependent variables, such as k-eff, are stored in 'resdata'
+    >>> print(res.resdata['absKeff'])  # Values (1st col.) + std (2nd col.) 
 
 
 .. parsed-literal::
@@ -164,8 +157,8 @@ values (e.g. CPU resources).
 
 .. code:: 
 
-    # Obtain only the values for 'absKeff'
-    res.resdata['absKeff'][:,0]
+    >>> # Obtain only the values for 'absKeff'
+    >>> res.resdata['absKeff'][:,0]
 
 
 
@@ -178,8 +171,8 @@ values (e.g. CPU resources).
 
 .. code:: 
 
-    # Obtain only the uncertainties for 'absKeff'
-    res.resdata['absKeff'][:,1]
+    >>> # Obtain only the uncertainties for 'absKeff'
+    >>> res.resdata['absKeff'][:,1]
 
 
 
@@ -192,10 +185,10 @@ values (e.g. CPU resources).
 
 .. code:: 
 
-    # Burnup data is not written by default, a burnup mode is defined within the input file
-    # Extract burnup related quantities
-    print(res.resdata['burnup']) # burnup intervals (MWd/kg) 
-    print(res.resdata['burnDays']) # time points (days)
+    >>> # Burnup data is not written by default, a burnup mode is defined within the input file
+    >>> # Extract burnup related quantities
+    >>> print(res.resdata['burnup']) # burnup intervals (MWd/kg) 
+    >>> print(res.resdata['burnDays']) # time points (days)
 
 
 .. parsed-literal::
@@ -216,8 +209,8 @@ values (e.g. CPU resources).
 
 .. code:: 
 
-    # Some variables are stored with no uncertainties
-    print(res.resdata['totCpuTime']) # total CPU time,  
+    >>> # Some variables are stored with no uncertainties
+    >>> print(res.resdata['totCpuTime']) # total CPU time,  
 
 
 .. parsed-literal::
@@ -237,12 +230,12 @@ Basic 1-D plotting capabilities are not yet avaialble in the parser.
 
 .. code:: 
 
-    %matplotlib inline
-    import matplotlib.pyplot as plt
-    xdata = res.resdata['burnDays'][:] # obtain the time in (days)
-    ydata = res.resdata['absKeff'][:,0] # obtain the k-eff (values only)
-    plt.plot(xdata, ydata)
-    plt.xlabel('Time, days'), plt.ylabel('k-eff')               
+    >>> %matplotlib inline
+    >>> import matplotlib.pyplot as plt
+    >>> xdata = res.resdata['burnDays'][:] # obtain the time in (days)
+    >>> ydata = res.resdata['absKeff'][:,0] # obtain the k-eff (values only)
+    >>> plt.plot(xdata, ydata)
+    >>> plt.xlabel('Time, days'), plt.ylabel('k-eff')               
 
 
 
@@ -272,23 +265,28 @@ Universe data is stored for each state point, i.e.
 
 .. code:: 
 
-    # The different states are obtained by:
-    res.universes.keys()
-    # The next cell presents the various unique states ('univ',burnup, burnupIdx, time)
-
-
-
+    >>> # The different states are obtained by:
+    >>> res.universes.keys()
+    >>> # The next cell presents the various unique states ('univ',burnup, burnupIdx, time)
 
 .. parsed-literal::
-
-    dict_keys([('3101', 0.0, 1, 0.0), ('3102', 0.0, 1, 0.0), ('0', 0.0, 1, 0.0), ('3101', 0.10000000000000001, 2, 1.20048), ('3102', 0.10000000000000001, 2, 1.20048), ('0', 0.10000000000000001, 2, 1.20048), ('3101', 1.0, 3, 12.004799999999999), ('3102', 1.0, 3, 12.004799999999999), ('0', 1.0, 3, 12.004799999999999), ('3101', 2.0, 4, 24.009599999999999), ('3102', 2.0, 4, 24.009599999999999), ('0', 2.0, 4, 24.009599999999999), ('3101', 3.0, 5, 36.014400000000002), ('3102', 3.0, 5, 36.014400000000002), ('0', 3.0, 5, 36.014400000000002), ('3101', 4.0, 6, 48.019199999999998), ('3102', 4.0, 6, 48.019199999999998), ('0', 4.0, 6, 48.019199999999998)])
+ 
+    dict_keys([('3101', 0.0, 1, 0.0), ('3102', 0.0, 1, 0.0), ('0', 0.0, 1, 0.0),
+    ('3101', 0.10000000000000001, 2, 1.20048), ('3102', 0.10000000000000001, 2,
+    1.20048), ('0', 0.10000000000000001, 2, 1.20048), ('3101', 1.0, 3,
+    12.004799999999999), ('3102', 1.0, 3, 12.004799999999999), ('0', 1.0, 3,
+    12.004799999999999), ('3101', 2.0, 4, 24.009599999999999), ('3102', 2.0, 4,
+    24.009599999999999), ('0', 2.0, 4, 24.009599999999999), ('3101', 3.0, 5,
+    36.014400000000002), ('3102', 3.0, 5, 36.014400000000002), ('0', 3.0, 5,
+    36.014400000000002), ('3101', 4.0, 6, 48.019199999999998), ('3102', 4.0, 6,
+    48.019199999999998), ('0', 4.0, 6, 48.019199999999998)])
 
 
 
 .. code:: 
 
-    # Let's use the following unique state
-    print(res.universes[('3102', 0.0, 1, 0.0)])
+    >>> # Let's use the following unique state
+    >>> print(res.universes[('3102', 0.0, 1, 0.0)])
 
 
 .. parsed-literal::
@@ -296,7 +294,7 @@ Universe data is stored for each state point, i.e.
     <HomogUniv 3102: burnup: 0.000 MWd/kgu, step: 1, 0.000 days>
     
 
-Each state contains the same data fields, which can be obatined by using
+Each state contains the same data fields, which can be obtained by using
 a specific state point:
 
 ``.infExp``: infinite values, e.g. ``INF_ABS``,
@@ -336,79 +334,102 @@ one time parameter is given, the hierarchy of search is: index (highest
 priority), burnup, time (lowest priority)
 
 .. code:: 
-
-    # Examples to use various time entries
-    univ3101 = res.getUniv('3101', index=4) # obtain the results for universe=3101 and index=4 
-    univ3102 = res.getUniv('3102', burnup=0.1) # obtain the results for universe=3102 and index=0.1 MWd/kgU
-    univ0 = res.getUniv('0', timeDays=24.0096) # obtain the results for universe=0 and index=24.0096 days
+    
+    >>> # Examples to use various time entries
+    >>> univ3101 = res.getUniv('3101', index=4) # obtain the results for universe=3101 and index=4 
+    >>> univ3102 = res.getUniv('3102', burnup=0.1) # obtain the results for universe=3102 and index=0.1 MWd/kgU
+    >>> univ0 = res.getUniv('0', timeDays=24.0096) # obtain the results for universe=0 and index=24.0096 days
 
 .. code:: 
-
-    # The full states are printed below
-    print(univ3101)
-    print(univ3102)
-    print(univ0)
+    
+    >>> # The full states are printed below
+    >>> print(univ3101)
+    >>> print(univ3102)
+    >>> print(univ0)
 
 
 .. parsed-literal::
-
+ 
     <HomogUniv 3101: burnup: 2.000 MWd/kgu, step: 4, 24.010 days>
-    <HomogUniv 3102: burnup: 0.100 MWd/kgu, step: 2, 1.200 days>
-    <HomogUniv 0: burnup: 2.000 MWd/kgu, step: 4, 24.010 days>
-    
+    <HomogUniv 3102:
+    burnup: 0.100 MWd/kgu, step: 2, 1.200 days>
+    <HomogUniv 0: burnup: 2.000
+    MWd/kgu, step: 4, 24.010 days>
 
 .. code:: 
-
-    # obtain the results for universe=0 and index=1 (burnup and timeDays are inserted but not used)
-    univ0 = res.getUniv('0', burnup=0.0, index=1, timeDays=0.0)  
-    print(univ0)
+    
+    >>> # obtain the results for universe=0 and index=1 (burnup and timeDays are inserted but not used)
+    >>> univ0 = res.getUniv('0', burnup=0.0, index=1, timeDays=0.0)  
+    >>> print(univ0)
 
 
 .. parsed-literal::
-
+ 
     <HomogUniv 0: burnup: 0.000 MWd/kgu, step: 1, 0.000 days>
+
+.. code:: 
     
+    >>> # The parser reads all the variables by default
+    >>> # Each field is a dictionary, with variables as keys and corresponding values.
+    >>> univ0.infExp.keys() # obtain all the variables stored in 'infExp' field
+
+.. parsed-literal::
+ 
+    dict_keys(['infMicroFlx', 'infKinf', 'infFlx', 'infFissFlx', 'infTot',
+    'infCapt', 'infAbs', 'infFiss', 'infNsf', 'infNubar', 'infKappa', 'infInvv',
+    'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5',
+    'infScatt6', 'infScatt7', 'infScattp0', 'infScattp1', 'infScattp2',
+    'infScattp3', 'infScattp4', 'infScattp5', 'infScattp6', 'infScattp7',
+    'infTranspxs', 'infDiffcoef', 'infRabsxs', 'infRemxs', 'infI135Yield',
+    'infXe135Yield', 'infPm147Yield', 'infPm148Yield', 'infPm148mYield',
+    'infPm149Yield', 'infSm149Yield', 'infI135MicroAbs', 'infXe135MicroAbs',
+    'infPm147MicroAbs', 'infPm148MicroAbs', 'infPm148mMicroAbs',
+    'infPm149MicroAbs', 'infSm149MicroAbs', 'infXe135MacroAbs', 'infSm149MacroAbs',
+    'infChit', 'infChip', 'infChid', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4',
+    'infS5', 'infS6', 'infS7', 'infSp0', 'infSp1', 'infSp2', 'infSp3', 'infSp4',
+    'infSp5', 'infSp6', 'infSp7'])
+
 
 .. code:: 
-
-    # The parser reads all the variables by default
-    # Each field is a dictionary, with variables as keys and corresponding values.
-    univ0.infExp.keys() # obtain all the variables stored in 'infExp' field
-
-
+    
+    >>> # The values are all energy dependent 
+    >>> univ0.infExp['infAbs'] # obtain the infinite macroscopic xs for ('0', 0.0, 1, 0.0)
 
 
 .. parsed-literal::
-
-    dict_keys(['infMicroFlx', 'infKinf', 'infFlx', 'infFissFlx', 'infTot', 'infCapt', 'infAbs', 'infFiss', 'infNsf', 'infNubar', 'infKappa', 'infInvv', 'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5', 'infScatt6', 'infScatt7', 'infScattp0', 'infScattp1', 'infScattp2', 'infScattp3', 'infScattp4', 'infScattp5', 'infScattp6', 'infScattp7', 'infTranspxs', 'infDiffcoef', 'infRabsxs', 'infRemxs', 'infI135Yield', 'infXe135Yield', 'infPm147Yield', 'infPm148Yield', 'infPm148mYield', 'infPm149Yield', 'infSm149Yield', 'infI135MicroAbs', 'infXe135MicroAbs', 'infPm147MicroAbs', 'infPm148MicroAbs', 'infPm148mMicroAbs', 'infPm149MicroAbs', 'infSm149MicroAbs', 'infXe135MacroAbs', 'infSm149MacroAbs', 'infChit', 'infChip', 'infChid', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7', 'infSp0', 'infSp1', 'infSp2', 'infSp3', 'infSp4', 'infSp5', 'infSp6', 'infSp7'])
-
-
-
-.. code:: 
-
-    # The values are all energy dependent 
-    univ0.infExp['infAbs'] # obtain the infinite macroscopic xs for ('0', 0.0, 1, 0.0)
-
-
-
-
-.. parsed-literal::
-
+ 
     array([ 0.0170306 ,  0.0124957 ,  0.00777066,  0.00773255,  0.00699608,
-            0.00410746,  0.00334604,  0.00296948,  0.0030725 ,  0.00335412,
-            0.00403133,  0.00506587,  0.00651475,  0.00737292,  0.00907442,
-            0.0113446 ,  0.0125896 ,  0.0164987 ,  0.0181642 ,  0.0266464 ,
-            0.0292439 ,  0.0315338 ,  0.0463069 ,  0.0807952 ])
+    0.00410746,  0.00334604,  0.00296948,  0.0030725 ,  0.00335412,
+    0.00403133,  0.00506587,  0.00651475,  0.00737292,  0.00907442,
+    0.0113446 ,  0.0125896 ,  0.0164987 ,  0.0181642 ,  0.0266464 ,
+    0.0292439 ,  0.0315338 ,  0.0463069 ,  0.0807952 ])
 
+.. code:: 
+    
+    >>> # Obtain the infinite flux for ('0', 0.0, 1, 0.0)
+    >>> univ0.infExp['infFlx']
+
+.. parsed-literal::
+ 
+    array([  1.10460000e+15,   1.72386000e+16,   7.78465000e+16,
+    1.70307000e+17,   2.85783000e+17,   4.61226000e+17,
+             8.04999000e+17,
+    1.17536000e+18,   1.17488000e+18,
+             1.26626000e+18,   1.03476000e+18,
+    7.58885000e+17,
+             4.95687000e+17,   5.85369000e+17,   2.81921000e+17,
+    1.16665000e+17,   8.06833000e+16,   2.26450000e+16,
+             6.51541000e+16,
+    2.79929000e+16,   8.87468000e+15,
+             1.70822000e+15,   8.87055000e+14,
+    6.22266000e+13])
 
 
 .. code:: 
-
-    # Obtain the infinite flux for ('0', 0.0, 1, 0.0)
-    univ0.infExp['infFlx']
-
-
-
+    
+    >>> # Uncertainties can be obtained in a similar was by using the 'infUnc' field. 
+    >>> # The variables will be identical to those defined in 'infExp'
+    >>> univ0.infUnc['infFlx'] # obtain the relative uncertainty
 
 .. parsed-literal::
 
@@ -421,16 +442,11 @@ priority), burnup, time (lowest priority)
              6.51541000e+16,   2.79929000e+16,   8.87468000e+15,
              1.70822000e+15,   8.87055000e+14,   6.22266000e+13])
 
-
-
 .. code:: 
-
-    # Uncertainties can be obtained in a similar was by using the 'infUnc' field. 
-    # The variables will be identical to those defined in 'infExp'
-    univ0.infUnc['infFlx'] # obtain the relative uncertainty
-
-
-
+    
+    >>> # Uncertainties can be obtained in a similar was by using the 'infUnc' field. 
+    >>> # The variables will be identical to those defined in 'infExp'
+    >>> univ0.infUnc['infFlx'] # obtain the relative uncertainty
 
 .. parsed-literal::
 
@@ -449,27 +465,30 @@ If this card is not enabled by the user, the ``B1_`` variables will all
 be zeros.
 
 .. code:: 
-
-    # The parser reads all the variables by default
-    # Each field is a dictionary, with variables as keys and corresponding values.
-    univ0.b1Exp.keys() # obtain all the variables stored in 'b1Exp' field
-
-
-
+    
+    >>> # The parser reads all the variables by default
+    >>> # Each field is a dictionary, with variables as keys and corresponding values.
+    >>> univ0.b1Exp.keys() # obtain all the variables stored in 'b1Exp' field
 
 .. parsed-literal::
-
-    dict_keys(['b1MicroFlx', 'b1Kinf', 'b1Keff', 'b1B2', 'b1Err', 'b1Flx', 'b1FissFlx', 'b1Tot', 'b1Capt', 'b1Abs', 'b1Fiss', 'b1Nsf', 'b1Nubar', 'b1Kappa', 'b1Invv', 'b1Scatt0', 'b1Scatt1', 'b1Scatt2', 'b1Scatt3', 'b1Scatt4', 'b1Scatt5', 'b1Scatt6', 'b1Scatt7', 'b1Scattp0', 'b1Scattp1', 'b1Scattp2', 'b1Scattp3', 'b1Scattp4', 'b1Scattp5', 'b1Scattp6', 'b1Scattp7', 'b1Transpxs', 'b1Diffcoef', 'b1Rabsxs', 'b1Remxs', 'b1I135Yield', 'b1Xe135Yield', 'b1Pm147Yield', 'b1Pm148Yield', 'b1Pm148mYield', 'b1Pm149Yield', 'b1Sm149Yield', 'b1I135MicroAbs', 'b1Xe135MicroAbs', 'b1Pm147MicroAbs', 'b1Pm148MicroAbs', 'b1Pm148mMicroAbs', 'b1Pm149MicroAbs', 'b1Sm149MicroAbs', 'b1Xe135MacroAbs', 'b1Sm149MacroAbs', 'b1Chit', 'b1Chip', 'b1Chid', 'b1S0', 'b1S1', 'b1S2', 'b1S3', 'b1S4', 'b1S5', 'b1S6', 'b1S7', 'b1Sp0', 'b1Sp1', 'b1Sp2', 'b1Sp3', 'b1Sp4', 'b1Sp5', 'b1Sp6', 'b1Sp7'])
-
-
+ 
+    dict_keys(['b1MicroFlx', 'b1Kinf', 'b1Keff', 'b1B2', 'b1Err', 'b1Flx',
+    'b1FissFlx', 'b1Tot', 'b1Capt', 'b1Abs', 'b1Fiss', 'b1Nsf', 'b1Nubar',
+    'b1Kappa', 'b1Invv', 'b1Scatt0', 'b1Scatt1', 'b1Scatt2', 'b1Scatt3',
+    'b1Scatt4', 'b1Scatt5', 'b1Scatt6', 'b1Scatt7', 'b1Scattp0', 'b1Scattp1',
+    'b1Scattp2', 'b1Scattp3', 'b1Scattp4', 'b1Scattp5', 'b1Scattp6', 'b1Scattp7',
+    'b1Transpxs', 'b1Diffcoef', 'b1Rabsxs', 'b1Remxs', 'b1I135Yield',
+    'b1Xe135Yield', 'b1Pm147Yield', 'b1Pm148Yield', 'b1Pm148mYield',
+    'b1Pm149Yield', 'b1Sm149Yield', 'b1I135MicroAbs', 'b1Xe135MicroAbs',
+    'b1Pm147MicroAbs', 'b1Pm148MicroAbs', 'b1Pm148mMicroAbs', 'b1Pm149MicroAbs',
+    'b1Sm149MicroAbs', 'b1Xe135MacroAbs', 'b1Sm149MacroAbs', 'b1Chit', 'b1Chip',
+    'b1Chid', 'b1S0', 'b1S1', 'b1S2', 'b1S3', 'b1S4', 'b1S5', 'b1S6', 'b1S7',
+    'b1Sp0', 'b1Sp1', 'b1Sp2', 'b1Sp3', 'b1Sp4', 'b1Sp5', 'b1Sp6', 'b1Sp7'])
 
 .. code:: 
-
-    # Obtain the b1 fluxes for ('3101', 0.0, 1, 0.0)
-    univ3101.b1Exp['b1Flx']
-
-
-
+    
+    >>> # Obtain the b1 fluxes for ('3101', 0.0, 1, 0.0)
+    >>> univ3101.b1Exp['b1Flx']
 
 .. parsed-literal::
 
@@ -482,15 +501,10 @@ be zeros.
              3.51299000e+16,   1.46504000e+16,   4.38516000e+15,
              7.96971000e+14,   3.54233000e+14,   2.11013000e+13])
 
-
-
 .. code:: 
-
-    # Obtain the b1 fluxes for ('3101', 0.0, 1, 0.0)
-    univ3101.b1Exp['b1Abs']
-
-
-
+    
+    >>> # Obtain the b1 fluxes for ('3101', 0.0, 1, 0.0)
+    >>> univ3101.b1Exp['b1Abs']
 
 .. parsed-literal::
 
@@ -500,33 +514,25 @@ be zeros.
             0.011397  ,  0.0125957 ,  0.0167696 ,  0.0184019 ,  0.0274004 ,
             0.0286808 ,  0.0318976 ,  0.0522545 ,  0.0763042 ])
 
-
-
 Data that does not contain the prefix ``INF_`` or ``B1_`` is stored
 under the ``gc`` and ``gcUnc`` fields.
 
 Criticality, kinetic, and other variables are stored under this field.
 
 .. code:: 
-
-    univ3101.gc.keys() # obtain all the variables stored in 'gc' field
-
-
-
+    
+    >>> univ3101.gc.keys() # obtain all the variables stored in 'gc' field
 
 .. parsed-literal::
-
-    dict_keys(['cmmTranspxs', 'cmmTranspxsX', 'cmmTranspxsY', 'cmmTranspxsZ', 'cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'betaEff', 'lambda'])
-
-
+ 
+    dict_keys(['cmmTranspxs', 'cmmTranspxsX', 'cmmTranspxsY', 'cmmTranspxsZ',
+    'cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'betaEff',
+    'lambda'])
 
 .. code:: 
-
-    # The data included in the 'gc' field contains only the values (no uncertainties)
-    univ3101.gc['betaEff'] # obtain beta-effective
-
-
-
+    
+    >>> # The data included in the 'gc' field contains only the values (no uncertainties)
+    >>> univ3101.gc['betaEff'] # obtain beta-effective
 
 .. parsed-literal::
 
@@ -534,18 +540,13 @@ Criticality, kinetic, and other variables are stored under this field.
              5.62858000e-04,   1.04108000e-03,   5.67326000e-04,
              1.22822000e-04])
 
-
-
 ``Macro`` and ``Micro`` energy group structures are stored directly in
 the universe.
 
 .. code:: 
 
-    # Obtain the macro energy structure in MeV
-    univ3101.groups
-
-
-
+    >>> # Obtain the macro energy structure in MeV
+    >>> univ3101.groups
 
 .. parsed-literal::
 
@@ -559,83 +560,82 @@ the universe.
              4.54000000e-04,   3.12030000e-04,   1.48940000e-04,
              0.00000000e+00])
 
-
-
 .. code:: 
 
-    # Obtain the micro energy structure in MeV
-    univ3101.microGroups[:5:] # print only the five first values
-
-
-
+    >>> # Obtain the micro energy structure in MeV
+    >>> univ3101.microGroups[:5:] # print only the five first values
 
 .. parsed-literal::
 
     array([  1.00000000e-10,   1.48940000e-04,   1.65250000e-04,
              1.81560000e-04,   1.97870000e-04])
 
-
+.. _ex-res-plotUniv:
 
 Plotting universes
 ------------------
 
-.. code:: 
-
-    # obtain the energy grid in descending order (high to low energy)
-    xdata = univ3101.groups[1:] 
-    # obtain the inifinite abs. xs
-    ydataInf = univ3101.infExp['infAbs']
-    ydataB1 = univ3101.b1Exp['b1Abs']
+|homogUniv|  objects can plot group constants using their 
+:py:meth:`~serpentTools.objects.containers.HomogUniv.plot`
+method. This method has a range of formatting options, with defaults
+corresponding to plotting macroscopic cross sections. This is manifested
+in the default y axis label, but can be easily adjusted.
 
 .. code:: 
+    
+    >>> univ3101.plot(['infAbs', 'b1Abs']);
 
-    plt.plot(xdata, ydataInf,'r', label='INF')
-    plt.plot(xdata, ydataB1,'*g', label='B1')
-    plt.legend()
-    plt.xlabel('Energy, MeV'), plt.ylabel('Macroscopic absorption cross section, cm$^{-1}$')  
+.. image:: ResultsReader_files/ResultsReader_50_1.png
 
+Macroscopic and microscopic quantities, such as micro-group flux, can be
+plotted on the same figure. 
 
+.. note:: 
 
-
-.. parsed-literal::
-
-    (<matplotlib.text.Text at 0x1e4ca0c8a20>,
-     <matplotlib.text.Text at 0x1e4ca334cf8>)
-
-
-
-
-.. image:: images/ResultsReader_51_1.png
-
+    The units and presentation of the
+    micro- and macro-group fluxes are dissimilar, and the units do not agree
+    with that of the assumed group constants. This will adjust the default
+    y-label, as demonstrated below.
 
 .. code:: 
+    
+    >>> univ3101.plot(['infTot', 'infFlx', 'infMicroFlx'], legend='right');
 
-    # obtain the energy grid in descending order (high to low energy)
-    xdata = univ3101.groups[1:] 
-    # obtain the inifinite fiss. xs
-    ydata3101 = univ3101.infExp['infFiss'] # for universe 3101 and index=2
-    ydata3102 = univ3102.infExp['infFiss'] # for universe 3102 and index=4
+.. image:: ResultsReader_files/ResultsReader_52_1.png
+
+
+For plotting data from multiple universes, passed the returned
+:py:class:`matplotlib.axes.Axes` object, on which the plot was drawn,
+into the plot method for the next
+universe. The ``labelFmt`` argument can be used to differentiate between
+plotted data. The following strings are replaced when creating the
+labels:
+
++---------+----------------------------+
+| String  | Replaced value             |
++=========+============================+
+| ``{k}`` | Name of variable plotted   |
++---------+----------------------------+
+| ``{u}`` | Name of this universe      |
++---------+----------------------------+
+| ``{b}`` | Value of burnup in MWd/kgU |
++---------+----------------------------+
+| ``{d}`` | Value of burnup in days    |
++---------+----------------------------+
+| ``{i}`` | Burnup index               |
++---------+----------------------------+
+
+
+These can be used in conjunction with the :math:`\LaTeX`
+`rendering system <https://matplotlib.org/users/usetex.html>`_ .
 
 .. code:: 
+    
+    >>> fmt = r"Universe {u} - $\Sigma_{abs}^\infty$"
+    >>> ax = univ3101.plot('infFiss', labelFmt=fmt)
+    >>> univ3102.plot('infFiss', ax=ax, labelFmt=fmt, legend='above', ncol=2);
 
-    plt.plot(xdata, ydata3101,'r', label='universe 3101')
-    plt.plot(xdata, ydata3102,'*g', label='universe 3102')
-    plt.legend()
-    plt.xlabel('Energy, MeV'), plt.ylabel('Macroscopic fission cross section, cm$^{-1}$')  
-
-
-
-
-.. parsed-literal::
-
-    (<matplotlib.text.Text at 0x1e4ca430ef0>,
-     <matplotlib.text.Text at 0x1e4ca40e9e8>)
-
-
-
-
-.. image:: images/ResultsReader_53_1.png
-
+.. image:: ResultsReader_files/ResultsReader_55_0.png
 
 User Defined Settings
 ---------------------
@@ -648,115 +648,109 @@ http://serpent-tools.readthedocs.io/en/latest/settingsTop.html
 
 .. code:: 
 
-    # Setting are all defined in 'rc'
-    from serpentTools.settings import rc
+    >>> # Setting are all defined in 'rc'
+    >>> from serpentTools.settings import rc
 
 .. code:: 
 
-    # Obtain the user defined keys
-    rc.keys()
+    >>> # Obtain the user defined keys
+    >>> rc.keys()
 
 
 
 
 .. parsed-literal::
-
-    dict_keys(['branching.areUncsPresent', 'branching.intVariables', 'branching.floatVariables', 'depletion.metadataKeys', 'depletion.materialVariables', 'depletion.materials', 'depletion.processTotal', 'detector.names', 'verbosity', 'sampler.allExist', 'sampler.freeAll', 'sampler.raiseErrors', 'sampler.skipPrecheck', 'serpentVersion', 'xs.getInfXS', 'xs.getB1XS', 'xs.reshapeScatter', 'xs.variableGroups', 'xs.variableExtras'])
+ 
+    dict_keys(['branching.areUncsPresent', 'branching.intVariables',
+    'branching.floatVariables', 'depletion.metadataKeys',
+    'depletion.materialVariables', 'depletion.materials', 'depletion.processTotal',
+    'detector.names', 'verbosity', 'sampler.allExist', 'sampler.freeAll',
+    'sampler.raiseErrors', 'sampler.skipPrecheck', 'serpentVersion', 'xs.getInfXS',
+    'xs.getB1XS', 'xs.reshapeScatter', 'xs.variableGroups', 'xs.variableExtras'])
 
 
 
 The user can modify the settings and only then use |resReader|
 
 .. code:: 
-
-    # Change the serpent version to 2.1.30
-    versionOriginal = rc['serpentVersion']
-    print('The version defined by default is {}'.format(versionOriginal)) # print the original version
-    rc['serpentVersion'] = '2.1.30'
-    print('The version set by the user is {}'.format(rc['serpentVersion'] )) # print the modified version
+    
+    >>> # Change the serpent version to 2.1.30
+    >>> versionOriginal = rc['serpentVersion']
+    >>> print('The version defined by default is {}'.format(versionOriginal)) # print the original version
+    >>> rc['serpentVersion'] = '2.1.30'
+    >>> print('The version set by the user is {}'.format(rc['serpentVersion'] )) # print the modified version
 
 
 .. parsed-literal::
-
+ 
     The version defined by default is 2.1.30
     The version set by the user is 2.1.30
+
+.. code:: 
     
+    >>> # Explicitly state which groups of variables should be stored
+    >>> # The variables for these groups are defined according to the .yaml file
+    >>> rc['xs.variableGroups'] = ['versions', 'xs', 'eig', 'burnup-coeff']
 
 .. code:: 
-
-    # Explicitly state which groups of variables should be stored
-    # The variables for these groups are defined according to the .yaml file
-    rc['xs.variableGroups'] = ['versions', 'xs', 'eig', 'burnup-coeff']
-
-.. code:: 
-
-    # The user can state which cross-sections to store
-    rc['xs.getInfXS'] = True # Obtain the infinite xs
-    rc['xs.getB1XS'] = False # Do not store the leakage corrected xs
+    
+    >>> # The user can state which cross-sections to store
+    >>> rc['xs.getInfXS'] = True # Obtain the infinite xs
+    >>> rc['xs.getB1XS'] = False # Do not store the leakage corrected xs
 
 .. code:: 
-
-    # Read the file again with the updated settings
-    resFilt = serpentTools.read(resFile)
+    
+    >>> # Read the file again with the updated settings
+    >>> resFilt = serpentTools.read(resFile)
 
 .. code:: 
-
-    # Print all the stored variables in metadata
-    resFilt.metadata.keys()
-
-
-
+    
+    >>> # Print all the stored variables in metadata
+    >>> resFilt.metadata.keys()
 
 .. parsed-literal::
-
-    dict_keys(['version', 'compileDate', 'debug', 'title', 'confidentialData', 'inputFileName', 'workingDirectory', 'hostname', 'cpuType', 'cpuMhz', 'startDate', 'completeDate'])
-
-
+ 
+    dict_keys(['version', 'compileDate', 'debug', 'title', 'confidentialData',
+    'inputFileName', 'workingDirectory', 'hostname', 'cpuType', 'cpuMhz',
+    'startDate', 'completeDate'])
 
 .. code:: 
-
-    # All the variables can be obtained by using 'resdata.keys()'
-    resFilt.resdata.keys() # contains all the variable as a dict_keys
-
-
-
+    
+    >>> # All the variables can be obtained by using 'resdata.keys()'
+    >>> resFilt.resdata.keys() # contains all the variable as a dict_keys
 
 .. parsed-literal::
-
-    dict_keys(['burnMaterials', 'burnMode', 'burnStep', 'burnup', 'burnDays', 'nubar', 'anaKeff', 'impKeff', 'colKeff', 'absKeff', 'absKinf', 'geomAlbedo'])
-
-
-
-.. code:: 
-
-    # obtain the results for universe=0 and index=1 (burnup and timeDays are inserted but not used)
-    univ0Filt = resFilt.getUniv('0', burnup=0.0, index=1, timeDays=0.0)  
+ 
+    dict_keys(['burnMaterials', 'burnMode', 'burnStep', 'burnup', 'burnDays',
+    'nubar', 'anaKeff', 'impKeff', 'colKeff', 'absKeff', 'absKinf', 'geomAlbedo'])
 
 .. code:: 
+    
+    >>> # obtain the results for universe=0 and index=1 (burnup and timeDays are inserted but not used)
+    >>> univ0Filt = resFilt.getUniv('0', burnup=0.0, index=1, timeDays=0.0)  
 
-    # Obtain all the variables stored in 'infExp' field
-    univ0Filt.infExp.keys() 
-
-
-
+.. code:: 
+    
+    >>> # Obtain all the variables stored in 'infExp' field
+    >>> univ0Filt.infExp.keys() 
 
 .. parsed-literal::
-
-    dict_keys(['infCapt', 'infAbs', 'infFiss', 'infNsf', 'infNubar', 'infKappa', 'infInvv', 'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5', 'infScatt6', 'infScatt7', 'infTranspxs', 'infDiffcoef', 'infRabsxs', 'infRemxs', 'infChit', 'infChip', 'infChid', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7'])
-
-
+ 
+    dict_keys(['infCapt', 'infAbs', 'infFiss', 'infNsf', 'infNubar', 'infKappa',
+    'infInvv', 'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4',
+    'infScatt5', 'infScatt6', 'infScatt7', 'infTranspxs', 'infDiffcoef',
+    'infRabsxs', 'infRemxs', 'infChit', 'infChip', 'infChid', 'infS0', 'infS1',
+    'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7'])
 
 .. code:: 
-
-    # Obtain all the variables stored in 'gc' field
-    univ0Filt.gc.keys() 
-
-
-
+    
+    >>> # Obtain all the variables stored in 'gc' field
+    >>> univ0Filt.gc.keys() 
 
 .. parsed-literal::
-
+ 
     dict_keys([])
+
 
 Conclusion
 ----------

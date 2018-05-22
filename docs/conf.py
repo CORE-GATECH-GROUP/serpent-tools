@@ -177,7 +177,7 @@ texinfo_documents = [
 ]
 
 # -- Options for auto documentation --------------------------------------
-autodoc_default_flags = ['members', 'show-inheritance']
+autodoc_default_flags = ['members', 'inherited-members']
 
 # -- Links to external documentation
 intersphinx_mapping = {

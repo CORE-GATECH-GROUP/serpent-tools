@@ -4,7 +4,7 @@ Custom-built containers for storing data from serpent outputs
 Contents
 --------
 * :py:class:`~serpentTools.objects.containers.HomogUniv`
-* :py:class:`~serpentTools.objects.containers.BranchContainer
+* :py:class:`~serpentTools.objects.containers.BranchContainer`
 * :py:class:`~serpentTools.objects.containers.DetectorBase`
 * :py:class:`~serpentTools.objects.containers.Detector`
 
@@ -13,9 +13,10 @@ from re import compile
 from collections import OrderedDict
 from itertools import product
 
+from six import iteritems
 from matplotlib import pyplot
 from numpy import (array, arange, unique, log, divide, ones_like, hstack,
-                   ndarray)
+                   ndarray, zeros_like)
 
 from serpentTools.settings import rc
 from serpentTools.plot import (cartMeshPlot, plot, magicPlotDocDecorator,
@@ -307,6 +308,128 @@ class HomogUniv(NamedObject):
                 return self.b1Exp
             return self.b1Unc
         return self.gcUnc if uncertainty else self.gc
+    
+    @magicPlotDocDecorator
+    def plot(self, qtys, limitE=True, ax=None, logx=True, logy=True, 
+             loglog=None, sigma=3, xlabel=None, ylabel=None, legend=None,
+             ncol=1, steps=True, labelFmt=None, labels=None):
+        """
+        Plot homogenized data as a function of energy.
+
+        Parameters
+        ----------
+        qtys: str or iterable
+            Plot this or these value against energy. 
+        limitE: bool
+            If given, set the maximum energy value to be 
+            that of the micro group structure. By default, 
+            SERPENT macro group structures can reach
+            1E37, leading for a very large tail on the plots.
+        {ax}
+        {labels}
+        {logx}
+        {logy}
+        {loglog}
+        {sigma}
+        {xlabel}
+        {ylabel}
+        {legend}
+        {ncol}
+        steps: bool
+            If ``True``, plot values as constant within 
+            energy bins.
+        {univLabelFmt}
+
+        Returns
+        -------
+        {rax}
+
+        See Also
+        --------
+        * :py:meth:`serpentTools.objects.containers.HomogUniv.get`
+
+        """
+        qtys = [qtys, ] if isinstance(qtys, str) else qtys
+        ax = ax or pyplot.axes()
+        onlyXS = True
+        sigma = max(0, int(sigma))
+        drawstyle = 'steps-post' if steps else None
+        limitE = limitE and (self.groups is not None 
+                             and self.microGroups is not None)
+        macroBins = self.numGroups + 1 if self.numGroups is not None else None
+        microBins = (self.numMicroGroups + 1 
+                     if self.numMicroGroups is not None else None)
+        labelFmt = labelFmt or "{k}"
+        if limitE:
+            eneCap = min(self.microGroups.max(), self.groups.max())
+        
+        if isinstance(labels, str):
+            labels = [labels, ]
+        if labels is None:
+            labels = [labelFmt, ] * len(qtys)
+        else:
+            if len(labels) != len(qtys):
+                raise IndexError(
+                    "Need equal number of labels for plot quantities. "
+                    "Given {} expected: {}".format(len(labels), len(qtys)))
+        for key, label in zip(qtys, labels):
+            valD = self._lookup(key, False)
+            if key not in valD:
+                warning("{} not found on object. Will not plot."
+                        .format(key))
+                continue
+            yVals = valD[key]
+            if len(yVals.shape) != 1 and 1 not in yVals.shape:
+                warning("Data for {} is not 1D. Will not plot"
+                        .format(key))
+                continue
+            uncD = self._lookup(key, True)
+            yUncs = uncD.get(key, zeros_like(yVals))
+
+            if 'Flx' in key:
+                onlyXS = False
+            yVals = hstack((yVals, yVals[-1]))
+            nbins = yVals.size
+            yUncs = hstack((yUncs, yUncs[-1])) * yVals * sigma
+            xdata = self.__getEGrid(nbins, macroBins, microBins)
+            if limitE:
+                xdata = xdata.copy()
+                xdata[xdata.argmax()] = eneCap
+            label = self.__formatLabel(label, key)
+            ax.errorbar(xdata, yVals, yerr=yUncs, label=label, 
+                        drawstyle=drawstyle)
+
+        if ylabel is None:
+            ylabel, yUnits = (("Cross Section", "[cm$^{-1}$]") if onlyXS 
+                      else ("Group Constant", ""))
+            sigStr = r" $\pm{}\sigma$".format(sigma) if sigma else ""
+            ylabel = ' '.join((ylabel, sigStr, yUnits))
+
+        if legend is None:
+            legend = len(qtys) > 1
+        if loglog is not None:
+            logx = logy = loglog
+        formatPlot(ax, logx=logx, logy=logy, ncol=ncol,
+                   legend=legend, xlabel=xlabel or "Energy [MeV]",
+                   ylabel=ylabel)
+        return ax
+
+    def __getEGrid(self, nbins, macroBins, microBins):
+        """Attempt to obtian the correct energy group for plotting."""
+        if macroBins is not None and nbins == macroBins:
+            return self.groups
+        if microBins is not None and nbins == microBins:
+            return self.microGroups
+        return arange(nbins)
+
+    def __formatLabel(self, label, key):
+        mapping = {
+            "{k}": key, "{u}": self.name, "{i}": self.step,
+            "{b}": self.bu, "{d}": self.day
+            }
+        for lookF, value in iteritems(mapping):
+            label = label.replace(lookF, str(value))
+        return label
 
     def __bool__(self):
         """Return True if data is stored on the object."""
@@ -474,7 +597,7 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+        :py:meth:`~serpentTools.objects.containers.Detector.slice`
         """
         slicedTallies = self.slice(fixed, 'tallies').copy()
         if len(slicedTallies.shape) > 2:
@@ -563,7 +686,7 @@ class DetectorBase(NamedObject):
         See Also
         --------
         * :py:meth:`~serpentTools.objects.containers.Detector.slice`
-        * :py:meth:`~serpentTools.objects.containers.DetectorBase.spectrumPlot`
+        * :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
            better options for plotting energy spectra
         """
 
@@ -648,7 +771,7 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        * :py:meth:`~serpentTools.objects.containers.DetectorBase.slice`
+        * :py:meth:`~serpentTools.objects.containers.Detector.slice`
         * :py:func:`matplotlib.pyplot.pcolormesh`
         * :py:func:`~serpentTools.plot.cartMeshPlot`
         """

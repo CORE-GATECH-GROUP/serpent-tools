@@ -269,9 +269,9 @@ class DepletedMaterial(DepletedMaterialBase):
 
         See Also
         --------
-        * :py:func:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
+        * :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
         * :py:func:`matplotlib.pyplot.plot`
-        * :py:func:`str.format`
+        * :py:meth:`str.format` - used for formatting labels
 
         Raises
         ------

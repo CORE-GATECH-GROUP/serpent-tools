@@ -4,6 +4,8 @@
 
 .. |homogUniv| replace:: :py:class:`~serpentTools.objects.containers.HomogUniv`
 
+.. |homogUnivPlot| replace:: :py:meth:`~serpentTools.objects.containers.HomogUniv.plot`
+
 .. _branching-ex:
 
 Branching Reader
@@ -36,65 +38,77 @@ The simplest way to read these files is using the
     See :ref:`branching-settings` for examples on the various ways to
     control operation
 
-.. code:: 
 
+.. code:: 
+    
+    >>> %matplotlib inline
     >>> import serpentTools
     >>> branchFile = 'demo.coe'
+
+.. code:: 
+    
     >>> r0 = serpentTools.read(branchFile)
-    INFO    : serpentTools: Inferred reader for demo.coe: BranchingReader
-    INFO    : serpentTools: Preparing to read demo.coe
-    INFO    : serpentTools: Done reading branching file
 
 The branches are stored in custom |branchContainer| objects in the
 :py:attr:`~serpentTools.parsers.branching.BranchingReader.branches`
 dictionary
 
 .. code:: 
-
+    
     >>> r0.branches
-    {('B1000', 'FT1200'): 
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8d8c9b00>,
-     ('B1000', 'FT600'):
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8cfecfd0>,
-     ('B1000', 'nom'): 
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8d052b00>,
-     ('B750', 'FT1200'): 
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8d8cc400>,
-     ('B750', 'FT600'): 
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8cfe58d0>,
-     ('B750', 'nom'): 
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8d041470>,
-     ('nom', 'FT1200'): 
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8cfda208>,
-     ('nom', 'FT600'): 
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8cfdf1d0>,
-     ('nom', 'nom'): 
-        <serpentTools.objects.containers.BranchContainer at 0x7f2c8d03eda0>}
+
+
+
+
+.. parsed-literal::
+
+    {('B1000',
+      'FT1200'): <serpentTools.objects.containers.BranchContainer at 0x7fa068b42978>,
+     ('B1000',
+      'FT600'): <serpentTools.objects.containers.BranchContainer at 0x7fa068b58a58>,
+     ('B1000',
+      'nom'): <serpentTools.objects.containers.BranchContainer at 0x7fa068aac860>,
+     ('B750',
+      'FT1200'): <serpentTools.objects.containers.BranchContainer at 0x7fa068b3a908>,
+     ('B750',
+      'FT600'): <serpentTools.objects.containers.BranchContainer at 0x7fa068b509e8>,
+     ('B750',
+      'nom'): <serpentTools.objects.containers.BranchContainer at 0x7fa068a9c860>,
+     ('nom',
+      'FT1200'): <serpentTools.objects.containers.BranchContainer at 0x7fa068b33898>,
+     ('nom',
+      'FT600'): <serpentTools.objects.containers.BranchContainer at 0x7fa068b47978>,
+     ('nom',
+      'nom'): <serpentTools.objects.containers.BranchContainer at 0x7fa068a8b860>}
 
 Here, the keys are tuples of strings indicating what
 perturbations/branch states were applied for each ``SERPENT`` solution.
 Examining a particular case
 
 .. code:: 
-
+    
     >>> b0 = r0.branches['B1000', 'FT600']
     >>> print(b0)
+
+
+.. parsed-literal::
+
     <BranchContainer for B1000, FT600 from demo.coe>
-    
 
-``SERPENT`` allows the user to define variables for each branch through:
-
-::
-
-    var V1_name V1_value
-
-cards. These are stored in the 
+``SERPENT`` allows the user to define variables for each branch through 
+``var V1_name V1_value`` cards. These are stored in the 
 :py:attr:`~serpentTools.objects.containers.BranchContainer.stateData` 
 attribute
 
 .. code:: 
-
+    
     >>> b0.stateData
+
+
+
+
+.. parsed-literal::
+
     {'BOR': '1000',
      'DATE': '17/12/19',
      'TFU': '600',
@@ -115,27 +129,33 @@ Group Constant Data
 
 The |branchContainer| stores group 
 constant data in |homogUniv| objects in the 
-:py:attr:`~serpentTools.parsers.branching.BranchingReader.branches`
+:py:attr:`~serpentTools.parsers.branching.BranchingReader.universes`
 dictionary
 
-.. code:: 
 
-    >>> b0.universes
-    {(0, 0.0, 1): <serpentTools.objects.containers.HomogUniv at 0x2220c781ac8>,
-     (0, 1.0, 2): <serpentTools.objects.containers.HomogUniv at 0x2220c78b5f8>,
-     (0, 10.0, 3): <serpentTools.objects.containers.HomogUniv at 0x2220c791240>,
-     (10, 0.0, 1): <serpentTools.objects.containers.HomogUniv at 0x2220c787a58>,
-     (10, 1.0, 2): <serpentTools.objects.containers.HomogUniv at 0x2220c78b6a0>,
-     (10, 10.0, 3): <serpentTools.objects.containers.HomogUniv at 0x2220c791320>,
-     (20, 0.0, 1): <serpentTools.objects.containers.HomogUniv at 0x2220c787cc0>,
-     (20, 1.0, 2): <serpentTools.objects.containers.HomogUniv at 0x2220c78b908>,
-     (20, 10.0, 3): <serpentTools.objects.containers.HomogUniv at 0x2220c791588>,
-     (30, 0.0, 1): <serpentTools.objects.containers.HomogUniv at 0x2220c78b048>,
-     (30, 1.0, 2): <serpentTools.objects.containers.HomogUniv at 0x2220c78bb70>,
-     (30, 10.0, 3): <serpentTools.objects.containers.HomogUniv at 0x2220c7917f0>,
-     (40, 0.0, 1): <serpentTools.objects.containers.HomogUniv at 0x2220c78b1d0>,
-     (40, 1.0, 2): <serpentTools.objects.containers.HomogUniv at 0x2220c78bdd8>,
-     (40, 10.0, 3): <serpentTools.objects.containers.HomogUniv at 0x2220c791a58>}
+.. code:: 
+    
+    >>> for key in b0.universes:
+    ...     print(key)
+
+
+.. parsed-literal::
+
+    (0, 1.0, 1)
+    (10, 1.0, 1)
+    (20, 1.0, 1)
+    (30, 1.0, 1)
+    (20, 0, 0)
+    (40, 0, 0)
+    (20, 10.0, 2)
+    (10, 10.0, 2)
+    (0, 0, 0)
+    (10, 0, 0)
+    (0, 10.0, 2)
+    (30, 0, 0)
+    (40, 10.0, 2)
+    (40, 1.0, 1)
+    (30, 10.0, 2)
 
 The keys here are vectors indicating the universe ID, burnup, and burnup
 index corresponding to the point in the burnup schedule. ``SERPENT``
@@ -149,23 +169,25 @@ These universes can be obtained by indexing this dictionary, or by using
 the :py:meth:`~serpentTools.objects.containers.BranchContainer.getUniv` method
 
 .. code:: 
-
+    
     >>> univ0 = b0.universes[0, 1, 1]
     >>> print(univ0)
-    <HomogUniv 0: burnup: 1.000 MWd/kgu, step: 1>
     >>> print(univ0.name)
-    0
     >>> print(univ0.bu)
-    1.0
     >>> print(univ0.step)
-    1
     >>> print(univ0.day)
-    None
     >>> print(b0.hasDays)
+
+
+.. parsed-literal::
+
+    <HomogUniv 0: burnup: 1.000 MWd/kgu, step: 1>
+    0
+    1.0
+    1
+    None
     False
-    >>> univ1 = b0.getUniv(0, burnup=1)
-    >>> univ2 = b0.getUniv(0, index=1)
-    >>> assert univ0 is univ1 is univ2
+
 
 Group constant data is spread out across the following sub-dictionaries:
 
@@ -187,38 +209,131 @@ spectrum (b1) group constants are returned, so only the ``infExp`` and
 ``b1Exp`` dictionaries contain data
 
 .. code:: 
-
+    
     >>> univ0.infExp
+
+
+
+
+.. parsed-literal::
+
     {'infDiffcoef': array([ 1.83961 ,  0.682022]),
      'infFiss': array([ 0.00271604,  0.059773  ]),
-     'infRem': array([], dtype=float64),
      'infS0': array([ 0.298689  ,  0.00197521,  0.00284247,  0.470054  ]),
      'infS1': array([ 0.0847372 ,  0.00047366,  0.00062865,  0.106232  ]),
      'infTot': array([ 0.310842,  0.618286])}
+
+.. code:: 
+    
     >>> univ0.infUnc
+
+
+
+
+.. parsed-literal::
+
     {}
+
+
+
+.. code:: 
+    
     >>> univ0.b1Exp
+
+
+
+
+.. parsed-literal::
+
     {'b1Diffcoef': array([ 1.79892 ,  0.765665]),
      'b1Fiss': array([ 0.00278366,  0.0597712 ]),
-     'b1Rem': array([], dtype=float64),
      'b1S0': array([ 0.301766  ,  0.0021261 ,  0.00283866,  0.470114  ]),
      'b1S1': array([ 0.0856397 ,  0.00051071,  0.00062781,  0.106232  ]),
      'b1Tot': array([ 0.314521,  0.618361])}
-    >>> univ.gc 
+
+
+
+.. code:: 
+    
+    >>> univ0.gc
+
+
+
+
+.. parsed-literal::
+
     {}
+
+
+
+.. code:: 
+    
+    >>> univ0.gcUnc
+
+
+
+
+.. parsed-literal::
+
+    {}
+
+
 
 Group constants and their associated uncertainties can be obtained using
 the :py:meth:`~serpentTools.objects.containers.HomogUniv.get` method.
 
 .. code:: 
-
+    
     >>> univ0.get('infFiss')
-    array([ 0.00286484,  0.0577559 ])
+
+
+
+
+.. parsed-literal::
+
+    array([ 0.00271604,  0.059773  ])
+
+
+
+.. code:: 
+    
     >>> try:
-    >>>     univ0.get('infS0', uncertainty=True)
+    ...     univ0.get('infS0', uncertainty=True)
     >>> except KeyError as ke:  # no uncertainties here
-    >>>     print(str(ke))
+    ...     print(str(ke))
+
+
+.. parsed-literal::
+
     'Variable infS0 absent from uncertainty dictionary'
+
+Plotting Universe Data
+----------------------
+
+|homogUniv| objects are capable of plotting homogenized data using the
+|homogUnivPlot| method. This method is tuned to plot group constants, such as
+cross sections, for a known group structure. This is reflected in the
+default axis scaling, but can be adjusted on a per case basis. If the
+group structure is not known, then the data is plotted simply against
+bin-index.
+
+.. code:: 
+    
+    >>> univ0.plot('infFiss');
+
+.. image:: Branching_files/Branching_32_1.png
+
+
+.. code:: 
+    
+    >>> univ0.plot(['infFiss', 'b1Tot'], loglog=False, xlabel="Energy Group");
+
+.. image:: Branching_files/Branching_33_0.png
+
+
+The ``ResultsReader``  example 
+has a more thorough example of this |homogUnivPlot|  method, including
+formatting the line labels - :ref:`ex-res-plotUniv`.
 
 Iteration
 ---------
@@ -228,25 +343,29 @@ The branching reader has a
 method that works to yield branch names and their associated
 |branchContainer| objects. This can
 be used to efficiently iterate over all the branches presented in the file.
-
 .. code:: 
-
+    
     >>> for names, branch in r0.iterBranches():
-    >>>    print(names, branch)
-    ('nom', 'nom') <BranchContainer for nom, nom from demo.coe>
-    ('B750', 'nom') <BranchContainer for B750, nom from demo.coe>
-    ('B1000', 'nom') <BranchContainer for B1000, nom from demo.coe>
+    ...     print(names, branch)
+
+
+.. parsed-literal::
+
     ('nom', 'FT1200') <BranchContainer for nom, FT1200 from demo.coe>
-    ('B750', 'FT1200') <BranchContainer for B750, FT1200 from demo.coe>
     ('B1000', 'FT1200') <BranchContainer for B1000, FT1200 from demo.coe>
-    ('nom', 'FT600') <BranchContainer for nom, FT600 from demo.coe>
     ('B750', 'FT600') <BranchContainer for B750, FT600 from demo.coe>
+    ('nom', 'nom') <BranchContainer for nom, nom from demo.coe>
+    ('B750', 'FT1200') <BranchContainer for B750, FT1200 from demo.coe>
     ('B1000', 'FT600') <BranchContainer for B1000, FT600 from demo.coe>
+    ('nom', 'FT600') <BranchContainer for nom, FT600 from demo.coe>
+    ('B1000', 'nom') <BranchContainer for B1000, nom from demo.coe>
+    ('B750', 'nom') <BranchContainer for B750, nom from demo.coe>
+
 
 .. _branching-settings:
 
-Settings
---------
+User Control
+------------
 
 The ``SERPENT``
 `set coefpara <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_coefpara>`_
@@ -278,34 +397,67 @@ stored on the |homogUniv|
 objects. By default, all variables present in the coefficient file are stored.
 
 .. code:: 
-
+    
+    >>> from serpentTools.settings import rc
     >>> rc['branching.floatVariables'] = ['BOR']
     >>> rc['branching.intVariables'] = ['TFU']
     >>> rc['xs.getB1XS'] = False
     >>> rc['xs.variableExtras'] = ['INF_TOT', 'INF_SCATT0']
     >>> r1 = serpentTools.read(branchFile)
-    INFO    : serpentTools: Inferred reader for demo.coe: BranchingReader
-    INFO    : serpentTools: Preparing to read demo.coe
-    INFO    : serpentTools: Done reading branching file
+
+.. code:: 
+    
     >>> b1 = r1.branches['B1000', 'FT600']
+
+.. code:: 
+    
     >>> b1.stateData
+
+
+
+
+.. parsed-literal::
+
     {'BOR': 1000.0,
-     'DATE': '17/10/18',
+     'DATE': '17/12/19',
      'TFU': 600,
-     'TIME': '10:26:48',
+     'TIME': '09:48:54',
      'VERSION': '2.1.29'}
+
+
+
+.. code:: 
+    
     >>> assert isinstance(b1.stateData['BOR'], float)
     >>> assert isinstance(b1.stateData['TFU'], int)
 
 Inspecting the data stored on the homogenized universes reveals only the
 variables explicitly requested are present
 
-.. code:: 
 
+.. code:: 
+    
     >>> univ4 = b1.getUniv(0, 0)
     >>> univ4.infExp
+
+
+
+
+.. parsed-literal::
+
     {'infTot': array([ 0.313338,  0.54515 ])}
+
+
+
+.. code:: 
+    
     >>> univ4.b1Exp
+
+
+
+
+.. parsed-literal::
+
     {}
 
 Conclusion
