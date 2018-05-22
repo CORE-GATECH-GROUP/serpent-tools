@@ -103,7 +103,7 @@ def magicPlotDocDecorator(f):
 
 PLOT_FORMAT_DEFAULTS = {
     'xlabel': None, 'ylabel': None, 'legend': True,
-    'loglog': False, 'logy': False, 'logx': False,
+    'loglog': None, 'logy': None, 'logx': None,
     'ncol': 1, 'title': None}
 
 
@@ -146,7 +146,11 @@ def formatPlot(ax, **kwargs):
     legend = kwargs.get('legend', PLOT_FORMAT_DEFAULTS['legend'])
     title = kwargs.get('title', PLOT_FORMAT_DEFAULTS['title'])
     ncol = kwargs.get('ncol', PLOT_FORMAT_DEFAULTS['ncol'])
-
+    
+    if logx is None:
+        logx = inferAxScale(ax, 'x')
+    if logy is None:
+        logy = inferAxScale(ax, 'y')
     if loglog or logx:
         ax.set_xscale('log')
     if loglog or logy:
@@ -162,6 +166,16 @@ def formatPlot(ax, **kwargs):
 
     return ax
 
+
+def inferAxScale(ax, dim):
+    lims = getattr(ax, 'get_{}lim'.format(dim))()
+    mn = min(lims)
+    mx = max(lims)
+    if not mn:
+        return mx > 100
+    if mn < 0:
+        return mx > 10
+    return abs(mx / mn) > 100
 
 @magicPlotDocDecorator
 def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,

@@ -4,7 +4,7 @@ Custom-built containers for storing data from serpent outputs
 Contents
 --------
 * :py:class:`~serpentTools.objects.containers.HomogUniv`
-* :py:class:`~serpentTools.objects.containers.BranchContainer
+* :py:class:`~serpentTools.objects.containers.BranchContainer`
 * :py:class:`~serpentTools.objects.containers.DetectorBase`
 * :py:class:`~serpentTools.objects.containers.Detector`
 
@@ -13,6 +13,7 @@ from re import compile
 from collections import OrderedDict
 from itertools import product
 
+from six import iteritems
 from matplotlib import pyplot
 from numpy import (array, arange, unique, log, divide, ones_like, hstack,
                    ndarray, zeros_like)
@@ -310,7 +311,7 @@ class HomogUniv(NamedObject):
     
     @magicPlotDocDecorator
     def plot(self, qtys, limitE=True, ax=None, logx=True, logy=True, 
-             loglog=False, sigma=3, xlabel=None, ylabel=None, legend=None,
+             loglog=None, sigma=3, xlabel=None, ylabel=None, legend=None,
              ncol=1, steps=True, labelFmt=None, labels=None):
         """
         Plot
@@ -338,8 +339,14 @@ class HomogUniv(NamedObject):
             If ``True``, plot values as constant within 
             energy bins.
         labelFmt: str or None
-            <update>
-            
+            String to use to format different plot values. Seeks 
+            for the following strings and replaces them with:
+
+                1. ``{k}`` - value plotted
+                1. ``{u}`` - universe name
+                1. ``{i}`` - burnup index
+                1. ``{b}`` - value of burnup in MWd/kgU
+                1. ``{d}`` - value of burnup in days
 
         Returns
         -------
@@ -360,33 +367,33 @@ class HomogUniv(NamedObject):
         macroBins = self.numGroups + 1 if self.numGroups is not None else None
         microBins = (self.numMicroGroups + 1 
                      if self.numMicroGroups is not None else None)
+        labelFmt = labelFmt or "{k}"
         if limitE:
             eneCap = min(self.microGroups.max(), self.groups.max())
         
         if isinstance(labels, str):
             labels = [labels, ]
         if labels is None:
-            labels = [None, ] * len(qtys)
+            labels = [labelFmt, ] * len(qtys)
         else:
             if len(labels) != len(qtys):
                 raise IndexError(
                     "Need equal number of labels for plot quantities. "
                     "Given {} expected: {}".format(len(labels), len(qtys)))
         for key, label in zip(qtys, labels):
-            try:
-                yVals = self.get(key, False)
-            except KeyError:
-                warning("Could not obtain data for {}. Will not plot"
+            valD = self._lookup(key, False)
+            if key not in valD:
+                warning("{} not found on object. Will not plot."
                         .format(key))
                 continue
-            try:
-                _v, yUncs = self.get(key, True)
-            except KeyError:
-                yUncs = zeros_like(yVals)
+            yVals = valD[key]
             if len(yVals.shape) != 1 and 1 not in yVals.shape:
                 warning("Data for {} is not 1D. Will not plot"
                         .format(key))
                 continue
+            uncD = self._lookup(key, True)
+            yUncs = uncD.get(key, zeros_like(yVals))
+
             if 'Flx' in key:
                 onlyXS = False
             yVals = hstack((yVals, yVals[-1]))
@@ -396,7 +403,8 @@ class HomogUniv(NamedObject):
             if limitE:
                 xdata = xdata.copy()
                 xdata[xdata.argmax()] = eneCap
-            ax.errorbar(xdata, yVals, yerr=yUncs, label=label or key, 
+            label = self.__formatLabel(label, key)
+            ax.errorbar(xdata, yVals, yerr=yUncs, label=label, 
                         drawstyle=drawstyle)
 
         if ylabel is None:
@@ -407,7 +415,9 @@ class HomogUniv(NamedObject):
 
         if legend is None:
             legend = len(qtys) > 1
-        formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+        if loglog is not None:
+            logx = logy = loglog
+        formatPlot(ax, logx=logx, logy=logy, ncol=ncol,
                    legend=legend, xlabel=xlabel or "Energy [MeV]",
                    ylabel=ylabel)
         return ax
@@ -419,6 +429,15 @@ class HomogUniv(NamedObject):
         if microBins is not None and nbins == microBins:
             return self.microGroups
         return arange(nbins)
+
+    def __formatLabel(self, label, key):
+        mapping = {
+            "{k}": key, "{u}": self.name, "{i}": self.step,
+            "{b}": self.bu, "{d}": self.day
+            }
+        for lookF, value in iteritems(mapping):
+            label = label.replace(lookF, str(value))
+        return label
 
     def __bool__(self):
         """Return True if data is stored on the object."""
