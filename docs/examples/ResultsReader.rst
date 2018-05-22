@@ -570,63 +570,72 @@ the universe.
     array([  1.00000000e-10,   1.48940000e-04,   1.65250000e-04,
              1.81560000e-04,   1.97870000e-04])
 
-
+.. _ex-res-plotUniv:
 
 Plotting universes
 ------------------
 
-.. code:: 
-    
-    >>> # obtain the energy grid in descending order (high to low energy)
-    >>> xdata = univ3101.groups[1:] 
-    >>> # obtain the inifinite abs. xs
-    >>> ydataInf = univ3101.infExp['infAbs']
-    >>> ydataB1 = univ3101.b1Exp['b1Abs']
+|homogUniv|  objects can plot group constants using their 
+:py:meth:`~serpentTools.objects.containers.HomogUniv.plot`
+method. This method has a range of formatting options, with defaults
+corresponding to plotting macroscopic cross sections. This is manifested
+in the default y axis label, but can be easily adjusted.
 
 .. code:: 
     
-    >>> plt.plot(xdata, ydataInf,'r', label='INF')
-    >>> plt.plot(xdata, ydataB1,'*g', label='B1')
-    >>> plt.legend()
-    >>> plt.xlabel('Energy, MeV'), plt.ylabel('Macroscopic absorption cross section, cm$^{-1}$')  
+    >>> univ3101.plot(['infAbs', 'b1Abs']);
 
-.. parsed-literal::
- 
-    (<matplotlib.text.Text at 0x1e4ca0c8a20>,
-     <matplotlib.text.Text at
-    0x1e4ca334cf8>)
+.. image:: ResultsReader_files/ResultsReader_50_1.png
 
-.. image:: images/ResultsReader_51_1.png
+Macroscopic and microscopic quantities, such as micro-group flux, can be
+plotted on the same figure. 
 
+.. note:: 
 
-.. code:: 
-
-    >>> # obtain the energy grid in descending order (high to low energy)
-    >>> xdata = univ3101.groups[1:] 
-    >>> # obtain the inifinite fiss. xs
-    >>> ydata3101 = univ3101.infExp['infFiss'] # for universe 3101 and index=2
-    >>> ydata3102 = univ3102.infExp['infFiss'] # for universe 3102 and index=4
+    The units and presentation of the
+    micro- and macro-group fluxes are dissimilar, and the units do not agree
+    with that of the assumed group constants. This will adjust the default
+    y-label, as demonstrated below.
 
 .. code:: 
+    
+    >>> univ3101.plot(['infTot', 'infFlx', 'infMicroFlx'], legend='right');
 
-    >>> plt.plot(xdata, ydata3101,'r', label='universe 3101')
-    >>> plt.plot(xdata, ydata3102,'*g', label='universe 3102')
-    >>> plt.legend()
-    >>> plt.xlabel('Energy, MeV'), plt.ylabel('Macroscopic fission cross section, cm$^{-1}$')  
-
+.. image:: ResultsReader_files/ResultsReader_52_1.png
 
 
+For plotting data from multiple universes, passed the returned
+:py:class:`matplotlib.axes.Axes` object, on which the plot was drawn,
+into the plot method for the next
+universe. The ``labelFmt`` argument can be used to differentiate between
+plotted data. The following strings are replaced when creating the
+labels:
 
-.. parsed-literal::
++---------+----------------------------+
+| String  | Replaced value             |
++=========+============================+
+| ``{k}`` | Name of variable plotted   |
++---------+----------------------------+
+| ``{u}`` | Name of this universe      |
++---------+----------------------------+
+| ``{b}`` | Value of burnup in MWd/kgU |
++---------+----------------------------+
+| ``{d}`` | Value of burnup in days    |
++---------+----------------------------+
+| ``{i}`` | Burnup index               |
++---------+----------------------------+
 
-    (<matplotlib.text.Text at 0x1e4ca430ef0>,
-     <matplotlib.text.Text at 0x1e4ca40e9e8>)
 
+These can be used in conjunction with the :math:`\LaTeX`
+`rendering system <https://matplotlib.org/users/usetex.html>`_ .
 
+.. code:: 
+    
+    >>> fmt = r"Universe {u} - $\Sigma_{abs}^\infty$"
+    >>> ax = univ3101.plot('infFiss', labelFmt=fmt)
+    >>> univ3102.plot('infFiss', ax=ax, labelFmt=fmt, legend='above', ncol=2);
 
-
-.. image:: images/ResultsReader_53_1.png
-
+.. image:: ResultsReader_files/ResultsReader_55_0.png
 
 User Defined Settings
 ---------------------
