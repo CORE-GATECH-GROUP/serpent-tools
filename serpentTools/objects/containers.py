@@ -314,10 +314,10 @@ class HomogUniv(NamedObject):
              loglog=None, sigma=3, xlabel=None, ylabel=None, legend=None,
              ncol=1, steps=True, labelFmt=None, labels=None):
         """
-        Plot
+        Plot homogenized data as a function of energy.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
         qtys: str or iterable
             Plot this or these value against energy. 
         limitE: bool
@@ -338,15 +338,7 @@ class HomogUniv(NamedObject):
         steps: bool
             If ``True``, plot values as constant within 
             energy bins.
-        labelFmt: str or None
-            String to use to format different plot values. Seeks 
-            for the following strings and replaces them with:
-
-                1. ``{k}`` - value plotted
-                1. ``{u}`` - universe name
-                1. ``{i}`` - burnup index
-                1. ``{b}`` - value of burnup in MWd/kgU
-                1. ``{d}`` - value of burnup in days
+        {univLabelFmt}
 
         Returns
         -------

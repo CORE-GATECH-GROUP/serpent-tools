@@ -52,6 +52,23 @@ MAT_FMT_DOC = """labelFmt: str or None
     +---------------+-------------------------+
 """
 
+UNIV_FMT_DOC = """labelFmt: str or None
+    formattable string for labeling the individual plots. 
+    
+    +---------+----------------------------+
+    | String  | Replaced value             |
+    +=========+============================+
+    | ``{k}`` | Name of variable plotted   |
+    +---------+----------------------------+
+    | ``{u}`` | Name of this universe      |
+    +---------+----------------------------+
+    | ``{b}`` | Value of burnup in MWd/kgU |
+    +---------+----------------------------+
+    | ``{d}`` | Value of burnup in days    |
+    +---------+----------------------------+
+    | ``{i}`` | Burnup index               |
+    +---------+----------------------------+
+"""
 
 LEGEND_KWARGS = {
         'above': {'bbox_to_anchor': (0., 1.02, 1., 1.02),
@@ -76,7 +93,8 @@ PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
         'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
         'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
         'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP, 'title': TITLE,
-        'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND, 'ncol': NCOL}
+        'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND, 'ncol': NCOL,
+        'univLabelFmt': UNIV_FMT_DOC,}
 """Magic strings that, if found as {x}, will be replaced by the key of x"""
 
 
