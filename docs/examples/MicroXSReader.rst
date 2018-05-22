@@ -374,7 +374,6 @@ uncertainties
 
 .. code:: 
     
-    >>> mdxFile = 'ref_mdx0.m'
     >>> mdx = serpentTools.read(mdxFile)
 
 .. code:: 
