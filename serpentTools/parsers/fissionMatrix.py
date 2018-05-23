@@ -4,9 +4,11 @@ import re
 
 import matplotlib.pyplot as plt
 import numpy as np
+
 from serpentTools.messages import warning, error
 from serpentTools.objects.readers import BaseReader
 from serpentTools.plot import cartMeshPlot, formatPlot
+from serpentTools.plot import plot as stPlot
 from serpentTools.utils import str2vec
 
 # Regular Expressions
@@ -15,24 +17,33 @@ fMVal = r'fmtx_t\s+\(\s*(\d+),\s*(\d+)\)\s+=\s+([\d\+\.E-]+)\s;\s ' \
 dimsEx = r'fmtx_t\s+=\s+zeros\((\d+),(\d+)\)'
 
 
-def signCheck(lista, filePath):
+def limCheck(lista, low, high, messaggio):
     """
-    Checks the presence of negative values in the Fission Matrix
+    Function to check range of variable lista
 
     Parameters
     ----------
-    lista: np.array
-        Data vector
-    filePath: str
-        File Path
+    lista: int, float, list, or np.array
+        list to be bounded
+    low: float
+        lower limit
+    high: float
+        top limit
+
     Raises
     -------
-    ValueError:
-        If negative values in the array
+    TypeError:
+        When lista does not belong to the categories above
     """
-    if lista.min() < 0:
-        raise ValueError("Negative Values in Fission Matrix {}".format(
-            filePath))
+    if isinstance(lista, int) or isinstance(lista, float):
+        if lista < low or lista > high:
+            raise ValueError(messaggio)
+    elif isinstance(lista, list) or isinstance(lista, np.ndarray):
+        for x in lista:
+            if x < low or x > high:
+                raise ValueError(messaggio)
+    else:
+        raise TypeError('The input must be integer, float, list or array')
 
 
 def dimCheck(dims):
@@ -112,6 +123,7 @@ class FissionMatrixReader(BaseReader):
             Negative fission matrix entries
 
         """
+        mex = "Negative Values in Fission Matrix {}".format(self.filePath)
         dims = self.metaFind(dimsEx)
         dimCheck(dims)
         FissMat = np.zeros((int(dims[0]), int(dims[1])))
@@ -121,7 +133,7 @@ class FissionMatrixReader(BaseReader):
                 m = re.match(fMVal, line)
                 if m is not None:
                     lista = str2vec(m.groups())
-                    signCheck(lista, self.filePath)
+                    limCheck(lista, 0, 1e+32, mex)
                     FissMat[int(lista[0]) - 1, int(lista[1]) - 1] = lista[2]
                     FissMatUnc[int(lista[0]) - 1, int(lista[1]) - 1] = lista[5]
         self.fMat = FissMat
@@ -179,6 +191,8 @@ class FissionMatrixReader(BaseReader):
         xticks = range(0, v[0])
         ax = cartMeshPlot(A, xticks, xticks[::-1])
         formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel, cmap=cmap)
+        plt.xticks([])
+        plt.yticks([])
 
     def fMatEig(self):
         """
@@ -213,13 +227,13 @@ class FissionMatrixReader(BaseReader):
 
     def eigVecPlot(self, eigNum=1, xdata=None, ax=None, linewidth=2, color='b',
                    title='Neutron fission source', xlabel=None, ylabel=None,
-                   grid=False):
+                   grid=True):
         """
         Plots the spatial distribution of the eigNum-th mode
 
         Parameters
         ----------
-        eigNum: int
+        eigNum: int or list
             Mode number (eigNum>0)
         xdata: np.array
             x axis data
@@ -236,7 +250,7 @@ class FissionMatrixReader(BaseReader):
         ylabel: str
             y-axis label
         grid: bool
-            Grid (True), no Grid (False)
+            Grid (True), Not Grid (False)
 
         Returns
         -------
@@ -246,27 +260,38 @@ class FissionMatrixReader(BaseReader):
         Raises
         -------
         ValueError
-            eigNum is not consistent with total number of eigenvectors
+            when eigNum is not consistent with the number of eigenvectors
+        TypeError
+            when eigNum is neither an integer, nor a list
 
         """
         lunghezza = len(self.domEigVec)
-        if eigNum < 1 or eigNum > lunghezza or isinstance(eigNum, int) is \
-                False:
-            raise ValueError('The number must be a positive integer between 1 '
-                             'and {}'.format(lunghezza))
-        # Plot
+        mex = 'The mode-number must be in the range 1-%s' % lunghezza
         if xdata is None:
             xdata = range(0, len(self.domEigVec))
+        # Check data type and consistency
+        if isinstance(eigNum, int):
+            limCheck(eigNum, 1, lunghezza, mex)
+            ydata = self.eigVecMat[:, eigNum - 1]
+            labels = None
+        elif isinstance(eigNum, list):
+            limCheck(eigNum, 1, lunghezza, mex)
+            ydata = self.eigVecMat[:, np.add(eigNum, -1)]
+            labels = []
+            for ii in range(0, len(eigNum)):
+                labels.append('Mode %d' % (eigNum[ii]))
+        else:
+            raise TypeError('The input must be integer or a list')
+        # Plot
         plt.figure()
-        ax = ax or plt.axes()
-        ax.plot(xdata, self.eigVecMat[:, eigNum - 1], color,
-                linewidth=linewidth)
+        ax = stPlot(xdata, ydata, labels=labels)
         ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel)
         plt.grid(grid)
+        ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
         return ax
 
     def eigValPlot(self, ax=None, color='ro', title='Fission Matrix Spectrum',
-                   xlabel=None, ylabel=None, grid=True):
+                   xlabel=None, ylabel=None, cmap=None, grid=True):
         """
         The function plots the fission matrix spectrum on the Argand-Gauss
         plain.
@@ -283,6 +308,8 @@ class FissionMatrixReader(BaseReader):
             x-axis label
         ylabel: str
             y-axis label
+        cmap: str
+            Color map
         grid: bool
             Grid (True), no Grid (False)
 
@@ -294,6 +321,7 @@ class FissionMatrixReader(BaseReader):
         plt.figure()
         ax = ax or plt.axes()
         ax.plot(self.eigValVec.real, self.eigValVec.imag, color)
-        ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel)
+        ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel,
+                        cmap=cmap)
         plt.grid(grid)
         return ax
