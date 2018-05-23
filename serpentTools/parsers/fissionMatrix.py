@@ -32,18 +32,18 @@ def limCheck(lista, low, high, messaggio):
 
     Raises
     -------
-    TypeError:
-        When lista does not belong to the categories above
+    ValueError:
+        When lista's entries are not in the validity range
     """
-    if isinstance(lista, int) or isinstance(lista, float):
-        if lista < low or lista > high:
+    if isinstance(lista, (int, float)):
+        if not (low < lista < high):
             raise ValueError(messaggio)
-    elif isinstance(lista, list) or isinstance(lista, np.ndarray):
-        for x in lista:
-            if x < low or x > high:
-                raise ValueError(messaggio)
-    else:
-        raise TypeError('The input must be integer, float, list or array')
+        return
+    lista = np.array(lista)
+    lowBound = lista < low
+    highBound = lista > high
+    if lowBound.any() or highBound.any():
+        raise ValueError(messaggio)
 
 
 def dimCheck(dims):
@@ -123,7 +123,6 @@ class FissionMatrixReader(BaseReader):
             Negative fission matrix entries
 
         """
-        mex = "Negative Values in Fission Matrix {}".format(self.filePath)
         dims = self.metaFind(dimsEx)
         dimCheck(dims)
         FissMat = np.zeros((int(dims[0]), int(dims[1])))
@@ -133,12 +132,16 @@ class FissionMatrixReader(BaseReader):
                 m = re.match(fMVal, line)
                 if m is not None:
                     lista = str2vec(m.groups())
-                    limCheck(lista, 0, 1e+32, mex)
                     FissMat[int(lista[0]) - 1, int(lista[1]) - 1] = lista[2]
                     FissMatUnc[int(lista[0]) - 1, int(lista[1]) - 1] = lista[5]
         self.fMat = FissMat
         self.fMatU = FissMatUnc
         return self.fMat, self.fMatU
+
+    def _postcheck(self):
+        mex = "Negative Values in Fission Matrix {}".format(self.filePath)
+        limCheck(self.fMat, 0, np.Inf, mex)
+        limCheck(self.fMatU, 0, np.Inf, mex)
 
     def metaFind(self, regEx):
         with open(self.filePath) as fp:
@@ -148,7 +151,8 @@ class FissionMatrixReader(BaseReader):
                     metaList = str2vec(metaString.groups())
                     return metaList
 
-    def fMatPlot(self, title=None, xlabel=None, ylabel=None, cmap=None):
+    def fMatPlot(self, ax=None, title=None, xlabel=None, ylabel=None, cmap=None,
+                 logScale=False, cbarLabel=None):
         """
         Plots the fission matrix sparsity pattern
 
@@ -162,11 +166,17 @@ class FissionMatrixReader(BaseReader):
             y-axis label
         cmap: str
             Color map
+        logScale: bool
+            Log-scale on, True; Log-scale off, False
+        cbarLabel: None or str
+            Label to apply to colorbar
 
         """
-        self._matPlot(self.fMat, title, xlabel, ylabel, cmap)
+        self._matPlot(self.fMat, ax, title, xlabel, ylabel, cmap, logScale,
+                      cbarLabel)
 
-    def fMatUPlot(self, title=None, xlabel=None, ylabel=None, cmap=None):
+    def fMatUPlot(self, ax=None, title=None, xlabel=None, ylabel=None, cmap=None,
+                  logScale=False, cbarLabel=None):
         """
         Plots sparsity pattern of the uncertainty matrix associated to
         fission matrix entries
@@ -181,15 +191,21 @@ class FissionMatrixReader(BaseReader):
             y-axis label
         cmap: str
             Color map
+        logScale: bool
+            Log-scale on, True; Log-scale off, False
+        cbarLabel: None or str
+            Label to apply to colorbar
 
         """
-        self._matPlot(self.fMatU, title, xlabel, ylabel, cmap)
+        self._matPlot(self.fMatU, ax, title, xlabel, ylabel, cmap, logScale,
+                      cbarLabel)
 
-    def _matPlot(self, A, title=None, xlabel=None, ylabel=None, cmap=None):
-        plt.figure()
+    def _matPlot(self, A, ax=None, title=None, xlabel=None, ylabel=None, cmap=None,
+                 logScale=False, cbarLabel=None):
         v = A.shape
         xticks = range(0, v[0])
-        ax = cartMeshPlot(A, xticks, xticks[::-1])
+        ax = cartMeshPlot(A, xticks, xticks[::-1], ax=ax, logScale=logScale,
+                          cbarLabel=cbarLabel)
         formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel, cmap=cmap)
         plt.xticks([])
         plt.yticks([])
@@ -225,7 +241,7 @@ class FissionMatrixReader(BaseReader):
             error('The Dominant Eigenvector is not Positive')
         return w
 
-    def eigVecPlot(self, eigNum=1, xdata=None, ax=None, linewidth=2, color='b',
+    def eigVecPlot(self, eigNum=1, xdata=None, ax=None,
                    title='Neutron fission source', xlabel=None, ylabel=None,
                    grid=True):
         """
@@ -233,14 +249,10 @@ class FissionMatrixReader(BaseReader):
 
         Parameters
         ----------
-        eigNum: int or list
+        eigNum: list
             Mode number (eigNum>0)
         xdata: np.array
             x axis data
-        linewidth: float
-            Line width
-        color: str
-            Line-style
         ax: object
             Axis object
         title: str
@@ -261,33 +273,21 @@ class FissionMatrixReader(BaseReader):
         -------
         ValueError
             when eigNum is not consistent with the number of eigenvectors
-        TypeError
-            when eigNum is neither an integer, nor a list
 
         """
+        # Check and initialization
         lunghezza = len(self.domEigVec)
         mex = 'The mode-number must be in the range 1-%s' % lunghezza
+        limCheck(eigNum, 1, lunghezza, mex)
         if xdata is None:
             xdata = range(0, len(self.domEigVec))
-        # Check data type and consistency
-        if isinstance(eigNum, int):
-            limCheck(eigNum, 1, lunghezza, mex)
-            ydata = self.eigVecMat[:, eigNum - 1]
-            labels = None
-        elif isinstance(eigNum, list):
-            limCheck(eigNum, 1, lunghezza, mex)
-            ydata = self.eigVecMat[:, np.add(eigNum, -1)]
-            labels = []
-            for ii in range(0, len(eigNum)):
-                labels.append('Mode %d' % (eigNum[ii]))
-        else:
-            raise TypeError('The input must be integer or a list')
+        # Check data type and assigns variables
+        ydata = self.eigVecMat[:, np.add(eigNum, -1)]
+        labels = ['Mode %d' % (eigNum[ii]) for ii in range(0, len(eigNum))]
         # Plot
-        plt.figure()
-        ax = stPlot(xdata, ydata, labels=labels)
-        ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel)
-        plt.grid(grid)
-        ax.legend(bbox_to_anchor=(1.02, 1), loc="upper left")
+        ax = stPlot(xdata, ydata, ax=ax, labels=labels)
+        ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel,
+                        legend='right', grid=grid)
         return ax
 
     def eigValPlot(self, ax=None, color='ro', title='Fission Matrix Spectrum',
@@ -308,8 +308,6 @@ class FissionMatrixReader(BaseReader):
             x-axis label
         ylabel: str
             y-axis label
-        cmap: str
-            Color map
         grid: bool
             Grid (True), no Grid (False)
 
@@ -318,10 +316,8 @@ class FissionMatrixReader(BaseReader):
         ax: object
             Axis object
         """
-        plt.figure()
         ax = ax or plt.axes()
         ax.plot(self.eigValVec.real, self.eigValVec.imag, color)
         ax = formatPlot(ax, title=title, xlabel=xlabel, ylabel=ylabel,
-                        cmap=cmap)
-        plt.grid(grid)
+                        cmap=cmap, grid=grid)
         return ax

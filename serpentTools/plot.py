@@ -34,6 +34,7 @@ RETURNS_AX = """{}
     Ax on which the data was plotted.""".format(_MPL_AX)
 CMAP = """cmap: str or None
     Valid Matplotlib colormap to apply to the plot."""
+GRID = """grid: bool \n Grid on if true"""
 KWARGS = """kwargs:\n    Addition keyword arguments to pass to"""
 MAT_FMT_DOC = """labelFmt: str or None
     Formattable string for labeling the individual plots. If not 
@@ -122,7 +123,7 @@ def magicPlotDocDecorator(f):
 PLOT_FORMAT_DEFAULTS = {
     'xlabel': None, 'ylabel': None, 'legend': True,
     'loglog': None, 'logy': None, 'logx': None,
-    'ncol': 1, 'title': None}
+    'ncol': 1, 'title': None, 'grid': True}
 
 
 @magicPlotDocDecorator
@@ -141,6 +142,7 @@ def formatPlot(ax, **kwargs):
     {legend}
     {ncol}
     {title}
+    {grid}
 
     Returns
     -------
@@ -164,6 +166,7 @@ def formatPlot(ax, **kwargs):
     legend = kwargs.get('legend', PLOT_FORMAT_DEFAULTS['legend'])
     title = kwargs.get('title', PLOT_FORMAT_DEFAULTS['title'])
     ncol = kwargs.get('ncol', PLOT_FORMAT_DEFAULTS['ncol'])
+    grid = kwargs.get('grid', PLOT_FORMAT_DEFAULTS['grid'])
     
     if logx is None:
         logx = inferAxScale(ax, 'x')
@@ -181,6 +184,8 @@ def formatPlot(ax, **kwargs):
         ax = placeLegend(ax, legend, ncol) 
     if title:
         ax.set_title(title)
+    if grid:
+        ax.grid(grid)
 
     return ax
 

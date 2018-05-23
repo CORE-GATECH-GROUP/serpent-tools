@@ -117,7 +117,7 @@ class FissionMatrixReaderTester(unittest.TestCase):
             _ = fmtxRead.read()
 
     def test_DimsConsistencyError(self):
-        """ Value error if fission matrix is square"""
+        """ Value error if fission matrix is not square"""
         filePath = os.path.join(TEST_ROOT, 'refrect_fmtx0.m')
         fmtxRead = fm(filePath)
         with self.assertRaises(ValueError):
@@ -136,7 +136,10 @@ class FissionMatrixReaderTester(unittest.TestCase):
             _ = self.reader.eigVecPlot(78)
         with self.assertRaises(ValueError):
             _ = self.reader.eigVecPlot(-2)
-        # New tests to be added for TypeError
+        with self.assertRaises(ValueError):
+            _ = self.reader.eigVecPlot([1, 78])
+        with self.assertRaises(ValueError):
+            _ = self.reader.eigVecPlot([1, -2])
 
 
 if __name__ == '__main__':
