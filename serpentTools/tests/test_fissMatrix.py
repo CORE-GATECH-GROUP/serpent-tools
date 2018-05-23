@@ -136,6 +136,7 @@ class FissionMatrixReaderTester(unittest.TestCase):
             _ = self.reader.eigVecPlot(78)
         with self.assertRaises(ValueError):
             _ = self.reader.eigVecPlot(-2)
+        # New tests to be added for TypeError
 
 
 if __name__ == '__main__':
