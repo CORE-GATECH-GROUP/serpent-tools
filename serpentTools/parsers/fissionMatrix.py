@@ -123,6 +123,7 @@ class FissionMatrixReader(BaseReader):
             Negative fission matrix entries
 
         """
+        mex = "Negative Values in Fission Matrix {}".format(self.filePath)
         dims = self.metaFind(dimsEx)
         dimCheck(dims)
         FissMat = np.zeros((int(dims[0]), int(dims[1])))
@@ -308,6 +309,8 @@ class FissionMatrixReader(BaseReader):
             x-axis label
         ylabel: str
             y-axis label
+        cmap: str
+            Color map
         grid: bool
             Grid (True), no Grid (False)
 
