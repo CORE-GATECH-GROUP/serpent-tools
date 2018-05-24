@@ -2,7 +2,8 @@
 import os
 import unittest
 
-import numpy
+from numpy import array
+from numpy.testing import assert_equal
 
 import six
 
@@ -47,10 +48,10 @@ class DepletionTester(_DepletionTestHelper):
         """Test the metadata storage for the reader."""
         expectedMetadata = {
             'zai':
-                ['621490', '541350', '922350', '942390', '50100', '666', '0'],
+                [621490, 541350, 922350, 942390, 50100, 666, 0],
             'names':
                 ['Sm149', 'Xe135', 'U235', 'Pu239', 'B10', 'lost', 'total'],
-            'burnup': [0.00000E+00, 1.93360E-02, 3.86721E-02, 1.16016E-01,
+            'bu': [0.00000E+00, 1.93360E-02, 3.86721E-02, 1.16016E-01,
                        1.93360E-01, 2.90041E-01, 3.86721E-01, 6.76762E-01,
                        9.66802E-01, 1.45020E+00, 1.93360E+00, 2.90041E+00,
                        3.86721E+00, 4.83401E+00],
@@ -63,8 +64,7 @@ class DepletionTester(_DepletionTestHelper):
         actualKeys = set(self.reader.metadata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
         for key, expectedValue in six.iteritems(expectedMetadata):
-            numpy.testing.assert_equal(self.reader.metadata[key],
-                                       expectedValue)
+            assert_equal(self.reader.metadata[key], expectedValue)
 
     def test_ReadMaterials(self):
         """Verify the reader stored the correct materials."""
@@ -85,7 +85,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
     def test_materials(self):
         """Verify the materials are read in properly."""
         self.assertIn('fuel', self.reader.materials)
-        expectedAdens = numpy.array([
+        expectedAdens = array([
             [0.00000E+00, 2.44791E-10, 1.07741E-09, 7.54422E-09, 1.54518E-08,
              2.45253E-08, 3.05523E-08, 3.98843E-08, 4.28827E-08, 4.37783E-08,
              4.46073E-08, 4.58472E-08, 4.73590E-08, 4.84031E-08],
@@ -108,7 +108,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
              6.88394E-02, 6.88415E-02, 6.88476E-02, 6.88535E-02, 6.88632E-02,
              6.88729E-02, 6.88917E-02, 6.89087E-02, 6.89291E-02],
         ])
-        expectedIngTox = numpy.array([
+        expectedIngTox = array([
             [0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00,
              0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00,
              0.00000E+00, 0.00000E+00, 0.00000E+00, 0.00000E+00],
@@ -131,29 +131,29 @@ class DepletedMaterialTester(_DepletionTestHelper):
              1.49595E+09, 1.66322E+09, 1.80206E+09, 1.79453E+09, 1.79100E+09,
              1.80188E+09, 1.75346E+09, 1.60021E+09, 1.89771E+09],
         ])
-        self.assertListEqual(self.material.zai,
-                             self.reader.metadata['zai'])
-        numpy.testing.assert_equal(self.material.adens, expectedAdens)
-        numpy.testing.assert_equal(self.material['ingTox'], expectedIngTox)
+        assert_equal(self.material.zai,
+                           self.reader.metadata['zai'])
+        assert_equal(self.material.adens, expectedAdens)
+        assert_equal(self.material['ingTox'], expectedIngTox)
 
     def test_getXY_burnup_full(self):
         """
         Verify the material can produce the full burnup vector through getXY.
         """
         actual = self.material.getValues('days', 'burnup', )
-        numpy.testing.assert_equal(actual, self.fuelBU)
+        assert_equal(actual, self.fuelBU)
 
     def test_getXY_burnup_slice(self):
         """Verify depletedMaterial getXY correctly slices a vector."""
         actual = self.material.getValues('days', 'burnup', self.requestedDays)
         expected = [0.0E0, 1.90317E-2, 3.60163E-2, 1.74880E-1, 3.45353E-01,
                     8.49693E-01, 1.66071E0]
-        numpy.testing.assert_equal(actual, expected)
+        assert_equal(actual, expected)
 
     def test_getXY_adens(self):
         """Verify depletedMaterial getXY can return a requested subsection."""
         names = ['Xe135', 'U235', 'lost']
-        expected = numpy.array([
+        expected = array([
             [0.00000E+00, 3.92719E-09, 5.62744E-09, 6.14629E-09, 6.14402E-09,
              6.10821E-09, 6.18320E-09],
             [5.58287E-04, 5.57764E-04, 5.57298E-04, 5.53500E-04, 5.48871E-04,
@@ -163,7 +163,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
         ], float)
         actual = self.material.getValues('days', 'adens', names=names,
                                          timePoints=self.requestedDays)
-        numpy.testing.assert_allclose(actual, expected, rtol=1E-4)
+        assert_equal(actual, expected)
 
     def test_getXY_raisesError_badTime(self):
         """Verify that a ValueError is raised for non-present requested days."""

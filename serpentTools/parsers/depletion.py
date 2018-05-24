@@ -5,6 +5,7 @@ from numpy import array
 from matplotlib import pyplot
 from six import iteritems
 
+from serpentTools.utils import convertVariableName, str2vec
 from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
@@ -12,6 +13,9 @@ from serpentTools.objects.materials import DepletedMaterial
 
 from serpentTools.messages import (warning, info, debug, error,
                                    SerpentToolsException)
+
+
+METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 
 
 class DepPlotMixin(object):
@@ -122,6 +126,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
     __doc__ = __doc__.format(attrs=docAttrs)
 
+
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
         self._matPatterns = self._makeMaterialRegexs()
@@ -162,20 +167,22 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                 self.materials[mKey].days = self.metadata['days']
 
     def _addMetadata(self, chunk):
-        options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
-                   'BU': 'burnup'}
-        for varName, metadataKey in options.items():
-            if varName in chunk[0]:
-                if varName in ['ZAI', 'NAMES']:
-                    values = [line.strip() for line in chunk[1:]]
-                    if varName == 'NAMES':
-                        values = [item.split()[0][1:] for item in values]
+        for varName in METADATA_KEYS:
+            if varName not in chunk[0]:
+                continue
+            if varName in ['ZAI', 'NAMES']:
+                cleaned = [line.strip() for line in chunk[1:]]
+                if varName == 'NAMES':
+                    values = [item[1:item.find(" ")] for item in cleaned]
                 else:
-                    line = self._cleanSingleLine(chunk)
-                    values = array([float(item)
-                                   for item in line.split()])
-                self.metadata[metadataKey] = values
-                return
+                    values = str2vec(cleaned, int)
+            else:
+                line = self._cleanSingleLine(chunk)
+                values = str2vec(line)
+            self.metadata[convertVariableName(varName)] = values
+            return
+        warning("Unsure about how to process metadata chunk {}"
+                .format(chunk[0]))
 
     @staticmethod
     def _cleanSingleLine(chunk):
