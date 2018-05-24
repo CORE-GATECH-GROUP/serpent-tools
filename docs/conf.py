@@ -19,6 +19,10 @@
 #
 import os
 import sys
+
+sys.path.append(os.path.abspath('.'))
+from _version import get_versions
+
 from unittest.mock import MagicMock
 
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
@@ -51,11 +55,10 @@ master_doc = 'index'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-version = '0.5.0'
-release = '0.5.0'
-# Comment the following lines for version releases
-#release += '.dev'
+release = get_versions()['version']
+version = release[:release.find('+')]
 
+del get_versions
 
 # General information about the project.
 project = 'serpentTools'
