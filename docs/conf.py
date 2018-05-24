@@ -20,7 +20,7 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath('.'))
+sys.path.append(os.path.abspath('../serpentTools/'))
 from _version import get_versions
 
 from unittest.mock import MagicMock
