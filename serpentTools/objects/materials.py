@@ -269,8 +269,11 @@ class DepletedMaterial(DepletedMaterialBase):
             If given, select the time points according to those
             specified here. Otherwise, select all points
         names: str or list or None
-            If given, return y values corresponding to these isotope
-            names. Otherwise, return values for all isotopes.
+            If given, plot  values corresponding to these isotope
+            names. Otherwise, plot values for all isotopes.
+        zai: int or list or None
+            If given, plot values corresponding to these 
+            isope ``ZZAAAI`` values. Otherwise, plot for all isotopes
         {ax}
         {legend}
         {xlabel} Otherwise, use ``xUnits``
@@ -298,15 +301,17 @@ class DepletedMaterial(DepletedMaterialBase):
         ------
         KeyError
             If x axis units are not ``'days'`` nor ``'burnup'``
+        TypeError
+            If both ``names`` and ``zai`` are given
         """
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))
         xVals = timePoints if timePoints is not None else (
             self.days if xUnits == 'days' else self.burnup)
-        yVals = self.getValues(xUnits, yUnits, xVals, names)
+        yVals = self.getValues(xUnits, yUnits, xVals, names, zai)
         ax = ax or pyplot.axes()
-        labels = self._formatLabel(labelFmt, names)
+        labels = self._formatLabel(labelFmt, names, zai)
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
         
