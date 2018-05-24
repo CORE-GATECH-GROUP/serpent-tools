@@ -6,10 +6,10 @@
 Changelog
 *********
 
-.. _vNext:
+.. _v0.5.0:
 
-Next
-====
+:release-tag:`0.5.0`
+====================
 
 * :pull:`131` Updated variable groups between ``2.1.29`` and ``2.1.30`` - include
   poison cross section, kinetic parameters, six factor formula (2.1.30 exclusive),
@@ -31,20 +31,20 @@ Next
 * :pull:`165` - Add the :py:meth:`serpentTools.objects.containers.HomogUniv.plot` 
   method
    
-.. _vAPI-changes:
+.. _v0.5.0API-changes:
 
 API Changes
 -----------
 
 * :pull:`146` removed ``metadata`` dictionaries on |homogUniv| objects.
 
-.. _vDeprecated:
+.. _v0.5.0Deprecated:
 
 Deprecation
 -----------
 
-* Variable group ``xs-yields`` will be removed. Use ``poisons`` instead
-* Branches of a single name will only be accessible through 
+* Variable group ``xs-yields`` is removed. Use ``poisons`` instead
+* Branches of a single name are only be accessible through 
   ``branches['nom']``, not ``branches[('nom'), ]`` as per :pull:`114`
 
 .. _v0.4.0:

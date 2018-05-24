@@ -54,7 +54,7 @@ master_doc = 'index'
 version = '0.5.0'
 release = '0.5.0'
 # Comment the following lines for version releases
-release += '.dev'
+#release += '.dev'
 
 
 # General information about the project.
