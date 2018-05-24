@@ -175,7 +175,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                 if varName == 'NAMES':
                     values = [item[1:item.find(" ")] for item in cleaned]
                 else:
-                    values = str2vec(cleaned, int)
+                    values = str2vec(cleaned, int, list)
             else:
                 line = self._cleanSingleLine(chunk)
                 values = str2vec(line)

@@ -131,8 +131,8 @@ class DepletedMaterialTester(_DepletionTestHelper):
              1.49595E+09, 1.66322E+09, 1.80206E+09, 1.79453E+09, 1.79100E+09,
              1.80188E+09, 1.75346E+09, 1.60021E+09, 1.89771E+09],
         ])
-        assert_equal(self.material.zai,
-                           self.reader.metadata['zai'])
+        self.assertListEqual(self.material.zai,
+                             self.reader.metadata['zai'])
         assert_equal(self.material.adens, expectedAdens)
         assert_equal(self.material['ingTox'], expectedIngTox)
 
