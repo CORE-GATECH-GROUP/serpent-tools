@@ -51,9 +51,10 @@ if __name__ == '__main__':
     baseGroups = set(baseDict.keys())
     
     with open(OUT_FILE, 'w') as out:
-        for version, varSet in iteritems(variables):
+        for version in sorted(variables, reverse=True):
+            varSet = variables[version]
             out.write(makeVersionHeading(version))
-            for group in varSet:
+            for group in sorted(varSet):
                 out.write(makeVarGroupHeading(version, group))
                 out.write(varsToBullets(varSet[group]))
         out.write(makeVersionHeading('base'))
