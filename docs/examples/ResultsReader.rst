@@ -248,7 +248,7 @@ Basic 1-D plotting capabilities are not yet avaialble in the parser.
 
 
 
-.. image:: images/ResultsReader_24_1.png
+.. image:: ResultsReader_files/ResultsReader_24_1.png
 
 
 Universe Data (|universes|)
