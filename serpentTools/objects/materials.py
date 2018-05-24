@@ -102,7 +102,7 @@ class DepletedMaterialBase(NamedObject):
             rowIDs[indx] = self.names.index(isotope)
         return rowIDs
 
-    def getValues(self, xUnits, yUnits, timePoints=None, names=None):
+    def getValues(self, xUnits, yUnits, timePoints=None, names=None, zai=None):
         """
         Return material variable data at specified time points and isotopes
 
@@ -122,6 +122,10 @@ class DepletedMaterialBase(NamedObject):
         names: str or list or None
             If given, return y values corresponding to these isotope names.
             Otherwise, return values for all isotopes.
+        zai: str or list or None
+            If given, return y values corresponding to isotopes with
+            these ``ZZAAAI`` as would be present in ``self.zai``. Otherwise,
+            return values for all isotopes.
 
         Returns
         -------
@@ -135,21 +139,36 @@ class DepletedMaterialBase(NamedObject):
             isotopes have been requested
         KeyError
             If at least one of the days requested is not present
+        TypeError
+            If both ``names`` and ``zai`` arguments are passed
+        ValueError
+            If one isotope cannot be found
         """
-        if names and self.names is None:
-            raise AttributeError(
-                'Isotope names not stored on DepletedMaterial '
-                '{}.'.format(self.name))
+        if None not in (names, zai):
+            raise TypeError("Cannot pass both names and zai arguments. "
+                            "One must be None.")
+        for attr, arg in zip(('names', 'zai'), (names, zai)):
+            if arg is not None:
+                if getattr(self, attr) is None:
+                    raise AttributeError(
+                        'Isotope {} not stored on DepletedMaterial '
+                        '{}.'.format(attr, self.name))
+                rowIndices = self._getRowIndices(attr, arg)
+                break
+        else:
+            rowIndices = None
         colIndices = self._getColIndices(xUnits, timePoints)
-        rowIndices = self._getRowIndices(names)
         return self._slice(self.data[yUnits], rowIndices, colIndices)
 
     @staticmethod
     def _slice(data, rows, cols):
-        if data.shape[0] == 1 or len(data.shape) == 1 or rows is None:
+        if data.shape[0] == 1 or len(data.shape) == 1:
             yVals = data[cols]
+            return data[cols]
+        yVals = data[:, cols]
+        if rows is None:
             return yVals
-        return data[:, cols][rows]
+        return yVals[rows]
 
     def _checkTimePoints(self, actual, requested):
         """Return a list of all requested points in time not stored."""
@@ -168,16 +187,18 @@ class DepletedMaterialBase(NamedObject):
         colIndices = [indx for indx, xx in enumerate(allX) if xx in timePoints]
         return colIndices
 
-    def _getRowIndices(self, isotopes):
+    def _getRowIndices(self, attr, isotopes):
         """
-        Return the indices in ``names`` that correspond to specific isotopes.
+        Return indices in self.[attr] that correspond to requested isotopes
         """
-        if not isotopes:
-            return numpy.arange(len(self.names), dtype=int)
+        allvals = getattr(self, attr)
         isoList = [isotopes] if isinstance(isotopes, (str, int)) else isotopes
         rowIDs = numpy.empty_like(isoList, dtype=int)
         for indx, isotope in enumerate(isoList):
-            rowIDs[indx] = self.names.index(isotope)
+            if isotope not in allvals:
+                raise ValueError("Could not find isotope {} {}"
+                                 .format(attr, isotope))
+            rowIDs[indx] = allvals.index(isotope)
         return rowIDs
 
     def _formatLabel(self, labelFmt, names):
