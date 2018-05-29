@@ -5,7 +5,7 @@ from numpy import array
 from matplotlib import pyplot
 from six import iteritems
 
-from serpentTools.plot import magicPlotDocDecorator
+from serpentTools.plot import magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
@@ -19,7 +19,7 @@ class DepPlotMixin(object):
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, materials=None,
              ax=None, legend=True, logx=False, logy=False, loglog=False, 
-             labelFmt=None, xlabel=None, ylabel=None, **kwargs):
+             labelFmt=None, xlabel=None, ylabel=None, ncol=1, **kwargs):
         """
         Plot properties for all materials in this file together.
 
@@ -47,6 +47,8 @@ class DepPlotMixin(object):
         {logy}
         {loglog}
         {matLabelFmt}
+        {legend}
+        {ncol}
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
@@ -82,17 +84,14 @@ class DepPlotMixin(object):
                 missing.add(mat)
                 continue
             ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, ax,
-                    legend=False, xlabel=xlabel, ylabel=ylabel, logx=False,
+                    legend=False, xlabel=None, ylabel=None, logx=False,
                     logy=False, loglog=False, labelFmt=labelFmt, **kwargs)
         if missing:
             warning("The following materials were not found in materials "
                     "dictionary: {}".format(', '.join(missing)))
-        if legend:
-            ax.legend()
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        formatPlot(ax, legend=legend, ncol=ncol, logx=logx, logy=logy,
+                   loglog=loglog, xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
+                   ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits])
 
         return ax
 

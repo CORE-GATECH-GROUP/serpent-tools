@@ -291,6 +291,6 @@ class DepletedMaterial(DepletedMaterialBase):
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
                         xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
                         ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits], 
-                        title=title)
+                        title=title, legend=legend)
         return ax
 
