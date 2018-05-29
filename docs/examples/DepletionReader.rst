@@ -232,23 +232,6 @@ or ``zai`` are not given.
 The |depMat| uses this slicing for the built-in |depMatPlot| method, 
 which takes similar slicing arguments to |getValues|.
 
-In addition, the ``labelFmt`` argument can be used to apply a consistent
-label to each unique plot. This argument supports `brace-delimited
-formatting <https://docs.python.org/3/library/stdtypes.html?#str.format>`__,
-and will automatically replace strings like ``{mat}`` with the name of
-the material. The table below contains the special strings and their
-replacements
-
-+-----------+--------------------------------------+
-| String    | Replacement                          |
-+===========+======================================+
-| ``{mat}`` | Name of the material                 |
-+-----------+--------------------------------------+
-| ``{iso}`` | Name of the isotope, e.g. ``'U235'`` |
-+-----------+--------------------------------------+
-| ``{zai}`` | ZZAAAI of the isotope, e.g. 922350   |
-+-----------+--------------------------------------+
-
 By default, the plot method will plot data for all isotopes present,
 leading to very busy plots. The plots can be cleaned up by passing
 isotope names or ``ZZAAAI`` identifiers to the ``names`` or ``zai``
@@ -267,20 +250,33 @@ arguments, respectively.
 
 .. image:: DepletionReader_files/DepletionReader_24_0.png
 
-This type of plotting can also be applied to the |depReader| 
-:py:func:`~serpentTools.parsers.depletion.DepletionReader.plot` method
-, with similar options for formatting and retrieving data. The
+This type of plotting can also be applied to the |depMat|
+level, with similar options for formatting and retrieving data. The
 materials to be plotted can be filtered using the ``materials``
-argument.
-Here, the ``labelFmt`` argument is used to modify the labels
-for each plot.
+argument. The ``labelFmt`` argument can be used to apply a consistent
+label to each unique plot. This argument supports `brace-delimited
+formatting <https://docs.python.org/3/library/stdtypes.html?#str.format>`__,
+and will automatically replace strings like ``{mat}`` with the name of
+the material. The table below contains the special strings and their
+replacements
+
++-------------+----------------------------------------+
+| String      | Replacement                            |
++=============+========================================+
+| ``{mat}``   | Name of the material                   |
++-------------+----------------------------------------+
+| ``{iso}``   | Name of the isotope, e.g. ``'U235'``   |
++-------------+----------------------------------------+
+| ``{zai}``   | ZZAAAI of the isotope, e.g. 922350     |
++-------------+----------------------------------------+
 
 .. code:: 
     
     >>> dep.plot('burnup', 'adens', names=iso, 
     ...          materials=['fuel0', 'total'],
-    ...          labelFmt="{mat}: {iso}", loglog=True,
-    ...          legend='above', ncol=2);
+    ...          labelFmt="{mat}: {iso} // {zai}", loglog=True);
+
+
 
 .. image:: DepletionReader_files/DepletionReader_26_0.png
 
