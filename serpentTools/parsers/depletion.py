@@ -247,3 +247,6 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             )
         debug('  found {} materials'.format(len(self.materials)))
 
+        if 'bu' in self.metadata:
+            self.metadata['burnup'] = self.metadata.pop('bu')
+

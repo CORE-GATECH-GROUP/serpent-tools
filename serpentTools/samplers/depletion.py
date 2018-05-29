@@ -17,7 +17,7 @@ from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
 
 CONSTANT_MDATA = ('names', 'zai')
 """metadata that should be invariant throughout repeated runs"""
-VARIED_MDATA = ('days', 'bu')
+VARIED_MDATA = ('days', 'burnup')
 """metadata that could be varied throughout repeated runs"""
 
 
