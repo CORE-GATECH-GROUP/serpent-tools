@@ -5,8 +5,8 @@ from numpy import array
 from matplotlib import pyplot
 from six import iteritems
 
+from serpentTools.plot import magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS
 from serpentTools.utils import convertVariableName, str2vec
-from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
@@ -21,10 +21,10 @@ METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 class DepPlotMixin(object):
 
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None, 
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None,
              materials=None, ax=None, legend=True, logx=False, logy=False, 
-             loglog=False, labelFmt=None, xlabel=None, ylabel=None, 
-             ncol=1, **kwargs):
+             loglog=False, labelFmt=None, xlabel=None, ylabel=None, ncol=1,
+             **kwargs):
         """
         Plot properties for all materials in this file together.
 
@@ -89,6 +89,7 @@ class DepPlotMixin(object):
             if mat not in self.materials:
                 missing.add(mat)
                 continue
+
             ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, 
                     zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel, 
                     logx=False, logy=False, loglog=False, labelFmt=labelFmt, 
@@ -96,8 +97,10 @@ class DepPlotMixin(object):
         if missing:
             warning("The following materials were not found in materials "
                     "dictionary: {}".format(', '.join(missing)))
-        formatPlot(ax, legend=legend, xlabel=xlabel, ylabel=ylabel,
-                   logx=logx, logy=logy, loglog=loglog, ncol=ncol)
+        formatPlot(ax, legend=legend, ncol=ncol, logx=logx, logy=logy,
+                   loglog=loglog, xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
+                   ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits])
+
         return ax
 
 

@@ -4,13 +4,12 @@ import numpy
 from matplotlib import pyplot
 
 from serpentTools.messages import warning, debug
-from serpentTools.plot import magicPlotDocDecorator, formatPlot
+from serpentTools.plot import magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS
 from serpentTools.objects import NamedObject
 from serpentTools.utils import convertVariableName
 
 
 class DepletedMaterialBase(NamedObject):
-    PLOT_XLABELS = {'days': "Days", 'burnup': r"Burnup $[MWd/kgU]$"}
     docParams = """name: str
         Name of this material
     metadata: dict
@@ -331,7 +330,8 @@ class DepletedMaterial(DepletedMaterialBase):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
         
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        xlabel=xlabel or self.PLOT_XLABELS[xUnits],
-                        ylabel=yUnits, title=title)
+                        xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
+                        ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits], 
+                        title=title, legend=legend)
         return ax
 

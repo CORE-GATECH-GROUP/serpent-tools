@@ -97,6 +97,19 @@ PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
         'univLabelFmt': UNIV_FMT_DOC,}
 """Magic strings that, if found as {x}, will be replaced by the key of x"""
 
+DEPLETION_PLOT_LABELS = {
+    'adens': r'Atom density $[\#/b-cm]$',
+    'mdens': r'Mass density $[g/cm^3]$',
+    'a': r'Activity $[Bq]$',
+    'h': r'Decay heat $[W]$',
+    'sf': r'Spontaneous fission rate $[\#/s]$',
+    'gsrc': r'Photon emission rate $[\#/s]$',
+    'ingTox': 'Ingestion toxicity $[Sv]$',
+    'inhTox': 'Inhalation toxicity $[Sv]$',
+    'days': 'Burnup $[d]$',
+    'burnup': 'Burnup $[MWd/kgU]$',
+    }
+
 
 def magicPlotDocDecorator(f):
     """
