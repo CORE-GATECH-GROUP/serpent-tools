@@ -280,7 +280,7 @@ class DepletedMaterial(DepletedMaterialBase):
             names. Otherwise, plot values for all isotopes.
         zai: int or list or None
             If given, plot values corresponding to these 
-            isope ``ZZAAAI`` values. Otherwise, plot for all isotopes
+            isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
         {ax}
         {legend}
         {xlabel} Otherwise, use ``xUnits``

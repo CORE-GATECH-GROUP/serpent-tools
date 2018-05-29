@@ -6,7 +6,7 @@ from matplotlib import pyplot
 from six import iteritems
 
 from serpentTools.utils import convertVariableName, str2vec
-from serpentTools.plot import magicPlotDocDecorator
+from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
@@ -21,9 +21,10 @@ METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 class DepPlotMixin(object):
 
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, materials=None,
-             ax=None, legend=True, logx=False, logy=False, loglog=False, 
-             labelFmt=None, xlabel=None, ylabel=None, **kwargs):
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None, 
+             materials=None, ax=None, legend=True, logx=False, logy=False, 
+             loglog=False, labelFmt=None, xlabel=None, ylabel=None, 
+             ncol=1, **kwargs):
         """
         Plot properties for all materials in this file together.
 
@@ -32,25 +33,28 @@ class DepPlotMixin(object):
         xUnits: str
             name of x value to obtain, e.g. ``'days'``, ``'burnup'``
         yUnits: str
-            name of y value to return, e.g. ``'adens'``, ``'burnup'``
+            name of y value to return, e.g. ``'adens'``, ``'ingTox'``
         timePoints: list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
         names: str or list or None
-            If given, return y values corresponding to these isotope
-            names. Otherwise, return values for all isotopes.
+            If given, plot  values corresponding to these isotope
+            names. Otherwise, plot values for all isotopes.
+        zai: int or list or None
+            If given, plot values corresponding to these 
+            isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
         materials: None or list
             Selection of materials from ``self.materials`` to plot.
             If None, plot all materials, potentially including ``tot``
         {ax}
-        legend: bool
-            Automatically add the legend
+        {legend}
         {xlabel} Otherwise, use ``xUnits``
         {ylabel} Otherwise, use ``yUnits``
         {logx}
         {logy}
         {loglog}
         {matLabelFmt}
+        {ncol}
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
@@ -85,19 +89,15 @@ class DepPlotMixin(object):
             if mat not in self.materials:
                 missing.add(mat)
                 continue
-            ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, ax,
-                    legend=False, xlabel=xlabel, ylabel=ylabel, logx=False,
-                    logy=False, loglog=False, labelFmt=labelFmt, **kwargs)
+            ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, 
+                    zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel, 
+                    logx=False, logy=False, loglog=False, labelFmt=labelFmt, 
+                    **kwargs)
         if missing:
             warning("The following materials were not found in materials "
                     "dictionary: {}".format(', '.join(missing)))
-        if legend:
-            ax.legend()
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
-
+        formatPlot(ax, legend=legend, xlabel=xlabel, ylabel=ylabel,
+                   logx=logx, logy=logy, loglog=loglog, ncol=ncol)
         return ax
 
 
