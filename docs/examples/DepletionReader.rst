@@ -248,18 +248,14 @@ replacements
 
 .. code:: 
     
-    >>> fuel.plot('days', 'adens', dayPoints, iso, 
-    ...           ylabel='Atomic Density [#/cc]');
-
-
+    >>> fuel.plot('days', 'adens', dayPoints, iso);
 
 
 .. image:: DepletionReader_files/DepletionReader_22_0.png
 
 .. code:: 
     
-    >>> fuel.plot('burnup', 'ingTox', names='Xe135', logy=True,
-    ...                  labelFmt="{iso}");
+    >>> fuel.plot('burnup', 'ingTox', names='Xe135', logy=True)
 
 .. image:: DepletionReader_files/DepletionReader_23_0.png
 
@@ -272,10 +268,9 @@ argument
 .. code:: 
 
     >>> dep.plot('burnup', 'adens', names=iso, 
-    >>>          materials=['fuel0', 'total'],
-    >>>          labelFmt="{mat}: {iso}", loglog=True);
-
-
+    ...          materials=['fuel0', 'total'],
+    ...          labelFmt="{mat}: {iso}", loglog=True,
+    ...          legend='above', ncol=2);
 
 .. image:: DepletionReader_files/DepletionReader_25_0.png
 
@@ -317,7 +312,7 @@ with ``bglass`` followed by at least one integer.
     >>> rc['depletion.metadataKeys'] = ['BU']
     >>> rc['depletion.materialVariables'] = ['ADENS']
     >>> rc['depletion.materials'] = [r'bglass\d+']
-    >>> 
+
     >>> bgReader = serpentTools.parsers.DepletionReader(depFile)
     >>> bgReader.read()
 
