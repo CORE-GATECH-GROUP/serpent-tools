@@ -201,23 +201,29 @@ class DepletedMaterialBase(NamedObject):
             rowIDs[indx] = allvals.index(isotope)
         return rowIDs
 
-    def _formatLabel(self, labelFmt, names):
-        if isinstance(names, str):
-            names = [names]
-        elif names is None:
-            labels = self.names
+    def _formatLabel(self, labelFmt, names, zai):
+        """
+        Return a list of the formatted labels for a plot.
+
+        Assumes that either names or zai is not None.
+        """
         fmtr = labelFmt if labelFmt else '{iso}'
+        allNames = self.names
+        allZai = self.zai
+        for allList, key, repl in zip(
+                (allNames, allZai), ('names', 'zai'), ('{iso}', '{zai}')):
+            if allList is None and repl in fmtr:
+                warning("Isotope {} not stored on material and requested in "
+                        "labelFmt. Check setting <depletion.metadataKeys>")
+                fmtr = fmtr.replace(rpl, '')
+        iterator = zai if names is None else names
+        lookup = allZai if names is None else allNames
         labels = []
-        if '{zai' in fmtr and self.zai is None:
-            warning('ZAI not set for material {}. Labeling plot with isotope names'
-                    .format(self.name))
-            zaiLookup = self.names
-        else:
-            zaiLookup = self.zai
-        names = names or self.names
-        for name in names:
-            labels.append(fmtr.format(mat=self.name, iso=name,
-                          zai=zaiLookup[self.names.index(name)]))
+        for item in iterator:
+            index = lookup.index(item)
+            iso = allNames[index] if allNames else ''
+            zai = allZai[index] if allZai else ''
+            labels.append(fmtr.format( mat=self.name, iso=iso, zai=zai))
 
         return labels
 
@@ -247,9 +253,10 @@ class DepletedMaterial(DepletedMaterialBase):
         self.data[newName] = numpy.array(scratch)
     
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
-             legend=True, xlabel=None, ylabel=None, logx=False, logy=False,
-             loglog=False, labelFmt=None, ncol=1, title=None, **kwargs):
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None, 
+             ax=None, legend=True, xlabel=None, ylabel=None, logx=False, 
+             logy=False, loglog=False, labelFmt=None, ncol=1, title=None,
+             **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -309,6 +316,14 @@ class DepletedMaterial(DepletedMaterialBase):
                            "and <burnup>, not {}".format(xUnits))
         xVals = timePoints if timePoints is not None else (
             self.days if xUnits == 'days' else self.burnup)
+        if names is None and zai is None:
+            names = self.names
+            zai = self.zai if names is None else None
+        else:
+            if isinstance(names, str):
+                names = [names, ]
+            if isinstance(zai, str):
+                zai = [zai, ]
         yVals = self.getValues(xUnits, yUnits, xVals, names, zai)
         ax = ax or pyplot.axes()
         labels = self._formatLabel(labelFmt, names, zai)
