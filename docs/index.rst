@@ -38,6 +38,7 @@ using ``SERPENT``. If you wish to cite this project, please cite as::
    :maxdepth: 2
    :caption: Contents:
 
+   overview
    changelog
    examples/index
    settingsTop

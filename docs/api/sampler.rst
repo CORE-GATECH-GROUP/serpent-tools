@@ -40,7 +40,7 @@ This sampler extends the |sampler| class for reading depletion files.
 .. autoclass:: serpentTools.samplers.depletion.SampledDepletedMaterial
 
 
-.. _sampler::
+.. _sampler-base:
 
 Base Classes
 ------------
