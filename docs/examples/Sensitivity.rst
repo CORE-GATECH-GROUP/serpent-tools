@@ -6,6 +6,8 @@
 
 .. |plot| replace::  :py:meth:`~serpentTools.parsers.sensitivity.SensitivityReader.plot`
 
+.. _ex-sensitivity:
+
 Sensitivity Reader
 ==================
 

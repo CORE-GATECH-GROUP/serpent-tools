@@ -95,7 +95,9 @@ extlinks = {
     'pull': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
              'pull/%s', '#'), 
     'release-tag': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
-                    'releases/tag/%s', '')
+                    'releases/tag/%s', ''),
+    'ex-notebook': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
+                    'blob/develop/examples/%s.ipynb', '')
 }
 # -- Options for HTML output ----------------------------------------------
 

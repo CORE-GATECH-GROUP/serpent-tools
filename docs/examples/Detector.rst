@@ -1,5 +1,3 @@
-.. _detector-example:
-
 .. |detector| replace:: :py:class:`~serpentTools.objects.containers.Detector`
 
 .. |detectorReader| replace:: :py:class:`~serpentTools.parsers.detector.DetectorReader`
@@ -21,6 +19,8 @@
 .. |mesh| replace:: :py:meth:`~serpentTools.objects.containers.Detector.meshPlot`
 
 .. |spectrum| replace:: :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
+
+.. _detector-example:
 
 ==============
 DetectorReader

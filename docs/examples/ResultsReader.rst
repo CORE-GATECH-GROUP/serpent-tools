@@ -11,6 +11,8 @@
 .. |universes| replace:: :py:attr:`~serpentTools.parsers.results.ResultsReader.universes`
 
 
+.. _ex-results:
+
 ==============
 Results Reader
 ==============
@@ -768,7 +770,7 @@ increased control over the data selected from the output file.
 References
 ----------
 
-1. J. Leppänen, M. Pusa, T. Viitanen, V. Valtavirta, and T.
+1. J. Leppanen, M. Pusa, T. Viitanen, V. Valtavirta, and T.
    Kaltiaisenaho. "The Serpent Monte Carlo code: Status, development and
    applications in 2013." Ann. Nucl. Energy, `82 (2015)
    142-150 <https://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
