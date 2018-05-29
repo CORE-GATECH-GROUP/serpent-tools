@@ -6,6 +6,15 @@
 Changelog
 *********
 
+.. _vNext:
+
+Next
+====
+
+* :pull:`180` - Add capability to pass isotope ``zzaaai`` for 
+  :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues` 
+  and associated plot routines
+
 .. _v0.5.0:
 
 :release-tag:`0.5.0`

@@ -6,6 +6,7 @@ from matplotlib import pyplot
 from six import iteritems
 
 from serpentTools.plot import magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS
+from serpentTools.utils import convertVariableName, str2vec
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.readers import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
@@ -14,12 +15,16 @@ from serpentTools.messages import (warning, info, debug, error,
                                    SerpentToolsException)
 
 
+METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
+
+
 class DepPlotMixin(object):
 
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, materials=None,
-             ax=None, legend=True, logx=False, logy=False, loglog=False, 
-             labelFmt=None, xlabel=None, ylabel=None, ncol=1, **kwargs):
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None,
+             materials=None, ax=None, legend=True, logx=False, logy=False, 
+             loglog=False, labelFmt=None, xlabel=None, ylabel=None, ncol=1,
+             **kwargs):
         """
         Plot properties for all materials in this file together.
 
@@ -28,26 +33,27 @@ class DepPlotMixin(object):
         xUnits: str
             name of x value to obtain, e.g. ``'days'``, ``'burnup'``
         yUnits: str
-            name of y value to return, e.g. ``'adens'``, ``'burnup'``
+            name of y value to return, e.g. ``'adens'``, ``'ingTox'``
         timePoints: list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
         names: str or list or None
-            If given, return y values corresponding to these isotope
-            names. Otherwise, return values for all isotopes.
+            If given, plot  values corresponding to these isotope
+            names. Otherwise, plot values for all isotopes.
+        zai: int or list or None
+            If given, plot values corresponding to these 
+            isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
         materials: None or list
             Selection of materials from ``self.materials`` to plot.
             If None, plot all materials, potentially including ``tot``
         {ax}
-        legend: bool
-            Automatically add the legend
+        {legend}
         {xlabel} Otherwise, use ``xUnits``
         {ylabel} Otherwise, use ``yUnits``
         {logx}
         {logy}
         {loglog}
         {matLabelFmt}
-        {legend}
         {ncol}
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
@@ -83,9 +89,11 @@ class DepPlotMixin(object):
             if mat not in self.materials:
                 missing.add(mat)
                 continue
-            ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, ax,
-                    legend=False, xlabel=None, ylabel=None, logx=False,
-                    logy=False, loglog=False, labelFmt=labelFmt, **kwargs)
+
+            ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, 
+                    zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel, 
+                    logx=False, logy=False, loglog=False, labelFmt=labelFmt, 
+                    **kwargs)
         if missing:
             warning("The following materials were not found in materials "
                     "dictionary: {}".format(', '.join(missing)))
@@ -120,6 +128,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
     __doc__ = __doc__.format(attrs=docAttrs)
+
 
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
@@ -161,20 +170,22 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                 self.materials[mKey].days = self.metadata['days']
 
     def _addMetadata(self, chunk):
-        options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
-                   'BU': 'burnup'}
-        for varName, metadataKey in options.items():
-            if varName in chunk[0]:
-                if varName in ['ZAI', 'NAMES']:
-                    values = [line.strip() for line in chunk[1:]]
-                    if varName == 'NAMES':
-                        values = [item.split()[0][1:] for item in values]
+        for varName in METADATA_KEYS:
+            if varName not in chunk[0]:
+                continue
+            if varName in ['ZAI', 'NAMES']:
+                cleaned = [line.strip() for line in chunk[1:]]
+                if varName == 'NAMES':
+                    values = [item[1:item.find(" ")] for item in cleaned]
                 else:
-                    line = self._cleanSingleLine(chunk)
-                    values = array([float(item)
-                                   for item in line.split()])
-                self.metadata[metadataKey] = values
-                return
+                    values = str2vec(cleaned, int, list)
+            else:
+                line = self._cleanSingleLine(chunk)
+                values = str2vec(line)
+            self.metadata[convertVariableName(varName)] = values
+            return
+        warning("Unsure about how to process metadata chunk {}"
+                .format(chunk[0]))
 
     @staticmethod
     def _cleanSingleLine(chunk):
@@ -238,4 +249,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                     mKey, type(mat))
             )
         debug('  found {} materials'.format(len(self.materials)))
+
+        if 'bu' in self.metadata:
+            self.metadata['burnup'] = self.metadata.pop('bu')
 
