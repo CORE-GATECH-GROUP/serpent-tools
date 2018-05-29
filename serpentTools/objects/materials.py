@@ -102,7 +102,7 @@ class DepletedMaterialBase(NamedObject):
             rowIDs[indx] = self.names.index(isotope)
         return rowIDs
 
-    def getValues(self, xUnits, yUnits, timePoints=None, names=None):
+    def getValues(self, xUnits, yUnits, timePoints=None, names=None, zai=None):
         """
         Return material variable data at specified time points and isotopes
 
@@ -122,6 +122,10 @@ class DepletedMaterialBase(NamedObject):
         names: str or list or None
             If given, return y values corresponding to these isotope names.
             Otherwise, return values for all isotopes.
+        zai: str or list or None
+            If given, return y values corresponding to isotopes with
+            these ``ZZAAAI`` as would be present in ``self.zai``. Otherwise,
+            return values for all isotopes.
 
         Returns
         -------
@@ -135,21 +139,36 @@ class DepletedMaterialBase(NamedObject):
             isotopes have been requested
         KeyError
             If at least one of the days requested is not present
+        TypeError
+            If both ``names`` and ``zai`` arguments are passed
+        ValueError
+            If one isotope cannot be found
         """
-        if names and self.names is None:
-            raise AttributeError(
-                'Isotope names not stored on DepletedMaterial '
-                '{}.'.format(self.name))
+        if None not in (names, zai):
+            raise TypeError("Cannot pass both names and zai arguments. "
+                            "One must be None.")
+        for attr, arg in zip(('names', 'zai'), (names, zai)):
+            if arg is not None:
+                if getattr(self, attr) is None:
+                    raise AttributeError(
+                        'Isotope {} not stored on DepletedMaterial '
+                        '{}.'.format(attr, self.name))
+                rowIndices = self._getRowIndices(attr, arg)
+                break
+        else:
+            rowIndices = None
         colIndices = self._getColIndices(xUnits, timePoints)
-        rowIndices = self._getRowIndices(names)
         return self._slice(self.data[yUnits], rowIndices, colIndices)
 
     @staticmethod
     def _slice(data, rows, cols):
-        if data.shape[0] == 1 or len(data.shape) == 1 or rows is None:
+        if data.shape[0] == 1 or len(data.shape) == 1:
             yVals = data[cols]
+            return data[cols]
+        yVals = data[:, cols]
+        if rows is None:
             return yVals
-        return data[:, cols][rows]
+        return yVals[rows]
 
     def _checkTimePoints(self, actual, requested):
         """Return a list of all requested points in time not stored."""
@@ -168,35 +187,43 @@ class DepletedMaterialBase(NamedObject):
         colIndices = [indx for indx, xx in enumerate(allX) if xx in timePoints]
         return colIndices
 
-    def _getRowIndices(self, isotopes):
+    def _getRowIndices(self, attr, isotopes):
         """
-        Return the indices in ``names`` that correspond to specific isotopes.
+        Return indices in self.[attr] that correspond to requested isotopes
         """
-        if not isotopes:
-            return numpy.arange(len(self.names), dtype=int)
+        allvals = getattr(self, attr)
         isoList = [isotopes] if isinstance(isotopes, (str, int)) else isotopes
         rowIDs = numpy.empty_like(isoList, dtype=int)
         for indx, isotope in enumerate(isoList):
-            rowIDs[indx] = self.names.index(isotope)
+            if isotope not in allvals:
+                raise ValueError("Could not find isotope {} {}"
+                                 .format(attr, isotope))
+            rowIDs[indx] = allvals.index(isotope)
         return rowIDs
 
-    def _formatLabel(self, labelFmt, names):
-        if isinstance(names, str):
-            names = [names]
-        elif names is None:
-            labels = self.names
+    def _formatLabel(self, labelFmt, names, zai):
+        """
+        Return a list of the formatted labels for a plot.
+
+        Assumes that either names or zai is not None.
+        """
         fmtr = labelFmt if labelFmt else '{iso}'
+        allNames = self.names
+        allZai = self.zai
+        for allList, key, repl in zip(
+                (allNames, allZai), ('names', 'zai'), ('{iso}', '{zai}')):
+            if allList is None and repl in fmtr:
+                warning("Isotope {} not stored on material and requested in "
+                        "labelFmt. Check setting <depletion.metadataKeys>")
+                fmtr = fmtr.replace(rpl, '')
+        iterator = zai if names is None else names
+        lookup = allZai if names is None else allNames
         labels = []
-        if '{zai' in fmtr and self.zai is None:
-            warning('ZAI not set for material {}. Labeling plot with isotope names'
-                    .format(self.name))
-            zaiLookup = self.names
-        else:
-            zaiLookup = self.zai
-        names = names or self.names
-        for name in names:
-            labels.append(fmtr.format(mat=self.name, iso=name,
-                          zai=zaiLookup[self.names.index(name)]))
+        for item in iterator:
+            index = lookup.index(item)
+            iso = allNames[index] if allNames else ''
+            zai = allZai[index] if allZai else ''
+            labels.append(fmtr.format( mat=self.name, iso=iso, zai=zai))
 
         return labels
 
@@ -226,9 +253,10 @@ class DepletedMaterial(DepletedMaterialBase):
         self.data[newName] = numpy.array(scratch)
     
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
-             legend=True, xlabel=None, ylabel=None, logx=False, logy=False,
-             loglog=False, labelFmt=None, ncol=1, title=None, **kwargs):
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None, 
+             ax=None, legend=True, xlabel=None, ylabel=None, logx=False, 
+             logy=False, loglog=False, labelFmt=None, ncol=1, title=None,
+             **kwargs):
         """
         Plot some data as a function of time for some or all isotopes.
 
@@ -248,8 +276,11 @@ class DepletedMaterial(DepletedMaterialBase):
             If given, select the time points according to those
             specified here. Otherwise, select all points
         names: str or list or None
-            If given, return y values corresponding to these isotope
-            names. Otherwise, return values for all isotopes.
+            If given, plot  values corresponding to these isotope
+            names. Otherwise, plot values for all isotopes.
+        zai: int or list or None
+            If given, plot values corresponding to these 
+            isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
         {ax}
         {legend}
         {xlabel} Otherwise, use ``xUnits``
@@ -277,15 +308,25 @@ class DepletedMaterial(DepletedMaterialBase):
         ------
         KeyError
             If x axis units are not ``'days'`` nor ``'burnup'``
+        TypeError
+            If both ``names`` and ``zai`` are given
         """
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))
         xVals = timePoints if timePoints is not None else (
             self.days if xUnits == 'days' else self.burnup)
-        yVals = self.getValues(xUnits, yUnits, xVals, names)
+        if names is None and zai is None:
+            names = self.names
+            zai = self.zai if names is None else None
+        else:
+            if isinstance(names, str):
+                names = [names, ]
+            if isinstance(zai, str):
+                zai = [zai, ]
+        yVals = self.getValues(xUnits, yUnits, xVals, names, zai)
         ax = ax or pyplot.axes()
-        labels = self._formatLabel(labelFmt, names)
+        labels = self._formatLabel(labelFmt, names, zai)
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
         
