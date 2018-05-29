@@ -207,24 +207,27 @@ keyword. This will instruct the slicing tool to retrieve data that
 corresponds to values of ``days`` or ``burnup`` in the ``timePoints``
 list. By default the method returns data for every time point on the
 material unless ``timePoints`` is given. Similarly, one can pass a
-string or list of strings as the ``names`` argument and obtain data for
-those specific isotopes. Data for every isotope is given if ``names`` is
-not given.
+string or list of strings as the ``names`` or ``zai`` arguments and obtain data for
+those specific isotopes. Data for every isotope is given if ``names``
+or ``zai`` are not given.
 
 .. code:: 
     
     >>> dayPoints = [0, 5, 10, 30]
     >>> iso = ['Xe135', 'Sm149']
-    >>> vals = fuel.getValues('days', 'a', dayPoints, iso)
-    >>> print(vals.shape)
-    >>> print(vals)
-
+    >>> zai = [541350, 621490]
+    >>> isoVals = fuel.getValues('days', 'a', dayPoints, iso)
+    >>> print(isoVals.shape)
+    >>> zaiVals = fuel.getValues('days', 'a', dayPoints, zai=zai)
+    print(isoVals - zaiVals)
 
 .. parsed-literal::
 
     (2, 4)
     [[0.00000e+00 3.28067e+14 3.24606e+14 3.27144e+14]
      [0.00000e+00 0.00000e+00 0.00000e+00 0.00000e+00]]
+    [[ 0.  0.  0.  0.]
+     [ 0.  0.  0.  0.]]
 
 The |depMat| uses this slicing for the built-in |depMatPlot| method, 
 which takes similar slicing arguments to |getValues|.
@@ -239,45 +242,50 @@ replacements
 +-----------+--------------------------------------+
 | String    | Replacement                          |
 +===========+======================================+
-| ``'mat'`` | Name of the material                 |
+| ``{mat}`` | Name of the material                 |
 +-----------+--------------------------------------+
-| ``'iso'`` | Name of the isotope, e.g. ``'U235'`` |
+| ``{iso}`` | Name of the isotope, e.g. ``'U235'`` |
 +-----------+--------------------------------------+
-| ``'zai'`` | ZZAAAI of the isotope, e.g. 922350   |
+| ``{zai}`` | ZZAAAI of the isotope, e.g. 922350   |
 +-----------+--------------------------------------+
+
+By default, the plot method will plot data for all isotopes present,
+leading to very busy plots. The plots can be cleaned up by passing
+isotope names or ``ZZAAAI`` identifiers to the ``names`` or ``zai``
+arguments, respectively.
 
 .. code:: 
     
-    >>> fuel.plot('days', 'adens', dayPoints, iso, 
-    ...           ylabel='Atomic Density [#/cc]');
+    >>> fuel.plot('burnup', 'ingTox', names='Xe135');
 
 
-
-
-.. image:: DepletionReader_files/DepletionReader_22_0.png
-
-.. code:: 
-    
-    >>> fuel.plot('burnup', 'ingTox', names='Xe135', logy=True,
-    ...                  labelFmt="{iso}");
 
 .. image:: DepletionReader_files/DepletionReader_23_0.png
+
+
+.. code:: 
+    
+    >>> fuel.plot('burnup', 'mdens', zai=[541350, 531350]);
+
+.. image:: DepletionReader_files/DepletionReader_24_0.png
 
 This type of plotting can also be applied to the |depReader| 
 :py:func:`~serpentTools.parsers.depletion.DepletionReader.plot` method
 , with similar options for formatting and retrieving data. The
 materials to be plotted can be filtered using the ``materials``
-argument
+argument.
+Here, the ``labelFmt`` argument is used to modify the labels
+for each plot.
 
 .. code:: 
-
+    
     >>> dep.plot('burnup', 'adens', names=iso, 
-    >>>          materials=['fuel0', 'total'],
-    >>>          labelFmt="{mat}: {iso}", loglog=True);
+    ...          materials=['fuel0', 'total'],
+    ...          labelFmt="{mat}: {iso} // {zai}", loglog=True);
 
 
 
-.. image:: DepletionReader_files/DepletionReader_25_0.png
+.. image:: DepletionReader_files/DepletionReader_26_0.png
 
 
 Limitations
