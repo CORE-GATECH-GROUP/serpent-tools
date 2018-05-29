@@ -136,22 +136,22 @@ class DepletedMaterialTester(_DepletionTestHelper):
         assert_equal(self.material.adens, expectedAdens)
         assert_equal(self.material['ingTox'], expectedIngTox)
 
-    def test_getXY_burnup_full(self):
+    def test_getValues_burnup_full(self):
         """
-        Verify the material can produce the full burnup vector through getXY.
+        Verify the material can produce the full burnup vector through getValues.
         """
         actual = self.material.getValues('days', 'burnup', )
         assert_equal(actual, self.fuelBU)
 
-    def test_getXY_burnup_slice(self):
-        """Verify depletedMaterial getXY correctly slices a vector."""
+    def test_getValues_burnup_slice(self):
+        """Verify depletedMaterial getValues correctly slices a vector."""
         actual = self.material.getValues('days', 'burnup', self.requestedDays)
         expected = [0.0E0, 1.90317E-2, 3.60163E-2, 1.74880E-1, 3.45353E-01,
                     8.49693E-01, 1.66071E0]
         assert_equal(actual, expected)
 
-    def test_getXY_adens(self):
-        """Verify depletedMaterial getXY can return a requested subsection."""
+    def test_getValues_adens(self):
+        """Verify depletedMaterial getValues can return a requested subsection."""
         names = ['Xe135', 'U235', 'lost']
         zai = [541350, 922350, 0]
         expected = array([
@@ -169,7 +169,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
         assert_equal(usingNames, expected, err_msg="Using <names> argument")
         assert_equal(usingNames, expected, err_msg="Using <zai> argument")
 
-    def test_getXY_raisesError_badTime(self):
+    def test_getValues_raisesError_badTime(self):
         """Verify that a ValueError is raised for non-present requested days."""
         badDays = [-1, 0, 50]
         with self.assertRaises(KeyError):
