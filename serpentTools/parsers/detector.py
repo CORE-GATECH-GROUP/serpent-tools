@@ -29,7 +29,8 @@ class DetectorReader(BaseReader):
     """
     docAttrs = """detectors: dict
         Dictionary where key, value pairs correspond to detector names
-        and their respective ``DetectorObject``"""
+        and their respective :class:`~serpentTools.objects.containers.Detector`
+        representations."""
     __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
