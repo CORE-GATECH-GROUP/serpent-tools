@@ -5,10 +5,13 @@ from abc import ABCMeta, abstractmethod
 
 from six import add_metaclass
 
-from serpentTools.settings import rc
-from serpentTools.messages import info, debug, warning
+from numpy import arange, hstack, log, divide
+from matplotlib.pyplot import axes
+
+from serpentTools.messages import debug, warning, SerpentToolsException
 from serpentTools.plot import (
         plot, magicPlotDocDecorator, formatPlot, cartMeshPlot)
+
 
 class NamedObject(object):
     """Class for named objects like materials and detectors."""
@@ -127,12 +130,12 @@ class DetectorBase(NamedObject):
                 'Could not find arguments in index that match the following'
                 ' requested slice keys: {}'.format(', '.join(keys)))
         return slices
-    
+
     @magicPlotDocDecorator
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
-                     ylabel=None, steps=True, logx=True, logy=False, loglog=False, 
-                     sigma=3, labels=None, legend=False, ncol=1, title=None, 
-                     **kwargs):
+                     ylabel=None, steps=True, logx=True, logy=False, 
+                     loglog=False, sigma=3, labels=None, legend=False, ncol=1, 
+                     title=None, **kwargs):
         """
         Quick plot of the detector value as a function of energy.
 
@@ -187,30 +190,32 @@ class DetectorBase(NamedObject):
             for indx in range(slicedTallies.shape[1]):
                 scratch = divide(slicedTallies[:, indx], lethBins)
                 slicedTallies[:, indx] = scratch / scratch.max() 
-        
+
         if steps:
             if 'drawstyle' in kwargs:
                 debug('Defaulting to drawstyle specified in kwargs as {}'
                       .format(kwargs['drawstyle']))
             else:
                 kwargs['drawstyle'] = 'steps-post'
-        
+
         if sigma:
             slicedErrors = sigma * self.slice(fixed, 'errors').copy()
-            slicedErrors = slicedErrors.reshape(slicedTallies.shape) * slicedTallies
+            slicedErrors = slicedErrors.reshape(slicedTallies.shape) 
+            slicedErrors *= slicedTallies
         else:
             slicedErrors = None
-        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, yerr=slicedErrors, **kwargs)     
+        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, 
+                  yerr=slicedErrors, **kwargs)     
         if ylabel is None:
             ylabel = 'Tally data'
             ylabel += ' normalized per unit lethargy' if normalize else ''
             ylabel += ' $\pm${}$\sigma$'.format(sigma) if sigma else ''
-        
+
         ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
                         xlabel=xlabel or "Energy [MeV]", ylabel=ylabel, 
                         legend=legend, title=title)
         return ax
-    
+
     @magicPlotDocDecorator
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
              xlabel=None, ylabel=None, steps=False, labels=None, logx=False, 
@@ -266,33 +271,35 @@ class DetectorBase(NamedObject):
         data = self.slice(fixed, what)
         if len(data.shape) > 2:
             raise SerpentToolsException(
-                'Data must be constrained to 1- or 2-D, not {}'.format(data.shape))
+                'Data must be constrained to 1- or 2-D, not {}'
+                .format(data.shape))
         elif len(data.shape) == 1:
             data = data.reshape(data.size, 1)
 
         if sigma:
             if what != 'errors':
-                yerr = self.slice(fixed, 'errors').reshape(data.shape) * data * sigma
+                yerr = (self.slice(fixed, 'errors').reshape(data.shape)
+                        * data * sigma)
             else:
                 warning(
                     'Will not plot error bars on the error plot. Data to be '
                     'plotted: {}.  Sigma: {}'.format(what, sigma))
                 yerr = None
         else: 
-           yerr = None
+            yerr = None
 
         xdata, autoX = self._getPlotXData(xdim, data)
         xlabel = xlabel or autoX
         ylabel = ylabel or "Tally data" 
-        ax = ax or pyplot.axes()
-        
+        ax = ax or axes()
+
         if steps:
             if 'drawstyle' in kwargs:
                 debug('Defaulting to drawstyle specified in kwargs as {}'
                       .format(kwargs['drawstyle']))
             else:
                 kwargs['drawstyle'] = 'steps-post'
-        ax = plot(xdata, data, ax, labels, yerr,**kwargs)
+        ax = plot(xdata, data, ax, labels, yerr, **kwargs)
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
                         xlabel=xlabel, ylabel=ylabel, legend=legend, 
                         title=title)
@@ -352,7 +359,8 @@ class DetectorBase(NamedObject):
             for qty, name in zip((xdim, ydim), ('x', 'y')):
                 if qty in fixed:
                     raise SerpentToolsException(
-                        'Requested {} dimension {} is one of the axis to be constrained. '
+                        'Requested {} dimension {} is one of the axis to be '
+                        'constrained. '
                         .format(name, qty))
 
         data = self.slice(fixed, what)
@@ -402,5 +410,4 @@ class DetectorBase(NamedObject):
         if qty in self.indexes:
             return self.indexes[qty], qty
         return fallback
-
 
