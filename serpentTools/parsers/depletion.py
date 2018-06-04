@@ -8,7 +8,7 @@ from six import iteritems
 from serpentTools.plot import magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS
 from serpentTools.utils import convertVariableName, str2vec
 from serpentTools.engines import KeywordParser
-from serpentTools.objects.readers import MaterialReader
+from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
 from serpentTools.messages import (warning, info, debug, error,

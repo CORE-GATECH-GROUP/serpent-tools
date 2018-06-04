@@ -121,7 +121,7 @@ def read(filePath, reader='infer'):
 
     Returns
     -------
-    serpentTools.objects.readers.BaseReader
+    serpentTools.objects.base.BaseReader
         Correct subclass corresponding to the file type
 
     Raises

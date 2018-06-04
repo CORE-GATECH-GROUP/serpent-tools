@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib import pyplot
 
 from serpentTools import messages
-from serpentTools.objects import NamedObject
+from serpentTools.objects.base import NamedObject
 from serpentTools.utils import convertVariableName
 from serpentTools.plot import magicPlotDocDecorator, formatPlot 
 
