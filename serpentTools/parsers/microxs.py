@@ -5,7 +5,7 @@ from numpy import array
 
 from serpentTools.engines import KeywordParser
 from serpentTools.utils import splitValsUncs, str2vec
-from serpentTools.objects.readers import BaseReader
+from serpentTools.objects.base import BaseReader
 
 from serpentTools.messages import SerpentToolsException
 

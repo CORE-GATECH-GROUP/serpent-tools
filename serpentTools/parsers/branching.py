@@ -5,7 +5,7 @@ from numpy import array
 
 from serpentTools.utils import splitValsUncs
 from serpentTools.objects.containers import BranchContainer
-from serpentTools.objects.readers import XSReader
+from serpentTools.objects.base import XSReader
 from serpentTools.messages import debug, info, error, warning, willChange
 
 class BranchingReader(XSReader):
