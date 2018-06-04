@@ -61,6 +61,7 @@ class DetectorReader(BaseReader):
                     continue
                 gridName = name[lenRecent:]
                 recentGrids[gridName] = data
+            self.__processDet(recentName, recentGrids)
 
     def __processDet(self, name, grids):
         """Add this detector with it's grid data to the reader."""
