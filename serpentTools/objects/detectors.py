@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from six import iteritems
 from numpy import unique, array
 
 from serpentTools.messages import warning, debug, SerpentToolsException
@@ -89,3 +90,44 @@ class Detector(DetectorBase):
         self.__reshaped = True
         return shape
 
+class CartesianDetector(Detector):
+    pass
+
+
+DET_UNIQUE_GRIDS = {
+    CartesianDetector: {'X', 'Y'}
+}
+
+def detectorFactory(name, dataDict):
+    """
+    Return a proper Detector subclass depending upon the attached grids
+
+    Parameters
+    ----------
+    name: str
+        Name of this specific detector.
+    dataDict: dict
+        Dictionary of detector data. Expects at least ``'tally'``
+
+    Returns
+    -------
+    object:
+        Subclass of :class:`serpentTools.objects.base.DetectorBase`
+        depending on grid data passed
+
+    Raises
+    ------
+    KeyError:
+        If ``'tally'`` is missing from the data dictionary
+    """
+    tallyD = dataDict.pop('tally')
+    for cls, uniqGrids in iteritems(DET_UNIQUE_GRIDS):
+        if any([key in uniqGrids for key in dataDict]):
+            break
+    else:
+        cls = CartesianDetector if 'Z' in dataDict else Detector
+    det  = cls(name)
+    det.addTallyData(tallyD)
+    for gridK, value in iteritems(dataDict):
+        det.grids[gridK] = value
+    return det
