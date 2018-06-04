@@ -65,6 +65,7 @@ Detector/ Tally File
 * Example - notebook: :ex-notebook:`Detector`
 * Example - manual: :ref:`detector-example`
 * Sampler - :class:`serpentTools.samplers.detector.DetectorSampler`
+* Limitations: Unable to read files with non-Cartesian meshes - :issue:`184`
 
 .. _ov-sensitivity:
 

@@ -544,6 +544,14 @@ label each individual plot in the order of the bin index.
 
 .. image:: Detector_files/Detector_47_0.png
 
+.. _ex-det-lims:
+
+Limitations
+-----------
+
+The |detectorReader| is unable to read files with hexagonal or curvilinear detectors.
+This issue is being tracked on GitHub as :issue:`184`.
+
 Conclusion
 ----------
 
