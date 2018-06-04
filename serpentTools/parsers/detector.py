@@ -4,15 +4,10 @@ from six import iteritems
 from numpy import asfortranarray, empty
 
 from serpentTools.engines import KeywordParser
-from serpentTools.objects.containers import Detector
+from serpentTools.objects.detectors import Detector
 from serpentTools.parsers.base import BaseReader
-from serpentTools.messages import error, debug, info
-
-NUM_COLS = 12
-# number of columns/bins in a single detector line
-
-__all__ = ['DetectorReader']
-
+from serpentTools.messages import error, debug, warning
+from serpentTools.settings import rc
 
 class DetectorReader(BaseReader):
     """
@@ -40,6 +35,7 @@ class DetectorReader(BaseReader):
             self._loadAll = True
         else:
             self._loadAll = False
+        self.__numCols = 13 if rc['serpentVersion'][0] == '1' else 12
 
     def iterDets(self):
         for name, detector in iteritems(self.detectors):
@@ -64,7 +60,7 @@ class DetectorReader(BaseReader):
 
     def _addDetector(self, chunk, detName, binType):
         if binType is None:
-            data = empty(shape=(len(chunk), NUM_COLS))
+            data = empty(shape=(len(chunk), self.__numCols))
         else:
             data = empty(shape=(len(chunk), len(chunk[0].split())))
         for indx, line in enumerate(chunk):
