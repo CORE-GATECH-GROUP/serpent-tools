@@ -309,7 +309,7 @@ with ``bglass`` followed by at least one integer.
 
 .. note::
 
-    Creating the ``DepletionReader`` in this manner is functionally
+    Creating the |depReader| in this manner is functionally
     equivalent to ``serpentTools.read(depFile)``
 
 .. code:: 
@@ -319,7 +319,7 @@ with ``bglass`` followed by at least one integer.
     >>> rc['depletion.materialVariables'] = ['ADENS']
     >>> rc['depletion.materials'] = [r'bglass\d+']
 
-    >>> bgReader = serpentTools.parsers.DepletionReader(depFile)
+    >>> bgReader = serpentTools.DepletionReader(depFile)
     >>> bgReader.read()
 
 .. code:: 
