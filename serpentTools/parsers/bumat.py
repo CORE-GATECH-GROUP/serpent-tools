@@ -1,6 +1,6 @@
 """Parser responsible for reading the ``*bumat<n>.m`` files"""
 
-from serpentTools.objects.base import MaterialReader
+from serpentTools.parsers.base import MaterialReader
 
 
 class BumatReader(MaterialReader):

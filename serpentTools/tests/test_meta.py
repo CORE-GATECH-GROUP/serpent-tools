@@ -12,7 +12,7 @@ base classes.
 
 from unittest import TestCase
 
-from serpentTools.objects.base import BaseReader
+from serpentTools.parsers.base import BaseReader
 
 class BadSubclass(BaseReader):
     """Class that does not overwrite abstract methods."""

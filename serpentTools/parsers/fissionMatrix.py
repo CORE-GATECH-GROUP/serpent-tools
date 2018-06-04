@@ -1,6 +1,6 @@
 """Parser responsible for reading the ``*fmtx<n>.m`` files"""
 
-from serpentTools.objects.base import BaseReader
+from serpentTools.parsers.base import BaseReader
 
 
 class FissionMatrixReader(BaseReader):

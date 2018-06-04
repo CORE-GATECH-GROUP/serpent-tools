@@ -10,7 +10,7 @@ from six import iteritems
 from serpentTools.settings import rc
 from serpentTools.messages import (warning, debug, MismatchedContainersError,
                                    error, SamplerError, info)
-from serpentTools.objects.base import BaseReader
+from serpentTools.parsers.base import BaseReader
 
 MISSING_KEY_FLAG = "<missing>"
 

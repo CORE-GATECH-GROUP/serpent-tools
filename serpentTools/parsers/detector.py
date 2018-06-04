@@ -5,7 +5,7 @@ from numpy import asfortranarray, empty
 
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.containers import Detector
-from serpentTools.objects.base import BaseReader
+from serpentTools.parsers.base import BaseReader
 from serpentTools.messages import error, debug, info
 
 NUM_COLS = 12

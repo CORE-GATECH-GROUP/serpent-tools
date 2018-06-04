@@ -12,7 +12,7 @@ from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.utils import convertVariableName, str2vec
-from serpentTools.objects.base import BaseReader
+from serpentTools.parsers.base import BaseReader
 
 
 class SensitivityReader(BaseReader):
