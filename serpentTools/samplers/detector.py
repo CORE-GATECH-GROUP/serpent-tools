@@ -12,7 +12,7 @@ from serpentTools.messages import (MismatchedContainersError, warning,
 from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.objects.containers import DetectorBase
-from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
+from serpentTools.samplers.base import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
 
 class DetectorSampler(Sampler):
     __doc__ = """
