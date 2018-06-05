@@ -1,7 +1,7 @@
 """
 Module for testing the ``serpentTools`` package
 """
-from os import path 
+from os import path
 from unittest import TestCase
 
 from numpy import stack
@@ -42,7 +42,8 @@ def computeMeansErrors(*arrays):
     workMat = stack(arrays)
     return workMat.mean(axis=0), workMat.std(axis=0)
 
-def compareDictOfArrays(expected, actual, fmtMsg=None, rtol=0, atol=0, 
+
+def compareDictOfArrays(expected, actual, fmtMsg=None, rtol=0, atol=0,
                         testCase=None):
     """
     Compare a dictionary of arrays.
@@ -54,8 +55,8 @@ def compareDictOfArrays(expected, actual, fmtMsg=None, rtol=0, atol=0,
     actual: dict
         Dictionary of actual data.
     fmtMsg: str
-        Message to be passed as the error message. Formatted with 
-        ``.format(key=key)``, where ``key`` is the specific key 
+        Message to be passed as the error message. Formatted with
+        ``.format(key=key)``, where ``key`` is the specific key
         where the arrays were too different.
     rtol: float
         Relative tolerance for arrays
@@ -67,7 +68,7 @@ def compareDictOfArrays(expected, actual, fmtMsg=None, rtol=0, atol=0,
     Raises
     ------
     AssertionError:
-        If the keys in both dictionaries differ, or if any 
+        If the keys in both dictionaries differ, or if any
         one array in ``actual`` is too different from it's counterpart
         in ``expected``.
     """
@@ -91,5 +92,5 @@ def compareDictOfArrays(expected, actual, fmtMsg=None, rtol=0, atol=0,
     for key, value in iteritems(expected):
         actualValue = actual[key]
         assert_allclose(value, actualValue, rtol=rtol, atol=atol,
-                err_msg=fmtMsg.format(key=key))
+                        err_msg=fmtMsg.format(key=key))
 
