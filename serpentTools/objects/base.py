@@ -311,7 +311,7 @@ class DetectorBase(NamedObject):
                  cmap=None, logColor=False, xlabel=None, ylabel=None, 
                  logx=False, logy=False, loglog=False, title=None, **kwargs):
         """
-        Plot tally data as a function of two mesh dimensions
+        Plot tally data as a function of two bin types on a cartesian mesh.
 
         Parameters
         ----------
