@@ -39,7 +39,7 @@ DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
 
 
 class Detector(DetectorBase):
-    docAttrs = """bins: numpy.ndarray
+    docAttrs = """bins: :class:`numpy.ndarray`
         Tally data directly from ``SERPENT`` file"""
     __doc__ = """
     Class that stores data from a detector without a spatial mesh.
