@@ -74,12 +74,12 @@ class Detector(DetectorBase):
         debug('Starting to sort tally data...')
         shape = []
         self.indexes = OrderedDict()
-        for index, indexName in enumerate(DET_COLS):
-            if 0 < index < 10:
-                uniqueVals = unique(self.bins[:, index])
-                if len(uniqueVals) > 1:
-                    self.indexes[indexName] = array(uniqueVals, dtype=int) - 1
-                    shape.append(len(uniqueVals))
+        for index in range(1, 10):
+            uniqueVals = unique(self.bins[:, index])
+            if len(uniqueVals) > 1:
+                indexName = self._indexName(index)
+                self.indexes[indexName] = array(uniqueVals, dtype=int) - 1
+                shape.append(len(uniqueVals))
         self.tallies = self.bins[:, 10].reshape(shape)
         self.errors = self.bins[:, 11].reshape(shape)
         if self.bins.shape[1] == 13:
@@ -90,13 +90,61 @@ class Detector(DetectorBase):
         self.__reshaped = True
         return shape
 
+    def _indexName(self, indexPos):
+        """Return the name of this index position"""
+        if hasattr(self, '_INDEX_MAP') and indexPos in self._INDEX_MAP:
+            return self._INDEX_MAP[indexPos]
+        return DET_COLS[indexPos]
+
+
 class CartesianDetector(Detector):
     pass
 
 
+class HexagonalDetector(Detector):
+
+    def __init__(self, name):
+        Detector.__init__(self, name)
+        self.pitch = None
+        self.hexType = None
+    
+    _INDEX_MAP = {
+        8: 'ycord',
+        9: 'xcord',
+    }
+
+
+class CylindricalDetector(Detector):
+
+    _INDEX_MAP = {
+        8: 'phi',
+        9: 'rmesh'
+    }
+
+
+class SphericalDetector(Detector):
+
+    _INDEX_MAP = {
+        7: 'theta',
+        8: 'phi',
+        9: 'rmesh',
+    }
+
+
 DET_UNIQUE_GRIDS = {
-    CartesianDetector: {'X', 'Y'}
+    CartesianDetector: {'X', 'Y'},
+    HexagonalDetector: {"COORD"},
 }
+
+def _getDetectorType(dataDict):
+    if not dataDict:
+        return Detector
+    for cls, uniqGrids in iteritems(DET_UNIQUE_GRIDS):
+        if any([key in uniqGrids for key in dataDict]):
+            return cls
+    if 'R' in dataDict:
+        return CylindricalDetector if 'Z' in dataDict else SphericalDetector
+    return  CartesianDetector if 'Z' in dataDict else Detector
 
 def detectorFactory(name, dataDict):
     """
@@ -121,12 +169,8 @@ def detectorFactory(name, dataDict):
         If ``'tally'`` is missing from the data dictionary
     """
     tallyD = dataDict.pop('tally')
-    for cls, uniqGrids in iteritems(DET_UNIQUE_GRIDS):
-        if any([key in uniqGrids for key in dataDict]):
-            break
-    else:
-        cls = CartesianDetector if 'Z' in dataDict else Detector
-    det  = cls(name)
+    detCls = _getDetectorType(dataDict)
+    det  = detCls(name)
     det.addTallyData(tallyD)
     for gridK, value in iteritems(dataDict):
         det.grids[gridK] = value
