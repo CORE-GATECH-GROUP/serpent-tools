@@ -108,7 +108,7 @@ class SensitivityTester(unittest.TestCase):
           [  2.17649000e-03,   5.30000000e-01]]]]])
          }
         compareDictOfArrays(expected, self.reader.sensitivities, 
-                            'sensitivities')
+                            'Error in sensitivities at {key}', testCase=self)
 
     def test_integratedSensitivities(self):
         """Verify the energy integrated sensitivities are correct."""
