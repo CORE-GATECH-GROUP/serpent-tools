@@ -48,7 +48,8 @@ class DetectorBase(NamedObject):
     scores: None or numpy.array
         Reshaped array of tally scores. SERPENT 1 only
     indexes: None or OrderedDict
-        Collection of unique indexes for each requested bin"""
+        Collection of unique indexes for each requested bin
+    {}""".format(baseParams)
     __doc__ = __doc__.format(params=baseParams, attrs=baseAttrs)
 
     def __init__(self, name):

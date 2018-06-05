@@ -23,11 +23,6 @@ Materials
 
 .. autoclass:: serpentTools.objects.materials.DepletedMaterial
 
-Detectors
----------
-
-.. autoclass:: serpentTools.objects.containers.Detector
-
 Homogenized Universes
 ---------------------
 

@@ -1,10 +1,37 @@
+"""
+Module containing classes for storing detector data.
+
+``SERPENT`` is capable of producing detectors, or tallies from MCNP,
+with a variety of bin structures. These include, but are not limited to,
+material regions, reaction types, energy bins, spatial meshes, and
+universe bins.
+
+The detectors contained in this module are tasked with storing such
+data and proving easy access to the data, as well as the underlying
+bins used to define the detector.
+
+Detectors
+---------
+* :class:`~serpentTools.objects.detectors.Detector`
+* :class:`~serpentTools.objects.detectors.CartesianDetector`
+* :class:`~serpentTools.objects.detectors.HexagonalDetector`
+* :class:`~serpentTools.objects.detectors.CylindricalDetector`
+* :class:`~serpentTools.objects.detectors.SphericalDetector`
+"""
+
 from collections import OrderedDict
 
 from six import iteritems
 from numpy import unique, array
 
+from serpentTools.utils import linkToWiki
 from serpentTools.messages import warning, debug, SerpentToolsException
 from serpentTools.objects.base import DetectorBase
+
+
+__all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
+           'CylindricalDetector', 'SphericalDetector']
+
 
 DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
             'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
@@ -12,8 +39,10 @@ DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
 
 
 class Detector(DetectorBase):
-    """
-    Class that stores detector data from a single detector file
+    docAttrs = """bins: numpy.ndarray
+        Tally data directly from ``SERPENT`` file"""
+    __doc__ = """
+    Class that stores data from a detector without a spatial mesh.
 
     Parameters
     ----------
@@ -21,12 +50,11 @@ class Detector(DetectorBase):
 
     Attributes
     ----------
-    bins: numpy.ndarray
-        Tally data directly from SERPENT file
-    {attrs:s}
-    """
-    __doc__ = __doc__.format(params=DetectorBase.baseParams,
-                             attrs=DetectorBase.baseAttrs)
+    {docAttrs:s}
+    {baseAttrs:s}
+    """.format(params=DetectorBase.baseParams,
+               docAttrs=docAttrs,
+               baseAttrs=DetectorBase.baseAttrs)
 
     def __init__(self, name):
         DetectorBase.__init__(self, name)
@@ -98,16 +126,63 @@ class Detector(DetectorBase):
 
 
 class CartesianDetector(Detector):
+    __doc__ = """
+    Class that stores detector data containing cartesian meshing.
+
+    Parameters
+    ----------
+    {params:s}
+
+    Attributes
+    ----------
+    {docAttrs:s}
+    {baseAttrs:s}
+
+    See Also
+    --------
+    {seeAlso:s}
+    """.format(params=DetectorBase.baseParams, docAttrs=Detector.docAttrs,
+               baseAttrs=DetectorBase.baseAttrs, seeAlso='* ' + linkToWiki(
+                   'Input_syntax_manual#det_dx',
+                   'Setting up a cartesian mesh detector'))
     pass
 
 
 class HexagonalDetector(Detector):
+    docSeeAlso = '* ' + linkToWiki('Input_syntax_manual#det_dh',
+                                   'Setting up a hexagonal detector')
+    docAttrs = """pitch: None or int
+        Mesh size [cm]
+    hexType: None or {2, 3}
+        Type of hexagonal mesh.
+
+            2. Flat face perpendicular to x-axis
+            3. Flat face perpendicular to y-axis"""
+    __doc__ = """
+    Class that stores detecto data containing a hexagonal meshing.
+
+    Parameters
+    ----------
+    {params:s}
+
+    Attributes
+    ----------
+    {docAttrs:s}
+    {detAttrs:s}
+    {baseAttrs:s}
+
+    See Also
+    --------
+    {seeAlso:s}""".format(seeAlso=docSeeAlso, docAttrs=docAttrs,
+                          params=DetectorBase.baseParams,
+                          detAttrs=Detector.docAttrs,
+                          baseAttrs=DetectorBase.baseAttrs)
 
     def __init__(self, name):
         Detector.__init__(self, name)
         self.pitch = None
         self.hexType = None
-    
+
     _INDEX_MAP = {
         8: 'ycord',
         9: 'xcord',
@@ -115,6 +190,25 @@ class HexagonalDetector(Detector):
 
 
 class CylindricalDetector(Detector):
+    docSeeAlso = "* " + linkToWiki('Input_syntax_manual#det_dn',
+                                   'Setting up a curvilinear detector')
+    __doc__ = """
+    Class that stores detector data containing a cylindrical mesh.
+
+    Parameters
+    ----------
+    {params:s}
+
+    Attributes
+    ----------
+    {detAttrs:s}
+    {baseAttrs:s}
+
+    See Also
+    --------
+    {seeAlso:s}""".format(
+        params=DetectorBase.baseParams, detAttrs=Detector.docAttrs,
+        baseAttrs=DetectorBase.baseAttrs, seeAlso=docSeeAlso)
 
     _INDEX_MAP = {
         8: 'phi',
@@ -123,7 +217,24 @@ class CylindricalDetector(Detector):
 
 
 class SphericalDetector(Detector):
+    __doc__ = """
+    Class that stores detector data containing a spherical mesh.
 
+    Paramters
+    ---------
+    {params:s}
+
+    Attributes
+    ----------
+    {detAttrs:s}
+    {baseAttrs:s}
+
+    See Also
+    --------
+    {seeAlso:s}""".format(
+        params=DetectorBase.baseParams, detAttrs=Detector.docAttrs,
+        baseAttrs=DetectorBase.baseAttrs,
+        seeAlso=CylindricalDetector.docSeeAlso)
     _INDEX_MAP = {
         7: 'theta',
         8: 'phi',
@@ -136,6 +247,7 @@ DET_UNIQUE_GRIDS = {
     HexagonalDetector: {"COORD"},
 }
 
+
 def _getDetectorType(dataDict):
     if not dataDict:
         return Detector
@@ -144,7 +256,8 @@ def _getDetectorType(dataDict):
             return cls
     if 'R' in dataDict:
         return CylindricalDetector if 'Z' in dataDict else SphericalDetector
-    return  CartesianDetector if 'Z' in dataDict else Detector
+    return CartesianDetector if 'Z' in dataDict else Detector
+
 
 def detectorFactory(name, dataDict):
     """
@@ -170,7 +283,7 @@ def detectorFactory(name, dataDict):
     """
     tallyD = dataDict.pop('tally')
     detCls = _getDetectorType(dataDict)
-    det  = detCls(name)
+    det = detCls(name)
     det.addTallyData(tallyD)
     for gridK, value in iteritems(dataDict):
         det.grids[gridK] = value

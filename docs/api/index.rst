@@ -13,6 +13,7 @@ API
    engines.rst
    plot.rst
    containers.rst
+   detectors
    branching.rst
    bumat.rst
    depletion.rst
