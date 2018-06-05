@@ -10,7 +10,8 @@ from numpy import arange, array
 from numpy.testing import assert_equal
 
 from serpentTools.parsers import DetectorReader
-from serpentTools.objects.detectors import CartesianDetector, HexagonalDetector
+from serpentTools.objects.detectors import (
+    CartesianDetector, HexagonalDetector, CylindricalDetector)
 from serpentTools.tests import TEST_ROOT, compareDictOfArrays
 
 
@@ -262,6 +263,39 @@ class HexagonalDetectorTester(DetectorHelper):
         'Z': array([[0, 0, 0]])
     }
     EXPECTED_GRIDS = {DET_NAME: _EXPECTED_GRIDS}
+
+
+class CylindricalDetectorTester(DetectorHelper):
+    """Class that tests the cylindrical detector reader."""
+
+    FILE_PATH = 'radplot_det0.m'
+    DET_NAME = 'rad1'
+    EXPECTED_DETECTORS = {
+        DET_NAME: CylindricalDetector,
+    }
+    _EXPECTED_GRIDS = {
+        'R': array([
+            [0.00000E+00, 1.50000E+00, 7.50000E-01],
+            [1.50000E+00, 3.00000E+00, 2.25000E+00],
+            [3.00000E+00, 4.50000E+00, 3.75000E+00],
+            [4.50000E+00, 6.00000E+00, 5.25000E+00],
+            [6.00000E+00, 7.50000E+00, 6.75000E+00]
+        ]),
+        'PHI': array([
+            [0.00000E+00, 1.57000E+00, 7.85000E-01],
+            [1.57000E+00, 3.14000E+00, 2.35500E+00],
+            [3.14000E+00, 4.71000E+00, 3.92500E+00],
+            [4.71000E+00, 6.28000E+00, 5.49500E+00]
+        ]),
+        'Z': array([[0.00000E+00, 0.00000E+00, 0.00000E+00]])
+    }
+    EXPECTED_GRIDS = {DET_NAME: _EXPECTED_GRIDS}
+    _INDEXES = OrderedDict([
+        ['phi', arange(4)],
+        ['rmesh', arange(5)],
+    ])
+    EXPECTED_INDEXES = {DET_NAME: _INDEXES}
+
 
 del DetectorHelper
 
