@@ -153,8 +153,8 @@ class HexagonalDetectorTester(DetectorHelper):
         'hex3': HexagonalDetector,
     }
     _INDEXES = OrderedDict([
-        ['ycord', arange(5)],
-        ['xcord', arange(5)],
+        ['ycoord', arange(5)],
+        ['xcoord', arange(5)],
         ])
     EXPECTED_INDEXES = {'hex2': _INDEXES}
     EXPECTED_INDEXES['hex3'] = EXPECTED_INDEXES['hex2']
@@ -189,7 +189,7 @@ class HexagonalDetectorTester(DetectorHelper):
 
     SLICING = {
         'hex2': {
-            'fixed': {'ycord': 1},
+            'fixed': {'ycoord': 1},
             'tallies': array([0.181565, 0.186038, 0.193088, 0.195448,
                               0.195652]),
             'errors': array([0.02561, 0.0259, 0.02525, 0.02104, 0.02101]),

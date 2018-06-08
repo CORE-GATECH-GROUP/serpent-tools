@@ -19,6 +19,7 @@ Detectors
 * :class:`~serpentTools.objects.detectors.SphericalDetector`
 """
 
+from warnings import warn
 from collections import OrderedDict
 
 from six import iteritems
@@ -184,9 +185,31 @@ class HexagonalDetector(Detector):
         self.hexType = None
 
     _INDEX_MAP = {
-        8: 'ycord',
-        9: 'xcord',
+        8: 'ycoord',
+        9: 'xcoord',
     }
+    _NON_CART = _INDEX_MAP.values()
+
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
+        if xdim in self._NON_CART or ydim in self._NON_CART:
+            warnMeshPlot('Hexagonal', 168)
+        return DetectorBase.meshPlot(self,
+                                     xdim, ydim,
+                                     what=what,
+                                     fixed=fixed,
+                                     ax=ax,
+                                     cmap=cmap,
+                                     logColor=logColor,
+                                     xlabel=xlabel,
+                                     logx=logx,
+                                     logy=logy,
+                                     loglog=loglog,
+                                     title=title,
+                                     **kwargs)
+
+    meshPlot.__doc__ = DetectorBase.meshPlot.__doc__
 
 
 class CylindricalDetector(Detector):
@@ -215,6 +238,29 @@ class CylindricalDetector(Detector):
         9: 'rmesh'
     }
 
+    _NON_CART = _INDEX_MAP.values()
+
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
+        if xdim in self._NON_CART or ydim in self._NON_CART:
+            warnMeshPlot('Cylindrical', 169)
+        return DetectorBase.meshPlot(self,
+                                     xdim, ydim,
+                                     what=what,
+                                     fixed=fixed,
+                                     ax=ax,
+                                     cmap=cmap,
+                                     logColor=logColor,
+                                     xlabel=xlabel,
+                                     logx=logx,
+                                     logy=logy,
+                                     loglog=loglog,
+                                     title=title,
+                                     **kwargs)
+
+    meshPlot.__doc__ = DetectorBase.meshPlot.__doc__
+
 
 class SphericalDetector(Detector):
     __doc__ = """
@@ -240,6 +286,29 @@ class SphericalDetector(Detector):
         8: 'phi',
         9: 'rmesh',
     }
+
+    _NON_CART = _INDEX_MAP.values()
+
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
+        if xdim in self._NON_CART or ydim in self._NON_CART:
+            warnMeshPlot('Spherical', 169)
+        return DetectorBase.meshPlot(self,
+                                     xdim, ydim,
+                                     what=what,
+                                     fixed=fixed,
+                                     ax=ax,
+                                     cmap=cmap,
+                                     logColor=logColor,
+                                     xlabel=xlabel,
+                                     logx=logx,
+                                     logy=logy,
+                                     loglog=loglog,
+                                     title=title,
+                                     **kwargs)
+
+    meshPlot.__doc__ = DetectorBase.meshPlot.__doc__
 
 
 DET_UNIQUE_GRIDS = {
@@ -288,3 +357,9 @@ def detectorFactory(name, dataDict):
     for gridK, value in iteritems(dataDict):
         det.grids[gridK] = value
     return det
+
+
+def warnMeshPlot(plotType, ghIssue):
+    msg = ("{} plotting is not fully supported yet - #{}"
+           .format(plotType, ghIssue))
+    warn(msg, FutureWarning)
