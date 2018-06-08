@@ -1,5 +1,6 @@
 """Test the detector reader."""
 
+from os import remove
 from os.path import join
 from unittest import TestCase
 
@@ -21,12 +22,17 @@ def read(fileP):
     return reader
 
 
+def getTestFile(fileP):
+    """Return the location of a test file from TEST_ROOT."""
+    return join(TEST_ROOT, fileP)
+
+
 class DetectorHelper(TestCase):
     """ Class that assists setting up and testing readers"""
 
     @classmethod
     def setUpClass(cls):
-        cls.reader = read(join(TEST_ROOT, cls.FILE_PATH))
+        cls.reader = read(cls.FILE_PATH)
         cls.detectors = cls.reader.detectors
 
     def test_loadedDetectors(self):
@@ -81,7 +87,7 @@ class DetectorHelper(TestCase):
                                 detName, what, fixed))
 
 
-class CartesianDetectorReaderTester(DetectorHelper):
+class CartesianDetectorTester(DetectorHelper):
     """
     Class to test the detector reader.
 
@@ -91,7 +97,7 @@ class CartesianDetectorReaderTester(DetectorHelper):
            reactions: U-235 fission and capture
     """
 
-    FILE_PATH = 'ref_det0.m'
+    FILE_PATH = getTestFile('ref_det0.m')
     DET_NAME = 'xyFissionCapt'
     EXPECTED_DETECTORS = {
         DET_NAME: CartesianDetector
@@ -141,7 +147,7 @@ class HexagonalDetectorTester(DetectorHelper):
     """
     Class for testing the hexagonal detectors
     """
-    FILE_PATH = 'hexplot_det0.m'
+    FILE_PATH = getTestFile('hexplot_det0.m')
     EXPECTED_DETECTORS = {
         'hex2': HexagonalDetector,
         'hex3': HexagonalDetector,
@@ -211,7 +217,7 @@ class HexagonalDetectorTester(DetectorHelper):
 class CylindricalDetectorTester(DetectorHelper):
     """Class that tests the cylindrical detector reader."""
 
-    FILE_PATH = 'radplot_det0.m'
+    FILE_PATH = getTestFile('radplot_det0.m')
     DET_NAME = 'rad1'
     EXPECTED_DETECTORS = {
         DET_NAME: CylindricalDetector,
@@ -247,8 +253,50 @@ class CylindricalDetectorTester(DetectorHelper):
     }
 
 
-del DetectorHelper
+TEST_SUB_CLASSES = {CartesianDetectorTester, HexagonalDetectorTester,
+                    CylindricalDetectorTester}
 
+
+COMBINED_OUTPUT_FILE = 'combinedDets_det0.m'
+
+
+def setUpModule():
+    """
+    Setup the test fixture for test.
+
+    Combine all output files from standalone tests into one file.
+    This will be used by a combined reader to demonstrate that the
+    DetectorReader can handle files with a mixed bag of detectors.
+    """
+    with open(COMBINED_OUTPUT_FILE, 'w') as out:
+        for subCls in TEST_SUB_CLASSES:
+            with open(subCls.FILE_PATH) as subFile:
+                out.write(subFile.read())
+
+
+def tearDownModule():
+    """Remove any test fixtures created for this module."""
+    remove(COMBINED_OUTPUT_FILE)
+
+
+class CombinedDetTester(DetectorHelper):
+    """
+    Class that reads and tests from an output file with many detector types.
+    """
+
+    FILE_PATH = COMBINED_OUTPUT_FILE
+    EXPECTED_GRIDS = {}
+    EXPECTED_DETECTORS = {}
+    EXPECTED_INDEXES = {}
+    SLICING = {}
+    for cls in TEST_SUB_CLASSES:
+        EXPECTED_GRIDS.update(cls.EXPECTED_GRIDS)
+        EXPECTED_INDEXES.update(cls.EXPECTED_INDEXES)
+        EXPECTED_DETECTORS.update(cls.EXPECTED_DETECTORS)
+        SLICING.update(cls.SLICING)
+
+
+del DetectorHelper
 
 if __name__ == '__main__':
     from unittest import main
