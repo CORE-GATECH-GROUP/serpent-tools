@@ -1,5 +1,3 @@
-.. _detector-example:
-
 .. |detector| replace:: :py:class:`~serpentTools.objects.containers.Detector`
 
 .. |detectorReader| replace:: :py:class:`~serpentTools.parsers.detector.DetectorReader`
@@ -21,6 +19,8 @@
 .. |mesh| replace:: :py:meth:`~serpentTools.objects.containers.Detector.meshPlot`
 
 .. |spectrum| replace:: :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
+
+.. _detector-example:
 
 ==============
 DetectorReader
@@ -543,6 +543,14 @@ label each individual plot in the order of the bin index.
     >>> spectrum.spectrumPlot(labels=labels, legend='above', ncol=2);
 
 .. image:: Detector_files/Detector_47_0.png
+
+.. _ex-det-lims:
+
+Limitations
+-----------
+
+The |detectorReader| is unable to read files with hexagonal or curvilinear detectors.
+This issue is being tracked on GitHub as :issue:`184`.
 
 Conclusion
 ----------

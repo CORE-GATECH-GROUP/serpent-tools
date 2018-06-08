@@ -5,7 +5,7 @@ from numpy import asfortranarray, empty
 
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.containers import Detector
-from serpentTools.objects.readers import BaseReader
+from serpentTools.parsers.base import BaseReader
 from serpentTools.messages import error, debug, info
 
 NUM_COLS = 12
@@ -29,7 +29,8 @@ class DetectorReader(BaseReader):
     """
     docAttrs = """detectors: dict
         Dictionary where key, value pairs correspond to detector names
-        and their respective ``DetectorObject``"""
+        and their respective :class:`~serpentTools.objects.containers.Detector`
+        representations."""
     __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):

@@ -16,6 +16,7 @@
 
 .. |settings| replace::  :py:class:`~serpentTools.settings.rc`
 
+.. _ex-microXS:
 
 =============
 MicroXSReader

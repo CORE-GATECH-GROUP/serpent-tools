@@ -13,11 +13,11 @@ class BaseObject(object):
             Other reader instance against which to compare.
             Must be a similar class as this one.
         rtol: float
-            Relative tolerance for arrays. 
+            Relative tolerance for arrays.
         atol: float
             Absolute tolerance for arrays
         sigma: int
-            Size of confidence interval to apply to 
+            Size of confidence interval to apply to
             potentially random values
         strictMissing: bool
             If ``True``, raise Exceptions for missing data
@@ -36,7 +36,7 @@ class BaseObject(object):
         :py:class:`~serpentTools.messages.MissingDataError`
             If data is missing from ``other`` and ``strictMissing``
         """
-        if not (isinstance(other, self.__class__) or 
+        if not (isinstance(other, self.__class__) or
                 issubclass(other.__class__, self.__class__)):
             oName = other.__class__.__name__
             name = self.__class__.__name__
@@ -49,15 +49,3 @@ class BaseObject(object):
     def _compare(self, other, rtol, atol, sigma, strictMissing):
         """Actual comparison method for similar classes."""
         raise NotImplementedError
-
-
-class NamedObject(BaseObject):
-    """Class for named objects like materials and detectors."""
-
-    def __init__(self, name):
-        self.name = name
-
-    def __str__(self):
-        return '<{} {}>'.format(self.__class__.__name__, self.name)
-
-

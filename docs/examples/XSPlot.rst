@@ -1,8 +1,10 @@
-.. |reader| replace:: :py:class:`~serpentTools.parsers.xsplot.XSPlotReader
+.. |reader| replace:: :py:class:`~serpentTools.parsers.xsplot.XSPlotReader`
 
 .. |xsections| replace:: :py:attr:`~serpentTools.parsers.xsplot.XSPlotReader.xsections`
 
 .. |xsdata| replace:: :py:class:`~serpentTools.objects.xsdata.XSData`
+
+.. _ex-xsplot:
 
 Cross Section Reader/Plotter
 ============================

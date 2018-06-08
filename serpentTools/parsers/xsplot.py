@@ -2,7 +2,7 @@
 import numpy as np
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, info, debug, error
-from serpentTools.objects.readers import BaseReader
+from serpentTools.parsers.base import BaseReader
 from serpentTools.objects.xsdata import XSData
 
 def _cleanChunk(string):

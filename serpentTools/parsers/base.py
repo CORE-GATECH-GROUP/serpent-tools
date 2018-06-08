@@ -1,7 +1,21 @@
+"""
+Base module for readers.
+
+Contains the abstract base class upon which all readers
+are built.
+"""
+
+from abc import ABCMeta, abstractmethod
+
+from six import add_metaclass
+
+from serpentTools.messages import debug, info
 from serpentTools.settings import rc
 from serpentTools.messages import info
 from serpentTools.objects import BaseObject
 
+
+@add_metaclass(ABCMeta)
 class BaseReader(BaseObject):
     """Parent class from which all parsers will inherit.
 
@@ -36,6 +50,7 @@ class BaseReader(BaseObject):
         info("  - done")
         self._postcheck()
 
+    @abstractmethod
     def _read(self):
         """Read the file and store the data.
 
@@ -44,14 +59,16 @@ class BaseReader(BaseObject):
             This read function has not been implemented yet
 
         """
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def _precheck(self):
         """Pre-checking, e.g., make sure Serpent did not
         exit abnormally, or disk ran out of space while parsing.
         """
         pass
 
+    @abstractmethod
     def _postcheck(self):
         """Make sure data looks reasonable. Could possibly check for
         negative cross sections, negative material densitites, etc (which
@@ -93,3 +110,4 @@ class XSReader(BaseReader):
                 self.settings['variables']):
             return True
         return False
+
