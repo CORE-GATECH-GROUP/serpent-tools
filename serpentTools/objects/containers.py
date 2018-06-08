@@ -20,8 +20,7 @@ from numpy import (array, arange, unique, log, divide, ones_like, hstack,
 from serpentTools.settings import rc
 from serpentTools.plot import (cartMeshPlot, plot, magicPlotDocDecorator,
                                formatPlot)
-from serpentTools.objects import BaseObject
-from serpentTools.objects.base import NamedObject, DetectorBase
+from serpentTools.objects.base import NamedObject, DetectorBase, BaseObject
 from serpentTools.utils import convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug, info
 

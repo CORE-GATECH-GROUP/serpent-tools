@@ -12,7 +12,7 @@ from six import add_metaclass
 from serpentTools.messages import debug, info
 from serpentTools.settings import rc
 from serpentTools.messages import info
-from serpentTools.objects import BaseObject
+from serpentTools.objects.base import BaseObject
 
 
 @add_metaclass(ABCMeta)
