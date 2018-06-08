@@ -1,7 +1,7 @@
 """Test the detector reader."""
 
 from os.path import join
-from unittest import TestCase
+from unittest import TestCase, skip
 
 from collections import OrderedDict
 
@@ -66,6 +66,22 @@ class DetectorHelper(TestCase):
                     actualIndex[key], expectedIndex[key],
                     err_msg="Key: {}, Detector: {}".format(key, detName))
 
+    def test_detectorSlice(self):
+        """Verify that the detector slicing is working well."""
+        for detName, params in iteritems(self.SLICING):
+            fixed = params['fixed']
+            expectedTallies = params['tallies']
+            expectedErrors = params['errors']
+            detector = self.detectors[detName]
+            tallies = detector.slice(fixed)
+            errors = detector.slice(fixed, data='errors')
+            for expected, actual, what in zip(
+                    (expectedTallies, expectedErrors),
+                    (tallies, errors), ('tallies', 'errors')):
+                assert_equal(expected, actual, 
+                        err_msg="Detector {} {}\nFixed: {}".format(
+                            detName, what, fixed))
+
 
 class CartesianDetectorReaderTester(DetectorHelper):
     """
@@ -76,8 +92,6 @@ class CartesianDetectorReaderTester(DetectorHelper):
         1. xyFissionCapt: 5x5 xy mesh of the problem with two
            reactions: U-235 fission and capture
     """
-
-    __name__ = "Cartesian"
 
     FILE_PATH = 'ref_det0.m'
     DET_NAME = 'xyFissionCapt'
@@ -105,28 +119,24 @@ class CartesianDetectorReaderTester(DetectorHelper):
         ])
     EXPECTED_INDEXES = {DET_NAME: _INDEXES}
 
-    def test_detectorSlice(self):
-        """Verify the slicing method"""
-        refDet = self.detectors[self.DET_NAME]
-        constrain = {'reaction': 0}
-        expectedTallies = array([
+    SLICING = {DET_NAME: {
+        'fixed': {'reaction': 0},
+        'tallies': array([
             [2.55119E-01, 2.55077E-01, 2.53685E-01, 2.55592E-01, 2.58450E-01],
             [2.54101E-01, 2.53408E-01, 2.56666E-01, 2.55375E-01, 2.52936E-01],
             [2.56006E-01, 2.51002E-01, 2.55479E-01, 2.52002E-01, 2.54708E-01],
             [2.54957E-01, 2.53399E-01, 2.48180E-01, 2.52915E-01, 2.53914E-01],
-            [2.58394E-01, 2.50217E-01, 2.59642E-01, 2.54025E-01, 2.57076E-01]
-        ])
-        assert_equal(refDet.slice(constrain), expectedTallies,
-                     err_msg='error in expected tally slice')
-        expectedErrors = array([
+            [2.58394E-01, 2.50217E-01, 2.59642E-01, 2.54025E-01, 2.57076E-01],
+        ]),
+        'errors': array([
             [0.01445, 0.01063, 0.01190, 0.01193, 0.01334],
             [0.01006, 0.00916, 0.01240, 0.00933, 0.01002],
             [0.01317, 0.01187, 0.01386, 0.01120, 0.01171],
             [0.01081, 0.00885, 0.01127, 0.00893, 0.01161],
-            [0.01250, 0.01121, 0.01460, 0.01142, 0.01219]
-        ])
-        assert_equal(refDet.slice(constrain, data='errors'),
-                     expectedErrors, err_msg='error in expected error slice')
+            [0.01250, 0.01121, 0.01460, 0.01142, 0.01219],
+        ]),
+        },
+    }
 
 
 class HexagonalDetectorTester(DetectorHelper):
@@ -184,6 +194,10 @@ class HexagonalDetectorTester(DetectorHelper):
         'COORD': EXPECTED_GRIDS['hex2']['COORD'][:, ::-1],
         }
 
+    @skip("Not configured yet")
+    def test_detectorSlice(self):
+        pass
+
 
 class CylindricalDetectorTester(DetectorHelper):
     """Class that tests the cylindrical detector reader."""
@@ -215,6 +229,10 @@ class CylindricalDetectorTester(DetectorHelper):
         ['rmesh', arange(5)],
     ])
     EXPECTED_INDEXES = {DET_NAME: _INDEXES}
+
+    @skip("Not configured yet")
+    def test_detectorSlice(self):
+        pass
 
 
 del DetectorHelper
