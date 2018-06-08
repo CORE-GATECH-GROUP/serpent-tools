@@ -1,7 +1,7 @@
 """Test the detector reader."""
 
 from os.path import join
-from unittest import TestCase, skip
+from unittest import TestCase
 
 from collections import OrderedDict
 
@@ -239,9 +239,12 @@ class CylindricalDetectorTester(DetectorHelper):
     ])
     EXPECTED_INDEXES = {DET_NAME: _INDEXES}
 
-    @skip("Not configured yet")
-    def test_detectorSlice(self):
-        pass
+    SLICING = {DET_NAME: {
+        'fixed': {'rmesh': 2},
+        'tallies': array([0.0341559, 0.032754, 0.0332801, 0.0326715]),
+        'errors': array([0.04018, 0.04582, 0.0467, 0.04346]),
+        },
+    }
 
 
 del DetectorHelper
