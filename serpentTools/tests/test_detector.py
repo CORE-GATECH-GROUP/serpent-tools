@@ -22,9 +22,7 @@ def read(fileP):
 
 
 class DetectorHelper(TestCase):
-    """
-    Class that assists setting up readers
-    """
+    """ Class that assists setting up and testing readers"""
 
     @classmethod
     def setUpClass(cls):
@@ -32,7 +30,7 @@ class DetectorHelper(TestCase):
         cls.detectors = cls.reader.detectors
 
     def test_loadedDetectors(self):
-        """Verify that all anticipated detectors are loaded"""
+        """Verify that all anticipated detectors are loaded."""
         expectedNames = set(self.EXPECTED_DETECTORS.keys())
         actualNames = set(self.reader.detectors.keys())
         self.assertSetEqual(
@@ -46,7 +44,7 @@ class DetectorHelper(TestCase):
                             self.FILE_PATH))
 
     def test_detectorGrids(self):
-        """Verify that all grids are loaded"""
+        """Verify that all grids are loaded."""
         baseMsg = "Key: {key}"
         for detName, gridDict in iteritems(self.EXPECTED_GRIDS):
             msg = baseMsg + "  Reading: " + self.__class__.__name__
@@ -55,7 +53,7 @@ class DetectorHelper(TestCase):
                 gridDict, actualGrids, testCase=self, fmtMsg=msg)
 
     def test_detectorIndex(self):
-        """Verify that the detector tally index is properly constructed"""
+        """Verify that the detector tally index is properly constructed."""
         for detName, expectedIndex in iteritems(self.EXPECTED_INDEXES):
             actualIndex = self.detectors[detName].indexes
             expectedKeys = list(expectedIndex.keys())
@@ -78,9 +76,9 @@ class DetectorHelper(TestCase):
             for expected, actual, what in zip(
                     (expectedTallies, expectedErrors),
                     (tallies, errors), ('tallies', 'errors')):
-                assert_equal(expected, actual, 
-                        err_msg="Detector {} {}\nFixed: {}".format(
-                            detName, what, fixed))
+                assert_equal(expected, actual,
+                             err_msg="Detector {} {}\nFixed: {}".format(
+                             detName, what, fixed))
 
 
 class CartesianDetectorReaderTester(DetectorHelper):
