@@ -133,3 +133,38 @@ def convertVariableName(variable):
     return lowerSplits[0] + ''.join([item.capitalize()
                                      for item in lowerSplits[1:]])
 
+
+LEADER_TO_WIKI = "http://serpent.vtt.fi/mediawiki/index.php/"
+
+
+def linkToWiki(subLink, text=None):
+    """
+    Return a string that will render as a hyperlink to the SERPENT wiki.
+
+    Parameters
+    ----------
+    subLink: str
+        Desired path inside the SERPENT wiki - following the 
+        ``index.php``
+    text: None or str
+        If given, use this as the shown text for the full link.
+
+    Returns
+    -------
+    str:
+        String that can be used as an rst hyperlink to the 
+        SERPENT wiki
+    
+    Examples
+    --------
+    >>> linkToWiki('Input_syntax_manual')
+    http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual
+    >>> linkToWiki('Description_of_output_files#Burnup_calculation_output', 
+    ...            "Depletion Output")
+    `Depletion Output <http://serpent.vtt.fi/mediawiki/index.php/
+    Description_of_output_files#Burnup_calculation_output>`_
+    """
+    fullLink = LEADER_TO_WIKI + subLink
+    if not text:
+        return fullLink
+    return "`{} <{}>`_".format(text, fullLink)

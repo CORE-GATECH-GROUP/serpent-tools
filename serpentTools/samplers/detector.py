@@ -4,7 +4,7 @@ Class to read and process a batch of similar detector files
 from six import iteritems
 from six.moves import range
 
-from numpy import empty, empty_like, square, sqrt, sum, where, arange
+from numpy import empty, empty_like, square, sqrt, sum, where
 from matplotlib import pyplot
 
 from serpentTools.messages import (MismatchedContainersError, warning,
@@ -12,18 +12,20 @@ from serpentTools.messages import (MismatchedContainersError, warning,
 from serpentTools.plot import magicPlotDocDecorator
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.objects.base import DetectorBase
-from serpentTools.samplers.base import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
+from serpentTools.samplers.base import (Sampler, SampledContainer,
+                                        SPREAD_PLOT_KWARGS)
+
 
 class DetectorSampler(Sampler):
     __doc__ = """
     Class responsible for reading multiple detector files
-    
+
     The following checks are performed to ensure that all detectors are
     of similar structure and content
-    
+
         1. Each parser must have the same detectors
         2. The reshaped tally data must be of the same size for all detectors
-    
+
     {skip:s}
 
     Parameters
@@ -85,11 +87,11 @@ class DetectorSampler(Sampler):
 class SampledDetector(SampledContainer, DetectorBase):
     __doc__ = """
     Class to store aggregated detector data
-    
+
     .. note ::
 
         :py:func:`~serpentTools.samplers.detector.SampledDetector.free`
-        sets ``allTallies``, ``allErrors``, and ``allScores`` to 
+        sets ``allTallies``, ``allErrors``, and ``allScores`` to
         ``None``. {free:s}
 
     Parameters
@@ -102,7 +104,7 @@ class SampledDetector(SampledContainer, DetectorBase):
     ----------
     {detAttrs:s}
 
-        
+
     """.format(detAttrs=DetectorBase.baseAttrs, free=SampledContainer.docFree,
                detParams=DetectorBase.baseParams)
 

@@ -19,6 +19,9 @@ Next
     >>> from serpentTools import ResultsReader
     >>> from serpentTools import DetectorSampler
 
+* :pull:`189` - Support for reading detectors with hexagonal, cylindrical, and 
+  spherical meshes.
+
 .. _v0.5.0:
 
 :release-tag:`0.5.0`
