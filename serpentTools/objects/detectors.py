@@ -130,6 +130,8 @@ class CartesianDetector(Detector):
     __doc__ = """
     Class that stores detector data containing cartesian meshing.
 
+    .. versionadded:: 0.5.1
+
     Parameters
     ----------
     {params:s}
@@ -161,6 +163,8 @@ class HexagonalDetector(Detector):
             3. Flat face perpendicular to y-axis"""
     __doc__ = """
     Class that stores detecto data containing a hexagonal meshing.
+
+    .. versionadded:: 0.5.1
 
     Parameters
     ----------
@@ -218,6 +222,8 @@ class CylindricalDetector(Detector):
     __doc__ = """
     Class that stores detector data containing a cylindrical mesh.
 
+    .. versionadded:: 0.5.1
+
     Parameters
     ----------
     {params:s}
@@ -265,6 +271,8 @@ class CylindricalDetector(Detector):
 class SphericalDetector(Detector):
     __doc__ = """
     Class that stores detector data containing a spherical mesh.
+
+    .. versionadded:: 0.5.1
 
     Paramters
     ---------
