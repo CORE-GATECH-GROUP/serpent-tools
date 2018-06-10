@@ -20,3 +20,4 @@ without any loss of comprehension.
     checklist.rst
     git.rst
     serpentVersions.rst
+    comparisons.rst

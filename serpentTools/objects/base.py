@@ -16,24 +16,38 @@ from serpentTools.plot import (
 class BaseObject(object):
     """Most basic class shared by all other classes."""
 
-    def compare(self, other, rtol=0., atol=0., sigma=3, strictMissing=True):
+    def compare(self, other, lower=0, upper=10, sigma=3):
         """
         Compare the results of this reader to another.
+
+        For values without uncertainties, the upper and lower
+        arguments control what passes and what messages get
+        raised. If a quantity in ``other`` is less than
+        ``lower`` percent different that the same quantity
+        on this object, consider this allowable and make
+        no messages.
+        Quantities that are greater than ``upper`` percent
+        different will have a error messages printed and
+        the comparison will return ``False``, but continue.
+        Quantities with difference between these ranges will
+        have warning messages printed.
 
         Parameters
         ----------
         other:
             Other reader instance against which to compare.
             Must be a similar class as this one.
-        rtol: float
-            Relative tolerance for arrays.
-        atol: float
-            Absolute tolerance for arrays
+        lower: float or int
+            Lower limit for relative tolerances.
+            Differences below this will be considered allowable
+        upper: float or int
+            Upper limit for relative tolerances. Differences
+            above this will be considered failure and errors
+            messages will be raised
         sigma: int
             Size of confidence interval to apply to
-            potentially random values
-        strictMissing: bool
-            If ``True``, raise Exceptions for missing data
+            quantities with uncertainties. Quantities that do not
+            have overlapping confidence intervals will fail.
 
         Returns
         -------
@@ -46,9 +60,22 @@ class BaseObject(object):
         TypeError
             If ``other`` is not of the same class as this class
             nor a subclass of this class
-        :py:class:`~serpentTools.messages.MissingDataError`
-            If data is missing from ``other`` and ``strictMissing``
+        ValueError
+            If upper > lower,
+            If sigma, lower, or upper are negative
         """
+        upper = float(upper)
+        lower = float(lower)
+        sigma = float(sigma)
+        if upper < lower:
+            raise ValueError("Upper limit must be greater than lower. "
+                             "{} is not greater than {}"
+                             .format(upper, lower))
+        for item, key in zip((upper, lower, sigma),
+                             ('upper', 'lower', 'sigma')):
+            if item < 0:
+                raise ValueError("{} must be non-negative, is {}"
+                                 .format(key, item))
         if not (isinstance(other, self.__class__) or
                 issubclass(other.__class__, self.__class__)):
             oName = other.__class__.__name__
@@ -57,9 +84,9 @@ class BaseObject(object):
                     "Cannot compare against {} - not instance nor subclass "
                     "of {}".format(oName, name))
 
-            return self._compare(other, rtol, atol, sigma, strictMissing)
+            return self._compare(other, lower, upper, sigma)
 
-    def _compare(self, other, rtol, atol, sigma, strictMissing):
+    def _compare(self, other, lower, upper, sigma):
         """Actual comparison method for similar classes."""
         raise NotImplementedError
 
