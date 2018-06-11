@@ -3,9 +3,25 @@ Commonly used functions and utilities
 """
 
 from collections import Callable
-from numpy import array, ndarray
+from textwrap import dedent
+from functools import wraps
 
-from serpentTools.messages import error, critical
+from six import iteritems
+from numpy import array, ndarray, fabs, where
+
+from serpentTools.messages import (
+    error,
+    critical,
+    identical,
+    notIdentical,
+    acceptableLow,
+    acceptableHigh,
+    outsideTols,
+    differentTypes,
+    )
+
+LOWER_LIM_DIVISION = 1E-8
+"""Lower limit for denominator for division"""
 
 
 def str2vec(iterable, of=float, out=array):
@@ -172,7 +188,79 @@ def linkToWiki(subLink, text=None):
     return "`{} <{}>`_".format(text, fullLink)
 
 
-def getCommonKeys(d0, d1, desc0=None, desc1=None, quiet=False, herald=error):
+COMPARE_DOC_DESC = """
+    desc0: dict or None
+    desc1: dict or None
+        Description of the origin of each value set. Only needed
+        if ``quiet`` evalues to ``True."""
+COMPARE_DOC_HERALD = """herald: callable
+        Function that accepts a single string argument used to
+        notify that differences were found. If
+        the function is not a callable object, a
+        :func:`serpentTools.messages.critical` message
+        will be printed and :func:`serpentTools.messages.error`
+        will be used."""
+COMPARE_DOC_LIMITS = """
+    lower: float or int
+        Lower limit for relative tolerances.
+        Differences below this will be considered allowable
+    upper: float or int
+        Upper limit for relative tolerances. Differences
+        above this will be considered failure and errors
+        messages will be raised"""
+COMPARE_DOC_SIGMA = """sigma: int
+        Size of confidence interval to apply to
+        quantities with uncertainties. Quantities that do not
+        have overlapping confidence intervals will fail"""
+
+COMPARE_DOC_MAPPING = {
+    'herald': COMPARE_DOC_HERALD,
+    'desc': COMPARE_DOC_DESC,
+    'compLimits': COMPARE_DOC_LIMITS,
+    'sigma': COMPARE_DOC_SIGMA,
+}
+
+COMPARE_FAIL_MSG = "Values {desc0} and {desc1} are not identical:\n\t"
+COMPARE_WARN_MSG = ("Values {desc0} and {desc1} are not identical, but within "
+                    "tolerances:\n\t")
+COMPARE_PASS_MSG = "Values {desc0} and {desc0} are identical:\n\t"
+
+
+def compareDocDecorator(f):
+    """Decorator that updates doc strings for comparison methods.
+
+    Similar to :func:`serpentTools.plot.magicPlotDocDecorator`
+    but for comparison functions
+    """
+
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        return f(*args, **kwargs)
+    doc = dedent(f.__doc__)
+    for magic, replace in iteritems(COMPARE_DOC_MAPPING):
+        lookF = '{' + magic + '}'
+        if lookF in doc:
+            doc = doc.replace(lookF, dedent(replace))
+    decorated.__doc__ = doc
+    return decorated
+
+
+def _getDefDescs(desc0, desc1):
+    desc0 = desc0 if desc0 is not None else 'first'
+    desc1 = desc1 if desc1 is not None else 'second'
+    return desc0, desc1
+
+
+def _checkHerald(herald):
+    if not isinstance(herald, Callable):
+        critical("Heralding object {} is not callable. Falling back to error."
+                 .format(herald))
+        return error
+    return herald
+
+
+@compareDocDecorator
+def getCommonKeys(d0, d1, desc0=None, desc1=None, herald=error):
     """
     Return a set of common keys from two dictionaries
 
@@ -186,31 +274,17 @@ def getCommonKeys(d0, d1, desc0=None, desc1=None, quiet=False, herald=error):
 
     Parameters
     ----------
-    d{{0, 1}}: dict or iterable
+    d0: dict or iterable
+    d1: dict or iterable
         Dictionary of keys or iterable of keys to be compared
-    desc{{0, 1}}: str or None
-        Description of the origin of each set of keys. Only
-        needed if ``quiet`` evalutes to ``True``
-    quiet: bool
-        If true, then print warnings for items found in only
-        one collection.
-    herald: :class:`collections.Callable`
-        Function that accepts a single string argument used to
-        notify that the collections have missing keys. If
-        the function is not a callable object, a
-        :func:`serpentTools.messages.critical` message
-        will be printed and :func:`serpentTools.messages.error`
-        will be used.
-
+    {desc}
+    {herald}
     Returns
     -------
     set:
         Keys found in both ``d{{0, 1}}``
     """
-    if not isinstance(herald, Callable):
-        critical("Heralding object {} is not callable. Falling back to error."
-                 .format(herald))
-        herald = error
+    herald = _checkHerald(herald)
     k0 = d0.keys() if isinstance(d0, dict) else d0
     k1 = d1.keys() if isinstance(d1, dict) else d1
     s0 = set(k0)
@@ -218,9 +292,8 @@ def getCommonKeys(d0, d1, desc0=None, desc1=None, quiet=False, herald=error):
 
     common = s0.intersection(s1)
     missing = s0.symmetric_difference(s1)
-    if missing and not quiet:
-        desc0 = desc0 or "first"
-        desc1 = desc1 or "second"
+    if missing:
+        desc0, desc1 = _getDefDescs(desc0, desc1)
         msg = ("Objects {} and {} contain different values"
                .format(desc0, desc1))
         missingMsg = "\n\tItems present in {} but not in {}:\n\t\t{}"
@@ -232,3 +305,70 @@ def getCommonKeys(d0, d1, desc0=None, desc1=None, quiet=False, herald=error):
             msg += missingMsg.format(desc1, desc0, in1)
         herald(msg)
     return common
+
+
+@compareDocDecorator
+def directCompare(obj0, obj1, lower, upper, quantity):
+    """
+    Return True if values are close enough to each other.
+
+    Wrapper around various comparision tests for strings, numeric, and
+    arrays.
+
+    The failing values will be appended to the next line of the error message
+
+    Parameters
+    ----------
+    obj0: str or float or int or :class:`numpy.ndarray`
+    obj1: str or float or int or :class:`numpy.ndarray`
+        Objects to compare
+    {compLimits}
+    quantity: str
+        Description of the value being compared. Will be
+        used to notify the user about any differences
+
+    Returns
+    -------
+    bool:
+        If the values are close enough as determined by the settings.
+
+    Raises
+    ------
+    TypeError:
+        If the object types are not supported. This means the developers
+        need to either extend this to meet the type, or use a different
+        test function.
+    """
+    type0 = type(obj0)
+    type1 = type(obj1)
+    noticeTuple = [obj0, obj1, quantity]
+    if type0 != type(obj1):
+        differentTypes(type0, type1, quantity)
+        return False
+    if type0 is str:
+        if obj0 != obj1:
+            notIdentical(*noticeTuple)
+            return False
+        identical(*noticeTuple)
+        return True
+
+    if type0 in (float, int, ndarray):
+        diff = fabs(obj0 - obj1)
+        if type0 is ndarray:
+            nonZI = where(obj0 > LOWER_LIM_DIVISION)
+            diff[nonZI] /= obj0[nonZI]
+        elif obj0 > LOWER_LIM_DIVISION:
+            diff /= obj0
+        if diff < lower:
+            acceptableLow(*noticeTuple)
+            return True
+        if diff >= upper:
+            outsideTols(*noticeTuple)
+            return False
+        acceptableHigh(*noticeTuple)
+        return True
+    raise TypeError(
+          "directCompare is not configured to make tests on objects of type "
+          "{tp}\n\tUsers: Create a issue on GitHub to alert developers."
+          "\n\tDevelopers: Update this function or create a compare function "
+          "for {tp} objects.".format(tp=type0))

@@ -9,6 +9,7 @@ from numpy import arange, hstack, log, divide
 from matplotlib.pyplot import axes
 
 from serpentTools.messages import debug, warning, SerpentToolsException
+from serpentTools.utils import compareDocDecorator
 from serpentTools.plot import (
         plot, magicPlotDocDecorator, formatPlot, cartMeshPlot)
 
@@ -16,6 +17,7 @@ from serpentTools.plot import (
 class BaseObject(object):
     """Most basic class shared by all other classes."""
 
+    @compareDocDecorator
     def compare(self, other, lower=0, upper=10, sigma=3):
         """
         Compare the results of this reader to another.
@@ -37,17 +39,8 @@ class BaseObject(object):
         other:
             Other reader instance against which to compare.
             Must be a similar class as this one.
-        lower: float or int
-            Lower limit for relative tolerances.
-            Differences below this will be considered allowable
-        upper: float or int
-            Upper limit for relative tolerances. Differences
-            above this will be considered failure and errors
-            messages will be raised
-        sigma: int
-            Size of confidence interval to apply to
-            quantities with uncertainties. Quantities that do not
-            have overlapping confidence intervals will fail.
+        {compLimits}
+        {sigma}
 
         Returns
         -------
