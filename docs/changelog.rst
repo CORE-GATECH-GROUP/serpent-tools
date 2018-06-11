@@ -6,10 +6,10 @@
 Changelog
 *********
 
-.. _vNext:
+.. _v0.5.0:
 
-Next
-====
+:release-tag:`0.5.1`
+====================
 
 * :pull:`180` - Add capability to pass isotope ``zzaaai`` for 
   :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues` 
@@ -21,6 +21,13 @@ Next
 
 * :pull:`189` - Support for reading detectors with hexagonal, cylindrical, and 
   spherical meshes.
+
+API Changes
+-----------
+
+* ``zzaaai`` data is stored on 
+  :attr:`~serpentTools.objects.materials.DepletedMaterial.zai` as a list
+  of integers, not strings
 
 .. _v0.5.0:
 

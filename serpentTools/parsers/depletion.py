@@ -43,6 +43,9 @@ class DepPlotMixin(object):
         zai: int or list or None
             If given, plot values corresponding to these 
             isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
+
+            .. versionadded:: 0.5.1
+
         materials: None or list
             Selection of materials from ``self.materials`` to plot.
             If None, plot all materials, potentially including ``tot``
