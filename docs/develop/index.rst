@@ -15,6 +15,7 @@ without any loss of comprehension.
     contributing.rst
     datamodel.rst
     codestyle.rst
+    utils.rst
     plots.rst
     documentation.rst
     checklist.rst
