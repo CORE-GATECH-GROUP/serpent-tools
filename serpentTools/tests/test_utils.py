@@ -8,7 +8,8 @@ from numpy import arange, ndarray, array
 from numpy.testing import assert_array_equal
 from six import iteritems
 
-from serpentTools.utils import convertVariableName, splitValsUncs, str2vec
+from serpentTools.utils import (
+    convertVariableName, splitValsUncs, str2vec, getCommonKeys)
 
 
 class VariableConverterTester(unittest.TestCase):
@@ -19,8 +20,8 @@ class VariableConverterTester(unittest.TestCase):
         testCases = {
             "VERSION": "version",
             "INF_KINF": "infKinf",
-            "ADJ_PERT_KEFF_SENS": "adjPertKeffSens"
-            ,}
+            "ADJ_PERT_KEFF_SENS": "adjPertKeffSens",
+            }
         for serpentStyle, expected in iteritems(testCases):
             actual = convertVariableName(serpentStyle)
             self.assertEqual(expected, actual, msg=serpentStyle)
@@ -54,7 +55,7 @@ class VectorConverterTester(unittest.TestCase):
             actual = str2vec(case, of=valType, out=outType)
             self.assertIsInstance(actual, compareType, msg=case)
             ofRightType = [isinstance(xx, valType) for xx in actual]
-            self.assertTrue(all(ofRightType), 
+            self.assertTrue(all(ofRightType),
                             msg="{} -> {}, {}".format(case, actual,
                                                       type(actual)))
             self.assertEqual(expected, actual, msg=case)
@@ -80,8 +81,40 @@ class SplitValsTester(unittest.TestCase):
         copyV, copyU = splitValsUncs(self.input, copy=True)
         for view, copy, msg in zip(
                 (viewV, viewU), (copyV, copyU), ('value', 'uncertainty')):
-            assert_array_equal(view, copy,err_msg=msg)
+            assert_array_equal(view, copy, err_msg=msg)
             self.assertFalse(view is copy, msg=msg)
+
+
+class CommonKeysTester(unittest.TestCase):
+    """Class that tests getCommonKeys"""
+
+    def test_goodKeys_dict(self):
+        """Verify a complete set of keys is returned from getCommonKeys"""
+        d0 = {1: None, '2': None, (1, 2, 3): "tuple"}
+        expected = set(d0.keys())
+        actual = getCommonKeys(d0, d0, quiet=True)
+        self.assertSetEqual(expected, actual,
+                            msg="Passed two dictionaries")
+        actual = getCommonKeys(d0, expected, quiet=True)
+        self.assertSetEqual(expected, actual,
+                            msg="Passed dictionary and set")
+
+    def test_getKeys_missing(self):
+        """Verify that missing keys are properly notified."""
+        log = []
+        d0 = {1, 2, 3}
+        emptyS = set()
+        desc0 = "xObj0x"
+        desc1 = "xObj1x"
+        common = getCommonKeys(d0, emptyS, desc0, desc1, herald=log.append)
+        self.assertSetEqual(emptyS, common)
+        self.assertEqual(len(log), 1, msg="Failed to append warning message")
+        warnMsg = log[0]
+        self.assertIsInstance(warnMsg, str, msg="Log messages is not string")
+        for desc in (desc0, desc1):
+            errMsg = "Description {} missing from warning message\n{}"
+            self.assertIn(desc, warnMsg, msg=errMsg.format(desc, warnMsg))
+
 
 if __name__ == '__main__':
     unittest.main()
