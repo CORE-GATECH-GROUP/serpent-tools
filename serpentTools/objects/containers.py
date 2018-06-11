@@ -1,32 +1,24 @@
-""" 
+"""
 Custom-built containers for storing data from serpent outputs
 
 Contents
 --------
 * :py:class:`~serpentTools.objects.containers.HomogUniv`
 * :py:class:`~serpentTools.objects.containers.BranchContainer`
-* :py:class:`~serpentTools.objects.containers.Detector`
 
 """
 from re import compile
-from collections import OrderedDict
 from itertools import product
 
 from six import iteritems
 from matplotlib import pyplot
-from numpy import (array, arange, unique, log, divide, ones_like, hstack,
-                   ndarray, zeros_like)
+from numpy import array, arange, hstack, ndarray, zeros_like
 
 from serpentTools.settings import rc
-from serpentTools.plot import (cartMeshPlot, plot, magicPlotDocDecorator,
-                               formatPlot)
-from serpentTools.objects.base import NamedObject, DetectorBase, BaseObject
+from serpentTools.plot import magicPlotDocDecorator, formatPlot
+from serpentTools.objects.base import NamedObject, BaseObject
 from serpentTools.utils import convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug, info
-
-DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
-            'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
-"""Name of the columns of the data"""
 
 SCATTER_MATS = set()
 SCATTER_ORDERS = 8
@@ -40,8 +32,7 @@ HOMOG_VAR_TO_ATTR = {
     'MICRO_E': 'microGroups', 'MICRO_NG': 'numMicroGroups',
     'MACRO_E': 'groups', 'MACRO_NG': 'numGroups'}
 
-__all__ = ('DET_COLS', 'HomogUniv', 'BranchContainer', 'Detector',
-           'DetectorBase', 'SCATTER_MATS', 'SCATTER_ORDERS')
+__all__ = ('HomogUniv', 'BranchContainer', 'SCATTER_MATS', 'SCATTER_ORDERS')
 
 
 CRIT_RE = compile('K[EI][NF]F')
@@ -95,7 +86,7 @@ class HomogUniv(NamedObject):
         the ``INF_`` nor ``B1_`` pattern
     reshaped: bool
         ``True`` if scattering matrices have been reshaped to square
-        matrices. Otherwise, these matrices are stored as vectors. 
+        matrices. Otherwise, these matrices are stored as vectors.
     groups: None or :py:class:`numpy.array`
         Group boundaries from highest to lowest
     numGroups: None or int
@@ -112,7 +103,7 @@ class HomogUniv(NamedObject):
     """
 
     def __init__(self, name, bu, step, day):
-        if not all(isNonNeg(xx) for xx in (bu, step, day)): 
+        if not all(isNonNeg(xx) for xx in (bu, step, day)):
             tail = ['{}: {}'.format(name, val)
                 for name, val in zip(('burnup', 'index', 'days'),
                                                (bu, step, day))]
@@ -449,86 +440,6 @@ class HomogUniv(NamedObject):
     hasData = __bool__
 
 
-class Detector(DetectorBase):
-    """
-    Class that stores detector data from a single detector file
-
-    Parameters
-    ----------
-    {params:s}
-
-    Attributes
-    ----------
-    bins: numpy.ndarray
-        Tally data directly from SERPENT file
-    {attrs:s}
-    """
-    __doc__ = __doc__.format(params=DetectorBase.baseParams,
-                             attrs=DetectorBase.baseAttrs)
-
-    def __init__(self, name):
-        DetectorBase.__init__(self, name)
-        self.bins = None
-        self.__reshaped = False
-
-    def _isReshaped(self):
-        return self.__reshaped
-
-    def addTallyData(self, bins):
-        """Add tally data to this detector"""
-        self.__reshaped = False
-        self.bins = bins
-        self.reshape()
-
-    def reshape(self):
-        """
-        Reshape the tally data into a multidimensional array
-
-        This method reshapes the tally and uncertainty data into arrays
-        where the array axes correspond to specific bin types.
-        If a detector was set up to tally two group flux in a 5 x 5
-        xy mesh, then the resulting tally data would be in a 50 x 12/13
-        matrix in the original ``detN.m`` file.
-        The tally data and relative error would be rebroadcasted into
-        2 x 5 x 5 arrays, and the indexing information is stored in
-        ``self.indexes``
-
-        Returns
-        -------
-        shape: list
-            Dimensionality of the resulting array
-
-        Raises
-        ------
-        SerpentToolsException:
-            If the bin data has not been loaded
-        """
-        if self.bins is None:
-            raise SerpentToolsException('Tally data for detector {} has not '
-                                        'been loaded'.format(self.name))
-        if self.__reshaped:
-            warning('Data has already been reshaped')
-            return
-        debug('Starting to sort tally data...')
-        shape = []
-        self.indexes = OrderedDict()
-        for index, indexName in enumerate(DET_COLS):
-            if 0 < index < 10:
-                uniqueVals = unique(self.bins[:, index])
-                if len(uniqueVals) > 1:
-                    self.indexes[indexName] = array(uniqueVals, dtype=int) - 1
-                    shape.append(len(uniqueVals))
-        self.tallies = self.bins[:, 10].reshape(shape)
-        self.errors = self.bins[:, 11].reshape(shape)
-        if self.bins.shape[1] == 13:
-            self.scores = self.bins[:, 12].reshape(shape)
-        self._map = {'tallies': self.tallies, 'errors': self.errors,
-                     'scores': self.scores}
-        debug('Done')
-        self.__reshaped = True
-        return shape
-
-
 class BranchContainer(BaseObject):
     """
     Class that stores data for a single branch.
@@ -613,18 +524,6 @@ class BranchContainer(BaseObject):
         univID: int or str
             Identifier for this universe
         burnup: float or int
-            Value of burnup [MWd/kgU]. A negative value here indicates
-            the value is really in units of days.
-        burnIndex: int
-            Point in the depletion schedule
-        burnDays: int or float
-            Point in time
-
-        Returns
-        -------
-        serpentTools.objects.containers.HomogUniv
-            Empty new universe
-
         """
         if self.__hasDays is None and burnup:
             self.__hasDays = burnup < 0

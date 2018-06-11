@@ -18,6 +18,11 @@ class DepletedMaterialBase(NamedObject):
         dictionary that stores all variable data
     zai: list
         Isotopic ZZAAA identifiers, e.g. 93325
+
+        .. versionchanged:: 0.5.1
+
+            Now a list of integers, not strings
+
     names: list
         Names of isotopes, e.g. U235
     days: :py:class:`numpy.ndarray`
@@ -125,6 +130,8 @@ class DepletedMaterialBase(NamedObject):
             If given, return y values corresponding to isotopes with
             these ``ZZAAAI`` as would be present in ``self.zai``. Otherwise,
             return values for all isotopes.
+
+            .. versionadded:: 0.5.1
 
         Returns
         -------
@@ -280,6 +287,9 @@ class DepletedMaterial(DepletedMaterialBase):
         zai: int or list or None
             If given, plot values corresponding to these 
             isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
+
+            .. versionadded:: 0.5.1
+
         {ax}
         {legend}
         {xlabel} Otherwise, use ``xUnits``

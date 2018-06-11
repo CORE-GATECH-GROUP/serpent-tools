@@ -549,8 +549,98 @@ label each individual plot in the order of the bin index.
 Limitations
 -----------
 
-The |detectorReader| is unable to read files with hexagonal or curvilinear detectors.
-This issue is being tracked on GitHub as :issue:`184`.
+``serpentTools`` does support reading detector files with hexagonal,
+cylindrical, and spherical mesh structures. However, creating 2D mesh
+plots with these detectors, and utilizing their mesh structure, is not
+fully supported. Below is an example of what happen, currently, when a
+hexagonal mesh plot is requested.
+
+.. code:: 
+    
+    >>> hexFile = '../serpentTools/tests/hexplot_det0.m'
+    >>> hexR = serpentTools.read(hexFile)
+    >>> hexR.detectors
+
+.. parsed-literal::
+
+    {'hex2': <serpentTools.objects.detectors.HexagonalDetector at 0x7fbd40d54080>,
+    'hex3': <serpentTools.objects.detectors.HexagonalDetector at 0x7fbd0c27a908>}
+
+Here, two 
+:class:`~serpentTools.objects.detectors.HexagonalDetector` objects
+are produced, with similar 
+:attr:`~serpentTools.objects.detectors.HexagonalDetector.tallies`
+and slicing methods as demonstrated above.
+
+.. code:: 
+    
+    >>> hex2 = hexR.detectors['hex2']
+    >>> hex2.tallies
+
+.. parsed-literal::
+ 
+    array([[0.185251, 0.184889, 0.189381, 0.184545, 0.195442],
+           [0.181565, 0.186038, 0.193088, 0.195448, 0.195652],
+           [0.1856  , 0.190278, 0.192013, 0.193353, 0.184309],
+           [0.186249, 0.191939, 0.192513, 0.194196, 0.186953],
+           [0.198196, 0.198623, 0.195612, 0.174804, 0.178053]])
+
+.. code:: 
+    
+    >>> hex2.grids
+
+.. parsed-literal::
+ 
+    {'COORD': array([[-3.       , -1.732051 ],
+            [-2.5      , -0.8660254],
+            [-2.       ,  0.       ],
+            [-1.5      ,  0.8660254],
+            [-1.       ,  1.732051 ],
+            [-2.       , -1.732051 ],
+            [-1.5      , -0.8660254],
+            [-1.       ,  0.       ],
+            [-0.5      ,  0.8660254],
+            [ 0.       ,  1.732051 ],
+            [-1.       , -1.732051 ],
+            [-0.5      , -0.8660254],
+            [ 0.       ,  0.       ],
+            [ 0.5      ,  0.8660254],
+            [ 1.       ,  1.732051 ],
+            [ 0.       , -1.732051 ],
+            [ 0.5      , -0.8660254],
+            [ 1.       ,  0.       ],
+            [ 1.5      ,  0.8660254],
+            [ 2.       ,  1.732051 ],
+            [ 1.       , -1.732051 ],
+            [ 1.5      , -0.8660254],
+            [ 2.       ,  0.       ],
+            [ 2.5      ,  0.8660254],
+            [ 3.       ,  1.732051 ]]),
+     'Z': array([[0., 0., 0.]])}
+
+.. code:: 
+    
+    >>> hex2.indexes
+
+.. parsed-literal::
+ 
+    OrderedDict([('ycoord', array([0, 1, 2, 3, 4])),
+                 ('xcoord', array([0, 1, 2, 3, 4]))])
+
+Creating hexagonal mesh plots with these objects is not fully supported,
+until :issue:`168` is completed.
+
+.. code:: 
+    
+    >>> hex2.meshPlot('xcoord', 'ycoord');
+
+.. warning::
+
+    serpentTools/objects/detectors.py:365: FutureWarning: Hexagonal
+    plotting is not fully supported yet - #168
+      warn(msg, FutureWarning)
+
+.. image:: Detector_files/Detector_55_2.png
 
 Conclusion
 ----------
