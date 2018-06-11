@@ -9,7 +9,12 @@ from numpy.testing import assert_array_equal
 from six import iteritems
 
 from serpentTools.utils import (
-    convertVariableName, splitValsUncs, str2vec, getCommonKeys)
+    convertVariableName,
+    splitValsUncs,
+    str2vec,
+    getCommonKeys,
+    directCompare,
+    )
 
 
 class VariableConverterTester(unittest.TestCase):
@@ -92,10 +97,10 @@ class CommonKeysTester(unittest.TestCase):
         """Verify a complete set of keys is returned from getCommonKeys"""
         d0 = {1: None, '2': None, (1, 2, 3): "tuple"}
         expected = set(d0.keys())
-        actual = getCommonKeys(d0, d0, quiet=True)
+        actual = getCommonKeys(d0, d0)
         self.assertSetEqual(expected, actual,
                             msg="Passed two dictionaries")
-        actual = getCommonKeys(d0, expected, quiet=True)
+        actual = getCommonKeys(d0, expected)
         self.assertSetEqual(expected, actual,
                             msg="Passed dictionary and set")
 
@@ -114,6 +119,60 @@ class CommonKeysTester(unittest.TestCase):
         for desc in (desc0, desc1):
             errMsg = "Description {} missing from warning message\n{}"
             self.assertIn(desc, warnMsg, msg=errMsg.format(desc, warnMsg))
+
+
+class DirectCompareTester(unittest.TestCase):
+    """Class for testing utils.directCompare."""
+
+    NUMERIC_ITEMS = (
+        [0, 0.001],
+        [1E-8, 0],
+        [array([1, 1, ]), array([1, 1.0001])],
+        [array([0, 1, ]), array([1, 1])],
+    )
+    def test_badTypes(self):
+        """Verify that two objects of different types return False."""
+        self.assertFalse(directCompare(1, array([1, ]), 0, 1,
+                                       'badTypes'))
+
+    def test_identicalString(self):
+        """Verify that identical strings return True."""
+        msg = qty = obj = 'identicalStrings'
+        self.assertTrue(directCompare(obj, obj, 0, 1, qty), msg=msg)
+
+    def test_dissimilarString(self):
+        """Verify that directCompare returns False for dissimilar strings."""
+        msg = qty = "dissimilarStrings"
+        self.assertFalse(directCompare('item0', 'item1', 0, 1, qty),
+                         msg=msg)
+
+    def _testNumericsForItems(self, tOrF, qty, lower, upper):
+        tester = self.assertTrue if tOrF else self.assertFalse
+        msg = "lower: {lower}, upper: {upper}\n{}\n{}"
+        for (obj0, obj1) in self.NUMERIC_ITEMS:
+            tester(directCompare(obj0, obj1, lower, upper, qty),
+                   msg=msg.format(obj0, obj1, lower=lower, upper=upper))
+
+    def test_acceptableLow(self):
+        """Verify that directCompare returns True for close numerics."""
+        lower = 5
+        upper = 1E4
+        self._testNumericsForItems(True, 'acceptableLow', lower, upper)
+
+    def test_acceptableHigh(self):
+        """
+        Verify that directCompare returns True for close but not quite values.
+        """
+        lower = 0.01
+        upper = 1E4
+        self._testNumericsForItems(True, 'acceptableHigh', lower, upper)
+
+    def test_outsideTols(self):
+        """Verify that directCompare returns False for values outside tolerances."""
+        lower = 1E-8
+        upper = 1E-8
+        self._testNumericsForItems(False, 'outsideTols', lower, upper)
+
 
 
 if __name__ == '__main__':

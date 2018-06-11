@@ -130,10 +130,11 @@ def _updateFilterAlert(msg, category):
 # Function for notifying the user about comparison results
 # ========================================================
 
-def _notify(func, quantity, header, *args, **kwargs):
-    args.insert(header.format(quantity))
-    msg = '\n\t'.join((str(item) for item in args))
-    func(msg.format(**kwargs))
+def _notify(func, quantity, header, obj0, obj1):
+    msg = header.format(quantity)
+    for obj in (obj0, obj1):
+        msg += '\n\t{}'.format(obj)
+    func(msg)
 
 def identical(obj0, obj1, quantity):
     """Two objects are identical."""

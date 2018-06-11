@@ -202,10 +202,10 @@ COMPARE_DOC_HERALD = """herald: callable
         will be used."""
 COMPARE_DOC_LIMITS = """
     lower: float or int
-        Lower limit for relative tolerances.
+        Lower limit for relative tolerances in percent
         Differences below this will be considered allowable
     upper: float or int
-        Upper limit for relative tolerances. Differences
+        Upper limit for relative tolerances in percent. Differences
         above this will be considered failure and errors
         messages will be raised"""
 COMPARE_DOC_SIGMA = """sigma: int
@@ -307,6 +307,9 @@ def getCommonKeys(d0, d1, desc0=None, desc1=None, herald=error):
     return common
 
 
+COMPARE_NUMERICS = float, int
+
+
 @compareDocDecorator
 def directCompare(obj0, obj1, lower, upper, quantity):
     """
@@ -342,7 +345,8 @@ def directCompare(obj0, obj1, lower, upper, quantity):
     type0 = type(obj0)
     type1 = type(obj1)
     noticeTuple = [obj0, obj1, quantity]
-    if type0 != type(obj1):
+    if ((type0 not in COMPARE_NUMERICS or type1 not in COMPARE_NUMERICS) 
+            and type0 != type(obj1)):
         differentTypes(type0, type1, quantity)
         return False
     if type0 is str:
@@ -353,16 +357,17 @@ def directCompare(obj0, obj1, lower, upper, quantity):
         return True
 
     if type0 in (float, int, ndarray):
-        diff = fabs(obj0 - obj1)
+        diff = fabs(obj0 - obj1) * 100
         if type0 is ndarray:
             nonZI = where(obj0 > LOWER_LIM_DIVISION)
             diff[nonZI] /= obj0[nonZI]
         elif obj0 > LOWER_LIM_DIVISION:
             diff /= obj0
-        if diff < lower:
+        maxDiff = diff.max() if isinstance(diff, ndarray) else diff
+        if maxDiff <= lower:
             acceptableLow(*noticeTuple)
             return True
-        if diff >= upper:
+        if maxDiff >= upper:
             outsideTols(*noticeTuple)
             return False
         acceptableHigh(*noticeTuple)
