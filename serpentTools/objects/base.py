@@ -17,7 +17,7 @@ from serpentTools.plot import (
 class BaseObject(object):
     """Most basic class shared by all other classes."""
 
-    @compareDocDecorator
+#    @compareDocDecorator
     def compare(self, other, lower=0, upper=10, sigma=3):
         """
         Compare the results of this reader to another.

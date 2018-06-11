@@ -364,6 +364,9 @@ def directCompare(obj0, obj1, lower, upper, quantity):
         elif obj0 > LOWER_LIM_DIVISION:
             diff /= obj0
         maxDiff = diff.max() if isinstance(diff, ndarray) else diff
+        if maxDiff < LOWER_LIM_DIVISION:
+            identical(*noticeTuple)
+            return True
         if maxDiff <= lower:
             acceptableLow(*noticeTuple)
             return True

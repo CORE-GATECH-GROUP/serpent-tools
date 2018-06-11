@@ -1,7 +1,7 @@
 """Parser responsible for reading the ``*res.m`` files"""
 import re
 
-import six
+from six import iteritems
 
 from numpy import array, vstack
 
@@ -9,8 +9,8 @@ from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers.base import XSReader
-from serpentTools.utils import str2vec, splitValsUncs
-from serpentTools.messages import (warning, debug, SerpentToolsException)
+from serpentTools.utils import str2vec, splitValsUncs, getCommonKeys, directCompare
+from serpentTools.messages import warning, debug, SerpentToolsException
 
 
 MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
@@ -229,7 +229,7 @@ class ResultsReader(XSReader):
             raise KeyError(
                 'Index read is {}, however only integers above zero are allowed'
                     .format(searchValue))
-        for key, dictUniv in six.iteritems(self.universes):
+        for key, dictUniv in iteritems(self.universes):
             if key[0] == univ and key[searchIndex] == searchValue:
                 debug('Found universe that matches with keys {}'
                       .format(key))
@@ -280,8 +280,33 @@ class ResultsReader(XSReader):
                 "{} time-points, and {} overall result points ".format(self.filePath,
                 self._counter['univ'], self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
-            for keys, dictUniv in six.iteritems(self.universes):
+            for keys, dictUniv in iteritems(self.universes):
                 if not dictUniv.hasData():
                     raise SerpentToolsException("metadata, resdata and universes are all empty "
                                         "from {}".format(self.filePath))
+
+    def _compare(self, other, lower, upper, sigma):
+        similar = self.__compareMetadata(other)
+
+        return similar
+
+    def __compareMetadata(self, other):
+        """Return True if the metadata (settings) are identical."""
+        myKeys = set(self.metadata.keys())
+        otherKeys = set(other.metadata.keys())
+        similar = not any(myKeys.symmetric_difference(otherKeys))
+        commonKeys = getCommonKeys(myKeys, otherKeys)
+        for key in commonKeys:
+            selfV = self.metadata[key]
+            otherV = other.metadata[key]
+            similar &= directCompare(selfV, otherV, 0., 0., key)
+
+        return similar
+
+METADATA_COMP_SKIPS = {
+    'title', 
+    'inputFileName', 
+    'workingDirectory',
+    }
+"""Metadata keys that will not be compared."""
 
