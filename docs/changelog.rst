@@ -6,6 +6,19 @@
 Changelog
 *********
 
+.. _vNext:
+
+Next
+====
+
+.. _vNext-api:
+
+API Changes
+-----------
+* :pull:`194` - Some settings in :attr:`serpentTools.parsers.results.ResultsReader.metadata`
+  are now stored as :class:`int` or :class:`float`, depending upon their nature.
+  Many of these settings refer to flags of settings used by ``SERPENT``
+
 .. _v0.5.0:
 
 :release-tag:`0.5.1`
@@ -21,6 +34,8 @@ Changelog
 
 * :pull:`189` - Support for reading detectors with hexagonal, cylindrical, and 
   spherical meshes.
+
+.. _v0.5.1-api:
 
 API Changes
 -----------
