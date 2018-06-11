@@ -125,3 +125,56 @@ def _updateFilterAlert(msg, category):
     warnings.simplefilter('always', category)
     warnings.warn(msg, category=category, stacklevel=3)
     warnings.simplefilter('default', category)
+
+# ========================================================
+# Function for notifying the user about comparison results
+# ========================================================
+
+def _notify(func, quantity, header, *args, **kwargs):
+    args.insert(header.format(quantity))
+    msg = '\n\t'.join((str(item) for item in args))
+    func(msg.format(**kwargs))
+
+def identical(obj0, obj1, quantity):
+    """Two objects are identical."""
+    _notify(info, quantity,'Values for {} are identical', obj0, obj1)
+
+
+def notIdentical(obj0, obj1, quantity):
+    """Values should be identical but aren't."""
+    _notify(error, quantity, "Values for {} are not identical",
+            obj0, obj1)
+
+def acceptableLow(obj0, obj1, quantity):
+    """Two values differ, but inside nominal and acceptable ranges."""
+    _notify(info, quantity, "Values for {} are not identical, but close",
+            obj0, obj1)
+
+
+def acceptableHigh(obj0, obj1, quantity):
+    """Two values differ, enough to merit a warning but not an error."""
+    _notify(warning, quantity, 
+            "Values for {} are different, but within tolerances", obj0, obj1)
+
+
+def outsideTols(obj0, obj1, quantity):
+    """Two values differ outside acceptable tolerances."""
+    _notify(error, quantity, 
+            "Values for {} are outside acceptable tolerances.", obj0, obj1)
+
+
+def insideConfInt(window0, window1, quantity):
+    """Two values are within acceptable statistical limits."""
+    _notify(info, quantity, "Confidence intervals for {} overlap",
+            window0, window1)
+
+def outsideConfInt(window0, window1, quantity):
+    """Two values are outside acceptable statistical limits."""
+    _notify(error, quantity, 
+            "Values for {} are outside acceptable statistical limits",
+            window0, window1)
+
+def differentTypes(type0, type1, quantity):
+    """Two values are of different types."""
+    _notify(error, quantity, "Types for {} are different.",
+            type0, type1)
