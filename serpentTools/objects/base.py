@@ -119,14 +119,15 @@ class DetectorBase(NamedObject):
         Name of this detector"""
     baseAttrs = """grids: dict
         Dictionary with additional data describing energy grids or mesh points
-    tallies: None or numpy.array
+    tallies: None or {np}
         Reshaped tally data to correspond to the bins used
-    errors: None or numpy.array
+    errors: None or {np}
         Reshaped relative error data corresponding to bins used
-    scores: None or numpy.array
+    scores: None or {np}
         Reshaped array of tally scores. SERPENT 1 only
-    indexes: None or OrderedDict
-        Collection of unique indexes for each requested bin"""
+    indexes: None or :class:`collections.OrderedDict`
+        Collection of unique indexes for each requested bin
+    """.format(np=':class:`numpy.ndarray`') + baseParams
     __doc__ = __doc__.format(params=baseParams, attrs=baseAttrs)
 
     def __init__(self, name):
@@ -157,7 +158,7 @@ class DetectorBase(NamedObject):
 
         Returns
         -------
-        numpy.array
+        :class:`numpy.ndarray`
             View into the respective data where certain dimensions
             have been removed
 
@@ -251,7 +252,7 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        :py:meth:`~serpentTools.objects.containers.Detector.slice`
+        * :meth:`slice`
         """
         slicedTallies = self.slice(fixed, 'tallies').copy()
         if len(slicedTallies.shape) > 2:
@@ -341,9 +342,9 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        * :py:meth:`~serpentTools.objects.containers.Detector.slice`
-        * :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
-           better options for plotting energy spectra
+        * :meth:`slice`
+        * :meth:`spectrumPlot`
+          better options for plotting energy spectra
         """
 
         data = self.slice(fixed, what)
@@ -388,7 +389,7 @@ class DetectorBase(NamedObject):
                  cmap=None, logColor=False, xlabel=None, ylabel=None, 
                  logx=False, logy=False, loglog=False, title=None, **kwargs):
         """
-        Plot tally data as a function of two mesh dimensions
+        Plot tally data as a function of two bin types on a cartesian mesh.
 
         Parameters
         ----------
@@ -429,9 +430,8 @@ class DetectorBase(NamedObject):
 
         See Also
         --------
-        * :py:meth:`~serpentTools.objects.containers.Detector.slice`
-        * :py:func:`matplotlib.pyplot.pcolormesh`
-        * :py:func:`~serpentTools.plot.cartMeshPlot`
+        * :meth:`slice`
+        * :func:`matplotlib.pyplot.pcolormesh`
         """
         if fixed:
             for qty, name in zip((xdim, ydim), ('x', 'y')):
