@@ -1,7 +1,7 @@
 """Parser responsible for reading the ``*res.m`` files"""
 import re
 
-import six
+from six import iteritems
 
 from numpy import array, vstack
 
@@ -19,7 +19,43 @@ MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 
 MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
 """
 Assigns search strings for different Serpent versions
-Versions 2.1.29 and 2.1.30 are supported
+"""
+
+METADATA_CONV = {
+    int: {
+        'debug',
+        'confidentialData',
+        'pop',
+        'cycles',
+        'skip',
+        'batchInterval',
+        'srcNormMode',
+        'seed',
+        'ufsMode',
+        'ufsOrder',
+        'neutronTransportMode',
+        'photonTransportMode',
+        'groupConstantGeneration',
+        'b1BurnupCorrection',
+        'implicitReactionRates',
+        'optimizationMode',
+        'reconstructMicroxs',
+        'reconstructMacroxs',
+        'mgMajorantMode',
+        'spectrumCollapse',
+        'mpiTasks',
+        'ompThreads',
+        'mpiReproducibility',
+        'ompReproducibility',
+        'shareBufArray',
+        'shareRes2Array',
+    },
+    float: {
+        'cpuMhz',
+    },
+}
+"""
+Convert items in metadata dictionary from arrays to these data types
 """
 
 class ResultsReader(XSReader):
@@ -229,7 +265,7 @@ class ResultsReader(XSReader):
             raise KeyError(
                 'Index read is {}, however only integers above zero are allowed'
                     .format(searchValue))
-        for key, dictUniv in six.iteritems(self.universes):
+        for key, dictUniv in iteritems(self.universes):
             if key[0] == univ and key[searchIndex] == searchValue:
                 debug('Found universe that matches with keys {}'
                       .format(key))
@@ -280,8 +316,19 @@ class ResultsReader(XSReader):
                 "{} time-points, and {} overall result points ".format(self.filePath,
                 self._counter['univ'], self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
-            for keys, dictUniv in six.iteritems(self.universes):
+            for keys, dictUniv in iteritems(self.universes):
                 if not dictUniv.hasData():
                     raise SerpentToolsException("metadata, resdata and universes are all empty "
                                         "from {}".format(self.filePath))
+        self._cleanMetadata()
 
+    def _cleanMetadata(self):
+        """Replace some items in metadata dictionary with easier data types."""
+        mdata = self.metadata
+        origKeys = set(mdata.keys())
+        for converter, keys in iteritems(METADATA_CONV):
+            for key in keys:
+                if key in origKeys:
+                    mdata[key] = converter(mdata[key])
+                    origKeys.remove(key)
+                    self.metadata
