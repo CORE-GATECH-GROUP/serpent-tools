@@ -59,6 +59,15 @@ class ResultsReader(XSReader):
     IOError: file is unexpectedly closes while reading
     """
 
+    __METADATA_COMP_SKIPS = {
+        'title', 
+        'inputFileName', 
+        'workingDirectory',
+        'startDate',
+        'completeDate',
+        }
+    """Metadata keys that will not be compared."""
+
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'xs')
         self.__serpentVersion = rc['serpentVersion']
@@ -292,21 +301,21 @@ class ResultsReader(XSReader):
 
     def __compareMetadata(self, other):
         """Return True if the metadata (settings) are identical."""
+        debug("Comparing metadata")
         myKeys = set(self.metadata.keys())
         otherKeys = set(other.metadata.keys())
         similar = not any(myKeys.symmetric_difference(otherKeys))
         commonKeys = getCommonKeys(myKeys, otherKeys)
-        for key in commonKeys:
+        skips = commonKeys.intersection(self.__METADATA_COMP_SKIPS)
+        if any(skips):
+            debug("The following items will be skipped in the comparison\n\t{}"
+                  .format(', '.join(sorted(skips))))
+        for key in sorted(commonKeys):
+            if key in self.__METADATA_COMP_SKIPS:
+                continue
             selfV = self.metadata[key]
             otherV = other.metadata[key]
             similar &= directCompare(selfV, otherV, 0., 0., key)
 
         return similar
-
-METADATA_COMP_SKIPS = {
-    'title', 
-    'inputFileName', 
-    'workingDirectory',
-    }
-"""Metadata keys that will not be compared."""
 
