@@ -295,12 +295,13 @@ class ResultsReader(XSReader):
                                         "from {}".format(self.filePath))
 
     def _compare(self, other, lower, upper, sigma):
-        similar = self.__compareMetadata(other)
+        similar = self.compareMetadata(other)
 
         return similar
 
-    def __compareMetadata(self, other):
+    def compareMetadata(self, other):
         """Return True if the metadata (settings) are identical."""
+        self._checkCompareObj(other)
         debug("Comparing metadata")
         myKeys = set(self.metadata.keys())
         otherKeys = set(other.metadata.keys())

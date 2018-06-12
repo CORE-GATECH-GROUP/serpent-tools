@@ -69,6 +69,16 @@ class BaseObject(object):
             if item < 0:
                 raise ValueError("{} must be non-negative, is {}"
                                  .format(key, item))
+        self._checkCompareObj(other)
+
+        return self._compare(other, lower, upper, sigma)
+
+    def _compare(self, other, lower, upper, sigma):
+        """Actual comparison method for similar classes."""
+        raise NotImplementedError
+
+    def _checkCompareObj(self, other):
+        """Verify that the two objects are same class or subclasses."""
         if not (isinstance(other, self.__class__) or
                 issubclass(other.__class__, self.__class__)):
             oName = other.__class__.__name__
@@ -76,12 +86,6 @@ class BaseObject(object):
             raise TypeError(
                     "Cannot compare against {} - not instance nor subclass "
                     "of {}".format(oName, name))
-
-        return self._compare(other, lower, upper, sigma)
-
-    def _compare(self, other, lower, upper, sigma):
-        """Actual comparison method for similar classes."""
-        raise NotImplementedError
 
 
 class NamedObject(BaseObject):
