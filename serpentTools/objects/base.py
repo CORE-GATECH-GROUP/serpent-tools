@@ -84,7 +84,7 @@ class BaseObject(object):
                     "Cannot compare against {} - not instance nor subclass "
                     "of {}".format(oName, name))
 
-            return self._compare(other, lower, upper, sigma)
+        return self._compare(other, lower, upper, sigma)
 
     def _compare(self, other, lower, upper, sigma):
         """Actual comparison method for similar classes."""
