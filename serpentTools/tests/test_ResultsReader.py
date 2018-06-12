@@ -237,14 +237,14 @@ class TestFilterResults(TesterCommonResultsReader):
 
         self.expectedMetadata = {'version': 'Serpent 2.1.29',
                             'compileDate': 'Jan  4 2018 17:22:46',
-                            'debug': [0.],
+                            'debug': 0,
                             'title': 'pwr pin',
-                            'confidentialData': [0.],
+                            'confidentialData': 0,
                             'inputFileName': 'pwrPin',
                             'workingDirectory': '/home/ajohnson400/research/gpt-dep/testing/depmtx',
                             'hostname': 'ME04L0358GRD04',
                             'cpuType': 'Intel(R) Core(TM) i7-6700T CPU @ 2.80GHz',
-                            'cpuMhz': [194.],
+                            'cpuMhz': 194.,
                             'startDate': 'Mon Feb 19 15:39:23 2018',
                             'completeDate': 'Mon Feb 19 15:39:53 2018'}
 
@@ -313,14 +313,14 @@ class TestReadAllResults(TesterCommonResultsReader):
 
         self.expectedMetadata = {'version': 'Serpent 2.1.29',
                             'compileDate': 'Jan  4 2018 17:22:46',
-                            'debug': [0.],
+                            'debug': 0,
                             'title': 'pwr pin',
-                            'confidentialData': [0.],
+                            'confidentialData': 0,
                             'inputFileName': 'pwrPin',
                             'workingDirectory': '/home/ajohnson400/research/gpt-dep/testing/depmtx',
                             'hostname': 'ME04L0358GRD04',
                             'cpuType': 'Intel(R) Core(TM) i7-6700T CPU @ 2.80GHz',
-                            'cpuMhz': [194.],
+                            'cpuMhz': 194.,
                             'startDate': 'Mon Feb 19 15:39:23 2018',
                             'completeDate': 'Mon Feb 19 15:39:53 2018'}
 
@@ -402,14 +402,14 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
 
         self.expectedMetadata = {'version': 'Serpent 2.1.30',
                             'compileDate': 'Apr  4 2018 08:55:27',
-                            'debug': [0.],
+                            'debug': 0,
                             'title': 'UO2 PIN MODEL',
-                            'confidentialData': [0.],
+                            'confidentialData': 0,
                             'inputFileName': 'pwr',
                             'workingDirectory': '/gpfs/pace1/project/me-kotlyar/dkotlyar6/Research/Serpent_test/FP_test',
                             'hostname': 'rich133-c36-10-l.pace.gatech.edu',
                             'cpuType': 'Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz',
-                            'cpuMhz': [184549409.0],
+                            'cpuMhz': 184549409.0,
                             'startDate': 'Mon May 14 11:20:06 2018',
                             'completeDate': 'Mon May 14 11:20:36 2018'}
 
