@@ -9,7 +9,10 @@ from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers.base import XSReader
-from serpentTools.utils import str2vec, splitValsUncs, getCommonKeys, directCompare
+from serpentTools.objects.base import (DEF_COMP_LOWER, 
+                                       DEF_COMP_SIGMA, DEF_COMP_UPPER)
+from serpentTools.utils import (str2vec, splitValsUncs, getCommonKeys, 
+                                directCompare, compareDocDecorator)
 from serpentTools.messages import warning, debug, SerpentToolsException
 
 
@@ -21,6 +24,10 @@ MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
 Assigns search strings for different Serpent versions
 Versions 2.1.29 and 2.1.30 are supported
 """
+
+
+__all__ = ['ResultsReader', ]
+
 
 class ResultsReader(XSReader):
     """
@@ -299,8 +306,27 @@ class ResultsReader(XSReader):
 
         return similar
 
+    @compareDocDecorator
     def compareMetadata(self, other):
-        """Return True if the metadata (settings) are identical."""
+        """
+        Return True if the metadata (settings) are identical.
+        
+        Parameters
+        ----------
+        other: :class:`~serpentTools.parsers.results.ResultsReader`
+            Class against which to compare
+
+        Returns
+        -------
+        bool:
+            If the metadata are identical
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+
+        
         self._checkCompareObj(other)
         debug("Comparing metadata")
         myKeys = set(self.metadata.keys())
@@ -320,3 +346,33 @@ class ResultsReader(XSReader):
 
         return similar
 
+    def compareResults(self, other, lower=DEF_COMP_LOWER, 
+                       upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Compare the contents of the results dictionary
+
+        Parameters
+        ----------
+        other: :class:`~serpentTools.parsers.results.ResultsReader`
+            Class against which to compare
+        {compLimits}
+        {sigma}
+
+        Returns
+        -------
+        bool:
+            If the results data agree to given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+        self._checkCompareObj(other)
+        debug("Comparing results dictionaries.")
+        myRes = self.resdata
+        otherR = other.resdata
+        myKeys = set(myRes.keys())
+        otherKeys = set(otherR.keys())
+        similar = not any(myKeys.symmetric_difference(otherKeys))
+        commonKeys = getCommonKeys(myKeys, otherKeys)
+        commonShapeKeys = getKeyMatchingShapes(commonKeys, myRes, otherR)

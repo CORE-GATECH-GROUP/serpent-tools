@@ -212,12 +212,15 @@ COMPARE_DOC_SIGMA = """sigma: int
         Size of confidence interval to apply to
         quantities with uncertainties. Quantities that do not
         have overlapping confidence intervals will fail"""
-
+COMPARE_DOC_TYPE_ERR = """TypeError
+        If ``other`` is not of the same class as this class
+        nor a subclass of this class"""
 COMPARE_DOC_MAPPING = {
     'herald': COMPARE_DOC_HERALD,
     'desc': COMPARE_DOC_DESC,
     'compLimits': COMPARE_DOC_LIMITS,
     'sigma': COMPARE_DOC_SIGMA,
+    'compTypeErr': COMPARE_DOC_TYPE_ERR,
 }
 
 COMPARE_FAIL_MSG = "Values {desc0} and {desc1} are not identical:\n\t"
@@ -380,3 +383,56 @@ def directCompare(obj0, obj1, lower, upper, quantity):
           "{tp}\n\tUsers: Create a issue on GitHub to alert developers."
           "\n\tDevelopers: Update this function or create a compare function "
           "for {tp} objects.".format(tp=type0))
+
+def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
+    """
+    Return a set of keys in map0/1 that point to arrays with identical shapes.
+
+    Parameters
+    ----------
+    keySet: set or list or tuple or iterable
+        Iterable container with keys that exist in map0 and map1. The contents
+        of ``map0/1`` under these keys will be compared
+    map0: dict
+    map1: dict
+        Two dictionaries containing at least all the keys in ``keySet``. 
+        Objects under keys in ``keySet`` will have their sizes compared if 
+        they are :class:`numpy.ndarray`. Non-arrays will be included only 
+        if their types are identical
+    desc0: str
+    decs1: str
+        Descriptions of the two dictionaries being compared. Used to alert the user
+        to the shortcomings of the two dictionaries
+
+    Returns
+    -------
+    set:
+        Set of all keys that exist in both dictionaries and are either
+        identical types, or are arrays of identical size
+    """
+    missing = {0: set(), 1: set()}
+    badTypes = {}
+    badShapes = {}
+    goodKeys = set()
+    for key in keySet:
+        if key not in map0 or key not in map1:
+            for mapD, misK in zip((map0, map1), (0, 1)):
+                if key not in mapD:
+                    missing[misK].add(key)
+            continue
+        v0 = map0[key]
+        v1 = map1[key]
+        t0 = type(v0)
+        t1 = type(v1)
+        if t0 != t1
+            badTypes[key] = (t0, t1)
+            continue
+        if t0 is ndarray:
+            if v0.shape != v1.shape:
+                badShapes[key] = (v0.shape, v1.shape)
+                continue
+        goodKeys.add(key)
+
+        # raise some messages
+
+        return goodKeys

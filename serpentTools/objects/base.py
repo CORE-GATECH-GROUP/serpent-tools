@@ -13,12 +13,20 @@ from serpentTools.utils import compareDocDecorator
 from serpentTools.plot import (
         plot, magicPlotDocDecorator, formatPlot, cartMeshPlot)
 
+#
+# Defaults for comparison
+#
+DEF_COMP_LOWER = 0
+DEF_COMP_UPPER = 10
+DEF_COMP_SIGMA = 2
+
 
 class BaseObject(object):
     """Most basic class shared by all other classes."""
 
     @compareDocDecorator
-    def compare(self, other, lower=0, upper=10, sigma=3):
+    def compare(self, other, lower=DEF_COMP_LOWER, upper=DEF_COMP_UPPER,
+                sigma=DEF_COMP_SIGMA):
         """
         Compare the results of this reader to another.
 
@@ -45,14 +53,12 @@ class BaseObject(object):
         Returns
         -------
         bool:
-            ``True`` if the readers are in agreement with
+            ``True`` if the objects are in agreement with
             each other according to the parameters specified
 
         Raises
         ------
-        TypeError
-            If ``other`` is not of the same class as this class
-            nor a subclass of this class
+        {compTypeErr}
         ValueError
             If upper > lower,
             If sigma, lower, or upper are negative
