@@ -17,7 +17,9 @@ from serpentTools.messages import (
     acceptableHigh,
     outsideTols,
     differentTypes,
-    missingKeys,
+    logMissingKeys,
+    logBadTypes,
+    logBadShapes,
     )
 
 LOWER_LIM_DIVISION = 1E-8
@@ -289,7 +291,7 @@ def getCommonKeys(d0, d1, desc0='first', desc1='second', herald=error):
     if missing:
         in0 = s0.difference(s1)
         in1 = s1.difference(s0)
-        missingKeys(desc0, desc1, in0, in1, herald)
+        logMissingKeys(desc0, desc1, in0, in1, herald)
     return common
 
 
@@ -416,6 +418,11 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
                 continue
         goodKeys.add(key)
 
-        # raise some messages
-
-        return goodKeys
+    # raise some messages
+    if any(missing[0]) or any(missing[1]):
+        logMissingKeys(desc0, desc1, missing[0], missing[1])
+    if badTypes:
+        logBadTypes(desc0, desc1, badTypes)
+    if badShapes:
+        logBadShapes(desc0, desc1, badShapes)
+    return goodKeys

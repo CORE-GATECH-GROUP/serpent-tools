@@ -11,8 +11,14 @@ from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers.base import XSReader
 from serpentTools.objects.base import (DEF_COMP_LOWER, 
                                        DEF_COMP_SIGMA, DEF_COMP_UPPER)
-from serpentTools.utils import (str2vec, splitValsUncs, getCommonKeys, 
-                                directCompare, compareDocDecorator)
+from serpentTools.utils import (
+    str2vec, 
+    splitValsUncs,
+    getCommonKeys,
+    directCompare,
+    compareDocDecorator,
+    getKeyMatchingShapes,
+)
 from serpentTools.messages import warning, debug, SerpentToolsException
 
 
@@ -303,7 +309,7 @@ class ResultsReader(XSReader):
 
     def _compare(self, other, lower, upper, sigma):
         similar = self.compareMetadata(other)
-
+        similar &= self.compareResults(other, lower, upper, sigma)
         return similar
 
     @compareDocDecorator
@@ -373,6 +379,31 @@ class ResultsReader(XSReader):
         otherR = other.resdata
         myKeys = set(myRes.keys())
         otherKeys = set(otherR.keys())
+        numMyKeys = len(myKeys)
+        numOtherKeys = len(otherKeys)
         similar = not any(myKeys.symmetric_difference(otherKeys))
+
         commonKeys = getCommonKeys(myKeys, otherKeys)
-        commonShapeKeys = getKeyMatchingShapes(commonKeys, myRes, otherR)
+        similar &= len(commonKeys) == numMyKeys == numOtherKeys
+
+        commonTypeKeys = getKeyMatchingShapes(commonKeys, myRes, otherR)
+        similar &= len(commonTypeKeys) == len(commonKeys)
+
+        for key in sorted(commonTypeKeys):
+            mine = myRes[key]
+            theirs = otherR[key]
+            if key in RES_DATA_WITH_UNCS:
+                continue  # TODO
+            similar &= directCompare(mine, theirs, lower, upper, key)
+
+        return similar
+
+
+RES_DATA_WITH_UNCS = {  # brace yourself
+    None,
+        }
+"""
+Set containing keys for objects stored in :attr:`ResultsReader.resdata`
+that contain uncertainties.
+"""
+

@@ -128,9 +128,9 @@ def _updateFilterAlert(msg, category):
     warnings.warn(msg, category=category, stacklevel=3)
     warnings.simplefilter('default', category)
 
-# ========================================================
-# Function for notifying the user about comparison results
-# ========================================================
+# =========================================================
+# Functions for notifying the user about comparison results
+# =========================================================
 
 
 def _notify(func, quantity, header, obj0, obj1):
@@ -200,7 +200,7 @@ def _checkHerald(herald):
     return herald
 
 
-def missingKeys(desc0, desc1, in0, in1, herald=error):
+def logMissingKeys(desc0, desc1, in0, in1, herald=error):
     """
     Log a warning message that two objects contain different items
 
@@ -227,3 +227,52 @@ def missingKeys(desc0, desc1, in0, in1, herald=error):
         msg += MISSING_MSG_SUBJ.format(desc1, desc0,
                                        ', '.join([str(xx) for xx in in1]))
     herald(msg)
+
+
+BAD_TYPES_HEADER = "Items from {} and {} have different types"
+BAD_SHAPES_HEADER = "Items from {} and {} have different shapes"
+BAD_OBJ_SUBJ = "\n\t{key}: {t0} - {t1}"
+
+
+def logBadTypes(desc0, desc1, types):
+    """
+    Log an error message for containers with mismatched types
+
+    Parameters
+    ----------
+    desc0: str
+    desc1: str
+        Descriptions of the two originators
+    types: dict
+        Dictionary where the keys represent the locations of
+        items with mismatched types. Corresponding keys should
+        be a list or tuple of the types for objects from
+        ``desc0`` and ``desc1`` stored under ``key``
+    """
+    msg = BAD_TYPES_HEADER.format(desc0, desc1)
+    for key in sorted(list(types.keys())):
+        t0, t1 = types[key]
+        msg += BAD_OBJ_SUBJ.format(key=key, t0=t0, t1=t1)
+    error(msg)
+
+
+def logBadShapes(desc0, desc1, shapes):
+    """
+    Log an error message for containers with mismatched shapes
+
+    Parameters
+    ----------
+    desc0: str
+    desc1: str
+        Descriptions of the two originators
+    shapes: dict
+        Dictionary where the keys represent the locations of
+        items with mismatched shapes. Corresponding keys should
+        be a list or tuple of the shapes for objects from
+        ``desc0`` and ``desc1`` stored under ``key``
+    """
+    msg = BAD_SHAPES_HEADER.format(desc0, desc1)
+    for key in sorted(list(shapes.keys())):
+        t0, t1 = shapes[key]
+        msg += BAD_OBJ_SUBJ.format(key=key, t0=t0, t1=t1)
+    error(msg)
