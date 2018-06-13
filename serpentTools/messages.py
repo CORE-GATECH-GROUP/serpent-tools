@@ -11,6 +11,7 @@ import functools
 import warnings
 import logging
 from logging.config import dictConfig
+from collections import Callable
 
 
 class SerpentToolsException(Exception):
@@ -26,6 +27,7 @@ class SamplerError(SerpentToolsException):
 class MismatchedContainersError(SamplerError):
     """Attempting to sample from dissimilar containers"""
     pass
+
 
 LOG_OPTS = ['critical', 'error', 'warning', 'info', 'debug']
 
@@ -130,21 +132,24 @@ def _updateFilterAlert(msg, category):
 # Function for notifying the user about comparison results
 # ========================================================
 
+
 def _notify(func, quantity, header, obj0, obj1):
     msg = header.format(quantity)
     for obj in (obj0, obj1):
         msg += '\n\t{}'.format(obj)
     func(msg)
 
+
 def identical(obj0, obj1, quantity):
     """Two objects are identical."""
-    _notify(info, quantity,'Values for {} are identical', obj0, obj1)
+    _notify(info, quantity, 'Values for {} are identical', obj0, obj1)
 
 
 def notIdentical(obj0, obj1, quantity):
     """Values should be identical but aren't."""
     _notify(error, quantity, "Values for {} are not identical",
             obj0, obj1)
+
 
 def acceptableLow(obj0, obj1, quantity):
     """Two values differ, but inside nominal and acceptable ranges."""
@@ -154,13 +159,13 @@ def acceptableLow(obj0, obj1, quantity):
 
 def acceptableHigh(obj0, obj1, quantity):
     """Two values differ, enough to merit a warning but not an error."""
-    _notify(warning, quantity, 
+    _notify(warning, quantity,
             "Values for {} are different, but within tolerances", obj0, obj1)
 
 
 def outsideTols(obj0, obj1, quantity):
     """Two values differ outside acceptable tolerances."""
-    _notify(error, quantity, 
+    _notify(error, quantity,
             "Values for {} are outside acceptable tolerances.", obj0, obj1)
 
 
@@ -169,13 +174,56 @@ def insideConfInt(window0, window1, quantity):
     _notify(info, quantity, "Confidence intervals for {} overlap",
             window0, window1)
 
+
 def outsideConfInt(window0, window1, quantity):
     """Two values are outside acceptable statistical limits."""
-    _notify(error, quantity, 
+    _notify(error, quantity,
             "Values for {} are outside acceptable statistical limits",
             window0, window1)
+
 
 def differentTypes(type0, type1, quantity):
     """Two values are of different types."""
     _notify(error, quantity, "Types for {} are different.",
             type0, type1)
+
+
+MISSING_MSG_HEADER = "Objects {} and {} contain different items"
+MISSING_MSG_SUBJ = "\n\tItems present in {} but not in {}:\n\t\t{}"
+
+
+def _checkHerald(herald):
+    if not isinstance(herald, Callable):
+        critical("Heralding object {} is not callable. Falling back to error."
+                 .format(herald))
+        return error
+    return herald
+
+
+def missingKeys(desc0, desc1, in0, in1, herald=error):
+    """
+    Log a warning message that two objects contain different items
+
+    Parameters
+    ----------
+    desc0: str
+    desc1: str
+        Descriptions of the two originators
+    in0: set or iterable
+    in1: set or iterable
+        Items that are unique to originators ``0`` and ``1``, respectively
+    herald: callable
+        Callable function that accepts a single string. This will be called
+        with the error message. If not given, defaults to :func:`error`
+    """
+    if not any(in0) and not any(in1):
+        return
+    herald = _checkHerald(herald)
+    msg = MISSING_MSG_HEADER.format(desc0, desc1)
+    if any(in0):
+        msg += MISSING_MSG_SUBJ.format(desc0, desc1,
+                                       ', '.join([str(xx) for xx in in0]))
+    if any(in1):
+        msg += MISSING_MSG_SUBJ.format(desc1, desc0,
+                                       ', '.join([str(xx) for xx in in1]))
+    herald(msg)

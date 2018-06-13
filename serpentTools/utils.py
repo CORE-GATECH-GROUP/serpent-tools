@@ -2,7 +2,6 @@
 Commonly used functions and utilities
 """
 
-from collections import Callable
 from textwrap import dedent
 from functools import wraps
 
@@ -18,6 +17,7 @@ from serpentTools.messages import (
     acceptableHigh,
     outsideTols,
     differentTypes,
+    missingKeys,
     )
 
 LOWER_LIM_DIVISION = 1E-8
@@ -254,16 +254,8 @@ def _getDefDescs(desc0, desc1):
     return desc0, desc1
 
 
-def _checkHerald(herald):
-    if not isinstance(herald, Callable):
-        critical("Heralding object {} is not callable. Falling back to error."
-                 .format(herald))
-        return error
-    return herald
-
-
 @compareDocDecorator
-def getCommonKeys(d0, d1, desc0=None, desc1=None, herald=error):
+def getCommonKeys(d0, d1, desc0='first', desc1='second', herald=error):
     """
     Return a set of common keys from two dictionaries
 
@@ -287,7 +279,6 @@ def getCommonKeys(d0, d1, desc0=None, desc1=None, herald=error):
     set:
         Keys found in both ``d{{0, 1}}``
     """
-    herald = _checkHerald(herald)
     k0 = d0.keys() if isinstance(d0, dict) else d0
     k1 = d1.keys() if isinstance(d1, dict) else d1
     s0 = set(k0)
@@ -296,17 +287,9 @@ def getCommonKeys(d0, d1, desc0=None, desc1=None, herald=error):
     common = s0.intersection(s1)
     missing = s0.symmetric_difference(s1)
     if missing:
-        desc0, desc1 = _getDefDescs(desc0, desc1)
-        msg = ("Objects {} and {} contain different values"
-               .format(desc0, desc1))
-        missingMsg = "\n\tItems present in {} but not in {}:\n\t\t{}"
         in0 = s0.difference(s1)
-        if any(in0):
-            msg += missingMsg.format(desc0, desc1, in0)
         in1 = s1.difference(s0)
-        if any(in1):
-            msg += missingMsg.format(desc1, desc0, in1)
-        herald(msg)
+        missingKeys(desc0, desc1, in0, in1, herald)
     return common
 
 
@@ -424,7 +407,7 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
         v1 = map1[key]
         t0 = type(v0)
         t1 = type(v1)
-        if t0 != t1
+        if t0 != t1:
             badTypes[key] = (t0, t1)
             continue
         if t0 is ndarray:
