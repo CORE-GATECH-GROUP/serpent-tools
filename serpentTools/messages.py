@@ -133,16 +133,21 @@ def _updateFilterAlert(msg, category):
 # =========================================================
 
 
+def _prefaceNotice(obj, leader):
+    msg = '\n\t{} '.format(leader) + ''.join(str(obj).split('\n'))
+    return msg
+
 def _notify(func, quantity, header, obj0, obj1):
     msg = header.format(quantity)
-    for obj in (obj0, obj1):
-        msg += '\n\t{}'.format(obj)
+    msg += _prefaceNotice(obj0, '>')
+    if obj1 is not None:
+        msg += _prefaceNotice(obj1, '<')
     func(msg)
 
 
 def identical(obj0, obj1, quantity):
     """Two objects are identical."""
-    _notify(info, quantity, 'Values for {} are identical', obj0, obj1)
+    _notify(info, quantity, 'Values for {} are identical', obj0, None)
 
 
 def notIdentical(obj0, obj1, quantity):
