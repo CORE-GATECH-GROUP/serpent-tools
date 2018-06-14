@@ -14,6 +14,7 @@ from serpentTools.utils import (
     str2vec,
     getCommonKeys,
     directCompare,
+    checkOverlapUncs,
     )
 
 
@@ -174,6 +175,14 @@ class DirectCompareTester(unittest.TestCase):
         self._testNumericsForItems(False, 'outsideTols', lower, upper)
 
 
+class OverlapTester(unittest.TestCase):
+    """Class for testing the Overlapping uncertainties function."""
+
+
+    def _test(self, expected, a0, a1, u0, u1, sigma):
+        self.assertTrue(expected == checkOverlapUncs(a0, a1, u0, u1, sigma),
+                msg="Sigma:{}\na0:{}\nu0:{}\na1:{}\nu1:{}"
+                .format(a0, u0, a1, u1, sigma))
 
 if __name__ == '__main__':
     unittest.main()

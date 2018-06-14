@@ -6,7 +6,7 @@ from textwrap import dedent
 from functools import wraps
 
 from six import iteritems
-from numpy import array, ndarray, fabs, where
+from numpy import array, ndarray, fabs, where, zeros_like
 
 from serpentTools.messages import (
     error,
@@ -426,3 +426,67 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
     if badShapes:
         logBadShapes(desc0, desc1, badShapes)
     return goodKeys
+
+
+@compareDocDecorator
+def checkOverlapUncs(arr0, arr1, unc0, unc1, sigma):
+    r"""
+    Return True if the uncertainty windows for two quanties overlap
+
+    Parameters
+    ----------
+    arr0: :class:`numpy.ndarray`
+    arr1: :class:`numpy.ndarray`
+        Arrays containing the expected values to be compared
+    unc0: :class:`numpy.ndarray`
+    unc1: :class:`numpy.ndarray`
+        Associated absolute uncertainties, :math:`1\sigma`,
+        corresponding to the values in ``arr0`` and ``arr1``
+    {sigma}
+
+    Returns
+    -------
+    :class:`numpy.ndarray`
+        Boolean array of equal shape to incoming arrays. 
+        Every index with ``True`` as the value indicates that
+        the confidence intervals for the arrays overlap
+        at those indices.
+
+    Examples
+    --------
+    ::
+
+        >>> from numpy import ones, zeros, array
+        >>> a0 = ones(3)
+        >>> u0 = zeros(3)
+        >>> a1 = ones(3) * 0.5
+        >>> u1 = array([1, 0.5, 0.1])
+        >>> checkOverlapUncs(a0, a1, u0, u1, 1)
+        array([True, True, False])
+    """
+    err0 = fabs(unc0 * sigma)
+    err1 = fabs(unc1 * sigma)
+
+    min0 = arr0 - err0
+    max0 = arr0 + err0
+    min1 = arr1 - err1
+    max1 = arr1 + err1
+    
+    overlap = zeros_like(arr0, dtype=bool)
+
+    # Where values are identical to numerical precision
+    overlap[arr0 == arr1] = True
+
+    min0le1 = min0 <= min1
+    max0ge1 = max0 >= max1
+
+    if min0le1.any():
+        ci0In1 = max0[min0le1] >= min1[min0le1]
+        if ci0In1.any():
+            overlap[min0le1[ci0In1]] = True
+    if max0ge1.any():
+        ci1In0 = max1[max0ge1] >= min0[max0ge1]
+        if ci1In0.any():
+            overlap[max0ge1[ci1In0]] = True
+
+    return overlap
