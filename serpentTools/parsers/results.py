@@ -316,7 +316,7 @@ class ResultsReader(XSReader):
     def compareMetadata(self, other):
         """
         Return True if the metadata (settings) are identical.
-        
+
         Parameters
         ----------
         other: :class:`~serpentTools.parsers.results.ResultsReader`
@@ -332,7 +332,6 @@ class ResultsReader(XSReader):
         {compTypeErr}
         """
 
-        
         self._checkCompareObj(other)
         debug("Comparing metadata")
         myKeys = set(self.metadata.keys())
@@ -352,7 +351,7 @@ class ResultsReader(XSReader):
 
         return similar
 
-    def compareResults(self, other, lower=DEF_COMP_LOWER, 
+    def compareResults(self, other, lower=DEF_COMP_LOWER,
                        upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
         """
         Compare the contents of the results dictionary
@@ -392,18 +391,99 @@ class ResultsReader(XSReader):
         for key in sorted(commonTypeKeys):
             mine = myRes[key]
             theirs = otherR[key]
-            if key in RES_DATA_WITH_UNCS:
-                continue  # TODO
-            similar &= directCompare(mine, theirs, lower, upper, key)
+            if key in RES_DATA_NO_UNCS:
+                similar &= directCompare(mine, theirs, lower, upper, key)
+                continue
+            # TODO data with uncertainties
 
         return similar
 
 
-RES_DATA_WITH_UNCS = {  # brace yourself
-    None,
-        }
+RES_DATA_NO_UNCS = {
+    "resMemsize",
+    "totNuclides",
+    "fissionProductInhTox",
+    "ingestionToxicity",
+    "totSfRate",
+    "electronDecaySource",
+    "uresDiluCut",
+    "implNxn",
+    "neutronErgTol",
+    "useDbrc",
+    "actinideActivity",
+    "actinideInhTox",
+    "photonDecaySource",
+    "te132Activity",
+    "implCapt",
+    "alphaDecaySource",
+    "totActivity",
+    "fissionProductActivity",
+    "simulationCompleted",
+    "sourcePopulation",
+    "useUres",
+    "lostParticles",
+    "iniFmass",
+    "totPhotonNuclides",
+    "totTransmuRea",
+    "uresEmax",
+    "uresUsed",
+    "i132Activity",
+    "cpuUsage",
+    "xsMemsize",
+    "memsize",
+    "totDecayNuclides",
+    "tmsMode",
+    "actinideIngTox",
+    "totDosimetryNuclides",
+    "cs134Activity",
+    "uresEmin",
+    "totCells",
+    "neutronErgNe",
+    "fissionProductIngTox",
+    "sampleCapt",
+    "actinideDecayHeat",
+    "runningTime",
+    "uresAvail",
+    "cycleIdx",
+    "neutronEmin",
+    "neutronDecaySource",
+    "totDecayHeat",
+    "dopplerPreprocessor",
+    "matMemsize",
+    "inhalationToxicity",
+    "sampleFiss",
+    "totFmass",
+    "useDelnu",
+    "cs137Activity",
+    "availMem",
+    "neutronEmax",
+    "miscMemsize",
+    "sampleScatt",
+    "unusedMemsize",
+    "unionCells",
+    "sr90Activity",
+    "totCpuTime",
+    "implFiss",
+    "allocMemsize",
+    "unknownMemsize",
+    "ompParallelFrac",
+    "fissionProductDecayHeat",
+    "totReaChannels",
+    "totTransportNuclides",
+    "ifcMemsize",
+    "i131Activity",
+    "balaSrcNeutronTot",
+    "balaSrcNeutronFiss",
+    "balaSrcNeutronNxn",
+    "balaLossNeutronFiss",
+    "balaLossNeutronTot",
+    "balaLossNeutronCapt",
+    "balaLossNeutronLeak",
+    "transportCycleTime",
+    "processTime",
+    "initTime",
+    }
 """
 Set containing keys for objects stored in :attr:`ResultsReader.resdata`
-that contain uncertainties.
+that do not contain uncertainties.
 """
-
