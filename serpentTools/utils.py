@@ -111,8 +111,8 @@ def splitValsUncs(iterable, copy=False):
 
     if not isinstance(iterable, ndarray):
         iterable = str2vec(iterable)
-    vals = iterable[0::2]
-    uncs = iterable[1::2]
+    vals = iterable[..., 0::2]
+    uncs = iterable[..., 1::2]
     if copy:
         return vals.copy(), uncs.copy()
     return vals, uncs
