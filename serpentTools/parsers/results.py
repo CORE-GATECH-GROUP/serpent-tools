@@ -312,11 +312,12 @@ class ResultsReader(XSReader):
             for keys, dictUniv in iteritems(self.universes):
                 if not dictUniv.hasData():
                     raise SerpentToolsException("metadata, resdata and universes are all empty "
-                                        "from {}".format(self.filePath))
+                                                "from {}".format(self.filePath))
 
     def _compare(self, other, lower, upper, sigma):
         similar = self.compareMetadata(other)
         similar &= self.compareResults(other, lower, upper, sigma)
+        similar &= self.compareUniverses(other, lower, upper, sigma)
         return similar
 
     @compareDocDecorator
@@ -326,7 +327,7 @@ class ResultsReader(XSReader):
 
         Parameters
         ----------
-        other: :class:`~serpentTools.parsers.results.ResultsReader`
+        other: :class:`ResultsReader`
             Class against which to compare
 
         Returns
@@ -366,7 +367,7 @@ class ResultsReader(XSReader):
 
         Parameters
         ----------
-        other: :class:`~serpentTools.parsers.results.ResultsReader`
+        other: :class:`ResultsReader`
             Class against which to compare
         {compLimits}
         {sigma}
@@ -416,4 +417,42 @@ class ResultsReader(XSReader):
             outsideConfInt(myVals, myUncs, theirVals, theirUncs, key)
         return similar
 
+    @compareDocDecorator
+    def compareUniverses(self, other, lower=DEF_COMP_LOWER, 
+                         upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Compare the contents of the ``universes`` dictionary
 
+        Parameters
+        ----------
+        other: :class:`ResultsReader`
+            Reader by which to compare
+        {compLimits}
+        {sigma}
+
+        Returns
+        -------
+        bool:
+            If the contents of the universes agree to given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+        myUniverses = self.universes
+        otherUniverses = other.universes
+
+        commonKeys = getCommonKeys(myUniverses, otherUniverses)
+        similar = (len(commonKeys) == len(myUniverses) 
+                   == len(otherUniverses))
+        
+        keyGoodTypes = getKeyMatchingShapes(commonKeys, myUniverses,
+                                            otherUniverses)
+        similar &= (not any(commonKeys.symmetric_difference(keyGoodTypes)))
+
+        for univKey in keyGoodTypes:
+            myUniv = myUniverses[key]
+            otherUniv = otherUniverses[key]
+            similar &= myUniv.compare(otherUniv(lower, upper, sigma))
+
+        return similar
