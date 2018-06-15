@@ -479,14 +479,25 @@ def checkOverlapUncs(arr0, arr1, unc0, unc1, sigma):
 
     min0le1 = min0 <= min1
     max0ge1 = max0 >= max1
+    min1le0 = min1 <= min0
+    max1ge0 = max1 >= max0
 
-    if min0le1.any():
-        ci0In1 = max0[min0le1] >= min1[min0le1]
-        if ci0In1.any():
-            overlap[min0le1[ci0In1]] = True
-    if max0ge1.any():
-        ci1In0 = max1[max0ge1] >= min0[max0ge1]
-        if ci1In0.any():
-            overlap[max0ge1[ci1In0]] = True
+    # locations where condidence intervals are completely contained
+    # in the other set
+    cont0In1 = min0le1 * (min0le1 == max0ge1)
+    overlap[cont0In1] = True
+    cont1In0 = min1le0 * (min1le0 == max1ge0)
+    overlap[cont1In0] = True
+
+    # locations where min of 0 is less than 1, but max 0 > min 1
+    # and the opposite
+    overlap[min0le1 * (max0 >= min1)] = True
+    overlap[min1le0 * (max1 >= min0)] = True
+
+    # locations where max 0 > max 1, but min 0 < max 1
+    # and the opposite
+    overlap[max0ge1 * (min0 <= max1)] = True
+    overlap[max1ge0 * (min1 <= max0)] = True
 
     return overlap
+
