@@ -177,11 +177,11 @@ def outsideTols(obj0, obj1, quantity):
 
 def _notifyWithUncs(func, quantity, msg, value0, unc0, value1, unc1):
     logMsg = msg.format(quantity)
-    logMsg += _prefaceNotice('>V', value0)
-    logMsg += _prefaceNotice('>U', unc0)
+    logMsg += _prefaceNotice(value0, '>V')
+    logMsg += _prefaceNotice(unc0, '>U')
     if value1 is not None:
-        logMsg += _prefaceNotice('<V', value1)
-    logMsg += _prefaceNotice('<U', unc0)
+        logMsg += _prefaceNotice(value1, '<V')
+    logMsg += _prefaceNotice(unc0, '<U')
     func(logMsg)
 
 

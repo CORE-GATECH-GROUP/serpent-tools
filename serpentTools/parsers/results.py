@@ -19,8 +19,14 @@ from serpentTools.utils import (
     directCompare,
     compareDocDecorator,
     getKeyMatchingShapes,
+    getOverlaps,
 )
-from serpentTools.messages import warning, debug, SerpentToolsException
+from serpentTools.messages import (
+        warning, debug, SerpentToolsException,
+        identical,
+        insideConfInt,
+        outsideConfInt,
+)
 
 
 MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
@@ -352,6 +358,7 @@ class ResultsReader(XSReader):
 
         return similar
 
+    @compareDocDecorator
     def compareResults(self, other, lower=DEF_COMP_LOWER,
                        upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
         """
@@ -395,8 +402,18 @@ class ResultsReader(XSReader):
             if key in RES_DATA_NO_UNCS:
                 similar &= directCompare(mine, theirs, lower, upper, key)
                 continue
-            # TODO data with uncertainties
-
+            myVals, myUncs = splitValsUncs(mine)
+            theirVals, theirUncs = splitValsUncs(theirs)
+            if (myVals == theirVals).all():
+                identical(myVals, theirVals, key)
+                continue
+            overlaps = getOverlaps(myVals, theirVals, myUncs, theirUncs, 
+                                   sigma, relative=False)
+            if overlaps.all():
+                insideConfInt(myVals, myUncs, theirVals, theirUncs, key)
+                continue
+            similar &= False
+            outsideConfInt(myVals, myUncs, theirVals, theirUncs, key)
         return similar
 
 
