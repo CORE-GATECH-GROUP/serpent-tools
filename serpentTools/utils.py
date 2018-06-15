@@ -429,9 +429,9 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
 
 
 @compareDocDecorator
-def checkOverlapUncs(arr0, arr1, unc0, unc1, sigma):
+def getOverlaps(arr0, arr1, unc0, unc1, sigma):
     r"""
-    Return True if the uncertainty windows for two quanties overlap
+    Return the indicies of overlapping confidence intervals
 
     Parameters
     ----------
@@ -471,7 +471,7 @@ def checkOverlapUncs(arr0, arr1, unc0, unc1, sigma):
     of ``a1[3]``.
     ::
 
-        >>> checkOverlapUncs(a0, a1, u0, u1, 1)
+        >>> getOverlaps(a0, a1, u0, u1, 1)
         array([True, True, False, True])
 
     This function also works for multi-dimensional arrays as well.
@@ -481,7 +481,7 @@ def checkOverlapUncs(arr0, arr1, unc0, unc1, sigma):
         >>> a3 = a1.reshape(2, 2)
         >>> u2 = u0.reshape(2, 2)
         >>> u3 = u1.reshape(2, 2)
-        >>> checkOverlapUncs(a2, a3, u2, u3 1)
+        >>> getOverlaps(a2, a3, u2, u3 1)
         array([[ True,  True], 
                [False, False])
 
