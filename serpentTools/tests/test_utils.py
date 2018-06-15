@@ -234,6 +234,13 @@ class OverlapTester(unittest.TestCase):
         vec, unc, expected = self._setupIdentical(8, (2, 2, 2))
         self._test(expected, vec, vec, unc, unc, 1)
 
+    def test_overlap_badshapes(self):
+        """Verify IndexError is raised for bad shapes."""
+        vec = arange(4)
+        mat = vec.reshape(2, 2)
+        with self.assertRaises(IndexError):
+            getOverlaps(vec, mat, vec, mat, 1)
+
 
 if __name__ == '__main__':
     unittest.main()

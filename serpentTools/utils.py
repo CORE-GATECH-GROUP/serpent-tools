@@ -485,7 +485,16 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
         array([[ True,  True], 
                [False, False])
 
+    Raises
+    ------
+    IndexError
+        If the shapes of incoming arrays do not agree
     """
+    shapes = {arg.shape for arg in (arr0, arr1, unc1, unc0)}
+    if len(shapes) != 1:
+        shapes = [str(a.shape) for a in [arr0, arr1, unc1, unc0]]
+        raise IndexError("Array shapes do not agree:\n{}"
+                         .format(', '.join(shapes)))
     err0 = fabs(unc0 * sigma)
     err1 = fabs(unc1 * sigma)
 
