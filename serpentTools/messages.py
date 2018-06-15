@@ -137,6 +137,7 @@ def _prefaceNotice(obj, leader):
     msg = '\n\t{} '.format(leader) + ''.join(str(obj).split('\n'))
     return msg
 
+
 def _notify(func, quantity, header, obj0, obj1):
     msg = header.format(quantity)
     msg += _prefaceNotice(obj0, '>')
@@ -174,17 +175,34 @@ def outsideTols(obj0, obj1, quantity):
             "Values for {} are outside acceptable tolerances.", obj0, obj1)
 
 
-def insideConfInt(window0, window1, quantity):
+def _notifyWithUncs(func, quantity, msg, value0, unc0, value1, unc1):
+    logMsg = msg.format(quantity)
+    logMsg += _prefaceNotice('>V', value0)
+    logMsg += _prefaceNotice('>U', unc0)
+    if value1 is not None:
+        logMsg += _prefaceNotice('<V', value1)
+    logMsg += _prefaceNotice('<U', unc0)
+    func(logMsg)
+
+
+def identicalWithUncs(value, unc0, unc1, quantity):
+    """Notify that two values have identical expected values."""
+    _notifyWithUncs(info, quantity,
+                    'Expected values for {} are identical',
+                    value, unc0, None, unc1)
+
+
+def insideConfInt(value0, unc0, value1, unc1, quantity):
     """Two values are within acceptable statistical limits."""
-    _notify(info, quantity, "Confidence intervals for {} overlap",
-            window0, window1)
+    _notifyWithUncs(info, quantity, 'Confidence intervals for {} overlap',
+                    value0, unc0, value1, unc1)
 
 
-def outsideConfInt(window0, window1, quantity):
+def outsideConfInt(value0, unc0, value1, unc1, quantity):
     """Two values are outside acceptable statistical limits."""
-    _notify(error, quantity,
-            "Values for {} are outside acceptable statistical limits",
-            window0, window1)
+    _notifyWithUncs(error, quantity,
+                    "Values for {} are outside acceptable statistical limits",
+                    value0, unc0, value1, unc1)
 
 
 def differentTypes(type0, type1, quantity):
