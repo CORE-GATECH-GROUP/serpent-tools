@@ -474,7 +474,7 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
 
 
 @compareDocDecorator
-def getOverlaps(arr0, arr1, unc0, unc1, sigma):
+def getOverlaps(arr0, arr1, unc0, unc1, sigma, relative=True):
     r"""
     Return the indicies of overlapping confidence intervals
 
@@ -488,6 +488,10 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
         Associated absolute uncertainties, :math:`1\sigma`,
         corresponding to the values in ``arr0`` and ``arr1``
     {sigma}
+    relative: bool
+        True if uncertainties are relative and should be multiplied
+        by their respective values. Otherwise, assume values are 
+        absolute
 
     Returns
     -------
@@ -499,7 +503,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
 
     Examples
     --------
-    ::
+    Using absolute uncertainties::
 
         >>> from numpy import ones, zeros, array
         >>> a0 = ones(4)
@@ -516,7 +520,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
     of ``a1[3]``.
     ::
 
-        >>> getOverlaps(a0, a1, u0, u1, 1)
+        >>> getOverlaps(a0, a1, u0, u1, 1, relative=False)
         array([True, True, False, True])
 
     This function also works for multi-dimensional arrays as well.
@@ -526,7 +530,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
         >>> a3 = a1.reshape(2, 2)
         >>> u2 = u0.reshape(2, 2)
         >>> u3 = u1.reshape(2, 2)
-        >>> getOverlaps(a2, a3, u2, u3 1)
+        >>> getOverlaps(a2, a3, u2, u3 1, relative=False)
         array([[ True,  True],
                [False, False])
 
@@ -542,6 +546,10 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
                          .format(', '.join(shapes)))
     err0 = fabs(unc0 * sigma)
     err1 = fabs(unc1 * sigma)
+
+    if relative:
+        err0 *= arr0
+        err1 *= arr1
 
     min0 = arr0 - err0
     max0 = arr0 + err0

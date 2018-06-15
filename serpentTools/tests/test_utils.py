@@ -182,31 +182,39 @@ class DirectCompareTester(TestCase):
 class OverlapTester(TestCase):
     """Class for testing the Overlapping uncertainties function."""
 
+    a0 = ones(4)
+    a1 = ones(4) * 0.5
+    u0 = array([0, 0.2, 0.1, 0.2])
+    u1 = array([1, 0.55, 0.25, 0.4])
+    expected = array([True, True, False, True])
+    sigma = 1
+    relative = False
+
     _errMsg = "Sigma:{}\na0:\n{}\nu0:\n{}\na1:\n{}\nu1:\n{}"
 
-    def _test(self, expected, a0, a1, u0, u1, sigma):
+    def _test(self, expected, a0, a1, u0, u1, sigma, relative):
         """Symmetric test on the data by switching the order of arguments."""
-        assert_array_equal(expected, getOverlaps(a0, a1, u0, u1, sigma),
+        assert_array_equal(expected, getOverlaps(a0, a1, u0, u1, sigma, relative),
                            err_msg=self._errMsg.format(a0, u0, a1, u1, sigma))
-        assert_array_equal(expected, getOverlaps(a1, a0, u1, u0, sigma),
+        assert_array_equal(expected, getOverlaps(a1, a0, u1, u0, sigma, relative),
                            err_msg=self._errMsg.format(sigma, a1, u1, a0, u0))
 
-    def _testWithReshapes(self, expected, a0, a1, u0, u1, sigma, shape):
+    def _testWithReshapes(self, expected, a0, a1, u0, u1, sigma, shape, relative):
         """Call symmetric test twice, using reshaped arrays the second time."""
-        self._test(expected, a0, a1, u0, u1, sigma)
+        self._test(expected, a0, a1, u0, u1, sigma, relative)
         reshapes = [arg.reshape(*shape) for arg in [a0, a1, u0, u1]]
-        self._test(expected.reshape(*shape), *reshapes, sigma)
+        self._test(expected.reshape(*shape), *reshapes, sigma, relative)
 
-    def test_overlapDoc(self):
-        """Verify the getOverlaps works."""
-        # Based on the original example
-        a0 = ones(4)
-        a1 = ones(4) * 0.5
-        u0 = array([0, 0.2, 0.1, 0.2])
-        u1 = array([1, 0.55, 0.25, 0.4])
-        expected = array([True, True, False, True])
-        sigma = 1
-        self._testWithReshapes(expected, a0, a1, u0, u1, sigma, (2, 2))
+    def test_overlap_absolute(self):
+        """Verify the getOverlaps works using absolute uncertainties."""
+        self._testWithReshapes(self.expected, self.a0, self.a1, self.u0,
+                               self.u1, self.sigma, (2, 2), False)
+    def test_overlap_relative(self):
+        """Verify the getOverlaps works using relative uncertainties."""
+        u0 = self.u0 / self.a0
+        u1 = self.u1 / self.a1
+        self._testWithReshapes(self.expected, self.a0, self.a1, u0,
+                               u1, self.sigma, (2, 2), True)
 
     @staticmethod
     def _setupIdentical(nItems, shape=None):
@@ -222,21 +230,21 @@ class OverlapTester(TestCase):
         Verify that all positions are found to overlap for identical arrays.
         """
         vec, unc, expected = self._setupIdentical(8)
-        self._test(expected, vec, vec, unc, unc, 1)
+        self._test(expected, vec, vec, unc, unc, 1, False)
 
     def test_overlap_identical_2D(self):
         """
         Verify that all positions are found to overlap for identical arrays.
         """
         vec, unc, expected = self._setupIdentical(8, (2, 4))
-        self._test(expected, vec, vec, unc, unc, 1)
+        self._test(expected, vec, vec, unc, unc, 1, False)
 
     def test_overlap_identical_3D(self):
         """
         Verify that all positions are found to overlap for identical arrays.
         """
         vec, unc, expected = self._setupIdentical(8, (2, 2, 2))
-        self._test(expected, vec, vec, unc, unc, 1)
+        self._test(expected, vec, vec, unc, unc, 1, False)
 
     def test_overlap_badshapes(self):
         """Verify IndexError is raised for bad shapes."""
