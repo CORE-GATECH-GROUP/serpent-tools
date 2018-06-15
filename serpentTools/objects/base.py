@@ -8,7 +8,8 @@ from six import add_metaclass
 from numpy import arange, hstack, log, divide
 from matplotlib.pyplot import axes
 
-from serpentTools.messages import debug, warning, SerpentToolsException
+from serpentTools.messages import debug, warning, SerpentToolsException, LOG_OPTS
+from serpentTools.settings import rc
 from serpentTools.utils import compareDocDecorator
 from serpentTools.plot import (
         plot, magicPlotDocDecorator, formatPlot, cartMeshPlot)
@@ -26,7 +27,7 @@ class BaseObject(object):
 
     @compareDocDecorator
     def compare(self, other, lower=DEF_COMP_LOWER, upper=DEF_COMP_UPPER,
-                sigma=DEF_COMP_SIGMA):
+                sigma=DEF_COMP_SIGMA, verbosity=None):
         """
         Compare the results of this reader to another.
 
@@ -49,6 +50,8 @@ class BaseObject(object):
             Must be a similar class as this one.
         {compLimits}
         {sigma}
+        verbosity: None or str
+            If given, update the verbosity just for this comparison.
 
         Returns
         -------
@@ -75,9 +78,20 @@ class BaseObject(object):
             if item < 0:
                 raise ValueError("{} must be non-negative, is {}"
                                  .format(key, item))
+
         self._checkCompareObj(other)
 
-        return self._compare(other, lower, upper, sigma)
+        previousVerb = None
+        if verbosity is not None:
+            previousVerb = rc['verbosity']
+            rc['verbosity'] = verbosity
+
+        areSimilar = self._compare(other, lower, upper, sigma)
+
+        if previousVerb is not None:
+            rc['verbosity'] = previousVerb
+
+        return areSimilar
 
     def _compare(self, other, lower, upper, sigma):
         """Actual comparison method for similar classes."""
