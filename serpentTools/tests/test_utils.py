@@ -83,6 +83,16 @@ class SplitValsTester(unittest.TestCase):
             assert_array_equal(view, copy,err_msg=msg)
             self.assertFalse(view is copy, msg=msg)
 
+    def test_splitAtCols(self):
+        """Verify that the splitValsUncs works for 2D arrays."""
+        mat = self.input.reshape(2, 2)
+        expectedV = array([[0], [2]])
+        expectedU = array([[1], [3]])
+        actualV, actualU = splitValsUncs(mat)
+        assert_array_equal(expectedV, actualV, err_msg="Values")
+        assert_array_equal(expectedU, actualU, err_msg="Uncertainties")
+
+
 if __name__ == '__main__':
     unittest.main()
 
