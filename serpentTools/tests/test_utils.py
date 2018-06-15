@@ -4,7 +4,7 @@ Test the various utilities in serpentTools/utils.py
 
 import unittest
 
-from numpy import arange, ndarray, array
+from numpy import arange, ndarray, array, ones, ones_like, zeros_like
 from numpy.testing import assert_array_equal
 from six import iteritems
 
@@ -178,11 +178,62 @@ class DirectCompareTester(unittest.TestCase):
 class OverlapTester(unittest.TestCase):
     """Class for testing the Overlapping uncertainties function."""
 
+    _errMsg ="Sigma:{}\na0:\n{}\nu0:\n{}\na1:\n{}\nu1:\n{}" 
 
     def _test(self, expected, a0, a1, u0, u1, sigma):
-        self.assertTrue(expected == getOverlaps(a0, a1, u0, u1, sigma),
-                msg="Sigma:{}\na0:{}\nu0:{}\na1:{}\nu1:{}"
-                .format(a0, u0, a1, u1, sigma))
+        """Symmetric test on the data by switching the order of arguments."""
+        assert_array_equal(expected, getOverlaps(a0, a1, u0, u1, sigma),
+                           err_msg=self._errMsg.format(a0, u0, a1, u1, sigma))
+        assert_array_equal(expected, getOverlaps(a1, a0, u1, u0, sigma),
+                           err_msg=self._errMsg.format(sigma,a1, u1, a0, u0))
+
+    def _testWithReshapes(self, expected, a0, a1, u0, u1, sigma, shape):
+        """Call symmetric test twice, using reshaped arrays the second time."""
+        self._test(expected, a0, a1, u0, u1, sigma)
+        reshapes = [arg.reshape(*shape) for arg in [a0, a1, u0, u1]]
+        self._test(expected.reshape(*shape), *reshapes, sigma)
+
+    def test_overlapDoc(self):
+        """Verify the getOverlaps works."""
+        # Based on the original example
+        a0 = ones(4)
+        a1 = ones(4) * 0.5
+        u0 = array([0, 0.2, 0.1, 0.2])
+        u1 = array([1, 0.55, 0.25, 0.4])
+        expected = array([True, True, False, True])
+        sigma = 1
+        self._testWithReshapes(expected, a0, a1, u0, u1, sigma, (2, 2))
+
+    @staticmethod
+    def _setupIdentical(nItems, shape=None):
+        arr = arange(nItems)
+        if shape is not None:
+            arr = arr.reshape(*shape)
+        unc = zeros_like(arr)
+        expected = ones_like(arr, dtype=bool)
+        return arr, unc, expected
+
+    def test_overlap_identical_1D(self):
+        """
+        Verify that all positions are found to overlap for identical arrays.
+        """
+        vec, unc, expected = self._setupIdentical(8)
+        self._test(expected, vec, vec, unc, unc, 1)
+
+    def test_overlap_identical_2D(self):
+        """
+        Verify that all positions are found to overlap for identical arrays.
+        """
+        vec, unc, expected = self._setupIdentical(8, (2, 4))
+        self._test(expected, vec, vec, unc, unc, 1)
+
+    def test_overlap_identical_3D(self):
+        """
+        Verify that all positions are found to overlap for identical arrays.
+        """
+        vec, unc, expected = self._setupIdentical(8, (2, 2, 2))
+        self._test(expected, vec, vec, unc, unc, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
