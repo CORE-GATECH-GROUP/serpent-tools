@@ -457,12 +457,34 @@ def checkOverlapUncs(arr0, arr1, unc0, unc1, sigma):
     ::
 
         >>> from numpy import ones, zeros, array
-        >>> a0 = ones(3)
-        >>> u0 = zeros(3)
-        >>> a1 = ones(3) * 0.5
-        >>> u1 = array([1, 0.5, 0.1])
+        >>> a0 = ones(4)
+        >>> a1 = ones(4) * 0.5
+        >>> u0 = array([0, 0.2, 0.1, 0.2])
+        >>> u1 = array([1, 0.55, 0.25, 0.4])
+
+    Here, the first point in the confidence interval for
+    ``a0`` is completely contained within that of ``a1``.
+    The upper limit of ``a1[1]`` is contained within the confidence
+    interval for ``a0``.
+    The confidence intervals for the third point do not overlap,
+    while the lower bound of ``a0[3]`` is within the confidence interval
+    of ``a1[3]``.
+    ::
+
         >>> checkOverlapUncs(a0, a1, u0, u1, 1)
-        array([True, True, False])
+        array([True, True, False, True])
+
+    This function also works for multi-dimensional arrays as well.
+    ::
+
+        >>> a2 = a0.reshape(2, 2)
+        >>> a3 = a1.reshape(2, 2)
+        >>> u2 = u0.reshape(2, 2)
+        >>> u3 = u1.reshape(2, 2)
+        >>> checkOverlapUncs(a2, a3, u2, u3 1)
+        array([[ True,  True], 
+               [False, False])
+
     """
     err0 = fabs(unc0 * sigma)
     err1 = fabs(unc1 * sigma)
