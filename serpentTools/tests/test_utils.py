@@ -2,7 +2,7 @@
 Test the various utilities in serpentTools/utils.py
 """
 
-import unittest
+from unittest import TestCase
 
 from numpy import arange, ndarray, array, ones, ones_like, zeros_like
 from numpy.testing import assert_array_equal
@@ -15,10 +15,11 @@ from serpentTools.utils import (
     getCommonKeys,
     directCompare,
     getOverlaps,
+    splitDictByKeys,
     )
 
 
-class VariableConverterTester(unittest.TestCase):
+class VariableConverterTester(TestCase):
     """Class for testing our variable name conversion function."""
 
     def test_variableConversion(self):
@@ -33,7 +34,7 @@ class VariableConverterTester(unittest.TestCase):
             self.assertEqual(expected, actual, msg=serpentStyle)
 
 
-class VectorConverterTester(unittest.TestCase):
+class VectorConverterTester(TestCase):
     """Class for testing the str2vec function"""
 
     def setUp(self):
@@ -67,7 +68,7 @@ class VectorConverterTester(unittest.TestCase):
             self.assertEqual(expected, actual, msg=case)
 
 
-class SplitValsTester(unittest.TestCase):
+class SplitValsTester(TestCase):
     """Class that tests splitValsUncs."""
 
     def setUp(self):
@@ -91,7 +92,7 @@ class SplitValsTester(unittest.TestCase):
             self.assertFalse(view is copy, msg=msg)
 
 
-class CommonKeysTester(unittest.TestCase):
+class CommonKeysTester(TestCase):
     """Class that tests getCommonKeys"""
 
     def test_goodKeys_dict(self):
@@ -122,7 +123,7 @@ class CommonKeysTester(unittest.TestCase):
             self.assertIn(desc, warnMsg, msg=errMsg.format(desc, warnMsg))
 
 
-class DirectCompareTester(unittest.TestCase):
+class DirectCompareTester(TestCase):
     """Class for testing utils.directCompare."""
 
     NUMERIC_ITEMS = (
@@ -175,7 +176,7 @@ class DirectCompareTester(unittest.TestCase):
         self._testNumericsForItems(False, 'outsideTols', lower, upper)
 
 
-class OverlapTester(unittest.TestCase):
+class OverlapTester(TestCase):
     """Class for testing the Overlapping uncertainties function."""
 
     _errMsg ="Sigma:{}\na0:\n{}\nu0:\n{}\na1:\n{}\nu1:\n{}" 
@@ -242,6 +243,66 @@ class OverlapTester(unittest.TestCase):
             getOverlaps(vec, mat, vec, mat, 1)
 
 
+class SplitDictionaryTester(TestCase):
+    """Class for testing utils.splitDictByKeys."""
+
+    def setUp(self):
+        self.map0 = {
+            'hello': 'world',
+            'missingFrom1': True,
+            'infKeff': arange(2),
+            'float': 0.24,
+            'absKeff': arange(2),
+            'anaKeff': arange(6),
+            'notBool': 1,
+        }
+        self.map1 = {
+            'hello': 'world',
+            'infKeff': arange(2),
+            'float': 0.24,
+            'missingFrom0': True,
+            'notBool': False,
+            'anaKeff': arange(2),
+            'absKeff': arange(2),
+        }
+        self.badTypes = {'notBool': (int, bool) }
+        self.badShapes = {'anaKeff': ((6, ), (2, )), }
+        self.goodKeys = {'hello', 'absKeff', 'float', 'infKeff', }
+
+    def callTest(self, keySet=None):
+        return splitDictByKeys(self.map0, self.map1, keySet)
+
+    def test_noKeys(self):
+        """Verify that splitDictByKeys works when keySet is None."""
+        m0, m1, badTypes, badShapes, goodKeys = self.callTest(None)
+        self.assertSetEqual(set(), m0)
+        self.assertSetEqual(set(), m1)
+        self.assertDictEqual(self.badTypes, badTypes)
+        self.assertDictEqual(self.badShapes, badShapes)
+        self.assertSetEqual(self.goodKeys, goodKeys)
+
+    def test_keySet_all(self):
+        """Verify that splitDictByKeys works when keySet is all keys."""
+        keys = set(self.map0.keys())
+        keys.update(set(self.map1.keys()))
+        keys.add('NOT IN ANY MAP')
+        missing0 = set()
+        missing1 = set()
+        for key in keys:
+            if key not in self.map0:
+                missing0.add(key)
+            if key not in self.map1:
+                missing1.add(key)
+
+        m0, m1, badTypes, badShapes, goodKeys = self.callTest(keys)
+        self.assertSetEqual(missing0, m0)
+        self.assertSetEqual(missing1, m1)
+        self.assertDictEqual(self.badTypes, badTypes)
+        self.assertDictEqual(self.badShapes, badShapes)
+        self.assertSetEqual(self.goodKeys, goodKeys)
+
+
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()
 

@@ -10,7 +10,6 @@ from numpy import array, ndarray, fabs, where, zeros_like
 
 from serpentTools.messages import (
     error,
-    critical,
     identical,
     notIdentical,
     acceptableLow,
@@ -333,7 +332,7 @@ def directCompare(obj0, obj1, lower, upper, quantity):
     type0 = type(obj0)
     type1 = type(obj1)
     noticeTuple = [obj0, obj1, quantity]
-    if ((type0 not in COMPARE_NUMERICS or type1 not in COMPARE_NUMERICS) 
+    if ((type0 not in COMPARE_NUMERICS or type1 not in COMPARE_NUMERICS)
             and type0 != type(obj1)):
         differentTypes(type0, type1, quantity)
         return False
@@ -369,32 +368,43 @@ def directCompare(obj0, obj1, lower, upper, quantity):
           "\n\tDevelopers: Update this function or create a compare function "
           "for {tp} objects.".format(tp=type0))
 
-def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
+
+def splitDictByKeys(map0, map1, keySet=None):
     """
-    Return a set of keys in map0/1 that point to arrays with identical shapes.
+    Return various sub-sets and dictionaries from two maps.
+
+    Used to test the internal workings on :func:`getKeyMatchingShapes`
 
     Parameters
     ----------
-    keySet: set or list or tuple or iterable
-        Iterable container with keys that exist in map0 and map1. The contents
-        of ``map0/1`` under these keys will be compared
     map0: dict
     map1: dict
-        Two dictionaries containing at least all the keys in ``keySet``. 
-        Objects under keys in ``keySet`` will have their sizes compared if 
-        they are :class:`numpy.ndarray`. Non-arrays will be included only 
-        if their types are identical
-    desc0: str
-    decs1: str
-        Descriptions of the two dictionaries being compared. Used to alert the user
-        to the shortcomings of the two dictionaries
+        Dictionaries to compare
+    keySet: set or None
+        Iterable collection of keys found in ``map0`` and ``map1``.
+        Missing keys will be returned from this function under
+        the ``missing0`` and ``missing1`` sets. If ``None``, take
+        to be the set of keys that exist in both maps
 
     Returns
     -------
-    set:
-        Set of all keys that exist in both dictionaries and are either
-        identical types, or are arrays of identical size
+    missing0: set
+        Keys that exist in ``keySet`` but not in ``map0``
+    missing1: set
+        Keys that exist in ``keySet`` but not in ``map1``
+    badTypes: dict
+        Dictionary with tuples ``{key: (t0, t1)}`` indicating the values
+        ``map0[key]`` and ``map1[key]`` are of different types
+    badShapes: dict
+        Dictionary with tuples ``{key: (t0, t1)}`` indicating the values
+        ``map0[key]`` and ``map1[key]`` are arrays of different shapes
+    goodKeys: set
+        Keys found in both ``map0`` and ``map1`` that are of the same type
+        or point to arrays of the same shape
     """
+    if keySet is None:
+        k1 = set(map1.keys())
+        keySet = k1.intersection(set(map0.keys()))
     missing = {0: set(), 1: set()}
     badTypes = {}
     badShapes = {}
@@ -418,9 +428,44 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
                 continue
         goodKeys.add(key)
 
+    return missing[0], missing[1], badTypes, badShapes, goodKeys
+
+
+def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
+    """
+    Return a set of keys in map0/1 that point to arrays with identical shapes.
+
+    Parameters
+    ----------
+    keySet: set or list or tuple or iterable
+        Iterable container with keys that exist in map0 and map1. The contents
+        of ``map0/1`` under these keys will be compared
+    map0: dict
+    map1: dict
+        Two dictionaries containing at least all the keys in ``keySet``.
+        Objects under keys in ``keySet`` will have their sizes compared if
+        they are :class:`numpy.ndarray`. Non-arrays will be included only
+        if their types are identical
+    desc0: str
+    decs1: str
+        Descriptions of the two dictionaries being compared. Used to alert the
+        user to the shortcomings of the two dictionaries
+
+    Returns
+    -------
+    set:
+        Set of all keys that exist in both dictionaries and are either
+        identical types, or are arrays of identical size
+
+    See Also
+    :func:`splitDictByKeys`
+    """
+    missing0, missing1, badTypes, badShapes, goodKeys = (
+            splitDictByKeys(map0, map1, keySet))
+
     # raise some messages
-    if any(missing[0]) or any(missing[1]):
-        logMissingKeys(desc0, desc1, missing[0], missing[1])
+    if any(missing0) or any(missing1):
+        logMissingKeys(desc0, desc1, missing0, missing1)
     if badTypes:
         logBadTypes(desc0, desc1, badTypes)
     if badShapes:
@@ -447,7 +492,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
     Returns
     -------
     :class:`numpy.ndarray`
-        Boolean array of equal shape to incoming arrays. 
+        Boolean array of equal shape to incoming arrays.
         Every index with ``True`` as the value indicates that
         the confidence intervals for the arrays overlap
         at those indices.
@@ -482,7 +527,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
         >>> u2 = u0.reshape(2, 2)
         >>> u3 = u1.reshape(2, 2)
         >>> getOverlaps(a2, a3, u2, u3 1)
-        array([[ True,  True], 
+        array([[ True,  True],
                [False, False])
 
     Raises
@@ -502,7 +547,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
     max0 = arr0 + err0
     min1 = arr1 - err1
     max1 = arr1 + err1
-    
+
     overlap = zeros_like(arr0, dtype=bool)
 
     # Where values are identical to numerical precision
@@ -531,4 +576,3 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma):
     overlap[max1ge0 * (min1 <= max0)] = True
 
     return overlap
-
