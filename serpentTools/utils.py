@@ -193,7 +193,7 @@ COMPARE_DOC_DESC = """
     desc0: dict or None
     desc1: dict or None
         Description of the origin of each value set. Only needed
-        if ``quiet`` evalues to ``True."""
+        if ``quiet`` evalues to ``True``."""
 COMPARE_DOC_HERALD = """herald: callable
         Function that accepts a single string argument used to
         notify that differences were found. If
@@ -458,7 +458,8 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
         identical types, or are arrays of identical size
 
     See Also
-    :func:`splitDictByKeys`
+    --------
+    * :func:`splitDictByKeys`
     """
     missing0, missing1, badTypes, badShapes, goodKeys = (
             splitDictByKeys(map0, map1, keySet))
