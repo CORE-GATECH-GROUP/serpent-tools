@@ -55,15 +55,20 @@ def splitValsUncs(iterable, copy=False):
     Return even and odd indexed values from iterable
 
     Designed to extract expected values and uncertainties from
-    SERPENT vectors of the form 
+    SERPENT vectors/matrices of the form 
     ``[x1, u1, x2, u2, ...]``
+
+    Slices along the last axis present on ``iterable``, e.g.
+    columns in 2D matrix.
 
     Parameters
     ----------
-    iterable: ndarray or iterable
+    iterable: :class:`numpy.ndarray`or iterable
         Initial arguments to be processed. If not 
-        :py:class:`numpy.ndarray`, then will be converted
-        by calling :py:func:`serpentTools.utils.str2vec`
+        :class:`numpy.ndarray`, then strings will be converted
+        by calling :func:`str2vec`. Lists and tuples
+        will be sent directly to arrays with 
+        :func:`numpy.array`.
     copy: bool
         If true, return a unique instance of the values
         and uncertainties. Otherwise, returns a view
@@ -71,9 +76,9 @@ def splitValsUncs(iterable, copy=False):
 
     Returns
     -------
-    numpy.ndarray
+    :class:`numpy.ndarray`
         Even indexed values from ``iterable``
-    numpy.ndarray
+    :class:`numpy.ndarray`
         Odd indexed values from ``iterable``
 
     Examples
@@ -88,12 +93,17 @@ def splitValsUncs(iterable, copy=False):
         >>> splitValsUnc(line)
         array([1, 3]), array([2, 4])
 
+        >>> v = [[1, 2], [3, 4]]
+        >>> splitValsUncs(v)
+        array([[1], [3]]), array([[2], [4]])
+
     """
 
     if not isinstance(iterable, ndarray):
-        iterable = str2vec(iterable)
-    vals = iterable[0::2]
-    uncs = iterable[1::2]
+        iterable = (str2vec(iterable) if isinstance(iterable, str) 
+                    else array(iterable))
+    vals = iterable[..., 0::2]
+    uncs = iterable[..., 1::2]
     if copy:
         return vals.copy(), uncs.copy()
     return vals, uncs
