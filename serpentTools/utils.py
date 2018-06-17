@@ -6,7 +6,7 @@ from textwrap import dedent
 from functools import wraps
 
 from six import iteritems
-from numpy import array, ndarray, fabs, where, zeros_like
+from numpy import array, ndarray, fabs, where, zeros_like, dtype
 
 from serpentTools.messages import (
     error,
@@ -336,7 +336,7 @@ def directCompare(obj0, obj1, lower, upper, quantity):
     type1 = type(obj1)
     noticeTuple = [obj0, obj1, quantity]
     if ((type0 not in COMPARE_NUMERICS or type1 not in COMPARE_NUMERICS)
-            and type0 != type(obj1)):
+            and type0 != type0):
         differentTypes(type0, type1, quantity)
         return False
     if type0 is str:
@@ -346,7 +346,10 @@ def directCompare(obj0, obj1, lower, upper, quantity):
         identical(*noticeTuple)
         return True
 
-    if type0 in (float, int, ndarray):
+    if type0 is bool:
+        return obj0 == obj1
+
+    if type0 in (float, int, ndarray) or hasattr(obj0, 'dtype'):
         diff = fabs(obj0 - obj1) * 100
         if type0 is ndarray:
             nonZI = where(obj0 > LOWER_LIM_DIVISION)
