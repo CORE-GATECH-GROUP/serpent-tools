@@ -367,9 +367,9 @@ def directCompare(obj0, obj1, lower, upper, quantity):
         return True
     raise TypeError(
           "directCompare is not configured to make tests on objects of type "
-          "{tp}\n\tUsers: Create a issue on GitHub to alert developers."
+          "{tp}\n\tQuantity: {k}\n\tUsers: Create a issue on GitHub to alert developers."
           "\n\tDevelopers: Update this function or create a compare function "
-          "for {tp} objects.".format(tp=type0))
+          "for {tp} objects.".format(k=quantity, tp=type0))
 
 
 def splitDictByKeys(map0, map1, keySet=None):
