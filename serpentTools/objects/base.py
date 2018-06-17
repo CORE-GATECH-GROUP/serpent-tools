@@ -68,7 +68,7 @@ class BaseObject(object):
         """
         upper = float(upper)
         lower = float(lower)
-        sigma = max(0, int(sigma))
+        sigma = int(sigma)
         if upper < lower:
             raise ValueError("Upper limit must be greater than lower. "
                              "{} is not greater than {}"
