@@ -148,7 +148,7 @@ def _notify(func, quantity, header, obj0, obj1):
 
 def identical(obj0, obj1, quantity):
     """Two objects are identical."""
-    _notify(info, quantity, 'Values for {} are identical', obj0, None)
+    _notify(debug, quantity, 'Values for {} are identical', obj0, None)
 
 
 def notIdentical(obj0, obj1, quantity):
@@ -187,7 +187,7 @@ def _notifyWithUncs(func, quantity, msg, value0, unc0, value1, unc1):
 
 def identicalWithUncs(value, unc0, unc1, quantity):
     """Notify that two values have identical expected values."""
-    _notifyWithUncs(info, quantity,
+    _notifyWithUncs(debug, quantity,
                     'Expected values for {} are identical',
                     value, unc0, None, unc1)
 
