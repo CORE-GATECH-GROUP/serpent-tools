@@ -23,7 +23,7 @@ from serpentTools.utils import (
     convertVariableName,
     getKeyMatchingShapes,
     directCompare,
-    getOverlaps,
+    getLogOverlaps,
     compareDocDecorator,
 )
 from serpentTools.objects.base import (DEF_COMP_LOWER,
@@ -566,13 +566,8 @@ class HomogUniv(NamedObject):
             otherVal = otherVals[key]
             otherUnc = otherUncs[key]
 
-            overlaps = getOverlaps(myVal, otherVal, myUnc, otherUnc,
-                                   sigma, relative=True)
-            if not overlaps.all():
-                outsideConfInt(myVal, myUnc, otherVal, otherUnc, key)
-                similar &= False
-                continue
-            insideConfInt(myVal, myUnc, otherVal, otherUnc, key)
+            similar &= getLogOverlaps(key, myVal, otherVal, myUnc, otherUnc,
+                                      sigma, relative=True)
         return similar
 
     def compareInfData(self, other, sigma):

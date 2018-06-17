@@ -19,7 +19,7 @@ from serpentTools.utils import (
     directCompare,
     compareDocDecorator,
     getKeyMatchingShapes,
-    getOverlaps,
+    getLogOverlaps,
 )
 from serpentTools.messages import (
         warning, debug, SerpentToolsException,
@@ -397,16 +397,8 @@ class ResultsReader(XSReader):
                 continue
             myVals, myUncs = splitValsUncs(mine)
             theirVals, theirUncs = splitValsUncs(theirs)
-            if (myVals == theirVals).all():
-                identical(myVals, theirVals, key)
-                continue
-            overlaps = getOverlaps(myVals, theirVals, myUncs, theirUncs, 
-                                   sigma, relative=False)
-            if overlaps.all():
-                insideConfInt(myVals, myUncs, theirVals, theirUncs, key)
-                continue
-            similar &= False
-            outsideConfInt(myVals, myUncs, theirVals, theirUncs, key)
+            similar &= getLogOverlaps(key, myVals, theirVals, myUncs, 
+                                      theirUncs, sigma, relative=True)
         return similar
 
     @compareDocDecorator

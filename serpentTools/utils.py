@@ -19,6 +19,9 @@ from serpentTools.messages import (
     logMissingKeys,
     logBadTypes,
     logBadShapes,
+    identicalWithUncs,
+    insideConfInt,
+    outsideConfInt,
     )
 
 LOWER_LIM_DIVISION = 1E-8
@@ -595,3 +598,45 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma, relative=True):
     overlap[max1ge0 * (min1 <= max0)] = True
 
     return overlap
+
+@compareDocDecorator
+def getLogOverlaps(quantity, arr0, arr1, unc0, unc1, sigma, relative=True):
+    """
+    Wrapper around :func:`getOverlaps` that logs the result
+
+    Parameters
+    ----------
+    quantity: str
+        Name of the value being compared
+    arr0: :class:`numpy.ndarray`
+    arr1: :class:`numpy.ndarray`
+    unc0: :class:`numpy.ndarray`
+    unc1: :class:`numpy.ndarray`
+        Arrays and their uncertainties to evaluate
+    {sigma}
+    relative: bool
+        If uncertainties are relative. Otherwise, assume absolute
+        uncertainties.
+
+    Returns
+    -------
+    bool:
+        ``True`` if all locations ``arr0`` and ``arr1`` are either
+        identical or within allowable statistical variations.
+
+    See Also
+    --------
+    * :func:`getOverlaps` - This function performs all the comparisons
+      while this function simply reports the output using 
+      :mod:`serpentTools.messages`
+    """
+
+    if (arr0 == arr1).all():
+        identicalWithUncs(arr0, unc0, unc1, quantity)
+        return True
+    overlaps = getOverlaps(arr0, arr1, unc0, unc1, sigma, relative)
+    if overlaps.all():
+        insideConfInt(arr0, unc0, arr1, unc1, quantity)
+        return True
+    outsideConfInt(arr0, unc0, arr1, unc1, quantity)
+    return False
