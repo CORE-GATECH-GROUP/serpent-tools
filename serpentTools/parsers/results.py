@@ -341,11 +341,10 @@ class ResultsReader(XSReader):
         """
 
         self._checkCompareObj(other)
-        debug("Comparing metadata")
         myKeys = set(self.metadata.keys())
         otherKeys = set(other.metadata.keys())
         similar = not any(myKeys.symmetric_difference(otherKeys))
-        commonKeys = getCommonKeys(myKeys, otherKeys)
+        commonKeys = getCommonKeys(myKeys, otherKeys, 'metadata')
         skips = commonKeys.intersection(self.__METADATA_COMP_SKIPS)
         if any(skips):
             debug("The following items will be skipped in the comparison\n\t{}"
@@ -385,17 +384,10 @@ class ResultsReader(XSReader):
         debug("Comparing results dictionaries.")
         myRes = self.resdata
         otherR = other.resdata
-        myKeys = set(myRes.keys())
-        otherKeys = set(otherR.keys())
-        numMyKeys = len(myKeys)
-        numOtherKeys = len(otherKeys)
-        similar = not any(myKeys.symmetric_difference(otherKeys))
 
-        commonKeys = getCommonKeys(myKeys, otherKeys)
-        similar &= len(commonKeys) == numMyKeys == numOtherKeys
+        commonTypeKeys = getKeyMatchingShapes(myRes, otherR, 'results')
 
-        commonTypeKeys = getKeyMatchingShapes(commonKeys, myRes, otherR)
-        similar &= len(commonTypeKeys) == len(commonKeys)
+        similar = len(commonTypeKeys) == len(myRes) == len(otherR)
 
         for key in sorted(commonTypeKeys):
             mine = myRes[key]
@@ -441,18 +433,14 @@ class ResultsReader(XSReader):
         """
         myUniverses = self.universes
         otherUniverses = other.universes
+        keyGoodTypes = getKeyMatchingShapes(myUniverses, otherUniverses,
+                                            'universes')
 
-        commonKeys = getCommonKeys(myUniverses, otherUniverses)
-        similar = (len(commonKeys) == len(myUniverses) 
-                   == len(otherUniverses))
-        
-        keyGoodTypes = getKeyMatchingShapes(commonKeys, myUniverses,
-                                            otherUniverses)
-        similar &= (not any(commonKeys.symmetric_difference(keyGoodTypes)))
+        similar = len(keyGoodTypes) == len(myUniverses) == len(otherUniverses)
 
         for univKey in keyGoodTypes:
-            myUniv = myUniverses[key]
-            otherUniv = otherUniverses[key]
-            similar &= myUniv.compare(otherUniv(lower, upper, sigma))
+            myUniv = myUniverses[univKey]
+            otherUniv = otherUniverses[univKey]
+            similar &= myUniv.compare(otherUniv, lower, upper, sigma)
 
         return similar

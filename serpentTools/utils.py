@@ -256,7 +256,8 @@ def _getDefDescs(desc0, desc1):
 
 
 @compareDocDecorator
-def getCommonKeys(d0, d1, desc0='first', desc1='second', herald=error):
+def getCommonKeys(d0, d1, quantity, desc0='first', desc1='second',
+                  herald=error):
     """
     Return a set of common keys from two dictionaries
 
@@ -273,6 +274,8 @@ def getCommonKeys(d0, d1, desc0='first', desc1='second', herald=error):
     d0: dict or iterable
     d1: dict or iterable
         Dictionary of keys or iterable of keys to be compared
+    quantity: str
+        Indicator as to what is being compared, e.g. ``'metadta'``
     {desc}
     {herald}
     Returns
@@ -290,7 +293,7 @@ def getCommonKeys(d0, d1, desc0='first', desc1='second', herald=error):
     if missing:
         in0 = s0.difference(s1)
         in1 = s1.difference(s0)
-        logMissingKeys(desc0, desc1, in0, in1, herald)
+        logMissingKeys(quantity, desc0, desc1, in0, in1, herald)
     return common
 
 
@@ -431,21 +434,25 @@ def splitDictByKeys(map0, map1, keySet=None):
     return missing[0], missing[1], badTypes, badShapes, goodKeys
 
 
-def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
+def getKeyMatchingShapes(map0, map1, quantity, keySet=None, desc0='first',
+                         desc1='second'):
     """
     Return a set of keys in map0/1 that point to arrays with identical shapes.
 
     Parameters
     ----------
-    keySet: set or list or tuple or iterable
+    keySet: set or list or tuple or iterable or None
         Iterable container with keys that exist in map0 and map1. The contents
-        of ``map0/1`` under these keys will be compared
+        of ``map0/1`` under these keys will be compared. If ``None``, 
+        will be determined by :func:`splitDictByKeys`
     map0: dict
     map1: dict
         Two dictionaries containing at least all the keys in ``keySet``.
         Objects under keys in ``keySet`` will have their sizes compared if
         they are :class:`numpy.ndarray`. Non-arrays will be included only
         if their types are identical
+    quantity: str
+        Indicator as to what is being compared, e.g. ``'metadata'``
     desc0: str
     decs1: str
         Descriptions of the two dictionaries being compared. Used to alert the
@@ -455,7 +462,7 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
     -------
     set:
         Set of all keys that exist in both dictionaries and are either
-        identical types, or are arrays of identical size
+        identical types, or are arrays of identical shapes
 
     See Also
     --------
@@ -466,11 +473,11 @@ def getKeyMatchingShapes(keySet, map0, map1, desc0='first', desc1='second'):
 
     # raise some messages
     if any(missing0) or any(missing1):
-        logMissingKeys(desc0, desc1, missing0, missing1)
+        logMissingKeys(quantity, desc0, desc1, missing0, missing1)
     if badTypes:
-        logBadTypes(desc0, desc1, badTypes)
+        logBadTypes(quantity, desc0, desc1, badTypes)
     if badShapes:
-        logBadShapes(desc0, desc1, badShapes)
+        logBadShapes(quantity, desc0, desc1, badShapes)
     return goodKeys
 
 

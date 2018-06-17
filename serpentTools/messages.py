@@ -211,7 +211,7 @@ def differentTypes(type0, type1, quantity):
             type0, type1)
 
 
-MISSING_MSG_HEADER = "Objects {} and {} contain different items"
+MISSING_MSG_HEADER = "{} from {} and {} contain different items"
 MISSING_MSG_SUBJ = "\n\tItems present in {} but not in {}:\n\t\t{}"
 
 
@@ -223,12 +223,14 @@ def _checkHerald(herald):
     return herald
 
 
-def logMissingKeys(desc0, desc1, in0, in1, herald=error):
+def logMissingKeys(quantity, desc0, desc1, in0, in1, herald=error):
     """
     Log a warning message that two objects contain different items
 
     Parameters
     ----------
+    quantity: str
+        Indicator as to what is being compared, e.g. ``'metadata'``
     desc0: str
     desc1: str
         Descriptions of the two originators
@@ -242,7 +244,7 @@ def logMissingKeys(desc0, desc1, in0, in1, herald=error):
     if not any(in0) and not any(in1):
         return
     herald = _checkHerald(herald)
-    msg = MISSING_MSG_HEADER.format(desc0, desc1)
+    msg = MISSING_MSG_HEADER.format(quantity, desc0, desc1)
     if any(in0):
         msg += MISSING_MSG_SUBJ.format(desc0, desc1,
                                        ', '.join([str(xx) for xx in in0]))
@@ -252,17 +254,19 @@ def logMissingKeys(desc0, desc1, in0, in1, herald=error):
     herald(msg)
 
 
-BAD_TYPES_HEADER = "Items from {} and {} have different types"
-BAD_SHAPES_HEADER = "Items from {} and {} have different shapes"
+BAD_TYPES_HEADER = "Items from {d0} and {d1} {q} have different types"
+BAD_SHAPES_HEADER = "Items from {d0} and {d1} {q} have different shapes"
 BAD_OBJ_SUBJ = "\n\t{key}: {t0} - {t1}"
 
 
-def logBadTypes(desc0, desc1, types):
+def logBadTypes(quantity, desc0, desc1, types):
     """
     Log an error message for containers with mismatched types
 
     Parameters
     ----------
+    quantity: str
+        Indicator as to what is being compared, e.g. ``'metadata'``
     desc0: str
     desc1: str
         Descriptions of the two originators
@@ -272,19 +276,21 @@ def logBadTypes(desc0, desc1, types):
         be a list or tuple of the types for objects from
         ``desc0`` and ``desc1`` stored under ``key``
     """
-    msg = BAD_TYPES_HEADER.format(desc0, desc1)
+    msg = BAD_TYPES_HEADER.format(q=quantity, d0=desc0, d1=desc1)
     for key in sorted(list(types.keys())):
         t0, t1 = types[key]
         msg += BAD_OBJ_SUBJ.format(key=key, t0=t0, t1=t1)
     error(msg)
 
 
-def logBadShapes(desc0, desc1, shapes):
+def logBadShapes(quantity, desc0, desc1, shapes):
     """
     Log an error message for containers with mismatched shapes
 
     Parameters
     ----------
+    quantity: str
+        Indicator as to what is being compared, e.g. ``'metadata'``
     desc0: str
     desc1: str
         Descriptions of the two originators
@@ -294,7 +300,7 @@ def logBadShapes(desc0, desc1, shapes):
         be a list or tuple of the shapes for objects from
         ``desc0`` and ``desc1`` stored under ``key``
     """
-    msg = BAD_SHAPES_HEADER.format(desc0, desc1)
+    msg = BAD_SHAPES_HEADER.format(q=quantity, d0=desc0, d1=desc1)
     for key in sorted(list(shapes.keys())):
         t0, t1 = shapes[key]
         msg += BAD_OBJ_SUBJ.format(key=key, t0=t0, t1=t1)
