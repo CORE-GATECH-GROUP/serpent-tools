@@ -22,7 +22,7 @@ from serpentTools.utils import (
     COMPARE_DOC_TYPE_ERR,
     convertVariableName,
     getKeyMatchingShapes,
-    directCompare,
+    logDirectCompare,
     getLogOverlaps,
     compareDocDecorator,
 )
@@ -35,8 +35,6 @@ from serpentTools.messages import (
     info,
     critical,
     error,
-    insideConfInt, 
-    outsideConfInt,
 )
 
 SCATTER_MATS = set()
@@ -505,8 +503,8 @@ class HomogUniv(NamedObject):
         similar = len(matchingKeys) == len(myMeta)
 
         for key in sorted(matchingKeys):
-            similar &= directCompare(myMeta[key], otherMeta[key],
-                                     lower, upper, key)
+            similar &= logDirectCompare(myMeta[key], otherMeta[key],
+                                        lower, upper, key)
 
         return similar
 

@@ -10,18 +10,18 @@ from numpy import array, ndarray, fabs, where, zeros_like
 
 from serpentTools.messages import (
     error,
-    identical,
-    notIdentical,
-    acceptableLow,
-    acceptableHigh,
-    outsideTols,
-    differentTypes,
+    logIdentical,
+    logNotIdentical,
+    logAcceptableLow,
+    logAcceptableHigh,
+    logOutsideTols,
+    logDifferentTypes,
     logMissingKeys,
     logBadTypes,
     logBadShapes,
-    identicalWithUncs,
-    insideConfInt,
-    outsideConfInt,
+    logIdenticalWithUncs,
+    logInsideConfInt,
+    logOutsideConfInt,
     )
 
 LOWER_LIM_DIVISION = 1E-8
@@ -306,12 +306,12 @@ def getCommonKeys(d0, d1, quantity, desc0='first', desc1='second',
 TPL_FLOAT_INT = float, int
 
 COMPARE_STATUS_CODES = {
-    0: (identical, True),
-    1: (acceptableLow, True),
-    10: (acceptableHigh, True),
-    200: (notIdentical, False),
-    100: (outsideTols, False),
-    255: (differentTypes, False),
+    0: (logIdentical, True),
+    1: (logAcceptableLow, True),
+    10: (logAcceptableHigh, True),
+    200: (logNotIdentical, False),
+    100: (logOutsideTols, False),
+    255: (logDifferentTypes, False),
 }
 """Keys of status codes with ``(caller, return)`` values."""
 
@@ -694,11 +694,11 @@ def getLogOverlaps(quantity, arr0, arr1, unc0, unc1, sigma, relative=True):
     """
 
     if (arr0 == arr1).all():
-        identicalWithUncs(arr0, unc0, unc1, quantity)
+        logIdenticalWithUncs(arr0, unc0, unc1, quantity)
         return True
     overlaps = getOverlaps(arr0, arr1, unc0, unc1, sigma, relative)
     if overlaps.all():
-        insideConfInt(arr0, unc0, arr1, unc1, quantity)
+        logInsideConfInt(arr0, unc0, arr1, unc1, quantity)
         return True
-    outsideConfInt(arr0, unc0, arr1, unc1, quantity)
+    logOutsideConfInt(arr0, unc0, arr1, unc1, quantity)
     return False

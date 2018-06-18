@@ -16,17 +16,16 @@ from serpentTools.utils import (
     str2vec, 
     splitValsUncs,
     getCommonKeys,
-    directCompare,
+    logDirectCompare,
     compareDocDecorator,
     getKeyMatchingShapes,
     getLogOverlaps,
 )
 from serpentTools.messages import (
         warning, debug, SerpentToolsException,
-        identical,
         info,
-        insideConfInt,
-        outsideConfInt,
+        logInsideConfInt,
+        logOutsideConfInt,
 )
 
 
@@ -359,7 +358,7 @@ class ResultsReader(XSReader):
                 continue
             selfV = self.metadata[key]
             otherV = other.metadata[key]
-            similar &= directCompare(selfV, otherV, 0., 0., key)
+            similar &= logDirectCompare(selfV, otherV, 0., 0., key)
 
         return similar
 
@@ -401,7 +400,7 @@ class ResultsReader(XSReader):
             mine = myRes[key]
             theirs = otherR[key]
             if key in RES_DATA_NO_UNCS:
-                similar &= directCompare(mine, theirs, lower, upper, key)
+                similar &= logDirectCompare(mine, theirs, lower, upper, key)
                 continue
             myVals, myUncs = splitValsUncs(mine)
             theirVals, theirUncs = splitValsUncs(theirs)
