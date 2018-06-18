@@ -134,7 +134,7 @@ class DirectCompareTester(TestCase):
     )
 
     def checkStatus(self, expected, *args, **kwargs):
-        """Wrapper around directCompare with ``args``. Pass ``kwargs`` to 
+        """Wrapper around directCompare with ``args``. Pass ``kwargs`` to
         assertEqual."""
         actual = directCompare(*args)
         self.assertEqual(expected, actual, **kwargs)
@@ -167,7 +167,7 @@ class DirectCompareTester(TestCase):
         msg = "lower: {lower}, upper: {upper}\n{}\n{}"
         for (obj0, obj1) in self.NUMERIC_ITEMS:
             self.checkStatus(status, obj0, obj1, lower, upper,
-                             msg=msg.format(obj0, obj1, lower=lower, 
+                             msg=msg.format(obj0, obj1, lower=lower,
                                             upper=upper))
 
     def test_acceptableLow(self):
@@ -204,12 +204,15 @@ class OverlapTester(TestCase):
 
     def _test(self, expected, a0, a1, u0, u1, sigma, relative):
         """Symmetric test on the data by switching the order of arguments."""
-        assert_array_equal(expected, getOverlaps(a0, a1, u0, u1, sigma, relative),
+        assert_array_equal(expected, getOverlaps(a0, a1, u0, u1, sigma,
+                                                 relative),
                            err_msg=self._errMsg.format(a0, u0, a1, u1, sigma))
-        assert_array_equal(expected, getOverlaps(a1, a0, u1, u0, sigma, relative),
+        assert_array_equal(expected, getOverlaps(a1, a0, u1, u0, sigma,
+                                                 relative),
                            err_msg=self._errMsg.format(sigma, a1, u1, a0, u0))
 
-    def _testWithReshapes(self, expected, a0, a1, u0, u1, sigma, shape, relative):
+    def _testWithReshapes(self, expected, a0, a1, u0, u1, sigma, shape,
+                          relative):
         """Call symmetric test twice, using reshaped arrays the second time."""
         self._test(expected, a0, a1, u0, u1, sigma, relative)
         reshapes = [arg.reshape(*shape) for arg in [a0, a1, u0, u1]]
@@ -219,6 +222,7 @@ class OverlapTester(TestCase):
         """Verify the getOverlaps works using absolute uncertainties."""
         self._testWithReshapes(self.expected, self.a0, self.a1, self.u0,
                                self.u1, self.sigma, (2, 2), False)
+
     def test_overlap_relative(self):
         """Verify the getOverlaps works using relative uncertainties."""
         u0 = self.u0 / self.a0

@@ -6,10 +6,9 @@ from textwrap import dedent
 from functools import wraps
 
 from six import iteritems
-from numpy import array, ndarray, fabs, where, zeros_like, dtype
+from numpy import array, ndarray, fabs, where, zeros_like
 
 from serpentTools.messages import (
-    differentTypes,
     error,
     identical,
     notIdentical,
@@ -316,6 +315,7 @@ COMPARE_STATUS_CODES = {
 }
 """Keys of status codes with ``(caller, return)`` values."""
 
+
 @compareDocDecorator
 def directCompare(obj0, obj1, lower, upper):
     """
@@ -385,6 +385,7 @@ def directCompare(obj0, obj1, lower, upper):
         return 10
     return -1
 
+
 @compareDocDecorator
 def logDirectCompare(obj0, obj1, lower, upper, quantity):
     """
@@ -409,8 +410,8 @@ def logDirectCompare(obj0, obj1, lower, upper, quantity):
     Raises
     ------
     TypeError:
-        If the objects being compared are not supported by 
-        :func:`directCompare`.  Developers should either extend the 
+        If the objects being compared are not supported by
+        :func:`directCompare`.  Developers should either extend the
         function or utilize a different comparison function
 
     See Also
@@ -428,7 +429,7 @@ def logDirectCompare(obj0, obj1, lower, upper, quantity):
                   "of type {tp}\n\tQuantity: {k}\n\tUsers: Create a issue on "
                   "GitHub to alert developers.\n\tDevelopers: Update this "
                   "function or create a compare function "
-                  "for {tp} objects.".format(k=quantity, tp=type0))
+                  "for {tp} objects.".format(k=quantity, tp=type(obj0)))
     noticeTuple = [obj0, obj1, quantity]
     if result in COMPARE_STATUS_CODES:
         func, returnV = COMPARE_STATUS_CODES[result]
@@ -509,7 +510,7 @@ def getKeyMatchingShapes(map0, map1, quantity, keySet=None, desc0='first',
     ----------
     keySet: set or list or tuple or iterable or None
         Iterable container with keys that exist in map0 and map1. The contents
-        of ``map0/1`` under these keys will be compared. If ``None``, 
+        of ``map0/1`` under these keys will be compared. If ``None``,
         will be determined by :func:`splitDictByKeys`
     map0: dict
     map1: dict
@@ -564,7 +565,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma, relative=True):
     {sigma}
     relative: bool
         True if uncertainties are relative and should be multiplied
-        by their respective values. Otherwise, assume values are 
+        by their respective values. Otherwise, assume values are
         absolute
 
     Returns
@@ -659,6 +660,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma, relative=True):
 
     return overlap
 
+
 @compareDocDecorator
 def getLogOverlaps(quantity, arr0, arr1, unc0, unc1, sigma, relative=True):
     """
@@ -687,7 +689,7 @@ def getLogOverlaps(quantity, arr0, arr1, unc0, unc1, sigma, relative=True):
     See Also
     --------
     * :func:`getOverlaps` - This function performs all the comparisons
-      while this function simply reports the output using 
+      while this function simply reports the output using
       :mod:`serpentTools.messages`
     """
 
