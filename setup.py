@@ -38,13 +38,12 @@ if not getenv('ONTRAVIS', False):
     # PR 45/44
     installRequires.append('scipy')
 
-installVarYamlFrom = join('serpentTools', 'variables.yaml')
-
 pythonRequires = '>=2.7,!=3.0,!=3.1,!=3.2,!=3.3,!=3.4'
 
 setupArgs = {
     'name': 'serpentTools',
-    'packages': ['serpentTools', 'serpentTools.parsers',
+    'packages': ['serpentTools', 'serpentTools.parsers', 
+                 'serpentTools.data',
                  'serpentTools.objects', 'serpentTools.samplers'],
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
@@ -57,8 +56,13 @@ setupArgs = {
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',
     'version': versioneer.get_version(),
+    'package_data': {
+        'serpentTools.data': ['data/*.m'],
+    },
     'cmdclass': versioneer.get_cmdclass(),
-    'data_files': [(dirname(installVarYamlFrom), [installVarYamlFrom])]
+    'data_files': [
+        ('serpentTools', ['serpentTools/variables.yaml', ]),
+    ],
 }
 if HAS_SETUPTOOLS:
     setupArgs.update({
