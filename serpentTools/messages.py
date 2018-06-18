@@ -194,7 +194,7 @@ def identicalWithUncs(value, unc0, unc1, quantity):
 
 def insideConfInt(value0, unc0, value1, unc1, quantity):
     """Two values are within acceptable statistical limits."""
-    _notifyWithUncs(info, quantity, 'Confidence intervals for {} overlap',
+    _notifyWithUncs(debug, quantity, 'Confidence intervals for {} overlap',
                     value0, unc0, value1, unc1)
 
 
