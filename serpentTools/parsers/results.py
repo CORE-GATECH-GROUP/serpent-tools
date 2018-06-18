@@ -9,7 +9,7 @@ from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers.base import XSReader
-from serpentTools.parsers.collections import RES_DATA_NO_UNCS
+from serpentTools.parsers._collections import RES_DATA_NO_UNCS
 from serpentTools.objects.base import (DEF_COMP_LOWER, 
                                        DEF_COMP_SIGMA, DEF_COMP_UPPER)
 from serpentTools.utils import (
