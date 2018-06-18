@@ -89,13 +89,6 @@ def read(filePath, reader='infer'):
     """
     Simple entry point to read a file and obtain the processed reader.
 
-    .. note::
-
-        If you know the type of reader you will be using,
-        it is best to either pass in the string argument,
-        or directly use the appropriate reader class
-
-
     Parameters
     ----------
     filePath: str
