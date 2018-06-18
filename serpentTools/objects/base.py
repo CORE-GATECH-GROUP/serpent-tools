@@ -109,19 +109,24 @@ class BaseObject(object):
                     "Cannot compare against {} - not instance nor subclass "
                     "of {}".format(oName, name))
 
-    def _compareLogPreMsg(self, other, lower, upper, sigma):
+    def _compareLogPreMsg(self, other, lower=None, upper=None, sigma=None,
+                          quantity=None):
         """Log an INFO message about this specific comparison."""
-        tols = ["Comparing > against < with the following tolerances:", ]
+        leader = "Comparing {}> against < with the following tolerances:"
+        tols = [leader.format((quantity + ' from ') if quantity else ''), ]
         for leader, obj in zip(('>', '<'), (self, other)):
             tols.append("{} {}".format(leader, obj))
         for title, val in zip(('Lower', 'Upper'), (lower, upper)):
+            if val is None:
+                continue
             tols.append("{} tolerance: {:5.3F} [%]".format(title, val))
-        sigmaStr = ("Confidence interval for statistical values: {:d} "
-                    "sigma or {} %")
-        sigmaDict = {1: 68, 2: 95}
-        tols.append(
-            sigmaStr.format(sigma, sigmaDict.get(sigma, '>= 99.7')
-                            if sigma else 0))
+        if sigma is not None:
+            sigmaStr = ("Confidence interval for statistical values: {:d} "
+                        "sigma or {} %")
+            sigmaDict = {1: 68, 2: 95}
+            tols.append(
+                sigmaStr.format(sigma, sigmaDict.get(sigma, '>= 99.7')
+                                if sigma else 0))
         info('\n\t'.join(tols))
 
 

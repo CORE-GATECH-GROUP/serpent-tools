@@ -219,12 +219,15 @@ COMPARE_DOC_SIGMA = """sigma: int
 COMPARE_DOC_TYPE_ERR = """TypeError
         If ``other`` is not of the same class as this class
         nor a subclass of this class"""
+COMPARE_DOC_HEADER = """header: bool
+        Print/log an ``info`` message about this comparison."""
 COMPARE_DOC_MAPPING = {
     'herald': COMPARE_DOC_HERALD,
     'desc': COMPARE_DOC_DESC,
     'compLimits': COMPARE_DOC_LIMITS,
     'sigma': COMPARE_DOC_SIGMA,
     'compTypeErr': COMPARE_DOC_TYPE_ERR,
+    'header': COMPARE_DOC_HEADER,
 }
 
 COMPARE_FAIL_MSG = "Values {desc0} and {desc1} are not identical:\n\t"

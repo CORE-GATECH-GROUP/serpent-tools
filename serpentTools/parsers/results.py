@@ -24,6 +24,7 @@ from serpentTools.utils import (
 from serpentTools.messages import (
         warning, debug, SerpentToolsException,
         identical,
+        info,
         insideConfInt,
         outsideConfInt,
 )
@@ -322,7 +323,7 @@ class ResultsReader(XSReader):
         return similar
 
     @compareDocDecorator
-    def compareMetadata(self, other):
+    def compareMetadata(self, other, header=False):
         """
         Return True if the metadata (settings) are identical.
 
@@ -330,6 +331,7 @@ class ResultsReader(XSReader):
         ----------
         other: :class:`ResultsReader`
             Class against which to compare
+        {header}
 
         Returns
         -------
@@ -342,6 +344,8 @@ class ResultsReader(XSReader):
         """
 
         self._checkCompareObj(other)
+        if header:
+            self._compareLogPreMsg(other, quantity='metadata')
         myKeys = set(self.metadata.keys())
         otherKeys = set(other.metadata.keys())
         similar = not any(myKeys.symmetric_difference(otherKeys))
@@ -361,7 +365,8 @@ class ResultsReader(XSReader):
 
     @compareDocDecorator
     def compareResults(self, other, lower=DEF_COMP_LOWER,
-                       upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+                       upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA,
+                       header=False):
         """
         Compare the contents of the results dictionary
 
@@ -371,6 +376,7 @@ class ResultsReader(XSReader):
             Class against which to compare
         {compLimits}
         {sigma}
+        {header}
 
         Returns
         -------
@@ -382,6 +388,8 @@ class ResultsReader(XSReader):
         {compTypeErr}
         """
         self._checkCompareObj(other)
+        if header:
+            self._compareLogPreMsg(other, lower, upper, sigma, 'results')
         myRes = self.resdata
         otherR = other.resdata
 
@@ -423,6 +431,7 @@ class ResultsReader(XSReader):
         ------
         {compTypeErr}
         """
+        self._checkCompareObj(other)
         myUniverses = self.universes
         otherUniverses = other.universes
         keyGoodTypes = getKeyMatchingShapes(myUniverses, otherUniverses,
