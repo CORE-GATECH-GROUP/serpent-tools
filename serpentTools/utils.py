@@ -613,6 +613,12 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma, relative=True):
     ------
     IndexError
         If the shapes of incoming arrays do not agree
+
+    See Also
+    --------
+    * :func:`getLogOverlaps` - High-level function that
+      uses this to report if two values have overlapping
+      confidence intervals 
     """
     shapes = {arg.shape for arg in (arr0, arr1, unc1, unc0)}
     if len(shapes) != 1:
