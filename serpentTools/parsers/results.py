@@ -85,6 +85,7 @@ class ResultsReader(XSReader):
         'workingDirectory',
         'startDate',
         'completeDate',
+        'seed',
         }
     """Metadata keys that will not be compared."""
 
