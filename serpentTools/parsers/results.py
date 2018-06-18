@@ -348,7 +348,7 @@ class ResultsReader(XSReader):
         commonKeys = getCommonKeys(myKeys, otherKeys, 'metadata')
         skips = commonKeys.intersection(self.__METADATA_COMP_SKIPS)
         if any(skips):
-            debug("The following items will be skipped in the comparison\n\t{}"
+            info("The following items will be skipped in the comparison\n\t{}"
                   .format(', '.join(sorted(skips))))
         for key in sorted(commonKeys):
             if key in self.__METADATA_COMP_SKIPS:
@@ -382,7 +382,6 @@ class ResultsReader(XSReader):
         {compTypeErr}
         """
         self._checkCompareObj(other)
-        debug("Comparing results dictionaries.")
         myRes = self.resdata
         otherR = other.resdata
 
