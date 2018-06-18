@@ -9,6 +9,7 @@ from six import iteritems
 from numpy import array, ndarray, fabs, where, zeros_like, dtype
 
 from serpentTools.messages import (
+    differentTypes,
     error,
     identical,
     notIdentical,
@@ -303,18 +304,91 @@ def getCommonKeys(d0, d1, quantity, desc0='first', desc1='second',
     return common
 
 
-COMPARE_NUMERICS = float, int
+TPL_FLOAT_INT = float, int
 
+COMPARE_STATUS_CODES = {
+    0: (identical, True),
+    1: (acceptableLow, True),
+    10: (acceptableHigh, True),
+    200: (notIdentical, False),
+    100: (outsideTols, False),
+    255: (differentTypes, False),
+}
+"""Keys of status codes with ``(caller, return)`` values."""
 
 @compareDocDecorator
-def directCompare(obj0, obj1, lower, upper, quantity):
+def directCompare(obj0, obj1, lower, upper):
     """
     Return True if values are close enough to each other.
 
     Wrapper around various comparision tests for strings, numeric, and
     arrays.
 
-    The failing values will be appended to the next line of the error message
+    Parameters
+    ----------
+    obj0: str or float or int or :class:`numpy.ndarray`
+    obj1: str or float or int or :class:`numpy.ndarray`
+        Objects to compare
+    {compLimits}
+    quantity: str
+        Description of the value being compared. Will be
+        used to notify the user about any differences
+
+    Returns
+    -------
+    int:
+        Status code of the comparison.
+
+        * 0 - Values are identical to floating point precision or,
+          for strings/booleans, are identical with the ``==`` operator
+        * 1 - Values are not identical, but the max difference
+          is less than ``lower``.
+        * 10 - Values differ, with the max difference greater
+          than ``lower`` but less than ``upper``
+        * 100 - Values differ by greater than or equal to ``upper``
+        * 200 - Values should be identical (strings, booleans),
+          but are not
+        * 255 - Values are of different types
+        * -1 - Type comparison is not supported. This means that
+          developers should either implement a test for this
+          data type, or use a different function
+
+    See Also
+    --------
+    * :func:`logDirectCompare` - Function that utilizes this and logs
+      the results using the :mod:`serpentTools.messages` module
+    """
+    type0 = type(obj0)
+    type1 = type(obj1)
+    if type0 != type1:
+        if type0 not in TPL_FLOAT_INT or type1 not in TPL_FLOAT_INT:
+            return 255
+    if type0 in (str, bool):
+        if obj0 != obj1:
+            return 200
+        return 0
+
+    if type0 in (float, int, ndarray) or hasattr(obj0, 'dtype'):
+        diff = fabs(obj0 - obj1) * 100
+        if type0 is ndarray:
+            nonZI = where(obj0 > LOWER_LIM_DIVISION)
+            diff[nonZI] /= obj0[nonZI]
+        elif obj0 > LOWER_LIM_DIVISION:
+            diff /= obj0
+        maxDiff = diff.max() if isinstance(diff, ndarray) else diff
+        if maxDiff < LOWER_LIM_DIVISION:
+            return 0
+        if maxDiff <= lower:
+            return 1
+        if maxDiff >= upper:
+            return 100
+        return 10
+    return -1
+
+@compareDocDecorator
+def logDirectCompare(obj0, obj1, lower, upper, quantity):
+    """
+    Compare objects using :func:`directCompare` and log the result
 
     Parameters
     ----------
@@ -329,56 +403,39 @@ def directCompare(obj0, obj1, lower, upper, quantity):
     Returns
     -------
     bool:
-        If the values are close enough as determined by the settings.
+        ``True`` if the objects agree according to tolerances, or numerics
+        differ less than ``upper``. ``False`` otherwise
 
     Raises
     ------
     TypeError:
-        If the object types are not supported. This means the developers
-        need to either extend this to meet the type, or use a different
-        test function.
+        If the objects being compared are not supported by 
+        :func:`directCompare`.  Developers should either extend the 
+        function or utilize a different comparison function
+
+    See Also
+    --------
+    * :func:`directCompare` - function that does the comparison
+    * :func:`getOverlaps` - function for evaluating values with uncertainties
+    * :func:`getLogOverlaps` - function that logs the result of stastistical
+      comparisions
     """
-    type0 = type(obj0)
-    type1 = type(obj1)
+    result = directCompare(obj0, obj1, lower, upper)
+    if result < 0:  # failures
+        if result == -1:
+            raise TypeError(
+                  "directCompare is not configured to make tests on objects "
+                  "of type {tp}\n\tQuantity: {k}\n\tUsers: Create a issue on "
+                  "GitHub to alert developers.\n\tDevelopers: Update this "
+                  "function or create a compare function "
+                  "for {tp} objects.".format(k=quantity, tp=type0))
     noticeTuple = [obj0, obj1, quantity]
-    if ((type0 not in COMPARE_NUMERICS or type1 not in COMPARE_NUMERICS)
-            and type0 != type0):
-        differentTypes(type0, type1, quantity)
-        return False
-    if type0 is str:
-        if obj0 != obj1:
-            notIdentical(*noticeTuple)
-            return False
-        identical(*noticeTuple)
-        return True
-
-    if type0 is bool:
-        return obj0 == obj1
-
-    if type0 in (float, int, ndarray) or hasattr(obj0, 'dtype'):
-        diff = fabs(obj0 - obj1) * 100
-        if type0 is ndarray:
-            nonZI = where(obj0 > LOWER_LIM_DIVISION)
-            diff[nonZI] /= obj0[nonZI]
-        elif obj0 > LOWER_LIM_DIVISION:
-            diff /= obj0
-        maxDiff = diff.max() if isinstance(diff, ndarray) else diff
-        if maxDiff < LOWER_LIM_DIVISION:
-            identical(*noticeTuple)
-            return True
-        if maxDiff <= lower:
-            acceptableLow(*noticeTuple)
-            return True
-        if maxDiff >= upper:
-            outsideTols(*noticeTuple)
-            return False
-        acceptableHigh(*noticeTuple)
-        return True
-    raise TypeError(
-          "directCompare is not configured to make tests on objects of type "
-          "{tp}\n\tQuantity: {k}\n\tUsers: Create a issue on GitHub to alert developers."
-          "\n\tDevelopers: Update this function or create a compare function "
-          "for {tp} objects.".format(k=quantity, tp=type0))
+    if result in COMPARE_STATUS_CODES:
+        func, returnV = COMPARE_STATUS_CODES[result]
+        func(*noticeTuple)
+        return returnV
+    raise ValueError("Received value of {} from directCompare. Not sure "
+                     "what this means.")
 
 
 def splitDictByKeys(map0, map1, keySet=None):
@@ -404,7 +461,7 @@ def splitDictByKeys(map0, map1, keySet=None):
         Keys that exist in ``keySet`` but not in ``map0``
     missing1: set
         Keys that exist in ``keySet`` but not in ``map1``
-    badTypes: dict
+    differentTypes: dict
         Dictionary with tuples ``{key: (t0, t1)}`` indicating the values
         ``map0[key]`` and ``map1[key]`` are of different types
     badShapes: dict
@@ -418,7 +475,7 @@ def splitDictByKeys(map0, map1, keySet=None):
         k1 = set(map1.keys())
         keySet = k1.intersection(set(map0.keys()))
     missing = {0: set(), 1: set()}
-    badTypes = {}
+    differentTypes = {}
     badShapes = {}
     goodKeys = set()
     for key in keySet:
@@ -432,7 +489,7 @@ def splitDictByKeys(map0, map1, keySet=None):
         t0 = type(v0)
         t1 = type(v1)
         if t0 != t1:
-            badTypes[key] = (t0, t1)
+            differentTypes[key] = (t0, t1)
             continue
         if t0 is ndarray:
             if v0.shape != v1.shape:
@@ -440,7 +497,7 @@ def splitDictByKeys(map0, map1, keySet=None):
                 continue
         goodKeys.add(key)
 
-    return missing[0], missing[1], badTypes, badShapes, goodKeys
+    return missing[0], missing[1], differentTypes, badShapes, goodKeys
 
 
 def getKeyMatchingShapes(map0, map1, quantity, keySet=None, desc0='first',
@@ -477,14 +534,14 @@ def getKeyMatchingShapes(map0, map1, quantity, keySet=None, desc0='first',
     --------
     * :func:`splitDictByKeys`
     """
-    missing0, missing1, badTypes, badShapes, goodKeys = (
+    missing0, missing1, differentTypes, badShapes, goodKeys = (
             splitDictByKeys(map0, map1, keySet))
 
     # raise some messages
     if any(missing0) or any(missing1):
         logMissingKeys(quantity, desc0, desc1, missing0, missing1)
-    if badTypes:
-        logBadTypes(quantity, desc0, desc1, badTypes)
+    if differentTypes:
+        logBadTypes(quantity, desc0, desc1, differentTypes)
     if badShapes:
         logBadShapes(quantity, desc0, desc1, badShapes)
     return goodKeys

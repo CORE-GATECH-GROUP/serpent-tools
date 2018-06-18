@@ -99,10 +99,10 @@ class CommonKeysTester(TestCase):
         """Verify a complete set of keys is returned from getCommonKeys"""
         d0 = {1: None, '2': None, (1, 2, 3): "tuple"}
         expected = set(d0.keys())
-        actual = getCommonKeys(d0, d0)
+        actual = getCommonKeys(d0, d0, 'identical dictionary')
         self.assertSetEqual(expected, actual,
                             msg="Passed two dictionaries")
-        actual = getCommonKeys(d0, expected)
+        actual = getCommonKeys(d0, expected, 'dictionary and set')
         self.assertSetEqual(expected, actual,
                             msg="Passed dictionary and set")
 
@@ -113,7 +113,8 @@ class CommonKeysTester(TestCase):
         emptyS = set()
         desc0 = "xObj0x"
         desc1 = "xObj1x"
-        common = getCommonKeys(d0, emptyS, desc0, desc1, herald=log.append)
+        common = getCommonKeys(d0, emptyS, 'missing keys', desc0, desc1,
+                               herald=log.append)
         self.assertSetEqual(emptyS, common)
         self.assertEqual(len(log), 1, msg="Failed to append warning message")
         warnMsg = log[0]
@@ -130,53 +131,62 @@ class DirectCompareTester(TestCase):
         [0, 0.001],
         [1E-8, 0],
         [array([1, 1, ]), array([1, 1.0001])],
-        [array([0, 1, ]), array([1, 1])],
     )
 
+    def checkStatus(self, expected, *args, **kwargs):
+        """Wrapper around directCompare with ``args``. Pass ``kwargs`` to 
+        assertEqual."""
+        actual = directCompare(*args)
+        self.assertEqual(expected, actual, **kwargs)
+
     def test_badTypes(self):
-        """Verify that two objects of different types return False."""
-        self.assertFalse(directCompare(1, array([1, ]), 0, 1,
-                                       'badTypes'))
+        """Verify that two objects of different types return -1."""
+        status = 255
+        value = 1
+        for otherType in (bool, str):
+            self.checkStatus(status, value, otherType(value), 0, 1,
+                             msg=str(otherType))
+        asIterable = [value, ]
+        for otherType in (list, set, tuple, array):
+            self.checkStatus(status, value, otherType(asIterable), 0, 1,
+                             msg=str(otherType))
 
     def test_identicalString(self):
-        """Verify that identical strings return True."""
-        msg = qty = obj = 'identicalStrings'
-        self.assertTrue(directCompare(obj, obj, 0, 1, qty), msg=msg)
+        """Verify that identical strings return 0."""
+        msg = obj = 'identicalStrings'
+        status = 0
+        self.checkStatus(status, obj, obj, 0, 1, msg=msg)
 
     def test_dissimilarString(self):
-        """Verify that directCompare returns False for dissimilar strings."""
-        msg = qty = "dissimilarStrings"
-        self.assertFalse(directCompare('item0', 'item1', 0, 1, qty),
-                         msg=msg)
+        """Verify returns the proper code for dissimilar strings."""
+        msg = "dissimilarStrings"
+        status = 200
+        self.checkStatus(status, 'item0', 'item1', 0, 1, msg=msg)
 
-    def _testNumericsForItems(self, tOrF, qty, lower, upper):
-        tester = self.assertTrue if tOrF else self.assertFalse
+    def _testNumericsForItems(self, status, lower, upper):
         msg = "lower: {lower}, upper: {upper}\n{}\n{}"
         for (obj0, obj1) in self.NUMERIC_ITEMS:
-            tester(directCompare(obj0, obj1, lower, upper, qty),
-                   msg=msg.format(obj0, obj1, lower=lower, upper=upper))
+            self.checkStatus(status, obj0, obj1, lower, upper,
+                             msg=msg.format(obj0, obj1, lower=lower, 
+                                            upper=upper))
 
     def test_acceptableLow(self):
-        """Verify that directCompare returns True for close numerics."""
+        """Verify returns the proper code for close numerics."""
         lower = 5
         upper = 1E4
-        self._testNumericsForItems(True, 'acceptableLow', lower, upper)
+        self._testNumericsForItems(1, lower, upper)
 
     def test_acceptableHigh(self):
-        """
-        Verify that directCompare returns True for close but not quite values.
-        """
-        lower = 0.01
+        """Verify returns the proper code for close but not quite values."""
+        lower = 0
         upper = 1E4
-        self._testNumericsForItems(True, 'acceptableHigh', lower, upper)
+        self._testNumericsForItems(10, lower, upper)
 
     def test_outsideTols(self):
-        """
-        Verify that directCompare returns False for values outside tolerances.
-        """
+        """Verify returns the proper code for values outside tolerances."""
         lower = 1E-8
         upper = 1E-8
-        self._testNumericsForItems(False, 'outsideTols', lower, upper)
+        self._testNumericsForItems(100, lower, upper)
 
 
 class OverlapTester(TestCase):
