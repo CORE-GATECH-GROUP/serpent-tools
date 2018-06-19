@@ -125,7 +125,7 @@ def magicPlotDocDecorator(f):
     def decorated(*args, **kwargs):
         return f(*args, **kwargs)
     doc = dedent(f.__doc__)
-    for magic, replace in PLOT_MAGIC_STRINGS.items():
+    for magic, replace in iteritems(PLOT_MAGIC_STRINGS):
         lookF = '{' + magic + '}'
         if lookF in doc:
             doc = doc.replace(lookF, replace)

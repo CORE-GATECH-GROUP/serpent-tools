@@ -8,15 +8,26 @@ from six import add_metaclass
 from numpy import arange, hstack, log, divide
 from matplotlib.pyplot import axes
 
-from serpentTools.messages import debug, warning, SerpentToolsException
+from serpentTools.messages import debug, warning, SerpentToolsException, info
+from serpentTools.settings import rc
+from serpentTools.utils import compareDocDecorator
 from serpentTools.plot import (
         plot, magicPlotDocDecorator, formatPlot, cartMeshPlot)
+
+#
+# Defaults for comparison
+#
+DEF_COMP_LOWER = 0
+DEF_COMP_UPPER = 10
+DEF_COMP_SIGMA = 2
 
 
 class BaseObject(object):
     """Most basic class shared by all other classes."""
 
-    def compare(self, other, lower=0, upper=10, sigma=3):
+    @compareDocDecorator
+    def compare(self, other, lower=DEF_COMP_LOWER, upper=DEF_COMP_UPPER,
+                sigma=DEF_COMP_SIGMA, verbosity=None):
         """
         Compare the results of this reader to another.
 
@@ -37,36 +48,27 @@ class BaseObject(object):
         other:
             Other reader instance against which to compare.
             Must be a similar class as this one.
-        lower: float or int
-            Lower limit for relative tolerances.
-            Differences below this will be considered allowable
-        upper: float or int
-            Upper limit for relative tolerances. Differences
-            above this will be considered failure and errors
-            messages will be raised
-        sigma: int
-            Size of confidence interval to apply to
-            quantities with uncertainties. Quantities that do not
-            have overlapping confidence intervals will fail.
+        {compLimits}
+        {sigma}
+        verbosity: None or str
+            If given, update the verbosity just for this comparison.
 
         Returns
         -------
         bool:
-            ``True`` if the readers are in agreement with
+            ``True`` if the objects are in agreement with
             each other according to the parameters specified
 
         Raises
         ------
-        TypeError
-            If ``other`` is not of the same class as this class
-            nor a subclass of this class
+        {compTypeErr}
         ValueError
             If upper > lower,
             If sigma, lower, or upper are negative
         """
         upper = float(upper)
         lower = float(lower)
-        sigma = float(sigma)
+        sigma = int(sigma)
         if upper < lower:
             raise ValueError("Upper limit must be greater than lower. "
                              "{} is not greater than {}"
@@ -76,6 +78,29 @@ class BaseObject(object):
             if item < 0:
                 raise ValueError("{} must be non-negative, is {}"
                                  .format(key, item))
+
+        self._checkCompareObj(other)
+
+        previousVerb = None
+        if verbosity is not None:
+            previousVerb = rc['verbosity']
+            rc['verbosity'] = verbosity
+
+        self._compareLogPreMsg(other, lower, upper, sigma)
+
+        areSimilar = self._compare(other, lower, upper, sigma)
+
+        if previousVerb is not None:
+            rc['verbosity'] = previousVerb
+
+        return areSimilar
+
+    def _compare(self, other, lower, upper, sigma):
+        """Actual comparison method for similar classes."""
+        raise NotImplementedError
+
+    def _checkCompareObj(self, other):
+        """Verify that the two objects are same class or subclasses."""
         if not (isinstance(other, self.__class__) or
                 issubclass(other.__class__, self.__class__)):
             oName = other.__class__.__name__
@@ -84,11 +109,25 @@ class BaseObject(object):
                     "Cannot compare against {} - not instance nor subclass "
                     "of {}".format(oName, name))
 
-        return self._compare(other, lower, upper, sigma)
-
-    def _compare(self, other, lower, upper, sigma):
-        """Actual comparison method for similar classes."""
-        raise NotImplementedError
+    def _compareLogPreMsg(self, other, lower=None, upper=None, sigma=None,
+                          quantity=None):
+        """Log an INFO message about this specific comparison."""
+        leader = "Comparing {}> against < with the following tolerances:"
+        tols = [leader.format((quantity + ' from ') if quantity else ''), ]
+        for leader, obj in zip(('>', '<'), (self, other)):
+            tols.append("{} {}".format(leader, obj))
+        for title, val in zip(('Lower', 'Upper'), (lower, upper)):
+            if val is None:
+                continue
+            tols.append("{} tolerance: {:5.3F} [%]".format(title, val))
+        if sigma is not None:
+            sigmaStr = ("Confidence interval for statistical values: {:d} "
+                        "sigma or {} %")
+            sigmaDict = {1: 68, 2: 95}
+            tols.append(
+                sigmaStr.format(sigma, sigmaDict.get(sigma, '>= 99.7')
+                                if sigma else 0))
+        info('\n\t'.join(tols))
 
 
 class NamedObject(BaseObject):
@@ -212,8 +251,8 @@ class DetectorBase(NamedObject):
 
     @magicPlotDocDecorator
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
-                     ylabel=None, steps=True, logx=True, logy=False, 
-                     loglog=False, sigma=3, labels=None, legend=False, ncol=1, 
+                     ylabel=None, steps=True, logx=True, logy=False,
+                     loglog=False, sigma=3, labels=None, legend=False, ncol=1,
                      title=None, **kwargs):
         """
         Quick plot of the detector value as a function of energy.
@@ -237,7 +276,7 @@ class DetectorBase(NamedObject):
         {legend}
         {ncol}
         {title}
-        {kwargs} :py:func:`matplotlib.pyplot.plot` or 
+        {kwargs} :py:func:`matplotlib.pyplot.plot` or
             :py:func:`matplotlib.pyplot.errorbar`
 
         Returns
@@ -268,7 +307,7 @@ class DetectorBase(NamedObject):
                 divide(self.grids['E'][:, -1], lowerE))
             for indx in range(slicedTallies.shape[1]):
                 scratch = divide(slicedTallies[:, indx], lethBins)
-                slicedTallies[:, indx] = scratch / scratch.max() 
+                slicedTallies[:, indx] = scratch / scratch.max()
 
         if steps:
             if 'drawstyle' in kwargs:
@@ -279,25 +318,25 @@ class DetectorBase(NamedObject):
 
         if sigma:
             slicedErrors = sigma * self.slice(fixed, 'errors').copy()
-            slicedErrors = slicedErrors.reshape(slicedTallies.shape) 
+            slicedErrors = slicedErrors.reshape(slicedTallies.shape)
             slicedErrors *= slicedTallies
         else:
             slicedErrors = None
-        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, 
-                  yerr=slicedErrors, **kwargs)     
+        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels,
+                  yerr=slicedErrors, **kwargs)
         if ylabel is None:
             ylabel = 'Tally data'
             ylabel += ' normalized per unit lethargy' if normalize else ''
-            ylabel += ' $\pm${}$\sigma$'.format(sigma) if sigma else ''
+            ylabel += r' $\pm${}$\sigma$'.format(sigma) if sigma else ''
 
         ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
-                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel, 
+                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
                         legend=legend, title=title)
         return ax
 
     @magicPlotDocDecorator
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
-             xlabel=None, ylabel=None, steps=False, labels=None, logx=False, 
+             xlabel=None, ylabel=None, steps=False, labels=None, logx=False,
              logy=False, loglog=False, legend=False, ncol=1, title=None,
              **kwargs):
         """
@@ -314,7 +353,7 @@ class DetectorBase(NamedObject):
         fixed: None or dict
             Dictionary controlling the reduction in data down to one dimension
         {ax}
-        {xlabel} If ``xdim`` is given and ``xlabel`` is ``None``, then 
+        {xlabel} If ``xdim`` is given and ``xlabel`` is ``None``, then
             ``xdim`` will be applied to the x-axis.
         {ylabel}
         steps: bool
@@ -364,12 +403,12 @@ class DetectorBase(NamedObject):
                     'Will not plot error bars on the error plot. Data to be '
                     'plotted: {}.  Sigma: {}'.format(what, sigma))
                 yerr = None
-        else: 
+        else:
             yerr = None
 
         xdata, autoX = self._getPlotXData(xdim, data)
         xlabel = xlabel or autoX
-        ylabel = ylabel or "Tally data" 
+        ylabel = ylabel or "Tally data"
         ax = ax or axes()
 
         if steps:
@@ -380,13 +419,13 @@ class DetectorBase(NamedObject):
                 kwargs['drawstyle'] = 'steps-post'
         ax = plot(xdata, data, ax, labels, yerr, **kwargs)
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        xlabel=xlabel, ylabel=ylabel, legend=legend, 
+                        xlabel=xlabel, ylabel=ylabel, legend=legend,
                         title=title)
         return ax
 
     @magicPlotDocDecorator
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
-                 cmap=None, logColor=False, xlabel=None, ylabel=None, 
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
                  logx=False, logy=False, loglog=False, title=None, **kwargs):
         """
         Plot tally data as a function of two bin types on a cartesian mesh.
@@ -404,7 +443,7 @@ class DetectorBase(NamedObject):
         {ax}
         {cmap}
         logColor: bool
-            If true, apply a logarithmic coloring to the data positive 
+            If true, apply a logarithmic coloring to the data positive
             data
         {xlabel}
         {ylabel}

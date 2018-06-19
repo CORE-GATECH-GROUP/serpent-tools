@@ -17,8 +17,25 @@ from numpy import array, arange, hstack, ndarray, zeros_like
 from serpentTools.settings import rc
 from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.objects.base import NamedObject, BaseObject
-from serpentTools.utils import convertVariableName
-from serpentTools.messages import warning, SerpentToolsException, debug, info
+from serpentTools.utils import (
+    COMPARE_DOC_SIGMA,
+    COMPARE_DOC_TYPE_ERR,
+    convertVariableName,
+    getKeyMatchingShapes,
+    logDirectCompare,
+    getLogOverlaps,
+    compareDocDecorator,
+)
+from serpentTools.objects.base import (DEF_COMP_LOWER,
+                                       DEF_COMP_UPPER, DEF_COMP_SIGMA)
+from serpentTools.messages import (
+    warning,
+    SerpentToolsException,
+    debug,
+    info,
+    critical,
+    error,
+)
 
 SCATTER_MATS = set()
 SCATTER_ORDERS = 8
@@ -439,6 +456,130 @@ class HomogUniv(NamedObject):
 
     hasData = __bool__
 
+    def _compare(self, other, lower, upper, sigma):
+        similar = self.compareAttributes(other, lower, upper, sigma)
+        similar &= self.compareInfData(other, sigma)
+        similar &= self.compareB1Data(other, sigma)
+        similar &= self.compareGCData(other, sigma)
+        
+        return similar
+
+    @compareDocDecorator
+    def compareAttributes(self, other, lower=DEF_COMP_LOWER,
+                          upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Compare attributes like group structure and burnup. Return the result
+
+        Parameters
+        ----------
+        other: :class:`HomogUniv`
+            Universe against which to compare
+        {compLimits}
+        {sigma}
+
+        Returns
+        -------
+        bools:
+            ``True`` if the attributes agree within specifications
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+
+        self._checkCompareObj(other)
+
+        myMeta = {}
+        otherMeta = {}
+        
+        for key in {'bu', 'step', 'groups', 'microGroups', 'reshaped'}:
+            for meta, obj in zip((myMeta, otherMeta), (self, other)):
+                try:
+                    meta[key] = getattr(obj, key)
+                except AttributeError:
+                    meta[key] = None
+
+        matchingKeys = getKeyMatchingShapes(myMeta, otherMeta, 'metadata')
+        similar = len(matchingKeys) == len(myMeta)
+
+        for key in sorted(matchingKeys):
+            similar &= logDirectCompare(myMeta[key], otherMeta[key],
+                                        lower, upper, key)
+
+        return similar
+
+
+    __docCompare = """
+    Return ``True`` if contents of ``{qty}Exp`` and ``{qty}Unc`` agree
+
+    Parameters
+    ----------
+    other: :class:`HomogUniv`
+        Object from which to grab group constant dictionaries
+    <s>
+
+    Returns
+    bool
+        If the dictionaries contain identical values with uncertainties,
+        and if those values have overlapping confidence intervals
+    Raises
+    ------
+    <e>
+    """.replace('<s>', COMPARE_DOC_SIGMA).replace('<e>', COMPARE_DOC_TYPE_ERR)
+
+    def _helpCompareGCDict(self, other, attrBase, sigma):
+        """
+        Method that actually compare group constant dictionaries.
+        
+        ``attrBase`` is used to find dictionaries by appending 
+        ``'Exp'`` and ``'Unc'`` to ``attrBase``
+        """
+        self._checkCompareObj(other)
+
+        valName = (attrBase + 'Exp') if attrBase != 'gc' else 'gc'
+        uncName = attrBase + 'Unc'
+        try:
+            myVals = getattr(self, valName)
+            myUncs = getattr(self, uncName)
+            otherVals = getattr(other, valName)
+            otherUncs = getattr(other, uncName)
+        except Exception as ee:
+            critical("The following error was raised extracting {} and "
+                    "{} from universes {} and {}:\n\t{}"
+                    .format(valName, uncName, self, other, ee))
+            return False
+
+        keys = getKeyMatchingShapes(myVals, otherVals, valName)
+        similar = len(keys) == len(myVals) == len(otherVals)
+        
+        for key in keys:
+            if key not in myUncs or key not in otherUncs:
+                loc = self if key in otherUncs else other
+                error("Uncertainty data for {} missing from {}"
+                      .format(key, loc))
+                similar = False
+                continue
+            myVal = myVals[key]
+            myUnc = myUncs[key]
+            otherVal = otherVals[key]
+            otherUnc = otherUncs[key]
+
+            similar &= getLogOverlaps(key, myVal, otherVal, myUnc, otherUnc,
+                                      sigma, relative=True)
+        return similar
+
+    def compareInfData(self, other, sigma):
+        return self._helpCompareGCDict(other, 'inf', sigma)
+
+    def compareB1Data(self, other, sigma):
+        return self._helpCompareGCDict(other, 'b1', sigma)
+
+    def compareGCData(self, other, sigma):
+        return self._helpCompareGCDict(other, 'gc', sigma)
+
+    compareInfData.__doc__ = __docCompare.format(qty='inf')
+    compareB1Data.__doc__ = __docCompare.format(qty='b1')
+    compareGCData.__doc__ = __docCompare.format(qty='gc')
 
 class BranchContainer(BaseObject):
     """

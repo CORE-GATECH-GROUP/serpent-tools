@@ -39,26 +39,11 @@ value being returned from the method.
 
 The ``lower`` and ``upper`` arguments should be used to compare values
 that do not have uncertainties. Both will be ``float`` values, with 
-``lower`` less than or equal to ``upper``. These should be be used
-when comparing the relative differences between quantities from ``self``
-and ``other`` with something like::
+``lower`` less than or equal to ``upper``.  This functionality is
+implemented with the :func:`serpentTools.utils.directCompare` function,
+while the result is reported with :func:`serpentTools.utils.logDirectCompare`.
 
-   # selfV is the "reference" value from self
-   # otherV is the value from ``other``
-   >>> relDiff = abs(otherV - selfV)
-   >>> if selfV > 1E-6:
-   ...     relDiff /= selfV
-   >>> if relDiff < lower:
-   ...     # close enough, move along
-   >>> elif relDiff >= upper:
-   ...     # consider test a failure; print an error
-   >>> else:
-   ...     # close but not close enough; print a warning
-   ...     # but don't treat as a failure
-
-It is likely that the ``BaseObject`` or :mod:`serpentTools.utils` module
-will have some methods/functions for expediting this process, but the 
-procedure for all cases should follow this behavior.
+.. _dev-comp-message:
 
 Use of messaging module
 =======================
@@ -74,9 +59,72 @@ using our :ref:`verbosity` setting.
 * Two items are outside of the ``sigma`` confidence intervals - |error|
 * Two items without uncertainties have relative difference
 
-    * less than ``lower`` - |info|
+    * less than ``lower`` - |debug|
     * greater than or equal to ``upper`` - |error|
     * otherwise - |warn|
 
-* Two items are in good agreement - |info|
+* Two items are identical - |debug|
 * Two arrays are not of similar size - |error|
+
+
+.. _dev-comp-utils:
+
+High-level Logging and Comparison Utilities
+===========================================
+
+The :mod:`~serpentTools.utils` module contains a collection of functions
+that can be used to compare quantities and automatically log results.
+When possible, these routines should be favored over hand-writing 
+comparison routines. If the situation calls for custom comparison 
+functions, utilize or extend logging routines from :ref:`dev-comp-log`
+appropriately.
+
+.. autofunction:: serpentTools.utils.compareDocDecorator
+
+.. autofunction:: serpentTools.utils.getCommonKeys
+
+.. autofunction:: serpentTools.utils.directCompare
+
+.. autofunction:: serpentTools.utils.logDirectCompare
+
+.. autofunction:: serpentTools.utils.splitdictByKeys
+
+.. autofunction:: serpentTools.utils.getKeyMatchingShapes
+
+.. autofunction:: serpentTools.utils.getOverlaps
+
+.. autofunction:: serpentTools.utils.getLogOverlaps
+
+.. _dev-comp-log:
+
+Low-level Logging Utilities
+===========================
+
+The :mod:`~serpentTools.messages` module contains a collection of functions
+that can be used to notify the user about the results of a comparison
+routine. 
+
+.. autofunction:: serpentTools.messages.logIdentical
+
+.. autofunction:: serpentTools.messages.logNotIdentical
+
+.. autofunction:: serpentTools.messages.logAcceptableLow
+
+.. autofunction:: serpentTools.messages.logAcceptableHigh
+
+.. autofunction:: serpentTools.messages.logOutsideTols
+
+.. autofunction:: serpentTools.messages.logIdenticalWithUncs
+
+.. autofunction:: serpentTools.messages.logInsideConfInt
+
+.. autofunction:: serpentTools.messages.logOutsideConfInt
+
+.. autofunction:: serpentTools.messages.logDifferentTypes
+
+.. autofunction:: serpentTools.messages.logMissingKeys
+
+.. autofunction:: serpentTools.messages.logBadTypes
+
+.. autofunction:: serpentTools.messages.logBadShapes
+

@@ -24,5 +24,4 @@ API
    sampler.rst
    sensitivity.rst
    xsplot.rst
-   utils.rst
    microxs.rst

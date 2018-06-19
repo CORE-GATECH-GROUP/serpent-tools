@@ -1,7 +1,7 @@
 """Parser responsible for reading the ``*res.m`` files"""
 import re
 
-import six
+from six import iteritems
 
 from numpy import array, vstack
 
@@ -9,8 +9,24 @@ from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers.base import XSReader
-from serpentTools.utils import str2vec, splitValsUncs
-from serpentTools.messages import (warning, debug, SerpentToolsException)
+from serpentTools.parsers._collections import RES_DATA_NO_UNCS
+from serpentTools.objects.base import (DEF_COMP_LOWER, 
+                                       DEF_COMP_SIGMA, DEF_COMP_UPPER)
+from serpentTools.utils import (
+    str2vec, 
+    splitValsUncs,
+    getCommonKeys,
+    logDirectCompare,
+    compareDocDecorator,
+    getKeyMatchingShapes,
+    getLogOverlaps,
+)
+from serpentTools.messages import (
+        warning, debug, SerpentToolsException,
+        info,
+        logInsideConfInt,
+        logOutsideConfInt,
+)
 
 
 MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 'GC_UNIVERSE_NAME',
@@ -21,6 +37,10 @@ MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
 Assigns search strings for different Serpent versions
 Versions 2.1.29 and 2.1.30 are supported
 """
+
+
+__all__ = ['ResultsReader', ]
+
 
 class ResultsReader(XSReader):
     """
@@ -58,6 +78,16 @@ class ResultsReader(XSReader):
                             Corrupted results
     IOError: file is unexpectedly closes while reading
     """
+
+    __METADATA_COMP_SKIPS = {
+        'title', 
+        'inputFileName', 
+        'workingDirectory',
+        'startDate',
+        'completeDate',
+        'seed',
+        }
+    """Metadata keys that will not be compared."""
 
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'xs')
@@ -229,7 +259,7 @@ class ResultsReader(XSReader):
             raise KeyError(
                 'Index read is {}, however only integers above zero are allowed'
                     .format(searchValue))
-        for key, dictUniv in six.iteritems(self.universes):
+        for key, dictUniv in iteritems(self.universes):
             if key[0] == univ and key[searchIndex] == searchValue:
                 debug('Found universe that matches with keys {}'
                       .format(key))
@@ -280,8 +310,137 @@ class ResultsReader(XSReader):
                 "{} time-points, and {} overall result points ".format(self.filePath,
                 self._counter['univ'], self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
-            for keys, dictUniv in six.iteritems(self.universes):
+            for keys, dictUniv in iteritems(self.universes):
                 if not dictUniv.hasData():
                     raise SerpentToolsException("metadata, resdata and universes are all empty "
-                                        "from {}".format(self.filePath))
+                                                "from {}".format(self.filePath))
 
+    def _compare(self, other, lower, upper, sigma):
+        similar = self.compareMetadata(other)
+        similar &= self.compareResults(other, lower, upper, sigma)
+        similar &= self.compareUniverses(other, lower, upper, sigma)
+        return similar
+
+    @compareDocDecorator
+    def compareMetadata(self, other, header=False):
+        """
+        Return True if the metadata (settings) are identical.
+
+        Parameters
+        ----------
+        other: :class:`ResultsReader`
+            Class against which to compare
+        {header}
+
+        Returns
+        -------
+        bool:
+            If the metadata are identical
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+
+        self._checkCompareObj(other)
+        if header:
+            self._compareLogPreMsg(other, quantity='metadata')
+        myKeys = set(self.metadata.keys())
+        otherKeys = set(other.metadata.keys())
+        similar = not any(myKeys.symmetric_difference(otherKeys))
+        commonKeys = getCommonKeys(myKeys, otherKeys, 'metadata')
+        skips = commonKeys.intersection(self.__METADATA_COMP_SKIPS)
+        if any(skips):
+            info("The following items will be skipped in the comparison\n\t{}"
+                  .format(', '.join(sorted(skips))))
+        for key in sorted(commonKeys):
+            if key in self.__METADATA_COMP_SKIPS:
+                continue
+            selfV = self.metadata[key]
+            otherV = other.metadata[key]
+            similar &= logDirectCompare(selfV, otherV, 0., 0., key)
+
+        return similar
+
+    @compareDocDecorator
+    def compareResults(self, other, lower=DEF_COMP_LOWER,
+                       upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA,
+                       header=False):
+        """
+        Compare the contents of the results dictionary
+
+        Parameters
+        ----------
+        other: :class:`ResultsReader`
+            Class against which to compare
+        {compLimits}
+        {sigma}
+        {header}
+
+        Returns
+        -------
+        bool:
+            If the results data agree to given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+        self._checkCompareObj(other)
+        if header:
+            self._compareLogPreMsg(other, lower, upper, sigma, 'results')
+        myRes = self.resdata
+        otherR = other.resdata
+
+        commonTypeKeys = getKeyMatchingShapes(myRes, otherR, 'results')
+
+        similar = len(commonTypeKeys) == len(myRes) == len(otherR)
+
+        for key in sorted(commonTypeKeys):
+            mine = myRes[key]
+            theirs = otherR[key]
+            if key in RES_DATA_NO_UNCS:
+                similar &= logDirectCompare(mine, theirs, lower, upper, key)
+                continue
+            myVals, myUncs = splitValsUncs(mine)
+            theirVals, theirUncs = splitValsUncs(theirs)
+            similar &= getLogOverlaps(key, myVals, theirVals, myUncs, 
+                                      theirUncs, sigma, relative=True)
+        return similar
+
+    @compareDocDecorator
+    def compareUniverses(self, other, lower=DEF_COMP_LOWER, 
+                         upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Compare the contents of the ``universes`` dictionary
+
+        Parameters
+        ----------
+        other: :class:`ResultsReader`
+            Reader by which to compare
+        {compLimits}
+        {sigma}
+
+        Returns
+        -------
+        bool:
+            If the contents of the universes agree to given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+        self._checkCompareObj(other)
+        myUniverses = self.universes
+        otherUniverses = other.universes
+        keyGoodTypes = getKeyMatchingShapes(myUniverses, otherUniverses,
+                                            'universes')
+
+        similar = len(keyGoodTypes) == len(myUniverses) == len(otherUniverses)
+
+        for univKey in keyGoodTypes:
+            myUniv = myUniverses[univKey]
+            otherUniv = otherUniverses[univKey]
+            similar &= myUniv.compare(otherUniv, lower, upper, sigma)
+
+        return similar
