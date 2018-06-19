@@ -1,5 +1,0 @@
-
-Messages
-========
-
-.. automodule:: serpentTools.messages
