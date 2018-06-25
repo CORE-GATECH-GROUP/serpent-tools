@@ -9,6 +9,7 @@ API
 
    settings.rst
    parsers.rst
+   data.rst
    plot.rst
    containers.rst
    detectors

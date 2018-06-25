@@ -8,8 +8,8 @@ from numpy.testing import assert_equal
 import six
 
 from serpentTools.parsers import read
+from serpentTools.data import getFile
 from serpentTools.settings import rc
-from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader
 
 
@@ -18,7 +18,7 @@ class _DepletionTestHelper(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
+        cls.filePath = getFile('ref_dep.m')
         cls.processTotal = True
         cls.materials = ['fuel']
         cls.expectedMaterials = set(cls.materials)

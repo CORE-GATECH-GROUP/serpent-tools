@@ -11,6 +11,9 @@ Changelog
 Next
 ====
 
+* :pull:`198` - Import test and example files using :mod:`serpentTools.data`. 
+  Load example readers with :func:`serpentTools.data.readDataFile`
+
 .. _vNext-api:
 
 API Changes

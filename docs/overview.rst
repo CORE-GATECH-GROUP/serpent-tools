@@ -1,6 +1,6 @@
 .. |read| replace:: :func:`serpentTools.parsers.read`
 
-.. _overview:
+.. _project-overview:
 
 ================
 Project Overview

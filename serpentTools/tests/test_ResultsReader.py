@@ -8,7 +8,7 @@ import numpy
 import six
 
 from serpentTools.settings import rc
-from serpentTools.tests import TEST_ROOT
+from serpentTools.data import getFile
 from serpentTools.parsers import ResultsReader
 from serpentTools.messages import SerpentToolsException
 
@@ -26,7 +26,7 @@ class TestBadFiles(unittest.TestCase):
 
     def test_noResults(self):
         """Verify that the reader raises error when no results exist in the file"""
-        badFile = os.path.join(TEST_ROOT, 'bad_results_file.m')
+        badFile = 'bad_results_file.m'
         with open(badFile, 'w') as badObj:
             for _line in range(5):
                 badObj.write(str(_line))
@@ -37,7 +37,7 @@ class TestBadFiles(unittest.TestCase):
 
     def test_noUniverses(self):
         """Verify that the reader raises an error if no universes are stored on the file"""
-        univFile = os.path.join(TEST_ROOT, 'pwr_res_noUniv.m')
+        univFile = getFile('pwr_noUniv_res.m')
         univReader = ResultsReader(univFile)
         with self.assertRaises(SerpentToolsException):
             univReader.read()
@@ -53,7 +53,7 @@ class TestEmptyAttributes(unittest.TestCase):
 
     def test_emptyAttributes(self):
         """Verify that the reader raises error when all attributes are empty"""
-        testFile = os.path.join(TEST_ROOT, 'pwr_res_emptyAttributes.m')
+        testFile = getFile('pwr_emptyAttributes_res.m')
         with self.assertRaises(SerpentToolsException):
             with rc:
                 rc['xs.variableExtras'] = ['GC_UNIVERSE_NAME']
@@ -77,7 +77,7 @@ class TestGetUniv(unittest.TestCase):
                     no universe state exist in the reader
     """
     def setUp(self):
-        self.file = os.path.join(TEST_ROOT, 'pwr_res.m')
+        self.file = getFile('pwr_res.m')
         with rc:
             rc['serpentVersion'] = '2.1.29'
             rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
@@ -206,7 +206,7 @@ class TestFilterResults(TesterCommonResultsReader):
                         univ is filtered
     """
     def setUp(self):
-        self.file = os.path.join(TEST_ROOT, 'pwr_res.m')
+        self.file = getFile('pwr_res.m')
         # universe id, burnup, step, days
         self.expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
         with rc:
@@ -301,7 +301,7 @@ class TestReadAllResults(TesterCommonResultsReader):
                         univ is not filtered
     """
     def setUp(self):
-        self.file = os.path.join(TEST_ROOT, 'pwr_res_filter.m')
+        self.file = getFile('pwr_filter_res.m')
         # universe id, burnup, step, days
         with rc:
             rc['serpentVersion'] = '2.1.29'
@@ -371,7 +371,7 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
                         univ is filtered
     """
     def setUp(self):
-        self.file = os.path.join(TEST_ROOT, 'pwr_res_noBU.m')
+        self.file = getFile('pwr_noBU_res.m')
         # universe id, Idx, Idx, Idx
         self.expectedStates = (('0', 1, 1, 1), ('0', 1, 1, 1))
         with rc:

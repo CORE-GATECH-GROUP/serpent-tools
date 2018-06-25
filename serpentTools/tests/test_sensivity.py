@@ -6,11 +6,11 @@ from six import iteritems
 from numpy import array, inf
 from numpy.testing import assert_allclose
 
-from serpentTools.tests import TEST_ROOT
+from serpentTools.data import getFile
 from serpentTools.parsers.sensitivity import SensitivityReader
 from serpentTools.tests import compareDictOfArrays
 
-TEST_FILE = join(TEST_ROOT, 'bwr_sens0.m')
+TEST_FILE = getFile('bwr_sens0.m')
 
 class SensitivityTester(unittest.TestCase):
 

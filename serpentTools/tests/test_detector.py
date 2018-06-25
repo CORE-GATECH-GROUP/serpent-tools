@@ -11,20 +11,16 @@ from numpy import arange, array
 from numpy.testing import assert_equal
 
 from serpentTools.parsers import DetectorReader
+from serpentTools.data import getFile
 from serpentTools.objects.detectors import (
     CartesianDetector, HexagonalDetector, CylindricalDetector)
-from serpentTools.tests import TEST_ROOT, compareDictOfArrays
+from serpentTools.tests import compareDictOfArrays
 
 
 def read(fileP):
     reader = DetectorReader(fileP)
     reader.read()
     return reader
-
-
-def getTestFile(fileP):
-    """Return the location of a test file from TEST_ROOT."""
-    return join(TEST_ROOT, fileP)
 
 
 class DetectorHelper(TestCase):
@@ -97,7 +93,7 @@ class CartesianDetectorTester(DetectorHelper):
            reactions: U-235 fission and capture
     """
 
-    FILE_PATH = getTestFile('ref_det0.m')
+    FILE_PATH = getFile('ref_det0.m')
     DET_NAME = 'xyFissionCapt'
     EXPECTED_DETECTORS = {
         DET_NAME: CartesianDetector
@@ -147,7 +143,7 @@ class HexagonalDetectorTester(DetectorHelper):
     """
     Class for testing the hexagonal detectors
     """
-    FILE_PATH = getTestFile('hexplot_det0.m')
+    FILE_PATH = getFile('hexplot_det0.m')
     EXPECTED_DETECTORS = {
         'hex2': HexagonalDetector,
         'hex3': HexagonalDetector,
@@ -217,7 +213,7 @@ class HexagonalDetectorTester(DetectorHelper):
 class CylindricalDetectorTester(DetectorHelper):
     """Class that tests the cylindrical detector reader."""
 
-    FILE_PATH = getTestFile('radplot_det0.m')
+    FILE_PATH = getFile('radplot_det0.m')
     DET_NAME = 'rad1'
     EXPECTED_DETECTORS = {
         DET_NAME: CylindricalDetector,

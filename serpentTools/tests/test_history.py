@@ -9,10 +9,9 @@ from numpy import array
 from numpy.testing import assert_array_equal
 
 from serpentTools.parsers.history import HistoryReader
-from serpentTools.tests import TEST_ROOT
+from serpentTools.data import getFile
 
-
-TEST_FILE = join(TEST_ROOT, 'bwr_his0.m')
+TEST_FILE = getFile('bwr_his0.m')
 NUM_INACTIVE = 20
 NUM_CYCLES = 119
 
