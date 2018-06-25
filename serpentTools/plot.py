@@ -2,9 +2,6 @@
 from functools import wraps
 from textwrap import dedent
 
-from six import iteritems
-
-import numpy
 from numpy import meshgrid, where
 from matplotlib import pyplot
 from matplotlib.axes import Axes
@@ -26,7 +23,7 @@ LABELS = """labels: None or iterable
 XLABEL = """xlabel: str or None\n    Label for x-axis."""
 YLABEL = """yabel: str or None\n    Label for y-axis."""
 SIGMA = """sigma: int
-    Confidence interval to apply to errors. If not given or ``0``, 
+    Confidence interval to apply to errors. If not given or ``0``,
     no errors will be drawn."""
 AX = """ax: {} or None
     Ax on which to plot the data.""".format(_MPL_AX)
@@ -36,9 +33,9 @@ CMAP = """cmap: str or None
     Valid Matplotlib colormap to apply to the plot."""
 KWARGS = """kwargs:\n    Addition keyword arguments to pass to"""
 MAT_FMT_DOC = """labelFmt: str or None
-    Formattable string for labeling the individual plots. If not 
+    Formattable string for labeling the individual plots. If not
     given, just label as isotope name, e.g. ``'U235'``.
-    Will make the following substitutions on the ``labelFmt`` string, 
+    Will make the following substitutions on the ``labelFmt`` string,
     if given:
 
     +---------------+-------------------------+
@@ -53,8 +50,8 @@ MAT_FMT_DOC = """labelFmt: str or None
 """
 
 UNIV_FMT_DOC = """labelFmt: str or None
-    formattable string for labeling the individual plots. 
-    
+    formattable string for labeling the individual plots.
+
     +---------+----------------------------+
     | String  | Replaced value             |
     +=========+============================+
@@ -89,12 +86,14 @@ LEGEND = """legend: bool or str
 
 NCOL = """ncol: int\n    Integer number of columns to apply to the legend."""
 
-PLOT_MAGIC_STRINGS = {'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
-        'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
-        'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
-        'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP, 'title': TITLE,
-        'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND, 'ncol': NCOL,
-        'univLabelFmt': UNIV_FMT_DOC,}
+PLOT_MAGIC_STRINGS = {
+    'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
+    'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
+    'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
+    'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP, 'title': TITLE,
+    'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND, 'ncol': NCOL,
+    'univLabelFmt': UNIV_FMT_DOC,
+}
 """Magic strings that, if found as {x}, will be replaced by the key of x"""
 
 DEPLETION_PLOT_LABELS = {
@@ -114,13 +113,12 @@ DEPLETION_PLOT_LABELS = {
 def magicPlotDocDecorator(f):
     """
     Decorator that replaces a lot magic strings used in plot functions.
-    
+
     Allows docstrings to contain keyword that will be replaced with
     a valid and proper explanation of the keyword.
     Keywords must be wrapped in single brackets, i.e. ``{x}``
     """
-    
-    
+
     @wraps(f)
     def decorated(*args, **kwargs):
         return f(*args, **kwargs)
@@ -131,6 +129,7 @@ def magicPlotDocDecorator(f):
             doc = doc.replace(lookF, replace)
     decorated.__doc__ = doc
     return decorated
+
 
 PLOT_FORMAT_DEFAULTS = {
     'xlabel': None, 'ylabel': None, 'legend': True,
@@ -177,7 +176,7 @@ def formatPlot(ax, **kwargs):
     legend = kwargs.get('legend', PLOT_FORMAT_DEFAULTS['legend'])
     title = kwargs.get('title', PLOT_FORMAT_DEFAULTS['title'])
     ncol = kwargs.get('ncol', PLOT_FORMAT_DEFAULTS['ncol'])
-    
+
     if logx is None:
         logx = inferAxScale(ax, 'x')
     if logy is None:
@@ -191,7 +190,7 @@ def formatPlot(ax, **kwargs):
     if ylabel:
         ax.set_ylabel(ylabel)
     if legend:
-        ax = placeLegend(ax, legend, ncol) 
+        ax = placeLegend(ax, legend, ncol)
     if title:
         ax.set_title(title)
 
@@ -208,9 +207,10 @@ def inferAxScale(ax, dim):
         return mx > 10
     return abs(mx / mn) > 100
 
+
 @magicPlotDocDecorator
-def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
-                 normalizer=None, cbarLabel=None, **kwargs):
+def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
+                 logScale=False, normalizer=None, cbarLabel=None, **kwargs):
     """
     Create a cartesian mesh plot of the data
 
@@ -218,22 +218,27 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     ----------
     data: numpy.array
         2D array of data to be plotted
-    xticks: iterable
-        Values corresponding to lower x boundary of meshes
-    yticks: iterable
-        Values corresponding to lower y boundary of meshes
+    xticks: iterable or None
+    yticks: iterable or None
+        Values corresponding to lower x/y boundary of meshes.
+        If not given, treat this as a matrix plot like
+        :func:`matplotlib.pyplot.imshow`.
+        If given, they should contain one more item than
+        number of elements in their dimension to give dimensions
+        for all meshes.
     {ax}
     {cmap}
     logScale: bool
-        If true, apply a logarithmic coloring 
+        If true, apply a logarithmic coloring
     normalizer: callable or :py:class:`matplotlib.colors.Normalize`
         Custom normalizer for this plot.
-        If an instance of :py:class:`matplotlib.colors.Normalize`, 
-        use directly.  Otherwise, assume a callable object and call as 
+        If an instance of :py:class:`matplotlib.colors.Normalize`,
+        use directly.  Otherwise, assume a callable object and call as
         ``norm = normalizer(data, xticks, yticks)``
     cbarLabel: None or str
         Label to apply to colorbar
-    {kwargs} :py:func:`matplotlib.pyplot.pcolormesh`
+    {kwargs} :py:func:`matplotlib.pyplot.pcolormesh` or
+    :func:`matplotlib.pyplot.imshow` if ``xticks`` and ``yticks`` are ``None``
 
     Returns
     -------
@@ -243,14 +248,21 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     ------
     ValueError:
         If ``logScale`` and data contains negative quantities
+    TypeError:
+        If only one of ``xticks`` or ``yticks`` is ``None``.
 
     See Also
     --------
-    * :py:func:`matplotlib.pyplot.pcolormesh`
-    * :py:class:`matplotlib.colors.Normalize`
+    * :func:`matplotlib.pyplot.pcolormesh`
+    * :func:`matplotlib.pyplot.imshow`
+    * :class:`matplotlib.colors.Normalize`
     """
     assert len(data.shape) == 2, 'Mesh plot requires 2D data, ' \
                                  'not {}'.format(data.shape)
+    if ((xticks is None and yticks is not None)
+            or (xticks is None and yticks is not None)):
+        raise TypeError("Both X and Y must be None, or not None.")
+
     if logScale and data.min() < 0:
         raise ValueError("Will not apply log normalization to data with "
                          "negative elements")
@@ -258,17 +270,20 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     if not logScale and normalizer is None:
         norm = None
     elif normalizer is not None:
-        norm =  (normalizer if isinstance(normalizer, Normlize) 
-                 else normalizer(data, xticks, yticks))
+        norm = (normalizer if isinstance(normalizer, Normalize)
+                else normalizer(data, xticks, yticks))
     else:
         smallestPos = data[where(data > 0)].min()
         norm = LogNorm(smallestPos, data.max())
 
     # make the plot
     ax = ax or pyplot.axes()
-    X, Y = meshgrid(xticks, yticks)
-    quadmesh = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, **kwargs)
-    cbar = ax.figure.colorbar(quadmesh, norm=norm)
+    if xticks is None:
+        mappable = ax.imshow(data, cmap=cmap, norm=norm)
+    else:
+        X, Y = meshgrid(xticks, yticks)
+        mappable = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, **kwargs)
+    cbar = ax.figure.colorbar(mappable, norm=norm)
     if cbarLabel is not None:
         cbar.ax.set_ylabel(cbarLabel)
 
@@ -294,7 +309,7 @@ def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
     {labels}
     yerr: None or numpy.array or iterable
         Absolute error for each data point in ``plotData``
-    {kwargs} :py:func:`matplotlib.pyplot.plot` or 
+    {kwargs} :py:func:`matplotlib.pyplot.plot` or
         :py:func:`matplotlib.pyplot.errorbar`
 
     Returns
@@ -306,15 +321,15 @@ def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
     IndexError
         If ``yerr`` is not ``None`` and does not match the shape
         of ``plotData``
-        
+
     """
     ax = ax or pyplot.axes()
 
     if yerr is not None:
         if not yerr.shape == plotData.shape:
             raise IndexError(
-                "Y error data has shape {}, while plotData has shape {}".format(
-                yerr.shape, plotData.shape))
+                "Y error data has shape {}, while plotData has shape {}"
+                .format(yerr.shape, plotData.shape))
         errBar = True
     else:
         errBar = False
@@ -328,13 +343,13 @@ def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
         labels[0] = kwargs.pop('label')
     if errBar and yerr.shape != plotData.shape:
         yerr = yerr.reshape(plotData.shape)
-    
+
     for col, label in enumerate(labels):
         if errBar:
-            ax.errorbar(xdata, plotData[:, col], label=label, yerr=yerr[:, col],
-                    **kwargs)
+            ax.errorbar(xdata, plotData[:, col], label=label,
+                        yerr=yerr[:, col], **kwargs)
         else:
-           ax.plot(xdata, plotData[:, col], label=label, **kwargs)
+            ax.plot(xdata, plotData[:, col], label=label, **kwargs)
 
     if any(labels):
         ax.legend()
@@ -373,4 +388,3 @@ def placeLegend(ax, legend, ncol=1):
     ax.legend(borderaxespad=0., ncol=ncol, **kwargs)
 
     return ax
-
