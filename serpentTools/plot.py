@@ -238,7 +238,8 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     cbarLabel: None or str
         Label to apply to colorbar
     {kwargs} :py:func:`matplotlib.pyplot.pcolormesh` or
-    :func:`matplotlib.pyplot.imshow` if ``xticks`` and ``yticks`` are ``None``
+        :func:`matplotlib.pyplot.imshow` if ``xticks`` and ``yticks``
+        are ``None``
 
     Returns
     -------
@@ -251,11 +252,39 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     TypeError:
         If only one of ``xticks`` or ``yticks`` is ``None``.
 
+    Examples
+    --------
+    .. plot::
+        :include-source:
+
+        >>> from serpentTools.plot import cartMeshPlot
+        >>> from numpy import arange
+        >>> data = arange(100).reshape(10, 10)
+        >>> x = y = arange(11)
+        >>> cartMeshPlot(data, x, y, cbarLabel='Demo')
+
+    .. plot::
+        :include-source:
+
+        >>> from serpentTools.plot import cartMeshPlot
+        >>> from numpy import arange
+        >>> data = arange(100).reshape(10, 10)
+        >>> x = y = arange(11)
+        >>> cartMeshPlot(data ** 2, logScale=True)
+
+    Note how the value in the upper left, position
+    ``[0, 0]`` is white. This value is identically zero, and in turn,
+    is left white. The ``logScale`` argument works well for
+    plotting sparse matrices, as the zero-valued indices can be
+    identified without obscuring the trends presented in the
+    non-zero data.
+
     See Also
     --------
     * :func:`matplotlib.pyplot.pcolormesh`
     * :func:`matplotlib.pyplot.imshow`
     * :class:`matplotlib.colors.Normalize`
+
     """
     assert len(data.shape) == 2, 'Mesh plot requires 2D data, ' \
                                  'not {}'.format(data.shape)
