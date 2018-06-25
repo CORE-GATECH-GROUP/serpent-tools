@@ -13,11 +13,14 @@ except ImportError:
 import versioneer
 
 
+DATA_EXTS = {'*.m', '*.coe'}
+
+
 def getDataFiles():
     """Return all matlab files from ``serpentTools/data``"""
-    exts = {'*.m', '*.coe'}
+    
     files = []
-    for ext in exts:
+    for ext in DATA_EXTS:
         files.extend(glob(join('serpentTools', 'data', ext)))
     return files
 
@@ -54,7 +57,7 @@ pythonRequires = '>=2.7,!=3.0,!=3.1,!=3.2,!=3.3,!=3.4'
 setupArgs = {
     'name': 'serpentTools',
     'packages': ['serpentTools', 'serpentTools.parsers',
-                 'serpentTools.data',
+                 'serpentTools.data', 'serpentTools.tests',
                  'serpentTools.objects', 'serpentTools.samplers'],
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
@@ -68,7 +71,7 @@ setupArgs = {
     'license': 'MIT',
     'version': versioneer.get_version(),
     'package_data': {
-        'serpentTools.data': ['data/*.m', ],
+        'serpentTools.data': ['data/{}'.format(ext) for ext in DATA_EXTS],
     },
     'cmdclass': versioneer.get_cmdclass(),
     'data_files': [
