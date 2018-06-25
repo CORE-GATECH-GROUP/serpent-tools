@@ -42,12 +42,12 @@ files, the user must set the ``mdep`` card in the input
     
     >>> import serpentTools
     >>> from serpentTools.settings import rc
-    >>> mdxFile = '../serpentTools/tests/ref_mdx0.m'
+    >>> mdxFile = 'ref_mdx0.m'
 
 .. code:: 
     
     >>> %time
-    >>> mdx = serpentTools.read(mdxFile)
+    >>> mdx = serpentTools.readDataFile(mdxFile)
 
 
 .. parsed-literal::
@@ -375,7 +375,7 @@ uncertainties
 
 .. code:: 
     
-    >>> mdx = serpentTools.read(mdxFile)
+    >>> mdx = serpentTools.readDataFile(mdxFile)
 
 .. code:: 
     

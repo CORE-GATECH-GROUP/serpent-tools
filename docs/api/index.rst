@@ -10,6 +10,7 @@ API
    settings.rst
    messages.rst
    parsers.rst
+   data.rst
    engines.rst
    plot.rst
    containers.rst

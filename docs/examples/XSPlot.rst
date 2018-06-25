@@ -23,9 +23,7 @@ Let’s plot some data used in the ``serpentTools`` regression suite.
 .. code:: 
     
     >>> import serpentTools
-    >>> %matplotlib inline
-    >>> 
-    >>> xsreader = serpentTools.read('../serpentTools/tests/plut_xs0.m')
+    >>> xsreader = serpentTools.readDataFile('plut_xs0.m')
 
 This file contains some cross sections from a Serpent case containing a
 chunk of plutonium metal reflected by beryllium. Let’s see what cross

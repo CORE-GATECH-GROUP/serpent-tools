@@ -27,15 +27,13 @@ Each such object has methods and attributes that should ease analysis.
 
 .. code:: 
     
-    >>> %matplotlib inline
-    >>> import six
     >>> import serpentTools
     >>> from serpentTools.settings import rc
 
 .. code:: 
     
     >>> depFile = 'demo_dep.m'
-    >>> dep = serpentTools.read(depFile)
+    >>> dep = serpentTools.readDataFile(depFile)
 
 The materials read in from the file are stored in the |materials| 
 dictionary, where the keys represent the name of specific materials, and
@@ -307,11 +305,6 @@ Below is an example of configuring a |depReader| that only
 stores the burnup days, and atomic density for all materials that begin
 with ``bglass`` followed by at least one integer.
 
-.. note::
-
-    Creating the |depReader| in this manner is functionally
-    equivalent to ``serpentTools.read(depFile)``
-
 .. code:: 
     
     >>> rc['depletion.processTotal'] = False
@@ -319,8 +312,7 @@ with ``bglass`` followed by at least one integer.
     >>> rc['depletion.materialVariables'] = ['ADENS']
     >>> rc['depletion.materials'] = [r'bglass\d+']
 
-    >>> bgReader = serpentTools.DepletionReader(depFile)
-    >>> bgReader.read()
+    >>> bgReader = serpentTools.readDataFile(depFile)
 
 .. code:: 
     

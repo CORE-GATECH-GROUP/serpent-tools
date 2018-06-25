@@ -38,14 +38,9 @@ should ease the analyses.
 
 .. code:: 
     
-    >>> %time
     >>> resFile = 'InnerAssembly_res.m'
-    >>> res = serpentTools.read(resFile)
+    >>> res = serpentTools.readDataFile(resFile)
 
-
-.. parsed-literal::
-
-    Wall time: 0 ns
 
 Metadata (``metadata``)
 =======================
@@ -232,7 +227,6 @@ Basic 1-D plotting capabilities are not yet avaialble in the parser.
 
 .. code:: 
 
-    >>> %matplotlib inline
     >>> import matplotlib.pyplot as plt
     >>> xdata = res.resdata['burnDays'][:] # obtain the time in (days)
     >>> ydata = res.resdata['absKeff'][:,0] # obtain the k-eff (values only)
@@ -595,7 +589,7 @@ plotted on the same figure.
 .. image:: ResultsReader_files/ResultsReader_52_1.png
 
 
-For plotting data from multiple universes, passed the returned
+For plotting data from multiple universes, pass the returned
 :py:class:`matplotlib.axes.Axes` object, on which the plot was drawn,
 into the plot method for the next
 universe. The ``labelFmt`` argument can be used to differentiate between
@@ -689,7 +683,7 @@ The user can modify the settings and only then use |resReader|
 .. code:: 
     
     >>> # Read the file again with the updated settings
-    >>> resFilt = serpentTools.read(resFile)
+    >>> resFilt = serpentTools.readDataFile(resFile)
 
 .. code:: 
     

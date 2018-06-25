@@ -46,7 +46,6 @@ lattice bins.
 
 .. code:: 
     
-    >>> %matplotlib inline
     >>> from matplotlib import pyplot
     >>> import serpentTools
 
@@ -54,8 +53,8 @@ lattice bins.
     
     >>> pinFile = 'fuelPin_det0.m'
     >>> bwrFile = 'bwr_det0.m'
-    >>> pin = serpentTools.read(pinFile)
-    >>> bwr = serpentTools.read(bwrFile)
+    >>> pin = serpentTools.readDataFile(pinFile)
+    >>> bwr = serpentTools.readDataFile(bwrFile)
 
 .. code:: 
     
@@ -557,8 +556,8 @@ hexagonal mesh plot is requested.
 
 .. code:: 
     
-    >>> hexFile = '../serpentTools/tests/hexplot_det0.m'
-    >>> hexR = serpentTools.read(hexFile)
+    >>> hexFile = 'hexplot_det0.m'
+    >>> hexR = serpentTools.readDataFile(hexFile)
     >>> hexR.detectors
 
 .. parsed-literal::
