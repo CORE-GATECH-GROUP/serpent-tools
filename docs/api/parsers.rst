@@ -19,8 +19,6 @@ file listed below
         Results       :ref:`results`
         ============= ======================
 
-.. autofunction:: serpentTools.parsers.inferReader
-
 .. autofunction:: serpentTools.parsers.read
 
 .. autofunction:: serpentTools.parsers.depmtx
