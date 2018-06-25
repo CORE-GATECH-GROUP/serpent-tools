@@ -13,10 +13,13 @@ except ImportError:
 import versioneer
 
 
-def getMatlabFiles():
+def getDataFiles():
     """Return all matlab files from ``serpentTools/data``"""
-    dataGlob = join('serpentTools', 'data', '*.m')
-    return glob(dataGlob)
+    exts = {'*.m', '*.coe'}
+    files = []
+    for ext in exts:
+        files.extend(glob(join('serpentTools', 'data', ext)))
+    return files
 
 
 with open('README.rst') as readme:
@@ -70,7 +73,7 @@ setupArgs = {
     'cmdclass': versioneer.get_cmdclass(),
     'data_files': [
         ('serpentTools', ['serpentTools/variables.yaml', ]),
-        ('serpentTools/data', getMatlabFiles()),
+        ('serpentTools/data', getDataFiles()),
     ],
 }
 if HAS_SETUPTOOLS:
