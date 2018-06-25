@@ -1,16 +1,11 @@
 """
 Module for testing the ``serpentTools`` package
 """
-from os import path
 from unittest import TestCase
 
 from numpy import stack
 from numpy.testing import assert_allclose
 from six import iteritems
-
-from serpentTools import ROOT_DIR
-
-TEST_ROOT = path.join(ROOT_DIR, 'tests')
 
 
 def computeMeansErrors(*arrays):
