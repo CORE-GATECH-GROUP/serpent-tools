@@ -57,7 +57,7 @@ setupArgs = {
     'license': 'MIT',
     'version': versioneer.get_version(),
     'package_data': {
-        'serpentTools.data': ['data/*.m'],
+        'serpentTools.data': ['data/*.m', ],
     },
     'cmdclass': versioneer.get_cmdclass(),
     'data_files': [
