@@ -9,7 +9,7 @@ from numpy.testing import assert_array_equal
 
 from serpentTools.messages import SerpentToolsException
 from serpentTools.parsers import depmtx, inferReader, read
-from serpentTools.tests import TEST_ROOT
+from serpentTools.data import getFile
 
 
 class DepmtxTester(unittest.TestCase):
@@ -17,7 +17,7 @@ class DepmtxTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.filePath = path.join(TEST_ROOT, 'depmtx_ref.m')
+        cls.filePath = getFile('depmtx_ref.m')
         cls.numIso = 74
         (cls.time, cls.n0, cls.zai, cls.decMat, cls.n1) = depmtx(cls.filePath)
 
