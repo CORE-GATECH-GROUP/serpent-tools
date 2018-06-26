@@ -7,6 +7,10 @@ from matplotlib import pyplot
 from matplotlib.axes import Axes
 from matplotlib.colors import LogNorm, Normalize
 
+__all__ = ['cartMeshPlot',
+
+]
+
 #
 # DOCSTRING EXTRAS
 #
@@ -210,7 +214,7 @@ def inferAxScale(ax, dim):
 
 @magicPlotDocDecorator
 def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
-                 logScale=False, normalizer=None, cbarLabel=None, **kwargs):
+                 logColor=False, normalizer=None, cbarLabel=None, **kwargs):
     """
     Create a cartesian mesh plot of the data
 
@@ -228,7 +232,7 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
         for all meshes.
     {ax}
     {cmap}
-    logScale: bool
+    logColor: bool
         If true, apply a logarithmic coloring
     normalizer: callable or :py:class:`matplotlib.colors.Normalize`
         Custom normalizer for this plot.
@@ -248,7 +252,7 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     Raises
     ------
     ValueError:
-        If ``logScale`` and data contains negative quantities
+        If ``logColor`` and data contains negative quantities
     TypeError:
         If only one of ``xticks`` or ``yticks`` is ``None``.
 
@@ -270,11 +274,11 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
         >>> from numpy import arange
         >>> data = arange(100).reshape(10, 10)
         >>> x = y = arange(11)
-        >>> cartMeshPlot(data ** 2, logScale=True)
+        >>> cartMeshPlot(data ** 2, logColor=True)
 
     Note how the value in the upper left, position
     ``[0, 0]`` is white. This value is identically zero, and in turn,
-    is left white. The ``logScale`` argument works well for
+    is left white. The ``logColor`` argument works well for
     plotting sparse matrices, as the zero-valued indices can be
     identified without obscuring the trends presented in the
     non-zero data.
@@ -292,11 +296,15 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
             or (xticks is None and yticks is not None)):
         raise TypeError("Both X and Y must be None, or not None.")
 
-    if logScale and data.min() < 0:
+    if kwargs.get('logScale', None) is not None:
+        warning("Passing logScale is no longer supported. "
+                "Use logColor instead.")
+        logColor = bool(logColor or kwargs['logScale'])
+
+    if logColor and data.min() < 0:
         raise ValueError("Will not apply log normalization to data with "
                          "negative elements")
-
-    if not logScale and normalizer is None:
+    if not logColor and normalizer is None:
         norm = None
     elif normalizer is not None:
         norm = (normalizer if isinstance(normalizer, Normalize)
