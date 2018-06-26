@@ -156,13 +156,13 @@ class HexagonalDetector(Detector):
                                    'Setting up a hexagonal detector')
     docAttrs = """pitch: None or int
         Mesh size [cm]
-    hexType: None or {2, 3}
+    hexType: None or {2, 3, 'x', 'y'}
         Type of hexagonal mesh.
 
-            2. Flat face perpendicular to x-axis
-            3. Flat face perpendicular to y-axis"""
+            2. Flat face perpendicular to x-axis, also ``'x'``
+            3. Flat face perpendicular to y-axis, also ``'y'``."""
     __doc__ = """
-    Class that stores detecto data containing a hexagonal meshing.
+    Class that stores detector data containing a hexagonal meshing.
 
     .. versionadded:: 0.5.1
 
@@ -192,12 +192,46 @@ class HexagonalDetector(Detector):
         8: 'ycoord',
         9: 'xcoord',
     }
+
     _NON_CART = _INDEX_MAP.values()
 
-    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
-                 cmap=None, logColor=False, xlabel=None, ylabel=None,
-                 logx=False, logy=False, loglog=False, title=None, **kwargs):
-        if xdim in self._NON_CART or ydim in self._NON_CART:
+    def __init__(self, name):
+        Detector.__init__(self, name)
+        self.__pitch = None
+        self.__hexType = None
+
+
+    @property
+    def pitch(self):
+        """Center-to-center distance between adjacent meshes."""
+        return self.__pitch
+
+    @pitch.setter
+    def pitch(self, value):
+        f = float(value)
+        if f <= 0:
+            raise ValueError("Pitch must be positive")
+        self.__pitch = f
+
+    @property
+    def hexType(self):
+        """
+        Type of hexagon.
+        2 or 'x' -> flat face perpendicular to x-axis.
+        3 or 'y' -> flat face perpendicular to y-axis.
+        """
+
+        return self.__hexType
+
+    @hexType.setter
+    def hexType(self, value):
+        types = {'x': 2, 'y': 3}
+        types.update({v: v for v in types.values()})
+        try:
+            self.__hexType = types[value]
+        except KeyError as ke:
+            raise KeyError("Hex type must be one of {}, not {}"
+                           .format(list(types.keys()), value))
             warnMeshPlot('Hexagonal', 168)
         return DetectorBase.meshPlot(self,
                                      xdim, ydim,
