@@ -23,12 +23,18 @@ from warnings import warn
 from collections import OrderedDict
 
 from six import iteritems
-from numpy import unique, array
+from numpy import unique, array, empty, inf
+from matplotlib.figure import Figure
+from matplotlib.patches import RegularPolygon
+from matplotlib.collections import PatchCollection
+from matplotlib.pyplot import axes
 
 from serpentTools.utils import linkToWiki
 from serpentTools.messages import warning, debug, SerpentToolsException
 from serpentTools.objects.base import DetectorBase
-
+from serpentTools.plot import (
+    magicPlotDocDecorator, formatPlot, setAx_xlims, setAx_ylims,
+    )
 
 __all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
            'CylindricalDetector', 'SphericalDetector']
@@ -183,11 +189,6 @@ class HexagonalDetector(Detector):
                           detAttrs=Detector.docAttrs,
                           baseAttrs=DetectorBase.baseAttrs)
 
-    def __init__(self, name):
-        Detector.__init__(self, name)
-        self.pitch = None
-        self.hexType = None
-
     _INDEX_MAP = {
         8: 'ycoord',
         9: 'xcoord',
@@ -199,7 +200,7 @@ class HexagonalDetector(Detector):
         Detector.__init__(self, name)
         self.__pitch = None
         self.__hexType = None
-
+        self.__hexRot = None
 
     @property
     def pitch(self):
@@ -217,37 +218,137 @@ class HexagonalDetector(Detector):
     def hexType(self):
         """
         Type of hexagon.
-        2 or 'x' -> flat face perpendicular to x-axis.
-        3 or 'y' -> flat face perpendicular to y-axis.
+        2 -> flat face perpendicular to x-axis.
+        3 -> flat face perpendicular to y-axis.
         """
 
         return self.__hexType
 
     @hexType.setter
     def hexType(self, value):
-        types = {'x': 2, 'y': 3}
-        types.update({v: v for v in types.values()})
-        try:
-            self.__hexType = types[value]
-        except KeyError as ke:
-            raise KeyError("Hex type must be one of {}, not {}"
-                           .format(list(types.keys()), value))
-            warnMeshPlot('Hexagonal', 168)
-        return DetectorBase.meshPlot(self,
-                                     xdim, ydim,
-                                     what=what,
-                                     fixed=fixed,
-                                     ax=ax,
-                                     cmap=cmap,
-                                     logColor=logColor,
-                                     xlabel=xlabel,
-                                     logx=logx,
-                                     logy=logy,
-                                     loglog=loglog,
-                                     title=title,
-                                     **kwargs)
+        if value not in {2, 3}:
+            raise ValueError("Hex type must be 2 or 3, not {}"
+                             .format(value))
+        self.__hexType = value
+        self.__hexRot = 0 if value == 2 else 90
+
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
+        opts = dict(what=what,
+                    fixed=fixed,
+                    ax=ax,
+                    cmap=cmap,
+                    logColor=logColor,
+                    xlabel=xlabel,
+                    logx=logx,
+                    logy=logy,
+                    loglog=loglog,
+                    title=title,
+                    **kwargs)
+        if xdim in self._NON_CART or ydim in self._NON_CART:
+            return self.hexPlot(**opts)
+        return DetectorBase.meshPlot(self, xdim, ydim, **opts)
 
     meshPlot.__doc__ = DetectorBase.meshPlot.__doc__
+
+    @magicPlotDocDecorator
+    def hexPlot(self, what='tallies', fixed=None, ax=None, cmap=None,
+                logColor=False, xlabel=None, ylabel=None, logx=False,
+                logy=False, loglog=False, title=None, **kwargs):
+        """
+        Create and return a hexagonal mesh plot.
+
+        Parameters
+        ----------
+        what: {'tallies', 'errors', 'scores'}
+            Quantity to plot
+        fixed: None or dict
+            Dictionary of slicing arguments to pass to :meth:`slice`
+        {ax}
+        {cmap}
+        {logColor}
+        {xlabel}
+        {ylabel}
+        {logx}
+        {logy}
+        {loglog}
+        {title}
+        {kwargs} :class:`matplotlib.patches.RegularPolygon`
+
+        Raises
+        ------
+        AttributeError
+            If :attr:`pitch` and :attr:`hexType` are not set.
+        """
+        for attr in {'pitch', 'hexType'}:
+            if getattr(self, attr) is None:
+                raise AttributeError("{} is not set.".format(attr))
+
+        for key in {'color', 'fc', 'facecolor', 'orientation'}:
+            checkClearKwargs(key, 'hexPlot', **kwargs)
+        ec = kwargs.get('ec', None) or kwargs.get('edgecolor', None)
+        if ec is None:
+            ec = 'k'
+        kwargs['ec'] = kwargs['edgecolor'] = ec
+        if 'figure' in kwargs and kwargs['figure'] is not None:
+            fig = kwargs['figure']
+            if not isinstance(fig, Figure):
+                raise TypeError(
+                        "Expected 'figure' to be of type Figure, is {}"
+                        .format(type(fig)))
+            if len(fig.axes) != 1 and not ax:
+                raise TypeError("Don't know where to place the figure since"
+                                "'figure' argument has multiple axes.")
+            if ax and fig.axes and ax not in fig.axes:
+                raise IndexError("Passed argument for 'figure' and 'ax', "
+                                 "but ax is not attached to figure.")
+            ax = ax or (fig.axes[0] if fig.axes else axes())
+        alpha = kwargs.get('alpha', None)
+
+        data = self.slice(fixed, what)
+        if len(data.shape) != 2:
+            raise IndexError
+        nY = data.shape[1]
+        nItems = data.size
+        patches = empty(nItems, dtype=object)
+        values = empty(nItems)
+
+        ax = ax or axes()
+        pos = 0
+        xmax, ymax = [-inf, ] * 2
+        xmin, ymin = [inf, ] * 2
+        coords = self.grids['COORD']
+        radius = self.pitch / 2
+
+        for yi, row in enumerate(data):
+            yoff = yi * nY
+            for xi, val in enumerate(row):
+                index = yoff + xi
+                values[pos] = val
+                xy = coords[index]
+                h = RegularPolygon(xy, 6, radius, self.__hexRot, **kwargs)
+                verts = h.get_verts()
+                vmins = verts.min(0)
+                vmaxs = verts.max(0)
+                xmax = max(xmax, vmaxs[0])
+                xmin = min(xmin, vmins[0])
+                ymax = max(ymax, vmaxs[1])
+                ymin = min(ymin, vmins[1])
+                patches[pos] = h
+                pos += 1
+        pc = PatchCollection(patches, cmap=cmap, alpha=alpha)
+        pc.set_array(values)
+        ax.add_collection(pc)
+
+        formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
+                   xlabel=xlabel or "X [cm]",
+                   ylabel=ylabel or "Y [cm]", title=title,
+                   )
+        setAx_xlims(ax, xmin, xmax)
+        setAx_ylims(ax, ymin, ymax)
+
+        return ax
 
 
 class CylindricalDetector(Detector):
@@ -405,3 +506,10 @@ def warnMeshPlot(plotType, ghIssue):
     msg = ("{} plotting is not fully supported yet - #{}"
            .format(plotType, ghIssue))
     warn(msg, FutureWarning)
+
+
+def checkClearKwargs(key, fName, **kwargs):
+    """Log a warning and clear non-None values from kwargs"""
+    if key in kwargs and kwargs[key] is not None:
+        warning("{} will be set by {}. Worry not.".format(key, fName))
+        kwargs[key] = None
