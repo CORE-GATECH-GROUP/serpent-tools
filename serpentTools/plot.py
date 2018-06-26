@@ -208,8 +208,47 @@ def inferAxScale(ax, dim):
         return mx > 10
     return abs(mx / mn) > 100
 
+def normalizerFactory(data, norm, logScale, xticks, yticks):
+    """
+    Construct and return a :class:`~matplotlib.colors.Normalize` for this data
+
+    Paramters
+    ---------
+    data: :class:`numpy.ndarray`
+        Data to be plotted and normalized
+    norm: None or callable or :class:`matplotlib.colors.Normalize`
+        If a ``Normalize`` object, then use this as the normalizer.
+        If callable, set the normalizer with
+        ``norm(data, xticks, yticks)``. If not None, set the
+        normalizer to be based on the min and max of the data
+    xticks: :class:`numpy.ndarray`
+    yticks: :class:`numpy.ndarray`
+        Arrays ideally corresponding to the data. Used with callable
+        `norm` function.
+
+    Returns
+    --------
+    :class:`matplotlib.colors.Normalize`
+    or :class:`matplotlib.colors.LogNorm`
+    or object:
+        Object used to normalize colormaps against these data
+    """   
+    if norm is not None:
+        if isinstance(norm, Normalize):
+            return norm
+        if callable(norm):
+            return norm(data, xticks, yticks)
+    if logScale:
+        if (data <= 0).any():
+            warning("Data contains non-positive entries. Will not logscale.")
+        else:
+            posData = data[data > 0]
+            return LogNorm(posData.min(), posData.max())
+    return Normalize(data.min(), data.max())
+
+    
 @magicPlotDocDecorator
-def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
+def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logColor=False,
                  normalizer=None, cbarLabel=None, **kwargs):
     """
     Create a cartesian mesh plot of the data
@@ -224,7 +263,7 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
         Values corresponding to lower y boundary of meshes
     {ax}
     {cmap}
-    logScale: bool
+    logColor: bool
         If true, apply a logarithmic coloring 
     normalizer: callable or :py:class:`matplotlib.colors.Normalize`
         Custom normalizer for this plot.
@@ -259,15 +298,7 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
         raise ValueError("Will not apply log normalization to data with "
                          "negative elements")
 
-    if not logScale and normalizer is None:
-        norm = None
-    elif normalizer is not None:
-        norm =  (normalizer if isinstance(normalizer, Normlize) 
-                 else normalizer(data, xticks, yticks))
-    else:
-        smallestPos = data[where(data > 0)].min()
-        norm = LogNorm(smallestPos, data.max())
-
+    norm = normalizerFactory(data, norm, logScale, xticks, yticks)
     # make the plot
     ax = ax or pyplot.axes()
     X, Y = meshgrid(xticks, yticks)
