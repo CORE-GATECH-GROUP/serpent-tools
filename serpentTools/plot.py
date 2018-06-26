@@ -249,6 +249,10 @@ def cartMeshPlot(data, xticks, yticks, ax=None, cmap=None, logScale=False,
     * :py:func:`matplotlib.pyplot.pcolormesh`
     * :py:class:`matplotlib.colors.Normalize`
     """
+    if 'logScale' in kwargs:
+        warning("Passing logScale is no longer supported. "
+                "Use logColor instead.")
+        logColor = bool(logColor or kwargs['logScale'])
     assert len(data.shape) == 2, 'Mesh plot requires 2D data, ' \
                                  'not {}'.format(data.shape)
     if logScale and data.min() < 0:
