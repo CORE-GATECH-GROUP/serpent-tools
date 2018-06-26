@@ -374,3 +374,42 @@ def placeLegend(ax, legend, ncol=1):
 
     return ax
 
+
+def setAx_xlims(ax, xmin, xmax, pad=10):
+    return _set_ax_lims(ax, xmin, xmax, True, pad)
+
+def setAx_ylims(ax, ymin, ymax, pad=10):
+    return _set_ax_lims(ax, ymin, ymax, False, pad)
+
+_set_lim_doc ="""
+Set the {v} limits on an Axes object
+
+Parameters
+----------
+ax: :class:`matplotlib.axes.Axes`
+    Ax to be updated
+{v}min: float
+    Current minimum extent of {v} axis
+{v}max: float
+    Current maximum extent of {v} axis
+pad: float
+    Padding, in percent, to apply to each side of
+    the current min and max
+"""
+
+
+setAx_xlims.__doc__ = _set_lim_doc.format(v='x')
+setAx_ylims.__doc__ = _set_lim_doc.format(v='y')
+del _set_lim_doc
+
+
+def _set_ax_lims(ax, vmin, vmax, xory, pad):
+    if pad == 0:
+        return
+    assert pad > 0
+    func = getattr(ax, 'set_{}lim'.format('x' if xory else 'y'))
+    diff = vmax - vmin
+    if vmax:
+        diff /= vmax
+    offset = pad * diff / 100
+    return func(vmin - offset, vmax + offset)
