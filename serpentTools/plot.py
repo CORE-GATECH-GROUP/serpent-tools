@@ -271,10 +271,11 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
         :include-source:
 
         >>> from serpentTools.plot import cartMeshPlot
-        >>> from numpy import arange
-        >>> data = arange(100).reshape(10, 10)
-        >>> x = y = arange(11)
-        >>> cartMeshPlot(data ** 2, logColor=True)
+        >>> from numpy import  eye
+        >>> data = eye(10)
+        >>> for indx in range(10):
+        ...     data[indx] *= indx
+        >>> cartMeshPlot(data, logColor=True)
 
     Note how the value in the upper left, position
     ``[0, 0]`` is white. This value is identically zero, and in turn,
