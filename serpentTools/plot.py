@@ -518,12 +518,8 @@ del _set_lim_doc
 
 
 def _set_ax_lims(ax, vmin, vmax, xory, pad):
-    if pad == 0:
-        return
-    assert pad > 0
+    assert pad >= 0
     func = getattr(ax, 'set_{}lim'.format('x' if xory else 'y'))
     diff = vmax - vmin
-    if vmax:
-        diff /= vmax
     offset = pad * diff / 100
     return func(vmin - offset, vmax + offset)
