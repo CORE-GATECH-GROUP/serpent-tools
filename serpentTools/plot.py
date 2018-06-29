@@ -346,7 +346,7 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     if logColor and data.min() < 0:
         raise ValueError("Will not apply log normalization to data with "
                          "negative elements")
-    norm = normalizerFactory(data, norm, logColor, xticks, yticks)
+    norm = normalizerFactory(data, normalizer, logColor, xticks, yticks)
 
     # make the plot
     ax = ax or pyplot.axes()
@@ -355,11 +355,34 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     else:
         X, Y = meshgrid(xticks, yticks)
         mappable = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, **kwargs)
+    cbar = addColorbar(ax, mappable, norm, cbarLabel)
+
+    return ax
+
+
+def addColorbar(ax, mappable, norm, cbarLabel=None):
+    """
+    Quick utility to add a colorbar to an axes object
+
+    Parameters
+    ----------
+    mappable: iterable
+        Collection of meshes, patches, or values that are used to construct
+        the colorbar.
+    norm: None or :class:`matplotlib.colors.Normalize` subclass
+        Normalizer for this plot
+    cbarLabel: None or str
+        If given, place this as the y-label for the colorbar
+
+    Returns
+    -------
+    :class:`matplotlib.colorbar.Colorbar`
+        The colorbar that was added
+    """
     cbar = ax.figure.colorbar(mappable, norm=norm)
     if cbarLabel is not None:
         cbar.ax.set_ylabel(cbarLabel)
-
-    return ax
+    return cbar
 
 
 @magicPlotDocDecorator
