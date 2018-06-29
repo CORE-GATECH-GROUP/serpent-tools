@@ -34,6 +34,7 @@ from serpentTools.messages import warning, debug, SerpentToolsException
 from serpentTools.objects.base import DetectorBase
 from serpentTools.plot import (
     magicPlotDocDecorator, formatPlot, setAx_xlims, setAx_ylims,
+    addColorbar,
     )
 
 __all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
@@ -255,7 +256,8 @@ class HexagonalDetector(Detector):
     @magicPlotDocDecorator
     def hexPlot(self, what='tallies', fixed=None, ax=None, cmap=None,
                 logColor=False, xlabel=None, ylabel=None, logx=False,
-                logy=False, loglog=False, title=None, **kwargs):
+                logy=False, loglog=False, title=None, normalizer=None,
+                cbarLabel=None, **kwargs):
         """
         Create and return a hexagonal mesh plot.
 
@@ -337,9 +339,12 @@ class HexagonalDetector(Detector):
                 ymin = min(ymin, vmins[1])
                 patches[pos] = h
                 pos += 1
+        #TODO Add normalizer factory
         pc = PatchCollection(patches, cmap=cmap, alpha=alpha)
         pc.set_array(values)
         ax.add_collection(pc)
+
+        cbar = addColorbar(ax, pc, None, cbarLabel)
 
         formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
                    xlabel=xlabel or "X [cm]",
