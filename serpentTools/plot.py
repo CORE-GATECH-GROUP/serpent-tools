@@ -7,6 +7,8 @@ from matplotlib import pyplot
 from matplotlib.axes import Axes
 from matplotlib.colors import LogNorm, Normalize
 
+from serpentTools.messages import warning
+
 __all__ = ['cartMeshPlot',
 
 ]
@@ -235,9 +237,11 @@ def normalizerFactory(data, norm, logScale, xticks, yticks):
     or :class:`matplotlib.colors.LogNorm`
     or object:
         Object used to normalize colormaps against these data
-    """   
+    """
     if norm is not None:
         if isinstance(norm, Normalize):
+            return norm
+        if issubclass(norm.__class__, Normalize):
             return norm
         if callable(norm):
             return norm(data, xticks, yticks)
