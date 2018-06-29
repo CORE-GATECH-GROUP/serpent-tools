@@ -10,7 +10,6 @@ from matplotlib.pyplot import subplots
 
 from serpentTools.plot import (
     formatPlot, normalizerFactory, setAx_xlims, setAx_ylims,
-    placeLegend,
 )
 
 
@@ -104,12 +103,6 @@ class NormalizerTester(unittest.TestCase):
         out = normalizerFactory(self.data, None, True, None, None)
         self._testNormalizer(out)
 
-    def test_nonpositiveLogNorm(self):
-        """Verify the logScaling rejects data with non-positive values.
-        Reverts to a normal non-logarithmic scaling."""
-        out = normalizerFactory(self.data, None, True, None, None)
-        self._testNormalizer(out)
-
     def test_passNormaliser(self):
         """Verify that passing an instance of Normalize is allowed."""
         emin, emax = 5, 100
@@ -176,4 +169,3 @@ del _AxLimitSetterHelper
 
 if __name__ == '__main__':
     unittest.main()
-

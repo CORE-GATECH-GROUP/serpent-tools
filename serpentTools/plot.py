@@ -218,8 +218,8 @@ def normalizerFactory(data, norm, logScale, xticks, yticks):
     """
     Construct and return a :class:`~matplotlib.colors.Normalize` for this data
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     data: :class:`numpy.ndarray`
         Data to be plotted and normalized
     norm: None or callable or :class:`matplotlib.colors.Normalize`
@@ -227,6 +227,10 @@ def normalizerFactory(data, norm, logScale, xticks, yticks):
         If callable, set the normalizer with
         ``norm(data, xticks, yticks)``. If not None, set the
         normalizer to be based on the min and max of the data
+    logScale: bool
+        If this evaluates to true, construct a
+        :class:`matplotlib.colors.LogNorm` with the minimum
+        set to be the minimum of the positive values.
     xticks: :class:`numpy.ndarray`
     yticks: :class:`numpy.ndarray`
         Arrays ideally corresponding to the data. Used with callable
@@ -247,11 +251,11 @@ def normalizerFactory(data, norm, logScale, xticks, yticks):
         if callable(norm):
             return norm(data, xticks, yticks)
     if logScale:
-        if (data <= 0).any():
-            warning("Data contains non-positive entries. Will not logscale.")
-        else:
-            posData = data[data > 0]
-            return LogNorm(posData.min(), posData.max())
+        if (data < 0).any():
+            warning("Negative values will be excluded from logarithmic "
+                    "colormap.")
+        posData = data[data > 0]
+        return LogNorm(posData.min(), posData.max())
     return Normalize(data.min(), data.max())
 
 
@@ -323,9 +327,8 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
         ...     data[indx] *= indx
         >>> cartMeshPlot(data, logColor=True)
 
-    Note how the value in the upper left, position
-    ``[0, 0]`` is white. This value is identically zero, and in turn,
-    is left white. The ``logColor`` argument works well for
+    All values less than or equal to zero are excluded from the
+    color normalization. The ``logColor`` argument works well for
     plotting sparse matrices, as the zero-valued indices can be
     identified without obscuring the trends presented in the
     non-zero data.
