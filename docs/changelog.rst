@@ -13,6 +13,8 @@ Next
 
 * :pull:`198` - Import test and example files using :mod:`serpentTools.data`. 
   Load example readers with :func:`serpentTools.data.readDataFile`
+* :pull:`199` - Add :func:`serpentTools.plot.cartMeshPlot` to general API
+  with support for structured or unstructured matrix plotting
 
 .. _vNext-api:
 
