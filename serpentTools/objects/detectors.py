@@ -164,11 +164,11 @@ class HexagonalDetector(Detector):
                                    'Setting up a hexagonal detector')
     docAttrs = """pitch: None or int
         Mesh size [cm]
-    hexType: None or {2, 3, 'x', 'y'}
+    hexType: None or {2, 3}
         Type of hexagonal mesh.
 
-            2. Flat face perpendicular to x-axis, also ``'x'``
-            3. Flat face perpendicular to y-axis, also ``'y'``."""
+            2. Flat face perpendicular to x-axis
+            3. Flat face perpendicular to y-axis."""
     __doc__ = """
     Class that stores detector data containing a hexagonal meshing.
 
@@ -206,7 +206,6 @@ class HexagonalDetector(Detector):
 
     @property
     def pitch(self):
-        """Center-to-center distance between adjacent meshes."""
         return self.__pitch
 
     @pitch.setter
@@ -218,12 +217,6 @@ class HexagonalDetector(Detector):
 
     @property
     def hexType(self):
-        """
-        Type of hexagon.
-        2 -> flat face perpendicular to x-axis.
-        3 -> flat face perpendicular to y-axis.
-        """
-
         return self.__hexType
 
     @hexType.setter
