@@ -2,7 +2,7 @@
 from functools import wraps
 from textwrap import dedent
 
-from numpy import meshgrid, where
+from numpy import meshgrid
 from matplotlib import pyplot
 from matplotlib.axes import Axes
 from matplotlib.colors import LogNorm, Normalize
@@ -213,6 +213,7 @@ def inferAxScale(ax, dim):
         return mx > 10
     return abs(mx / mn) > 100
 
+
 def normalizerFactory(data, norm, logScale, xticks, yticks):
     """
     Construct and return a :class:`~matplotlib.colors.Normalize` for this data
@@ -359,7 +360,7 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     else:
         X, Y = meshgrid(xticks, yticks)
         mappable = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, **kwargs)
-    cbar = addColorbar(ax, mappable, norm, cbarLabel)
+    addColorbar(ax, mappable, norm, cbarLabel)
 
     return ax
 
@@ -492,10 +493,12 @@ def placeLegend(ax, legend, ncol=1):
 def setAx_xlims(ax, xmin, xmax, pad=10):
     return _set_ax_lims(ax, xmin, xmax, True, pad)
 
+
 def setAx_ylims(ax, ymin, ymax, pad=10):
     return _set_ax_lims(ax, ymin, ymax, False, pad)
 
-_set_lim_doc ="""
+
+_set_lim_doc = """
 Set the {v} limits on an Axes object
 
 Parameters
