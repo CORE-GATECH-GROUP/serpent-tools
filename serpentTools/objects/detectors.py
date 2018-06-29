@@ -284,6 +284,9 @@ class HexagonalDetector(Detector):
         AttributeError
             If :attr:`pitch` and :attr:`hexType` are not set.
         """
+        if fixed and ('xcoord' in fixed or 'ycoord' in fixed):
+            raise KeyError("Refusing to restrict along one of the hexagonal "
+                           "dimensions {x/y}coord")
         for attr in {'pitch', 'hexType'}:
             if getattr(self, attr) is None:
                 raise AttributeError("{} is not set.".format(attr))
@@ -309,37 +312,37 @@ class HexagonalDetector(Detector):
             ax = ax or (fig.axes[0] if fig.axes else axes())
         alpha = kwargs.get('alpha', None)
 
+        ny = len(self.indexes['ycoord'])
+        nx = len(self.indexes['xcoord'])
         data = self.slice(fixed, what)
-        if len(data.shape) != 2:
-            raise IndexError
-        nY = data.shape[1]
-        nItems = data.size
+        if data.shape != (ny, nx):
+            raise IndexError("Constrained data does not agree with hexagonal "
+                             "grid structure. Coordinate grid: {}. "
+                             "Constrained shape: {}"
+                             .format((ny, nx), data.shape))
+        nItems = ny * nx
         patches = empty(nItems, dtype=object)
         values = empty(nItems)
+        coords = self.grids['COORD']
 
         ax = ax or axes()
         pos = 0
         xmax, ymax = [-inf, ] * 2
         xmin, ymin = [inf, ] * 2
-        coords = self.grids['COORD']
         radius = self.pitch / sqrt(3)
 
-        for yi, row in enumerate(data):
-            yoff = yi * nY
-            for xi, val in enumerate(row):
-                index = yoff + xi
-                values[pos] = val
-                xy = coords[index]
-                h = RegularPolygon(xy, 6, radius, self.__hexRot, **kwargs)
-                verts = h.get_verts()
-                vmins = verts.min(0)
-                vmaxs = verts.max(0)
-                xmax = max(xmax, vmaxs[0])
-                xmin = min(xmin, vmins[0])
-                ymax = max(ymax, vmaxs[1])
-                ymin = min(ymin, vmins[1])
-                patches[pos] = h
-                pos += 1
+        for xy, val in zip(coords, data.flat):
+            values[pos] = val
+            h = RegularPolygon(xy, 6, radius, self.__hexRot, **kwargs)
+            verts = h.get_verts()
+            vmins = verts.min(0)
+            vmaxs = verts.max(0)
+            xmax = max(xmax, vmaxs[0])
+            xmin = min(xmin, vmins[0])
+            ymax = max(ymax, vmaxs[1])
+            ymin = min(ymin, vmins[1])
+            patches[pos] = h
+            pos += 1
         normalizer = normalizerFactory(values, normalizer, logColor,
                                        coords[:, 0], coords[:, 1])
         pc = PatchCollection(patches, cmap=cmap, alpha=alpha)
@@ -347,7 +350,7 @@ class HexagonalDetector(Detector):
         pc.set_norm(normalizer)
         ax.add_collection(pc)
 
-        cbar = addColorbar(ax, pc, None, cbarLabel)
+        addColorbar(ax, pc, None, cbarLabel)
 
         formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
                    xlabel=xlabel or "X [cm]",
