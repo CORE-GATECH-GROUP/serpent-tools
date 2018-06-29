@@ -19,6 +19,7 @@ Detectors
 * :class:`~serpentTools.objects.detectors.SphericalDetector`
 """
 
+from math import sqrt, pi
 from warnings import warn
 from collections import OrderedDict
 
@@ -231,7 +232,7 @@ class HexagonalDetector(Detector):
             raise ValueError("Hex type must be 2 or 3, not {}"
                              .format(value))
         self.__hexType = value
-        self.__hexRot = 0 if value == 2 else 90
+        self.__hexRot = 0 if value == 2 else (pi / 2)
 
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
                  cmap=None, logColor=False, xlabel=None, ylabel=None,
@@ -321,7 +322,7 @@ class HexagonalDetector(Detector):
         xmax, ymax = [-inf, ] * 2
         xmin, ymin = [inf, ] * 2
         coords = self.grids['COORD']
-        radius = self.pitch / 2
+        radius = self.pitch / sqrt(3)
 
         for yi, row in enumerate(data):
             yoff = yi * nY
