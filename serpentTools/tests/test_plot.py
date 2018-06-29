@@ -4,9 +4,14 @@ Test the plotting module
 """
 import unittest
 
+from numpy import arange
+from matplotlib.colors import Normalize, LogNorm
 from matplotlib.pyplot import subplots
 
-from serpentTools.plot import formatPlot
+from serpentTools.plot import (
+    formatPlot, normalizerFactory, setAx_xlims, setAx_ylims,
+    placeLegend,
+)
 
 
 class PlotFormatTester(unittest.TestCase):
@@ -66,6 +71,58 @@ class PlotFormatTester(unittest.TestCase):
     def test_title(self):
         self.plot(title='title')
         self.compareTitle('title')
+
+
+class NormalizerTester(unittest.TestCase):
+    """Class for testing the normalizerFactory function."""
+
+    def setUp(self):
+        self.data = arange(-4, 5)
+
+    def _testType(self, norm):
+        """Ensure the return type is an instance/sublass of Normalize."""
+        typeFlag = (isinstance(norm, Normalize)
+                    or issubclass(norm.__class__, Normalize))
+        self.assertTrue(typeFlag, msg=(
+            "Output should be Normalize or a subclass, not {}"
+            .format(norm.__class__)))
+
+    def _testNormalizer(self, norm):
+        """Internal for comparing min and max of normalizer"""
+        self._testType(norm)
+        self.assertEqual(self.data.min(), norm.vmin)
+        self.assertEqual(self.data.max(), norm.vmax)
+
+    def test_simpleNormalizer(self):
+        """Verify that the factory sets min and max from a dataset."""
+        out = normalizerFactory(self.data, None, False, None, None)
+        self._testNormalizer(out)
+
+    def test_positiveLogNorm(self):
+        """Verify the logScaling for a positive dataset."""
+        self.data[self.data <= 0] = 1
+        out = normalizerFactory(self.data, None, True, None, None)
+        self._testNormalizer(out)
+
+    def test_nonpositiveLogNorm(self):
+        """Verify the logScaling rejects data with non-positive values.
+        Reverts to a normal non-logarithmic scaling."""
+        out = normalizerFactory(self.data, None, True, None, None)
+        self._testNormalizer(out)
+
+    def test_passNormaliser(self):
+        """Verify that passing an instance of Normalize is allowed."""
+        emin, emax = 5, 100
+        norm = Normalize(vmin=emin, vmax=emax)
+        out = normalizerFactory(self.data, norm, False, None, None)
+        self.assertIs(norm, out)
+
+    def test_normSubclass(self):
+        """Verify that passing a subclass of Normalize is allowed."""
+        emin, emax = 5, 100
+        norm = LogNorm(vmin=emin, vmax=emax)
+        out = normalizerFactory(self.data, norm, False, None, None)
+        self.assertIs(norm, out)
 
 
 if __name__ == '__main__':
