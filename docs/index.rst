@@ -39,6 +39,7 @@ using ``SERPENT``. If you wish to cite this project, please cite as::
    :caption: Contents:
 
    overview
+   install
    changelog
    examples/index
    settingsTop
