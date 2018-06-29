@@ -258,7 +258,7 @@ class HexagonalDetector(Detector):
     def hexPlot(self, what='tallies', fixed=None, ax=None, cmap=None,
                 logColor=False, xlabel=None, ylabel=None, logx=False,
                 logy=False, loglog=False, title=None, normalizer=None,
-                cbarLabel=None, **kwargs):
+                cbarLabel=None, borderpad=2.5, **kwargs):
         """
         Create and return a hexagonal mesh plot.
 
@@ -277,6 +277,10 @@ class HexagonalDetector(Detector):
         {logy}
         {loglog}
         {title}
+        borderpad: int or float
+            Percentage of total plot to apply as a border. A value of
+            zero means that the extreme edges of the hexagons will touch
+            the x and y axis.
         {kwargs} :class:`matplotlib.patches.RegularPolygon`
 
         Raises
@@ -284,6 +288,7 @@ class HexagonalDetector(Detector):
         AttributeError
             If :attr:`pitch` and :attr:`hexType` are not set.
         """
+        borderpad = max(0, float(borderpad))
         if fixed and ('xcoord' in fixed or 'ycoord' in fixed):
             raise KeyError("Refusing to restrict along one of the hexagonal "
                            "dimensions {x/y}coord")
@@ -356,8 +361,8 @@ class HexagonalDetector(Detector):
                    xlabel=xlabel or "X [cm]",
                    ylabel=ylabel or "Y [cm]", title=title,
                    )
-        setAx_xlims(ax, xmin, xmax)
-        setAx_ylims(ax, ymin, ymax)
+        setAx_xlims(ax, xmin, xmax, pad=borderpad)
+        setAx_ylims(ax, ymin, ymax, pad=borderpad)
 
         return ax
 
