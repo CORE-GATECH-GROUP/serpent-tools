@@ -2,10 +2,12 @@
 from functools import wraps
 from textwrap import dedent
 
-from numpy import meshgrid, where
+from numpy import meshgrid
 from matplotlib import pyplot
 from matplotlib.axes import Axes
 from matplotlib.colors import LogNorm, Normalize
+
+from serpentTools.messages import warning
 
 __all__ = ['cartMeshPlot',
 
@@ -212,6 +214,51 @@ def inferAxScale(ax, dim):
     return abs(mx / mn) > 100
 
 
+def normalizerFactory(data, norm, logScale, xticks, yticks):
+    """
+    Construct and return a :class:`~matplotlib.colors.Normalize` for this data
+
+    Parameters
+    ----------
+    data: :class:`numpy.ndarray`
+        Data to be plotted and normalized
+    norm: None or callable or :class:`matplotlib.colors.Normalize`
+        If a ``Normalize`` object, then use this as the normalizer.
+        If callable, set the normalizer with
+        ``norm(data, xticks, yticks)``. If not None, set the
+        normalizer to be based on the min and max of the data
+    logScale: bool
+        If this evaluates to true, construct a
+        :class:`matplotlib.colors.LogNorm` with the minimum
+        set to be the minimum of the positive values.
+    xticks: :class:`numpy.ndarray`
+    yticks: :class:`numpy.ndarray`
+        Arrays ideally corresponding to the data. Used with callable
+        `norm` function.
+
+    Returns
+    --------
+    :class:`matplotlib.colors.Normalize`
+    or :class:`matplotlib.colors.LogNorm`
+    or object:
+        Object used to normalize colormaps against these data
+    """
+    if norm is not None:
+        if isinstance(norm, Normalize):
+            return norm
+        if issubclass(norm.__class__, Normalize):
+            return norm
+        if callable(norm):
+            return norm(data, xticks, yticks)
+    if logScale:
+        if (data < 0).any():
+            warning("Negative values will be excluded from logarithmic "
+                    "colormap.")
+        posData = data[data > 0]
+        return LogNorm(posData.min(), posData.max())
+    return Normalize(data.min(), data.max())
+
+
 @magicPlotDocDecorator
 def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
                  logColor=False, normalizer=None, cbarLabel=None, **kwargs):
@@ -234,6 +281,9 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     {cmap}
     logColor: bool
         If true, apply a logarithmic coloring
+    normalizer: callable or :py:class:`matplotlib.colors.Normalize`
+        Custom normalizer for this plot.
+        If an instance of :py:class:`matplotlib.colors.Normalize`,
     normalizer: callable or :py:class:`matplotlib.colors.Normalize`
         Custom normalizer for this plot.
         If an instance of :py:class:`matplotlib.colors.Normalize`,
@@ -277,9 +327,8 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
         ...     data[indx] *= indx
         >>> cartMeshPlot(data, logColor=True)
 
-    Note how the value in the upper left, position
-    ``[0, 0]`` is white. This value is identically zero, and in turn,
-    is left white. The ``logColor`` argument works well for
+    All values less than or equal to zero are excluded from the
+    color normalization. The ``logColor`` argument works well for
     plotting sparse matrices, as the zero-valued indices can be
     identified without obscuring the trends presented in the
     non-zero data.
@@ -305,14 +354,7 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     if logColor and data.min() < 0:
         raise ValueError("Will not apply log normalization to data with "
                          "negative elements")
-    if not logColor and normalizer is None:
-        norm = None
-    elif normalizer is not None:
-        norm = (normalizer if isinstance(normalizer, Normalize)
-                else normalizer(data, xticks, yticks))
-    else:
-        smallestPos = data[where(data > 0)].min()
-        norm = LogNorm(smallestPos, data.max())
+    norm = normalizerFactory(data, normalizer, logColor, xticks, yticks)
 
     # make the plot
     ax = ax or pyplot.axes()
@@ -321,11 +363,34 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     else:
         X, Y = meshgrid(xticks, yticks)
         mappable = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, **kwargs)
+    addColorbar(ax, mappable, norm, cbarLabel)
+
+    return ax
+
+
+def addColorbar(ax, mappable, norm, cbarLabel=None):
+    """
+    Quick utility to add a colorbar to an axes object
+
+    Parameters
+    ----------
+    mappable: iterable
+        Collection of meshes, patches, or values that are used to construct
+        the colorbar.
+    norm: None or :class:`matplotlib.colors.Normalize` subclass
+        Normalizer for this plot
+    cbarLabel: None or str
+        If given, place this as the y-label for the colorbar
+
+    Returns
+    -------
+    :class:`matplotlib.colorbar.Colorbar`
+        The colorbar that was added
+    """
     cbar = ax.figure.colorbar(mappable, norm=norm)
     if cbarLabel is not None:
         cbar.ax.set_ylabel(cbarLabel)
-
-    return ax
+    return cbar
 
 
 @magicPlotDocDecorator
@@ -426,3 +491,41 @@ def placeLegend(ax, legend, ncol=1):
     ax.legend(borderaxespad=0., ncol=ncol, **kwargs)
 
     return ax
+
+
+def setAx_xlims(ax, xmin, xmax, pad=10):
+    return _set_ax_lims(ax, xmin, xmax, True, pad)
+
+
+def setAx_ylims(ax, ymin, ymax, pad=10):
+    return _set_ax_lims(ax, ymin, ymax, False, pad)
+
+
+_set_lim_doc = """
+Set the {v} limits on an Axes object
+
+Parameters
+----------
+ax: :class:`matplotlib.axes.Axes`
+    Ax to be updated
+{v}min: float
+    Current minimum extent of {v} axis
+{v}max: float
+    Current maximum extent of {v} axis
+pad: float
+    Padding, in percent, to apply to each side of
+    the current min and max
+"""
+
+
+setAx_xlims.__doc__ = _set_lim_doc.format(v='x')
+setAx_ylims.__doc__ = _set_lim_doc.format(v='y')
+del _set_lim_doc
+
+
+def _set_ax_lims(ax, vmin, vmax, xory, pad):
+    assert pad >= 0
+    func = getattr(ax, 'set_{}lim'.format('x' if xory else 'y'))
+    diff = vmax - vmin
+    offset = pad * diff / 100
+    return func(vmin - offset, vmax + offset)
