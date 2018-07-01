@@ -98,6 +98,12 @@ class DepletedSamplerTester(unittest.TestCase):
 
                         raise ae
 
-
+    def test_getitem(self):
+        """Verify the getitem method for extracting materials."""
+        with self.assertRaises(KeyError):
+            self.sampler['this should fail']
+        for name, mat in iteritems(self.sampler.materials):
+            fromGetItem = self.sampler[name]
+            self.assertIs(fromGetItem, mat, msg=name)
 if __name__ == '__main__':
     unittest.main()

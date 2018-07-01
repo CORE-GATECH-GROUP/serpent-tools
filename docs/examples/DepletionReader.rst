@@ -117,8 +117,6 @@ These objects share access to the metadata of the reader as well.
     
     >>> fuel = dep.materials['fuel0']
     >>> print(fuel.burnup)
-    >>> print(fuel.days is dep.metadata['days'])
-
 
 .. parsed-literal::
 
@@ -134,7 +132,18 @@ These objects share access to the metadata of the reader as well.
      0.404159   0.412113   0.419194   0.426587   0.43425    0.442316
      0.449562   0.456538   0.465128   0.472592   0.479882   0.487348
      0.494634   0.502167   0.508326   0.515086   0.522826   0.530643  ]
+
+ .. code::
+
+    >>> print(fuel.days is dep.metadata['days'])
     True
+
+Materials can also be obtained by indexing directly into the reader, with
+
+.. code::
+
+    >>> newF = dep['fuel0']
+    >>> assert newF is fuel
 
 All of the variables present in the depletion file for this material are
 present, stored in the |matData| dictionary. A few properties commonly

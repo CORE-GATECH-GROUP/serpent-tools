@@ -11,4 +11,5 @@ Depletion Reader
     Follow up on, or claim, the issue on GitHub: :issue:`58`
 
 .. autoclass:: serpentTools.parsers.depletion.DepletionReader
+    :special-members: __getitem__
 
