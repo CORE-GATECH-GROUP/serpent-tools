@@ -17,12 +17,12 @@ Welcome to serpentTools's documentation!
         :alt: Documentation Status
   
 A suite of parsers designed to make interacting with
-``SERPENT`` [1]_ output files simple and flawless. 
+:term:`SERPENT` [1]_ output files simple and flawless. 
 
 The ``SERPENT`` Monte Carlo code
 is developed by VTT Technical Research Centre of Finland, Ltd.
 More information, including distribution and licensing of ``SERPENT`` can be
-found at `<montecarlo.vtt.fi>`_
+found at `<https://montecarlo.vtt.fi>`_
 
 The Annals of Nuclear Energy article should be cited for all work
 using ``SERPENT``. If you wish to cite this project, please cite as::

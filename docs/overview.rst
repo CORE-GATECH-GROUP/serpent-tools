@@ -7,7 +7,8 @@ Project Overview
 ================
 
 The ``serpentTools`` package contains a variety of parsing utilities,
-each designed to read a specific output from the SERPENT Monte Carlo code [1]_.
+each designed to read a specific output from the :term:`SERPENT`
+Monte Carlo code [1]_.
 Many of the parsing utilities store the outputs in custom container objects,
 while other store or return a collection of arrays.
 This page gives an overview of what files are currently supported,

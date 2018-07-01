@@ -51,3 +51,9 @@ Glossary
         Widely-used python package that allows multidimensional arrays
         and linear algebra routines. More information at
         `<www.numpy.org>`_
+    SERPENT
+        Monte Carlo particle transport code developed at VTT Technical
+        Research Centre of Finland, Ltd. Produces output files
+        that can be parsed by this project. More information, including
+        distributoin and licensing of ``SERPENT`` can be found at
+        `<http://montecarlo.vtt.fi>`_. 
