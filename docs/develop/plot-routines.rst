@@ -35,6 +35,13 @@ of supported arguments.
 
 .. autofunction:: serpentTools.plot.placeLegend
 
+.. autofunction:: serpentTools.plot.setAx_xlims
+
+.. autofunction:: serpentTools.plot.setAx_ylims
+
+.. autofunction:: serpentTools.plot.addColorbar
+
+.. autofunction:: serpentTools.plot.normalizerFactory
 
 .. _dev-plot-docformatters:
 
