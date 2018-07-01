@@ -53,7 +53,6 @@ using :term:`SERPENT`.
    develop/index
    license
    contributors
-   glossary
 
 .. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
