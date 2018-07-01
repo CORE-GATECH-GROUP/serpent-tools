@@ -25,7 +25,7 @@ class DetectorReader(BaseReader):
     """
     docAttrs = """detectors: dict
         Dictionary where key, value pairs correspond to detector names
-        and their respective :class:`~serpentTools.objects.containers.Detector`
+        and their respective :class:`~serpentTools.objects.detector.Detector`
         representations."""
     __doc__ = __doc__.format(attrs=docAttrs)
 
@@ -38,7 +38,12 @@ class DetectorReader(BaseReader):
             self._loadAll = False
         self.__numCols = 13 if rc['serpentVersion'][0] == '1' else 12
 
+    def __getitem__(self, name):
+        """Retrieve a detector from :attr:`detectors`"""
+        return self.detectors[name]
+
     def iterDets(self):
+        """Yield name, detector pairs by iterating over :attr:`detectors`."""
         for name, detector in iteritems(self.detectors):
             yield name, detector
 
