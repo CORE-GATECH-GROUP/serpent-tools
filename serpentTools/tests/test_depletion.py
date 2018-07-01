@@ -73,11 +73,11 @@ class DepletionTester(_DepletionTestHelper):
 
     def test_getitem(self):
         """Verify the getitem approach to obtaining materials."""
+        with self.assertRaises(KeyError):
+            self.reader['this should not work']
         for name, mat in iteritems(self.reader.materials):
             fromGetItem = self.reader[name]
             self.assertIs(mat, fromGetItem, msg=mat)
-        with self.assertRaises(KeyError):
-            self.reader['this should not work']
 
 
 class DepletedMaterialTester(_DepletionTestHelper):
