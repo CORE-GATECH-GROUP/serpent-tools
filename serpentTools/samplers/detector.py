@@ -44,6 +44,9 @@ class DetectorSampler(Sampler):
         self.detectors = {}
         Sampler.__init__(self, files, DetectorReader)
 
+    def __getitem__(self, name):
+        """Retrieve a detector from :attr:`detectors`."""
+        return self.detectors[name]
     def _precheck(self):
         self._checkParserDictKeys('detectors')
         self._checkSizes()
