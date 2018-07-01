@@ -11,7 +11,7 @@ Glossary
         :term:`numpy` easier for Windows. Includes over 700
         packages. For a smaller, more minimal approach, see
         :term:`Miniconda`. For more information, see
-        `<https://www.anaconda.com/>`_
+        `<https://www.anaconda.com/>`_.
     Anaconda prompt
         Modified Windows prompt to be used with the :term:`Anaconda` python
         distrubution. Reconfigures python paths to point to packages
@@ -23,6 +23,10 @@ Glossary
             that installs and updates conda packages and their
             dependencies.
 
+    git
+        Distributed version control system. Allows us to test and implement
+        new features with ease. For more information, see
+        `<https://git-scm.com>`_.
     Jupyter notebook
         Powerful web application used in this project, for examples and
         tutorials containing real python code. From `<https://jupyter.org>`_:

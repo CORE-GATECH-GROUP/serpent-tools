@@ -5,7 +5,7 @@ Installation
 ============
 
 In order to properly install this package, you need a version of
-python that plays well with libraries like ``numpy`` and ``matplotlib``.
+python that plays well with libraries like :term:`numpy` and :term:`matplotlib`.
 This is easy or less easy depending on your operating system, but we have
 a brief walk through at :ref:`install-python-dist`.
 
@@ -24,7 +24,7 @@ instructions in :ref:`install-release`.
 
 If you want the entire history of the project, or want a constant
 link to the most up-to-date development version of the project,
-you can clone and install the package via ``git`` by following
+you can clone and install the package via :term:`git`  by following
 the instructions in :ref:`install-git`.
 
 For installing via GitHub and our ``setup.py`` script, having
@@ -41,16 +41,16 @@ Installing from a Release
 1. Download the source code for the latest release from
    `GitHub releases <https://github.com/CORE-GATECH-GROUP/serpent-tools/releases/latest>`_
    as a ``.zip`` or ``.tar.gz`` compressed file.
-1. Extract/decompress the contents somewhere convenient and memorable
-1. Open your terminal and navigate to this directory::
+2. Extract/decompress the contents somewhere convenient and memorable
+3. Open your terminal and navigate to this directory::
 
     $ cd path/to/release
 
-1. Install using our `setup script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/setup.py>`_::
+4. Install using our `setup script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/setup.py>`_::
 
     $ python setup.py install
 
-1. Verify the install by running our test suite::
+5. Verify the install by running our test suite::
 
     $ python setup.py test
 
@@ -72,11 +72,11 @@ to the API and other functionality can occur across the develop branch.
         $ cd serpent-tools
         $ git checkout master
 
-1. Install using our `setup script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/setup.py>`_::
+2. Install using our `setup script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/setup.py>`_::
 
     $ python setup.py install
 
-1. Verify the install by running our test suite::
+3. Verify the install by running our test suite::
 
     $ python setup.py test
 
@@ -100,21 +100,20 @@ If you can open you terminal and run the following commands with ease, carry on:
 
 .. note::
     
-    Installing ``numpy`` this way may require super user privileges, or passing
+    Installing :term:`numpy` this way may require super user privileges, or passing
     ``--user`` as a flag
 
 Windows
 -------
 
-The easiest and most painless way to obtain packages like ``numpy`` on Windows is with
-either the `anaconda <https://www.anaconda.com/download/#windows>`_ or
-`miniconda <https://conda.io/miniconda.html>`_ distributions. 
-Each of these also includes the ``Anaconda Prompt`` which is a modified
+The easiest and most painless way to obtain packages like :term:`numpy` on Windows is with
+either the :term:`Anaconda` or :term:`Miniconda` distributions. 
+Each of these also includes the :term:`Anaconda Prompt` which is a modified
 terminal that plays better with Python.
 The former comes with a few hundred packages, included most of the ones
 needed for this project, bundled for you.
 The latter is a very small distribution and requires you to install the packages
-you want via the ``Anaconda Prompt``.
+you want via :term:`conda`.
 Should you choose this route, then you need to launch this prompt and install
 with::
 
