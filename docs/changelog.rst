@@ -17,6 +17,9 @@ Next
   with support for structured or unstructured matrix plotting
 * :pull:`201` - Support for plotting hexagonal meshes with
   :meth:`serpentTools.objects.detectors.HexagonalDetector.hexPlot`
+* :pull:`205` - Access materials from :class:`serpentTools.readers.depletion.DepletionReader`
+  and :class:`serpentTools.samplers.depletion.DepletionSampler` using key-like
+  indexing, e.g. ``reader[matName] == reader.material[matName]``
 
 .. _vNext-api:
 
