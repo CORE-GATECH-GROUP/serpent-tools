@@ -13,10 +13,13 @@ Next
 
 * :pull:`198` - Import test and example files using :mod:`serpentTools.data`. 
   Load example readers with :func:`serpentTools.data.readDataFile`
-* :pull:`199` - Add :func:`serpentTools.plot.cartMeshPlot` to general API
-  with support for structured or unstructured matrix plotting
+* :pull:`199` - Support for structured or unstructured matrix plotting with
+  :func:`serpentTools.plot.cartMeshPlot`
 * :pull:`201` - Support for plotting hexagonal meshes with
   :meth:`serpentTools.objects.detectors.HexagonalDetector.hexPlot`
+* :pull:`204` - Access :class:`serpentTools.objects.detectors.Detector`
+  objects directly from :class:`serpentTools.parsers.detector.DetectorReader`
+  with ``reader[detName]``
 
 .. _vNext-api:
 
