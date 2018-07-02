@@ -1,3 +1,6 @@
+.. _ex-toctree:
+
+
 Examples
 ========
 

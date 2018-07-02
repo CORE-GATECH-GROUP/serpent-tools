@@ -30,6 +30,10 @@ as a zipped file. Both can be obtained through the ``Clone or download`` option
 at the
 `serpent-tools GitHub <https://github.com/CORE-GATECH-GROUP/serpent-tools>`_.
 
+For more detailed instructions, including operating-system specific
+instructions, see
+`Installation Guide <http://serpent-tools.readthedocs.io/en/latest/install.html>`_.
+
 Once the repository has been downloaded or extracted from zip, the package
 can be installed with::
 
@@ -45,7 +49,6 @@ installed with ``pip`` as::
 
 Installing in this manner ensures that the supporting packages,
 like ``numpy`` are installed and up to date.
-
 
 Issues
 ======
