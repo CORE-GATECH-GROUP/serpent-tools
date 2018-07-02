@@ -103,6 +103,13 @@ class DetSamplerTester(unittest.TestCase):
         with self.assertRaises(MismatchedContainersError):
             DetectorSampler(files)
 
+    def test_getitem(self):
+        """Verify the getitem method for retrieving detectors works."""
+        for name, det in iteritems(self.sampler.detectors):
+            fromGetItem = self.sampler[name]
+            self.assertIs(det, fromGetItem, msg=name)
+        with self.assertRaises(KeyError):
+            self.sampler['this should fail']
 
 def _getExpectedAverages(d0, d1):
     tallies = 0.5 * (d0.tallies + d1.tallies)
