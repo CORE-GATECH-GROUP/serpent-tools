@@ -138,6 +138,13 @@ Here, only three columns, shown as rows for readability, are changing:
     For SERPENT-1, there would be an additional column 12 that
     contained the scores for each bin
 
+Detectors can also be obtained by indexing into the |detectorReader|, as
+
+.. code::
+
+    >>> nf = pin['nodeFlx']
+    >>> assert nf is nodeFlx
+
 Once each detector is given this binned tally data, the
 :py:meth:`~serpentTools.objects.containers.Detector.reshape`
 method is called to recast the

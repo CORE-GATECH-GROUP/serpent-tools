@@ -82,6 +82,20 @@ class DetectorHelper(TestCase):
                              err_msg="Detector {} {}\nFixed: {}".format(
                                 detName, what, fixed))
 
+    def test_iterDets(self):
+        """Verify the iterDets method is functional."""
+        for name, det in self.reader.iterDets():
+            self.assertIn(name, self.reader.detectors, msg=name)
+            self.assertIs(det, self.reader.detectors[name], msg=name)
+
+    def test_getitem(self):
+        """Verify the getitem method for extracting detectors."""
+        for name, det in iteritems(self.reader.detectors):
+            fromGetItem = self.reader[name]
+            self.assertIs(fromGetItem, det, msg=name)
+        with self.assertRaises(KeyError):
+            self.reader['this should fail']
+
 
 class CartesianDetectorTester(DetectorHelper):
     """
