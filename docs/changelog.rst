@@ -20,6 +20,9 @@ Next
 * :pull:`204` - Access :class:`serpentTools.objects.detectors.Detector`
   objects directly from :class:`serpentTools.parsers.detector.DetectorReader`
   with ``reader[detName]``
+* :pull:`205` - Access materials from :class:`serpentTools.readers.depletion.DepletionReader`
+  and :class:`serpentTools.samplers.depletion.DepletionSampler` using key-like
+  indexing, e.g. ``reader[matName] == reader.material[matName]``
 
 .. _vNext-api:
 

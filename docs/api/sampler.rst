@@ -37,6 +37,7 @@ DepletionSampler
 This sampler extends the |sampler| class for reading depletion files.
 
 .. autoclass:: serpentTools.samplers.depletion.DepletionSampler
+    :special-members: __getitem__
 
 .. autoclass:: serpentTools.samplers.depletion.SampledDepletedMaterial
 

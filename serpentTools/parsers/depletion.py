@@ -147,6 +147,10 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         #  ING_TOX --> ('ING_TOX', )
         DepPlotMixin.__init__(self)
 
+    def __getitem__(self, name):
+        """Retrieve a material from :attr:`materials`."""
+        return self.materials[name]
+
     def _makeMaterialRegexs(self):
         """Return the patterns by which to find the requested materials."""
         patterns = self.settings['materials'] or ['.*']
