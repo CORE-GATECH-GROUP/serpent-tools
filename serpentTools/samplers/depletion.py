@@ -61,6 +61,10 @@ class DepletionSampler(DepPlotMixin, Sampler):
         Sampler.__init__(self, files, DepletionReader)
         DepPlotMixin.__init__(self)
 
+    def __getitem__(self, name):
+        """Retrieve a material from :attr:`materials`."""
+        return self.materials[name]
+
     def _precheck(self):
         self._checkParserDictKeys('materials')
         self._checkParserDictKeys('metadata')

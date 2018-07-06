@@ -35,7 +35,43 @@ MapStrVersions = {'2.1.29': {'meta': 'VERSION ', 'rslt': 'MIN_MACROXS', 'univ': 
 MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
 """
 Assigns search strings for different Serpent versions
-Versions 2.1.29 and 2.1.30 are supported
+"""
+
+METADATA_CONV = {
+    int: {
+        'debug',
+        'confidentialData',
+        'pop',
+        'cycles',
+        'skip',
+        'batchInterval',
+        'srcNormMode',
+        'seed',
+        'ufsMode',
+        'ufsOrder',
+        'neutronTransportMode',
+        'photonTransportMode',
+        'groupConstantGeneration',
+        'b1BurnupCorrection',
+        'implicitReactionRates',
+        'optimizationMode',
+        'reconstructMicroxs',
+        'reconstructMacroxs',
+        'mgMajorantMode',
+        'spectrumCollapse',
+        'mpiTasks',
+        'ompThreads',
+        'mpiReproducibility',
+        'ompReproducibility',
+        'shareBufArray',
+        'shareRes2Array',
+    },
+    float: {
+        'cpuMhz',
+    },
+}
+"""
+Convert items in metadata dictionary from arrays to these data types
 """
 
 
@@ -314,6 +350,7 @@ class ResultsReader(XSReader):
                 if not dictUniv.hasData():
                     raise SerpentToolsException("metadata, resdata and universes are all empty "
                                                 "from {}".format(self.filePath))
+        self._cleanMetadata()
 
     def _compare(self, other, lower, upper, sigma):
         similar = self.compareMetadata(other)
@@ -443,4 +480,13 @@ class ResultsReader(XSReader):
             otherUniv = otherUniverses[univKey]
             similar &= myUniv.compare(otherUniv, lower, upper, sigma)
 
-        return similar
+    def _cleanMetadata(self):
+        """Replace some items in metadata dictionary with easier data types."""
+        mdata = self.metadata
+        origKeys = set(mdata.keys())
+        for converter, keys in iteritems(METADATA_CONV):
+            for key in keys:
+                if key in origKeys:
+                    mdata[key] = converter(mdata[key])
+                    origKeys.remove(key)
+                    self.metadata

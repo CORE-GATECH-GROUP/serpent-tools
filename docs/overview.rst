@@ -1,13 +1,14 @@
 .. |read| replace:: :func:`serpentTools.parsers.read`
 
-.. _overview:
+.. _project-overview:
 
 ================
 Project Overview
 ================
 
 The ``serpentTools`` package contains a variety of parsing utilities,
-each designed to read a specific output from the SERPENT Monte Carlo code [1]_.
+each designed to read a specific output from the :term:`SERPENT`
+Monte Carlo code [1]_.
 Many of the parsing utilities store the outputs in custom container objects,
 while other store or return a collection of arrays.
 This page gives an overview of what files are currently supported,
@@ -24,6 +25,12 @@ would return a :class:`~serpentTools.parsers.results.ResultsReader`.
 Some file-types have an additional reader that is capable of reading 
 multiple files and computing actual uncertainties. These ``samplers``
 are detailed in :ref:`samplerAPI` and listed under the supported files.
+
+Many of the readers have examples present in the :ref:`ex-toctree`
+section. Each example is present as a :term:`Jupyter notebook`
+at `Github: examples <https://github.com/CORE-GATECH-GROUP/serpent-tools/tree/develop/examples>`_.
+These  can be used as a launching point for tutorials or for
+your own analysis.
 
 .. _ov-results:
 

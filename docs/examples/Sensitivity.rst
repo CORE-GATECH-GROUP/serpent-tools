@@ -28,20 +28,12 @@ plot method is also contained on the reader.
 
 .. code:: 
     
-    >>> %matplotlib inline
     >>> from matplotlib import pyplot
     >>> import serpentTools
 
 .. code:: 
     
-    >>> %time
-    >>> sens = serpentTools.read('flattop_sens.m')
-
-.. parsed-literal::
- 
-
-    CPU times: user 4 µs, sys: 0 ns, total: 4 µs
-    Wall time: 7.87 µs
+    >>> sens = serpentTools.readDataFile('flattop_sens.m')
 
 
 The arrays that are stored in |sens| and |eneSens| 

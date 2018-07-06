@@ -15,30 +15,36 @@ Welcome to serpentTools's documentation!
     .. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
         :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
+
+    .. image:: https://zenodo.org/badge/102786755.svg
+       :target: https://zenodo.org/badge/latestdoi/102786755
+       :alt: Zenodo DOI 10.5281/zenodo.1301036
   
 A suite of parsers designed to make interacting with
-``SERPENT`` [1]_ output files simple and flawless. 
+:term:`SERPENT` [1]_ output files simple and flawless. 
 
-The ``SERPENT`` Monte Carlo code
+The :term:`SERPENT` Monte Carlo code
 is developed by VTT Technical Research Centre of Finland, Ltd.
-More information, including distribution and licensing of ``SERPENT`` can be
-found at `<montecarlo.vtt.fi>`_
+More information, including distribution and licensing of :term:`SERPENT` can be
+found at `<http://montecarlo.vtt.fi>`_
 
 The Annals of Nuclear Energy article should be cited for all work
-using ``SERPENT``. If you wish to cite this project, please cite as::
+using :term:`SERPENT`. 
 
-    @url{serpentTools,
-        author = {Andrew Johnson and Dan Kotlyar and Stefano Terlizzi and Gavin Ridley},
-        title = {serpentTools: A suite of parsers designed to make interacting with SERPENT outputs simple and flawless},
-        url = {https://github.com/CORE-GATECH-GROUP/serpent-tools},
-        year = {2017}
-    }
+.. admonition:: Preferred citation for attribution
+    :class: tip
+
+    Andrew Johnson, Dan Kotlyar, Gavin Ridley, Stefano Terlizzi, & Paul Romano.
+    (2018, June 29). "`serpent-tools: A collection of parsing tools and
+    data containers to make interacting with SERPENT outputs easy, intuitive, and flawless.
+    <https://doi.org/10.5281/zenodo.1301036>`_,".
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    overview
+   install
    changelog
    examples/index
    settingsTop

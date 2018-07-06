@@ -7,7 +7,7 @@ from numpy.testing import assert_equal
 from serpentTools.parsers import read
 from serpentTools.settings import rc
 from serpentTools.parsers import XSPlotReader
-from serpentTools.tests import TEST_ROOT
+from serpentTools.data import getFile
 
 def findDiff(d1, d2, path=""):
     """ Diffs two dictionaries with nested structure
@@ -49,7 +49,7 @@ class XSPlotTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.file = os.path.join(TEST_ROOT, 'plut_xs0.m')
+        cls.file = getFile('plut_xs0.m')
         cls.reader = XSPlotReader(cls.file)
         cls.reader.read()
 

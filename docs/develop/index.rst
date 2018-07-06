@@ -14,9 +14,12 @@ without any loss of comprehension.
 
     contributing.rst
     datamodel.rst
+    logging.rst
     codestyle.rst
+    plotting.rst
     utils.rst
-    plots.rst
+    plot-routines.rst
+    engines.rst
     documentation.rst
     checklist.rst
     git.rst

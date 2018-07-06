@@ -8,9 +8,8 @@ API
    :caption: Contents:
 
    settings.rst
-   messages.rst
    parsers.rst
-   engines.rst
+   data.rst
    plot.rst
    containers.rst
    detectors
@@ -25,3 +24,4 @@ API
    sensitivity.rst
    xsplot.rst
    microxs.rst
+   exceptions.rst

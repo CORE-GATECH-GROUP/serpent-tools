@@ -38,14 +38,9 @@ should ease the analyses.
 
 .. code:: 
     
-    >>> %time
     >>> resFile = 'InnerAssembly_res.m'
-    >>> res = serpentTools.read(resFile)
+    >>> res = serpentTools.readDataFile(resFile)
 
-
-.. parsed-literal::
-
-    Wall time: 0 ns
 
 Metadata (``metadata``)
 =======================
@@ -106,7 +101,7 @@ Obtain all the variables in the metadata via ``.keys()``
 
 .. parsed-literal::
  
-    [ 5000.] [ 10.] [ 50.]
+    5000 10 50
 
 .. code:: 
     
@@ -232,23 +227,12 @@ Basic 1-D plotting capabilities are not yet avaialble in the parser.
 
 .. code:: 
 
-    >>> %matplotlib inline
     >>> import matplotlib.pyplot as plt
     >>> xdata = res.resdata['burnDays'][:] # obtain the time in (days)
     >>> ydata = res.resdata['absKeff'][:,0] # obtain the k-eff (values only)
     >>> plt.plot(xdata, ydata)
-    >>> plt.xlabel('Time, days'), plt.ylabel('k-eff')               
-
-
-
-
-.. parsed-literal::
-
-    (<matplotlib.text.Text at 0x1e4c9d8d400>,
-     <matplotlib.text.Text at 0x1e4c9da4ac8>)
-
-
-
+    >>> plt.xlabel('Time, days')
+    >>> plt.ylabel('k-eff');
 
 .. image:: ResultsReader_files/ResultsReader_24_1.png
 
@@ -297,25 +281,24 @@ Universe data is stored for each state point, i.e.
     
 
 Each state contains the same data fields, which can be obtained by using
-a specific state point:
+the following attributes on the |HomogUniv| object:
 
-``.infExp``: infinite values, e.g. ``INF_ABS``,
+:attr:`~serpentTools.objects.containers.HomogUniv.infExp`: infinite values, e.g. ``INF_ABS``,
 
-``.infUnc``: infinite uncertainties,
+:attr:`~serpentTools.objects.containers.HomogUniv.infUnc`: infinite uncertainties,
 
-``.b1Exp``: b1 (leakage corrected) values, e.g. ``B1_ABS``,
+:attr:`~serpentTools.objects.containers.HomogUniv.b1Exp`: b1 (leakage corrected) values, e.g. ``B1_ABS``,
 
-``.b1Exp``: b1 (leakage corrected) uncertainties,
+:attr:`~serpentTools.objects.containers.HomogUniv.b1Unc`: b1 (leakage corrected) uncertainties,
 
-``.gc``: variables that are not included in 'inf' or 'b1', e.g. ``BETA``
+:attr:`~serpentTools.objects.containers.HomogUniv.gcExp`: variables that are not included in 'inf' or 'b1', e.g. ``BETA``
 
-``.gcUnc``: group uncertainties
+:attr:`~serpentTools.objects.containers.HomogUniv.gcUnc`: group uncertainties
 
-``.groups``: macro energy group structure, MeV
+:attr:`~serpentTools.objects.containers.HomogUniv.groups`: macro energy group structure, MeV
 
-``.microGroups``: micro energy group structure, MeV
+:attr:`~serpentTools.objects.containers.HomogUniv.microGroups`: micro energy group structure, MeV
 
-http://serpent-tools.readthedocs.io/en/latest/api/containers.html#serpentTools.objects.containers.HomogUniv
 
 Get Universe Data (``.getUniv``)
 --------------------------------
@@ -606,7 +589,7 @@ plotted on the same figure.
 .. image:: ResultsReader_files/ResultsReader_52_1.png
 
 
-For plotting data from multiple universes, passed the returned
+For plotting data from multiple universes, pass the returned
 :py:class:`matplotlib.axes.Axes` object, on which the plot was drawn,
 into the plot method for the next
 universe. The ``labelFmt`` argument can be used to differentiate between
@@ -646,7 +629,7 @@ The user is able to filter the required information by using the
 settings option.
 
 A detailed description on how to use the settings can be found on:
-http://serpent-tools.readthedocs.io/en/latest/settingsTop.html
+:ref:`defaultSettings`.
 
 .. code:: 
 
@@ -657,9 +640,6 @@ http://serpent-tools.readthedocs.io/en/latest/settingsTop.html
 
     >>> # Obtain the user defined keys
     >>> rc.keys()
-
-
-
 
 .. parsed-literal::
  
@@ -703,7 +683,7 @@ The user can modify the settings and only then use |resReader|
 .. code:: 
     
     >>> # Read the file again with the updated settings
-    >>> resFilt = serpentTools.read(resFile)
+    >>> resFilt = serpentTools.readDataFile(resFile)
 
 .. code:: 
     

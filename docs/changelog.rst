@@ -2,9 +2,35 @@
 
 .. _changelog:
 
-*********
+=========
 Changelog
-*********
+=========
+
+.. _vNext:
+
+Next
+====
+
+* :pull:`198` - Import test and example files using :mod:`serpentTools.data`. 
+  Load example readers with :func:`serpentTools.data.readDataFile`
+* :pull:`199` - Support for structured or unstructured matrix plotting with
+  :func:`serpentTools.plot.cartMeshPlot`
+* :pull:`201` - Support for plotting hexagonal meshes with
+  :meth:`serpentTools.objects.detectors.HexagonalDetector.hexPlot`
+* :pull:`204` - Access :class:`serpentTools.objects.detectors.Detector`
+  objects directly from :class:`serpentTools.parsers.detector.DetectorReader`
+  with ``reader[detName]``
+* :pull:`205` - Access materials from :class:`serpentTools.readers.depletion.DepletionReader`
+  and :class:`serpentTools.samplers.depletion.DepletionSampler` using key-like
+  indexing, e.g. ``reader[matName] == reader.material[matName]``
+
+.. _vNext-api:
+
+API Changes
+-----------
+* :pull:`194` - Some settings in :attr:`serpentTools.parsers.results.ResultsReader.metadata`
+  are now stored as :class:`int` or :class:`float`, depending upon their nature.
+  Many of these settings refer to flags of settings used by ``SERPENT``
 
 .. _v0.5.0:
 
@@ -21,6 +47,8 @@ Changelog
 
 * :pull:`189` - Support for reading detectors with hexagonal, cylindrical, and 
   spherical meshes.
+
+.. _v0.5.1-api:
 
 API Changes
 -----------

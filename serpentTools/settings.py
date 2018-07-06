@@ -5,10 +5,11 @@ import six
 from six import iteritems
 import yaml
 
-from serpentTools import ROOT_DIR
-from serpentTools import messages
+from serpentTools import messages, __path__
 
 __all__ = ['defaultSettings', 'rc']
+
+ROOT_DIR = __path__[0]
 
 SETTING_HEADER_CHAR = '-'
 SETTING_DOC_FMTR = """.. _{tag}:

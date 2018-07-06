@@ -22,12 +22,13 @@ from numpy import where, fabs, ndarray
 from numpy.testing import assert_allclose
 
 from serpentTools.messages import MismatchedContainersError, critical
+from serpentTools.data import getFile
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.samplers.depletion import DepletionSampler
-from serpentTools.tests import TEST_ROOT, computeMeansErrors
+from serpentTools.tests import computeMeansErrors
 
 _testFileNames = {'0', '1', 'badInventory', 'longT', 'missingT'}
-DEP_FILES = {key: path.join(TEST_ROOT, 'bwr_{}_dep.m'.format(key))
+DEP_FILES = {key: getFile('bwr_{}_dep.m'.format(key))
              for key in _testFileNames}
 
 
@@ -97,6 +98,12 @@ class DepletedSamplerTester(unittest.TestCase):
 
                         raise ae
 
-
+    def test_getitem(self):
+        """Verify the getitem method for extracting materials."""
+        with self.assertRaises(KeyError):
+            self.sampler['this should fail']
+        for name, mat in iteritems(self.sampler.materials):
+            fromGetItem = self.sampler[name]
+            self.assertIs(fromGetItem, mat, msg=name)
 if __name__ == '__main__':
     unittest.main()

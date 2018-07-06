@@ -5,11 +5,11 @@ import unittest
 from numpy import array
 from numpy.testing import assert_equal
 
-import six
+from six import iteritems
 
 from serpentTools.parsers import read
+from serpentTools.data import getFile
 from serpentTools.settings import rc
-from serpentTools.tests import TEST_ROOT
 from serpentTools.parsers.depletion import DepletionReader
 
 
@@ -18,7 +18,7 @@ class _DepletionTestHelper(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.filePath = os.path.join(TEST_ROOT, 'ref_dep.m')
+        cls.filePath = getFile('ref_dep.m')
         cls.processTotal = True
         cls.materials = ['fuel']
         cls.expectedMaterials = set(cls.materials)
@@ -63,13 +63,21 @@ class DepletionTester(_DepletionTestHelper):
         expectedKeys = set(expectedMetadata)
         actualKeys = set(self.reader.metadata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
-        for key, expectedValue in six.iteritems(expectedMetadata):
+        for key, expectedValue in iteritems(expectedMetadata):
             assert_equal(self.reader.metadata[key], expectedValue)
 
     def test_ReadMaterials(self):
         """Verify the reader stored the correct materials."""
         self.assertSetEqual(set(self.reader.materials.keys()),
                             self.expectedMaterials)
+
+    def test_getitem(self):
+        """Verify the getitem approach to obtaining materials."""
+        with self.assertRaises(KeyError):
+            self.reader['this should not work']
+        for name, mat in iteritems(self.reader.materials):
+            fromGetItem = self.reader[name]
+            self.assertIs(mat, fromGetItem, msg=mat)
 
 
 class DepletedMaterialTester(_DepletionTestHelper):

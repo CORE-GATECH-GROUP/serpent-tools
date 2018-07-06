@@ -27,15 +27,13 @@ Each such object has methods and attributes that should ease analysis.
 
 .. code:: 
     
-    >>> %matplotlib inline
-    >>> import six
     >>> import serpentTools
     >>> from serpentTools.settings import rc
 
 .. code:: 
     
     >>> depFile = 'demo_dep.m'
-    >>> dep = serpentTools.read(depFile)
+    >>> dep = serpentTools.readDataFile(depFile)
 
 The materials read in from the file are stored in the |materials| 
 dictionary, where the keys represent the name of specific materials, and
@@ -119,8 +117,6 @@ These objects share access to the metadata of the reader as well.
     
     >>> fuel = dep.materials['fuel0']
     >>> print(fuel.burnup)
-    >>> print(fuel.days is dep.metadata['days'])
-
 
 .. parsed-literal::
 
@@ -136,7 +132,18 @@ These objects share access to the metadata of the reader as well.
      0.404159   0.412113   0.419194   0.426587   0.43425    0.442316
      0.449562   0.456538   0.465128   0.472592   0.479882   0.487348
      0.494634   0.502167   0.508326   0.515086   0.522826   0.530643  ]
+
+ .. code::
+
+    >>> print(fuel.days is dep.metadata['days'])
     True
+
+Materials can also be obtained by indexing directly into the reader, with
+
+.. code::
+
+    >>> newF = dep['fuel0']
+    >>> assert newF is fuel
 
 All of the variables present in the depletion file for this material are
 present, stored in the |matData| dictionary. A few properties commonly
@@ -307,11 +314,6 @@ Below is an example of configuring a |depReader| that only
 stores the burnup days, and atomic density for all materials that begin
 with ``bglass`` followed by at least one integer.
 
-.. note::
-
-    Creating the |depReader| in this manner is functionally
-    equivalent to ``serpentTools.read(depFile)``
-
 .. code:: 
     
     >>> rc['depletion.processTotal'] = False
@@ -319,8 +321,7 @@ with ``bglass`` followed by at least one integer.
     >>> rc['depletion.materialVariables'] = ['ADENS']
     >>> rc['depletion.materials'] = [r'bglass\d+']
 
-    >>> bgReader = serpentTools.DepletionReader(depFile)
-    >>> bgReader.read()
+    >>> bgReader = serpentTools.readDataFile(depFile)
 
 .. code:: 
     
