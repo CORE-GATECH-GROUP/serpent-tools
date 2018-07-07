@@ -1,17 +1,18 @@
 """Parser responsible for reading the ``*dep.m`` files"""
 import re
 
-from numpy import array
 from matplotlib import pyplot
 from six import iteritems
 
-from serpentTools.plot import magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS
+from serpentTools.plot import (
+        magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+        )
 from serpentTools.utils import convertVariableName, str2vec
 from serpentTools.engines import KeywordParser
 from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools.messages import (warning, info, debug, error,
+from serpentTools.messages import (warning, debug, error,
                                    SerpentToolsException)
 
 
@@ -22,7 +23,7 @@ class DepPlotMixin(object):
 
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None,
-             materials=None, ax=None, legend=True, logx=False, logy=False, 
+             materials=None, ax=None, legend=True, logx=False, logy=False,
              loglog=False, labelFmt=None, xlabel=None, ylabel=None, ncol=1,
              **kwargs):
         """
@@ -41,7 +42,7 @@ class DepPlotMixin(object):
             If given, plot  values corresponding to these isotope
             names. Otherwise, plot values for all isotopes.
         zai: int or list or None
-            If given, plot values corresponding to these 
+            If given, plot values corresponding to these
             isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
 
             .. versionadded:: 0.5.1
@@ -70,7 +71,7 @@ class DepPlotMixin(object):
         * :py:func:`matplotlib.pyplot.plot`
         * :py:meth:`str.format` - used for formatting labels
         * :py:func:`~serpentTools.objects.materials.DepletedMaterial.plot`
-        
+
         Raises
         ------
         KeyError
@@ -93,16 +94,19 @@ class DepPlotMixin(object):
                 missing.add(mat)
                 continue
 
-            ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, 
-                    zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel, 
-                    logx=False, logy=False, loglog=False, labelFmt=labelFmt, 
+            ax = self.materials[mat].plot(
+                    xUnits, yUnits, timePoints, names,
+                    zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel,
+                    logx=False, logy=False, loglog=False, labelFmt=labelFmt,
                     **kwargs)
         if missing:
             warning("The following materials were not found in materials "
                     "dictionary: {}".format(', '.join(missing)))
         formatPlot(ax, legend=legend, ncol=ncol, logx=logx, logy=logy,
-                   loglog=loglog, xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
-                   ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits])
+                   loglog=loglog,
+                   xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
+                   ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits],
+                   )
 
         return ax
 
@@ -123,7 +127,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         names and values of the settings used to control operations
         of this reader
     """
-    docAttrs="""materials: dict
+    docAttrs = """materials: dict
         Dictionary with material names as keys and the corresponding
         :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
         for that material as values
@@ -131,7 +135,6 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
     __doc__ = __doc__.format(attrs=docAttrs)
-
 
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
@@ -259,4 +262,3 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
         if 'bu' in self.metadata:
             self.metadata['burnup'] = self.metadata.pop('bu')
-
