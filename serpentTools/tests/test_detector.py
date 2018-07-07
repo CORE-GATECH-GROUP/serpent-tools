@@ -1,7 +1,6 @@
 """Test the detector reader."""
 
 from os import remove
-from os.path import join
 from unittest import TestCase
 
 from collections import OrderedDict
