@@ -6,7 +6,8 @@ from numpy import array
 from serpentTools.utils import splitValsUncs
 from serpentTools.objects.containers import BranchContainer
 from serpentTools.parsers.base import XSReader
-from serpentTools.messages import debug, info, error, warning, willChange
+from serpentTools.messages import debug, error
+
 
 class BranchingReader(XSReader):
     """
@@ -132,13 +133,13 @@ class BranchingReader(XSReader):
         with open(self.filePath) as fObj:
             try:
                 self._totalBranches = int(fObj.readline().split()[1])
-            except:
-                error("COE output at {} likely malformatted or misnamed".format(
-                    self.filePath))
+            except Exception as ee:
+                error("COE output at {} likely malformatted or misnamed\n{}"
+                      .format(self.filePath, str(ee)))
 
     def _postcheck(self):
         """Make sure Serpent finished printing output."""
 
         if self._totalBranches != self._whereAmI['runIndx']:
             error("Serpent appears to have stopped printing coefficient\n"
-                    "mode output early for file {}".format(self.filePath))
+                  "mode output early for file {}".format(self.filePath))
