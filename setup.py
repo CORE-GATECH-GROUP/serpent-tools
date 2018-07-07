@@ -18,7 +18,7 @@ DATA_EXTS = {'*.m', '*.coe'}
 
 def getDataFiles():
     """Return all matlab files from ``serpentTools/data``"""
-    
+
     files = []
     for ext in DATA_EXTS:
         files.extend(glob(join('serpentTools', 'data', ext)))
