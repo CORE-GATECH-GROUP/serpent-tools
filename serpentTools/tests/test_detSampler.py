@@ -21,8 +21,6 @@ File Descriptions
     tolerance can still be achieved.
 
 """
-from math import sqrt
-from os import path
 import unittest
 
 from six import iteritems
@@ -110,6 +108,7 @@ class DetSamplerTester(unittest.TestCase):
             self.assertIs(det, fromGetItem, msg=name)
         with self.assertRaises(KeyError):
             self.sampler['this should fail']
+
 
 def _getExpectedAverages(d0, d1):
     tallies = 0.5 * (d0.tallies + d1.tallies)
