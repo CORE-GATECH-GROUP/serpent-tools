@@ -209,8 +209,8 @@ class SampledContainer(object):
         What class to expect for all incoming containers
     """
 
-    docFree = """If ``<sampler.freeAll>`` 
-        is True, then ``free`` will be called after all files have been read 
+    docFree = """If ``<sampler.freeAll>``
+        is True, then ``free`` will be called after all files have been read
         and processed."""
 
     def __init__(self, N, expectedContainer):
@@ -266,4 +266,3 @@ class SampledContainer(object):
 
     def _finalize(self):
         raise NotImplementedError
-
