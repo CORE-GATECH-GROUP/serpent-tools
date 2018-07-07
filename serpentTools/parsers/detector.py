@@ -1,14 +1,15 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
 
 from six import iteritems
-from numpy import asfortranarray, empty
+from numpy import empty
 
 from serpentTools.utils import str2vec
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.detectors import detectorFactory
 from serpentTools.parsers.base import BaseReader
-from serpentTools.messages import error, debug, warning
+from serpentTools.messages import error, debug, warning, SerpentToolsException
 from serpentTools.settings import rc
+
 
 class DetectorReader(BaseReader):
     """
