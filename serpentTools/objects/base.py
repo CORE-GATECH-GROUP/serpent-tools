@@ -134,8 +134,8 @@ class DetectorBase(NamedObject):
 
     @magicPlotDocDecorator
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
-                     ylabel=None, steps=True, logx=True, logy=False, 
-                     loglog=False, sigma=3, labels=None, legend=False, ncol=1, 
+                     ylabel=None, steps=True, logx=True, logy=False,
+                     loglog=False, sigma=3, labels=None, legend=False, ncol=1,
                      title=None, **kwargs):
         """
         Quick plot of the detector value as a function of energy.
@@ -159,7 +159,7 @@ class DetectorBase(NamedObject):
         {legend}
         {ncol}
         {title}
-        {kwargs} :py:func:`matplotlib.pyplot.plot` or 
+        {kwargs} :py:func:`matplotlib.pyplot.plot` or
             :py:func:`matplotlib.pyplot.errorbar`
 
         Returns
@@ -190,7 +190,7 @@ class DetectorBase(NamedObject):
                 divide(self.grids['E'][:, -1], lowerE))
             for indx in range(slicedTallies.shape[1]):
                 scratch = divide(slicedTallies[:, indx], lethBins)
-                slicedTallies[:, indx] = scratch / scratch.max() 
+                slicedTallies[:, indx] = scratch / scratch.max()
 
         if steps:
             if 'drawstyle' in kwargs:
@@ -201,25 +201,25 @@ class DetectorBase(NamedObject):
 
         if sigma:
             slicedErrors = sigma * self.slice(fixed, 'errors').copy()
-            slicedErrors = slicedErrors.reshape(slicedTallies.shape) 
+            slicedErrors = slicedErrors.reshape(slicedTallies.shape)
             slicedErrors *= slicedTallies
         else:
             slicedErrors = None
-        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels, 
-                  yerr=slicedErrors, **kwargs)     
+        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels,
+                  yerr=slicedErrors, **kwargs)
         if ylabel is None:
             ylabel = 'Tally data'
             ylabel += ' normalized per unit lethargy' if normalize else ''
-            ylabel += ' $\pm${}$\sigma$'.format(sigma) if sigma else ''
+            ylabel += r' $\pm${}\sigma$'.format(sigma) if sigma else ''
 
         ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
-                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel, 
+                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
                         legend=legend, title=title)
         return ax
 
     @magicPlotDocDecorator
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
-             xlabel=None, ylabel=None, steps=False, labels=None, logx=False, 
+             xlabel=None, ylabel=None, steps=False, labels=None, logx=False,
              logy=False, loglog=False, legend=False, ncol=1, title=None,
              **kwargs):
         """
@@ -236,7 +236,7 @@ class DetectorBase(NamedObject):
         fixed: None or dict
             Dictionary controlling the reduction in data down to one dimension
         {ax}
-        {xlabel} If ``xdim`` is given and ``xlabel`` is ``None``, then 
+        {xlabel} If ``xdim`` is given and ``xlabel`` is ``None``, then
             ``xdim`` will be applied to the x-axis.
         {ylabel}
         steps: bool
@@ -286,12 +286,12 @@ class DetectorBase(NamedObject):
                     'Will not plot error bars on the error plot. Data to be '
                     'plotted: {}.  Sigma: {}'.format(what, sigma))
                 yerr = None
-        else: 
+        else:
             yerr = None
 
         xdata, autoX = self._getPlotXData(xdim, data)
         xlabel = xlabel or autoX
-        ylabel = ylabel or "Tally data" 
+        ylabel = ylabel or "Tally data"
         ax = ax or axes()
 
         if steps:
@@ -302,13 +302,13 @@ class DetectorBase(NamedObject):
                 kwargs['drawstyle'] = 'steps-post'
         ax = plot(xdata, data, ax, labels, yerr, **kwargs)
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        xlabel=xlabel, ylabel=ylabel, legend=legend, 
+                        xlabel=xlabel, ylabel=ylabel, legend=legend,
                         title=title)
         return ax
 
     @magicPlotDocDecorator
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
-                 cmap=None, logColor=False, xlabel=None, ylabel=None, 
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
                  logx=False, logy=False, loglog=False, title=None, **kwargs):
         """
         Plot tally data as a function of two bin types on a cartesian mesh.
@@ -326,7 +326,7 @@ class DetectorBase(NamedObject):
         {ax}
         {cmap}
         logColor: bool
-            If true, apply a logarithmic coloring to the data positive 
+            If true, apply a logarithmic coloring to the data positive
             data
         {xlabel}
         {ylabel}
@@ -410,4 +410,3 @@ class DetectorBase(NamedObject):
         if qty in self.indexes:
             return self.indexes[qty], qty
         return fallback
-
