@@ -2,7 +2,7 @@
 import numpy as np
 from matplotlib import pyplot
 
-from messages import error
+from serpentTools.messages import error
 from serpentTools.objects.base import NamedObject
 from serpentTools.plot import magicPlotDocDecorator, formatPlot
 
