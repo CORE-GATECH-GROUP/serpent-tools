@@ -3,9 +3,9 @@
 import os
 import unittest
 
-import numpy
-
-import six
+from numpy import array
+from numpy.testing import assert_equal
+from six import iteritems
 
 from serpentTools.settings import rc
 from serpentTools.data import getFile
@@ -25,7 +25,7 @@ class TestBadFiles(unittest.TestCase):
     """
 
     def test_noResults(self):
-        """Verify that the reader raises error when no results exist in the file"""
+        """Verify that the reader raises error when no results exist in the file""" # noqa
         badFile = 'bad_results_file.m'
         with open(badFile, 'w') as badObj:
             for _line in range(5):
@@ -36,11 +36,12 @@ class TestBadFiles(unittest.TestCase):
         os.remove(badFile)
 
     def test_noUniverses(self):
-        """Verify that the reader raises an error if no universes are stored on the file"""
+        """Verify that the reader raises an error if no universes are stored on the file""" # noqa
         univFile = getFile('pwr_noUniv_res.m')
         univReader = ResultsReader(univFile)
         with self.assertRaises(SerpentToolsException):
             univReader.read()
+
 
 class TestEmptyAttributes(unittest.TestCase):
     """
@@ -60,6 +61,7 @@ class TestEmptyAttributes(unittest.TestCase):
                 testReader = ResultsReader(testFile)
                 testReader.read()
 
+
 class TestGetUniv(unittest.TestCase):
     """
     Test the getUniv method.
@@ -68,7 +70,8 @@ class TestGetUniv(unittest.TestCase):
         1. test_allVarsNone: burnup, index and timeDays are all set to None
         2. test_nonPostiveIndex: index is zero or negative
         3. test_noUnivState: define ('0',bu,idx,days) a non-existing state
-        4. test_validUniv: test that a valid universe state contains proper data
+        4. test_validUniv: test that a valid universe state contains
+           proper data
 
     Raises  SerpentToolsException
                     All variables are set to None
@@ -86,28 +89,28 @@ class TestGetUniv(unittest.TestCase):
             rc['xs.getB1XS'] = False
             self.reader = ResultsReader(self.file)
             self.reader.read()
-        self.expectedinfValAbs = numpy.array([1.05040E-02, 1.23260E-01])
+        self.expectedinfValAbs = array([1.05040E-02, 1.23260E-01])
 
     def test_allVarsNone(self):
-        """Verify that the reader raises error when no time parameters are given"""
+        """Verify that the reader raises error when no time parameters are given""" # noqa
         with self.assertRaises(SerpentToolsException):
             self.reader.getUniv('0', burnup=None, index=None, timeDays=None)
 
     def test_nonPostiveIndex(self):
-        """Verify that the reader raises error when the time index is not positive"""
+        """Verify that the reader raises error when the time index is not positive""" # noqa
         with self.assertRaises(KeyError):
             self.reader.getUniv('0', burnup=None, index=0, timeDays=None)
 
     def test_noUnivState(self):
-        """Verify that the reader raises error when the state tuple does not exist"""
+        """Verify that the reader raises error when the state tuple does not exist""" # noqa
         with self.assertRaises(KeyError):
             self.reader.getUniv('0', burnup=50, index=10, timeDays=5)
 
     def test_validUniv(self):
-        """Verify that the reader raises error when the state tuple does not exist"""
+        """Verify that getUniv returns the correct universe"""
         xsDict = self.reader.getUniv('0', burnup=0.0, index=1, timeDays=0.0)
-        numpy.testing.assert_equal(xsDict.infExp['infAbs'],
-                                   self.expectedinfValAbs)
+        assert_equal(xsDict.infExp['infAbs'], self.expectedinfValAbs)
+
 
 class TesterCommonResultsReader(unittest.TestCase):
     """
@@ -139,57 +142,50 @@ class TesterCommonResultsReader(unittest.TestCase):
 
     def test_varsMatchSettings(self):
         """Verify that the obtained variables match the settings."""
-        self.assertSetEqual(self.expVarSettings, self.reader.settings['variables'])
+        self.assertSetEqual(self.expVarSettings,
+                            self.reader.settings['variables'])
 
     def test_metadata(self):
         """Verify that user-defined metadata is properly stored."""
         expectedKeys = set(self.expectedMetadata)
         actualKeys = set(self.reader.metadata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
-        for key, expectedValue in six.iteritems(self.expectedMetadata):
+        for key, expectedValue in iteritems(self.expectedMetadata):
             if isinstance(expectedValue, str):
                 self.assertSetEqual(set(self.reader.metadata[key]),
-                                       set(expectedValue))
+                                    set(expectedValue))
             else:
-                numpy.testing.assert_equal(self.reader.metadata[key],
-                                       expectedValue)
+                assert_equal(self.reader.metadata[key], expectedValue)
 
     def test_resdata(self):
         """Verify that user-defined metadata is properly stored."""
         expectedKeys = self.expectedResdata
         actualKeys = set(self.reader.resdata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
-        numpy.testing.assert_equal(self.reader.resdata['absKeff'],
-                                   self.expectedKeff)
+        assert_equal(self.reader.resdata['absKeff'], self.expectedKeff)
         try:
-            numpy.testing.assert_equal(self.reader.resdata['burnDays'],
-                                   self.expectedDays)
+            assert_equal(self.reader.resdata['burnDays'], self.expectedDays)
         except:
-            numpy.testing.assert_equal([], self.expectedDays)
+            assert_equal([], self.expectedDays)
 
     def test_universes(self):
-        """Verify that results for all the states ('univ', bu, buIdx, days) exist.
-            Verify that the containers for each state are properly created
-            and that the proper information is stored, e.g. infExp keys and values"""
-        expSt0 = self.expectedStates[0]
+        """Verify that results for all states (univ, bu, buIdx, days) exist.
+           Verify that the containers for each state are properly
+           created and that the proper information is stored, e.g.
+           infExp keys and values"""
         actualStates = set(self.reader.universes.keys())
-        self.assertSetEqual(set(self.expectedStates), actualStates)   # check that all states are read
-        self.assertSetEqual(set(self.reader.universes[expSt0].infExp.keys()),
-                            self.expectedInfExp)
-        self.assertSetEqual(set(self.reader.universes[expSt0].gc.keys()),
-                            self.expectedUnivgcData)
-        numpy.testing.assert_equal(self.reader.universes[expSt0].infExp['infFlx'],
-                                   self.expectedInfVals)
-        numpy.testing.assert_equal(self.reader.universes[expSt0].infUnc['infFlx'],
-                                   self.expectedInfUnc)
-        numpy.testing.assert_equal(self.reader.universes[expSt0].gc['cmmTranspxs'],
-                                   self.expectedCMM)
-        numpy.testing.assert_equal(self.reader.universes[expSt0].gcUnc['cmmTranspxs'],
-                                   self.expectedCMMunc)
-        numpy.testing.assert_equal(self.reader.universes[expSt0].groups,
-                                   self.expectedGroups)
-        numpy.testing.assert_equal(self.reader.universes[expSt0].microGroups,
-                                   self.expectedMicroGroups)
+        self.assertSetEqual(set(self.expectedStates), actualStates)
+        expSt0 = self.expectedStates[0]
+        expUniv = self.reader.universes[expSt0]
+        self.assertSetEqual(set(expUniv.infExp.keys()), self.expectedInfExp)
+        self.assertSetEqual(set(expUniv.gc.keys()), self.expectedUnivgcData)
+        assert_equal(expUniv.infExp['infFlx'], self.expectedInfVals)
+        assert_equal(expUniv.infUnc['infFlx'], self.expectedInfUnc)
+        assert_equal(expUniv.gc['cmmTranspxs'], self.expectedCMM)
+        assert_equal(expUniv.gcUnc['cmmTranspxs'], self.expectedCMMunc)
+        assert_equal(expUniv.groups, self.expectedGroups)
+        assert_equal(expUniv.microGroups, self.expectedMicroGroups)
+
 
 class TestFilterResults(TesterCommonResultsReader):
     """
@@ -218,66 +214,99 @@ class TestFilterResults(TesterCommonResultsReader):
             self.reader = ResultsReader(self.file)
             self.reader.read()
 
-        self.expVarSettings = set({'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
-                    'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME', 'WORKING_DIRECTORY',
-                    'HOSTNAME', 'CPU_TYPE', 'CPU_MHZ', 'START_DATE', 'COMPLETE_DATE',
-                    'GC_UNIVERSE_NAME', 'MICRO_NG', 'MICRO_E', 'MACRO_NG',
-                    'MACRO_E', 'INF_MICRO_FLX','INF_KINF', 'INF_FLX',
-                    'INF_FISS_FLX', 'TOT', 'CAPT', 'ABS', 'FISS', 'NSF',
-                    'NUBAR', 'KAPPA', 'INVV', 'TRANSPXS', 'DIFFCOEF', 'RABSXS',
-                    'REMXS', 'SCATT0', 'SCATT1', 'SCATT2', 'SCATT3', 'SCATT4',
-                    'SCATT5', 'SCATT6', 'SCATT7', 'S0', 'S1', 'S2', 'S3', 'S4',
-                    'S5', 'S6', 'S7', 'CHIT', 'CHIP', 'CHID', 'CMM_TRANSPXS',
-                    'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y', 'CMM_TRANSPXS_Z',
-                    'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X', 'CMM_DIFFCOEF_Y',
-                    'CMM_DIFFCOEF_Z', 'ANA_KEFF', 'IMP_KEFF', 'COL_KEFF',
-                    'ABS_KEFF', 'ABS_KINF', 'GEOM_ALBEDO', 'BURN_MATERIALS',
-                    'BURN_MODE', 'BURN_STEP', 'BURNUP', 'BURN_DAYS',
-                    'COEF_IDX', 'COEF_BRANCH', 'COEF_BU_STEP'})
+        self.expVarSettings = {
+                'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
+                'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME',
+                'WORKING_DIRECTORY', 'HOSTNAME', 'CPU_TYPE',
+                'CPU_MHZ', 'START_DATE', 'COMPLETE_DATE',
+                'GC_UNIVERSE_NAME', 'MICRO_NG', 'MICRO_E', 'MACRO_NG',
+                'MACRO_E', 'INF_MICRO_FLX', 'INF_KINF', 'INF_FLX',
+                'INF_FISS_FLX', 'TOT', 'CAPT', 'ABS', 'FISS', 'NSF',
+                'NUBAR', 'KAPPA', 'INVV', 'TRANSPXS', 'DIFFCOEF',
+                'RABSXS', 'REMXS', 'SCATT0', 'SCATT1', 'SCATT2',
+                'SCATT3', 'SCATT4', 'SCATT5', 'SCATT6', 'SCATT7',
+                'S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7',
+                'CHIT', 'CHIP', 'CHID', 'CMM_TRANSPXS',
+                'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y', 'CMM_TRANSPXS_Z',
+                'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X', 'CMM_DIFFCOEF_Y',
+                'CMM_DIFFCOEF_Z', 'ANA_KEFF', 'IMP_KEFF', 'COL_KEFF',
+                'ABS_KEFF', 'ABS_KINF', 'GEOM_ALBEDO',
+                'BURN_MATERIALS', 'BURN_MODE', 'BURN_STEP', 'BURNUP',
+                'BURN_DAYS', 'COEF_IDX', 'COEF_BRANCH', 'COEF_BU_STEP',
+                }
 
-        self.expectedMetadata = {'version': 'Serpent 2.1.29',
-                            'compileDate': 'Jan  4 2018 17:22:46',
-                            'debug': 0,
-                            'title': 'pwr pin',
-                            'confidentialData': 0,
-                            'inputFileName': 'pwrPin',
-                            'workingDirectory': '/home/ajohnson400/research/gpt-dep/testing/depmtx',
-                            'hostname': 'ME04L0358GRD04',
-                            'cpuType': 'Intel(R) Core(TM) i7-6700T CPU @ 2.80GHz',
-                            'cpuMhz': 194.,
-                            'startDate': 'Mon Feb 19 15:39:23 2018',
-                            'completeDate': 'Mon Feb 19 15:39:53 2018'}
+        self.expectedMetadata = {
+                'version': 'Serpent 2.1.29',
+                'compileDate': 'Jan  4 2018 17:22:46',
+                'debug': 0,
+                'title': 'pwr pin',
+                'confidentialData': 0,
+                'inputFileName': 'pwrPin',
+                'workingDirectory': '/home/ajohnson400/research/gpt-dep/testing/depmtx', # noqa
+                'hostname': 'ME04L0358GRD04',
+                'cpuType': 'Intel(R) Core(TM) i7-6700T CPU @ 2.80GHz',
+                'cpuMhz': 194.,
+                'startDate': 'Mon Feb 19 15:39:23 2018',
+                'completeDate': 'Mon Feb 19 15:39:53 2018',
+                }
 
-        self.expectedResdata = set(['absKeff', 'absKinf', 'anaKeff', 'burnDays', 'burnMaterials', 'burnMode', 'burnStep',
-                           'burnup', 'colKeff', 'geomAlbedo', 'impKeff', 'nubar'])
+        self.expectedResdata = {
+                'absKeff', 'absKinf', 'anaKeff', 'burnDays',
+                'burnMaterials', 'burnMode', 'burnStep', 'burnup',
+                'colKeff', 'geomAlbedo', 'impKeff', 'nubar',
+                }
 
-        self.expectedKeff = numpy.array([[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]])
-        self.expectedDays = numpy.array([[0.00000E+00], [5.00000E+00]])
+        self.expectedKeff = array(
+                [[9.91938E-01, 0.00145], [1.81729E-01, 0.00240]])
+        self.expectedDays = array([[0.00000E+00], [5.00000E+00]])
 
-        self.expectedInfExp= set(['infAbs', 'infCapt', 'infChid', 'infChip', 'infChit', 'infDiffcoef', 'infFiss', 'infFissFlx',
-                           'infFlx', 'infInvv', 'infKappa', 'infKinf', 'infMicroFlx', 'infNsf', 'infNubar', 'infRabsxs',
-                           'infRemxs', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7',
-                           'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5', 'infScatt6',
-                           'infScatt7', 'infTot', 'infTranspxs'])
-        self.expectedUnivgcData = set(['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
-                            'cmmTranspxsY', 'cmmTranspxsZ'])
-        self.expectedCMM = numpy.array([2.23062E-01, 6.55491E-01])
-        self.expectedCMMunc = numpy.array([0.00144, 0.03837])
-        self.expectedMicroGroups = numpy.array([1.00000E-11, 5.00000E-09, 1.00000E-08, 1.50000E-08, 2.00000E-08, 2.50000E-08,
-                                           3.00000E-08, 3.50000E-08, 4.20000E-08, 5.00000E-08, 5.80000E-08, 6.70000E-08,
-                                           8.00000E-08, 1.00000E-07, 1.40000E-07, 1.80000E-07, 2.20000E-07, 2.50000E-07,
-                                           2.80000E-07, 3.00000E-07, 3.20000E-07, 3.50000E-07, 4.00000E-07, 5.00000E-07,
-                                           6.25000E-07, 7.80000E-07, 8.50000E-07, 9.10000E-07, 9.50000E-07, 9.72000E-07,
-                                           9.96000E-07, 1.02000E-06, 1.04500E-06, 1.07100E-06, 1.09700E-06, 1.12300E-06,
-                                           1.15000E-06, 1.30000E-06, 1.50000E-06, 1.85500E-06, 2.10000E-06, 2.60000E-06,
-                                           3.30000E-06, 4.00000E-06, 9.87700E-06, 1.59680E-05, 2.77000E-05, 4.80520E-05,
-                                           7.55014E-05, 1.48728E-04, 3.67262E-04, 9.06898E-04, 1.42510E-03, 2.23945E-03,
-                                           3.51910E-03, 5.50000E-03, 9.11800E-03, 1.50300E-02, 2.47800E-02, 4.08500E-02,
-                                           6.74300E-02, 1.11000E-01, 1.83000E-01, 3.02500E-01, 5.00000E-01, 8.21000E-01,
-                                           1.35300E+00, 2.23100E+00, 3.67900E+00, 6.06550E+00, 2.00000E+01])
-        self.expectedGroups = numpy.array([1.00000E+37, 6.25000E-07, 0.00000E+00])
-        self.expectedInfVals = numpy.array([2.46724E+18, 2.98999E+17])
-        self.expectedInfUnc = numpy.array([0.00115, 0.00311])
+        self.expectedInfExp = {
+                'infAbs', 'infCapt', 'infChid', 'infChip', 'infChit',
+                'infDiffcoef', 'infFiss', 'infFissFlx', 'infFlx',
+                'infInvv', 'infKappa', 'infKinf', 'infMicroFlx',
+                'infNsf', 'infNubar', 'infRabsxs', 'infRemxs',
+                'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5',
+                'infS6', 'infS7', 'infScatt0', 'infScatt1',
+                'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5',
+                'infScatt6', 'infScatt7', 'infTot', 'infTranspxs',
+                }
+        self.expectedUnivgcData = {
+                'cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY',
+                'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
+                'cmmTranspxsY', 'cmmTranspxsZ',
+                }
+        self.expectedCMM = array([2.23062E-01, 6.55491E-01])
+        self.expectedCMMunc = array([0.00144, 0.03837])
+        self.expectedMicroGroups = (
+                array([1.00000E-11, 5.00000E-09, 1.00000E-08,
+                       1.50000E-08, 2.00000E-08, 2.50000E-08,
+                       3.00000E-08, 3.50000E-08, 4.20000E-08,
+                       5.00000E-08, 5.80000E-08, 6.70000E-08,
+                       8.00000E-08, 1.00000E-07, 1.40000E-07,
+                       1.80000E-07, 2.20000E-07, 2.50000E-07,
+                       2.80000E-07, 3.00000E-07, 3.20000E-07,
+                       3.50000E-07, 4.00000E-07, 5.00000E-07,
+                       6.25000E-07, 7.80000E-07, 8.50000E-07,
+                       9.10000E-07, 9.50000E-07, 9.72000E-07,
+                       9.96000E-07, 1.02000E-06, 1.04500E-06,
+                       1.07100E-06, 1.09700E-06, 1.12300E-06,
+                       1.15000E-06, 1.30000E-06, 1.50000E-06,
+                       1.85500E-06, 2.10000E-06, 2.60000E-06,
+                       3.30000E-06, 4.00000E-06, 9.87700E-06,
+                       1.59680E-05, 2.77000E-05, 4.80520E-05,
+                       7.55014E-05, 1.48728E-04, 3.67262E-04,
+                       9.06898E-04, 1.42510E-03, 2.23945E-03,
+                       3.51910E-03, 5.50000E-03, 9.11800E-03,
+                       1.50300E-02, 2.47800E-02, 4.08500E-02,
+                       6.74300E-02, 1.11000E-01, 1.83000E-01,
+                       3.02500E-01, 5.00000E-01, 8.21000E-01,
+                       1.35300E+00, 2.23100E+00, 3.67900E+00,
+                       6.06550E+00, 2.00000E+01]))
+        self.expectedGroups = array(
+                [1.00000E+37, 6.25000E-07, 0.00000E+00])
+        self.expectedInfVals = array([2.46724E+18, 2.98999E+17])
+        self.expectedInfUnc = array([0.00115, 0.00311])
+
 
 class TestReadAllResults(TesterCommonResultsReader):
     """
@@ -311,49 +340,76 @@ class TestReadAllResults(TesterCommonResultsReader):
 
         self.expVarSettings = set()
 
-        self.expectedMetadata = {'version': 'Serpent 2.1.29',
-                            'compileDate': 'Jan  4 2018 17:22:46',
-                            'debug': 0,
-                            'title': 'pwr pin',
-                            'confidentialData': 0,
-                            'inputFileName': 'pwrPin',
-                            'workingDirectory': '/home/ajohnson400/research/gpt-dep/testing/depmtx',
-                            'hostname': 'ME04L0358GRD04',
-                            'cpuType': 'Intel(R) Core(TM) i7-6700T CPU @ 2.80GHz',
-                            'cpuMhz': 194.,
-                            'startDate': 'Mon Feb 19 15:39:23 2018',
-                            'completeDate': 'Mon Feb 19 15:39:53 2018'}
+        self.expectedMetadata = {
+                'version': 'Serpent 2.1.29',
+                'compileDate': 'Jan  4 2018 17:22:46',
+                'debug': 0,
+                'title': 'pwr pin',
+                'confidentialData': 0,
+                'inputFileName': 'pwrPin',
+                'workingDirectory': '/home/ajohnson400/research/gpt-dep/testing/depmtx', # noqa
+                'hostname': 'ME04L0358GRD04',
+                'cpuType': 'Intel(R) Core(TM) i7-6700T CPU @ 2.80GHz',
+                'cpuMhz': 194.,
+                'startDate': 'Mon Feb 19 15:39:23 2018',
+                'completeDate': 'Mon Feb 19 15:39:53 2018'}
 
-        self.expectedResdata = set(['absKeff', 'absKinf', 'anaKeff', 'burnDays', 'burnMaterials', 'burnMode', 'burnStep',
-                           'burnup', 'colKeff', 'geomAlbedo', 'impKeff', 'nubar', 'minMacroxs'])
+        self.expectedResdata = {
+                'absKeff', 'absKinf', 'anaKeff', 'burnDays',
+                'burnMaterials', 'burnMode', 'burnStep', 'burnup',
+                'colKeff', 'geomAlbedo', 'impKeff', 'nubar', 'minMacroxs',
+                }
 
-        self.expectedKeff = numpy.array([[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]])
-        self.expectedDays = numpy.array([[0.00000E+00], [5.00000E+00]])
+        self.expectedKeff = array(
+                [[9.91938E-01, 0.00145], [1.81729E-01, 0.00240]])
+        self.expectedDays = array([[0.00000E+00], [5.00000E+00]])
 
-        self.expectedInfExp= set(['infAbs', 'infCapt', 'infChid', 'infChip', 'infChit', 'infDiffcoef', 'infFiss', 'infFissFlx',
-                           'infFlx', 'infInvv', 'infKappa', 'infKinf', 'infMicroFlx', 'infNsf', 'infNubar', 'infRabsxs',
-                           'infRemxs', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7',
-                           'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5', 'infScatt6',
-                           'infScatt7', 'infTot', 'infTranspxs'])
-        self.expectedUnivgcData = set(['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
-                            'cmmTranspxsY', 'cmmTranspxsZ'])
-        self.expectedCMM = numpy.array([2.23062E-01, 6.55491E-01])
-        self.expectedCMMunc = numpy.array([0.00144, 0.03837])
-        self.expectedMicroGroups = numpy.array([1.00000E-11, 5.00000E-09, 1.00000E-08, 1.50000E-08, 2.00000E-08, 2.50000E-08,
-                                           3.00000E-08, 3.50000E-08, 4.20000E-08, 5.00000E-08, 5.80000E-08, 6.70000E-08,
-                                           8.00000E-08, 1.00000E-07, 1.40000E-07, 1.80000E-07, 2.20000E-07, 2.50000E-07,
-                                           2.80000E-07, 3.00000E-07, 3.20000E-07, 3.50000E-07, 4.00000E-07, 5.00000E-07,
-                                           6.25000E-07, 7.80000E-07, 8.50000E-07, 9.10000E-07, 9.50000E-07, 9.72000E-07,
-                                           9.96000E-07, 1.02000E-06, 1.04500E-06, 1.07100E-06, 1.09700E-06, 1.12300E-06,
-                                           1.15000E-06, 1.30000E-06, 1.50000E-06, 1.85500E-06, 2.10000E-06, 2.60000E-06,
-                                           3.30000E-06, 4.00000E-06, 9.87700E-06, 1.59680E-05, 2.77000E-05, 4.80520E-05,
-                                           7.55014E-05, 1.48728E-04, 3.67262E-04, 9.06898E-04, 1.42510E-03, 2.23945E-03,
-                                           3.51910E-03, 5.50000E-03, 9.11800E-03, 1.50300E-02, 2.47800E-02, 4.08500E-02,
-                                           6.74300E-02, 1.11000E-01, 1.83000E-01, 3.02500E-01, 5.00000E-01, 8.21000E-01,
-                                           1.35300E+00, 2.23100E+00, 3.67900E+00, 6.06550E+00, 2.00000E+01])
-        self.expectedGroups = numpy.array([1.00000E+37, 6.25000E-07, 0.00000E+00])
-        self.expectedInfVals = numpy.array([2.46724E+18, 2.98999E+17])
-        self.expectedInfUnc = numpy.array([0.00115, 0.00311])
+        self.expectedInfExp = {
+                'infAbs', 'infCapt', 'infChid', 'infChip', 'infChit',
+                'infDiffcoef', 'infFiss', 'infFissFlx', 'infFlx',
+                'infInvv', 'infKappa', 'infKinf', 'infMicroFlx',
+                'infNsf', 'infNubar', 'infRabsxs', 'infRemxs',
+                'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5',
+                'infS6', 'infS7', 'infScatt0', 'infScatt1',
+                'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5',
+                'infScatt6', 'infScatt7', 'infTot', 'infTranspxs',
+                }
+        self.expectedUnivgcData = {
+                'cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY',
+                'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
+                'cmmTranspxsY', 'cmmTranspxsZ',
+                }
+        self.expectedCMM = array([2.23062E-01, 6.55491E-01])
+        self.expectedCMMunc = array([0.00144, 0.03837])
+        self.expectedMicroGroups = (
+                array([1.00000E-11, 5.00000E-09, 1.00000E-08,
+                       1.50000E-08, 2.00000E-08, 2.50000E-08,
+                       3.00000E-08, 3.50000E-08, 4.20000E-08,
+                       5.00000E-08, 5.80000E-08, 6.70000E-08,
+                       8.00000E-08, 1.00000E-07, 1.40000E-07,
+                       1.80000E-07, 2.20000E-07, 2.50000E-07,
+                       2.80000E-07, 3.00000E-07, 3.20000E-07,
+                       3.50000E-07, 4.00000E-07, 5.00000E-07,
+                       6.25000E-07, 7.80000E-07, 8.50000E-07,
+                       9.10000E-07, 9.50000E-07, 9.72000E-07,
+                       9.96000E-07, 1.02000E-06, 1.04500E-06,
+                       1.07100E-06, 1.09700E-06, 1.12300E-06,
+                       1.15000E-06, 1.30000E-06, 1.50000E-06,
+                       1.85500E-06, 2.10000E-06, 2.60000E-06,
+                       3.30000E-06, 4.00000E-06, 9.87700E-06,
+                       1.59680E-05, 2.77000E-05, 4.80520E-05,
+                       7.55014E-05, 1.48728E-04, 3.67262E-04,
+                       9.06898E-04, 1.42510E-03, 2.23945E-03,
+                       3.51910E-03, 5.50000E-03, 9.11800E-03,
+                       1.50300E-02, 2.47800E-02, 4.08500E-02,
+                       6.74300E-02, 1.11000E-01, 1.83000E-01,
+                       3.02500E-01, 5.00000E-01, 8.21000E-01,
+                       1.35300E+00, 2.23100E+00, 3.67900E+00,
+                       6.06550E+00, 2.00000E+01]))
+        self.expectedGroups = array(
+                [1.00000E+37, 6.25000E-07, 0.00000E+00])
+        self.expectedInfVals = array([2.46724E+18, 2.98999E+17])
+        self.expectedInfUnc = array([0.00115, 0.00311])
 
 
 class TestFilterResultsNoBurnup(TesterCommonResultsReader):
@@ -383,65 +439,97 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
             self.reader = ResultsReader(self.file)
             self.reader.read()
 
-        self.expVarSettings = set({'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
-                    'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME', 'WORKING_DIRECTORY',
-                    'HOSTNAME', 'CPU_TYPE', 'CPU_MHZ', 'START_DATE', 'COMPLETE_DATE',
-                    'GC_UNIVERSE_NAME', 'MICRO_NG', 'MICRO_E', 'MACRO_NG',
-                    'MACRO_E', 'INF_MICRO_FLX','INF_KINF', 'INF_FLX',
-                    'INF_FISS_FLX', 'TOT', 'CAPT', 'ABS', 'FISS', 'NSF',
-                    'NUBAR', 'KAPPA', 'INVV', 'TRANSPXS', 'DIFFCOEF', 'RABSXS',
-                    'REMXS', 'SCATT0', 'SCATT1', 'SCATT2', 'SCATT3', 'SCATT4',
-                    'SCATT5', 'SCATT6', 'SCATT7', 'S0', 'S1', 'S2', 'S3', 'S4',
-                    'S5', 'S6', 'S7', 'CHIT', 'CHIP', 'CHID', 'CMM_TRANSPXS',
-                    'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y', 'CMM_TRANSPXS_Z',
-                    'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X', 'CMM_DIFFCOEF_Y',
-                    'CMM_DIFFCOEF_Z', 'ANA_KEFF', 'IMP_KEFF', 'COL_KEFF',
-                    'ABS_KEFF', 'ABS_KINF', 'GEOM_ALBEDO', 'BURN_MATERIALS',
-                    'BURN_MODE', 'BURN_STEP', 'BURNUP', 'BURN_DAYS',
-                    'COEF_IDX', 'COEF_BRANCH', 'COEF_BU_STEP'})
+        self.expVarSettings = {
+                'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
+                'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME',
+                'WORKING_DIRECTORY', 'HOSTNAME', 'CPU_TYPE',
+                'CPU_MHZ', 'START_DATE', 'COMPLETE_DATE',
+                'GC_UNIVERSE_NAME', 'MICRO_NG', 'MICRO_E', 'MACRO_NG',
+                'MACRO_E', 'INF_MICRO_FLX', 'INF_KINF', 'INF_FLX',
+                'INF_FISS_FLX', 'TOT', 'CAPT', 'ABS', 'FISS', 'NSF',
+                'NUBAR', 'KAPPA', 'INVV', 'TRANSPXS', 'DIFFCOEF',
+                'RABSXS', 'REMXS', 'SCATT0', 'SCATT1', 'SCATT2',
+                'SCATT3', 'SCATT4', 'SCATT5', 'SCATT6', 'SCATT7',
+                'S0', 'S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7',
+                'CHIT', 'CHIP', 'CHID', 'CMM_TRANSPXS',
+                'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y', 'CMM_TRANSPXS_Z',
+                'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X', 'CMM_DIFFCOEF_Y',
+                'CMM_DIFFCOEF_Z', 'ANA_KEFF', 'IMP_KEFF', 'COL_KEFF',
+                'ABS_KEFF', 'ABS_KINF', 'GEOM_ALBEDO',
+                'BURN_MATERIALS', 'BURN_MODE', 'BURN_STEP', 'BURNUP',
+                'BURN_DAYS', 'COEF_IDX', 'COEF_BRANCH', 'COEF_BU_STEP',
+                }
 
-        self.expectedMetadata = {'version': 'Serpent 2.1.30',
-                            'compileDate': 'Apr  4 2018 08:55:27',
-                            'debug': 0,
-                            'title': 'UO2 PIN MODEL',
-                            'confidentialData': 0,
-                            'inputFileName': 'pwr',
-                            'workingDirectory': '/gpfs/pace1/project/me-kotlyar/dkotlyar6/Research/Serpent_test/FP_test',
-                            'hostname': 'rich133-c36-10-l.pace.gatech.edu',
-                            'cpuType': 'Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz',
-                            'cpuMhz': 184549409.0,
-                            'startDate': 'Mon May 14 11:20:06 2018',
-                            'completeDate': 'Mon May 14 11:20:36 2018'}
+        self.expectedMetadata = {
+                'version': 'Serpent 2.1.30',
+                'compileDate': 'Apr  4 2018 08:55:27',
+                'debug': 0,
+                'title': 'UO2 PIN MODEL',
+                'confidentialData': 0,
+                'inputFileName': 'pwr',
+                'workingDirectory': '/gpfs/pace1/project/me-kotlyar/dkotlyar6/Research/Serpent_test/FP_test', # noqa
+                'hostname': 'rich133-c36-10-l.pace.gatech.edu',
+                'cpuType': 'Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz',
+                'cpuMhz': 184549409.0,
+                'startDate': 'Mon May 14 11:20:06 2018',
+                'completeDate': 'Mon May 14 11:20:36 2018',
+                }
 
-        self.expectedResdata = set(['absKeff', 'absKinf', 'anaKeff', 'colKeff', 'geomAlbedo', 'impKeff', 'nubar'])
+        self.expectedResdata = {
+                'absKeff', 'absKinf', 'anaKeff', 'colKeff',
+                'geomAlbedo', 'impKeff', 'nubar',
+                }
 
-        self.expectedKeff = numpy.array([1.15295E+00, 0.00094])
-        self.expectedDays = numpy.array([])
+        self.expectedKeff = array([1.15295E+00, 0.00094])
+        self.expectedDays = array([])
 
-        self.expectedInfExp= set(['infAbs', 'infCapt', 'infChid', 'infChip', 'infChit', 'infDiffcoef', 'infFiss', 'infFissFlx',
-                           'infFlx', 'infInvv', 'infKappa', 'infKinf', 'infMicroFlx', 'infNsf', 'infNubar', 'infRabsxs',
-                           'infRemxs', 'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7',
-                           'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5', 'infScatt6',
-                           'infScatt7', 'infTot', 'infTranspxs'])
-        self.expectedUnivgcData = set(['cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
-                            'cmmTranspxsY', 'cmmTranspxsZ'])
-        self.expectedCMM = numpy.array([1.80522E-01, 4.44568E-01])
-        self.expectedCMMunc = numpy.array([0.00181, 0.01952])
-        self.expectedMicroGroups = numpy.array([1.00000E-11, 5.00000E-09, 1.00000E-08, 1.50000E-08, 2.00000E-08, 2.50000E-08,
-                                           3.00000E-08, 3.50000E-08, 4.20000E-08, 5.00000E-08, 5.80000E-08, 6.70000E-08,
-                                           8.00000E-08, 1.00000E-07, 1.40000E-07, 1.80000E-07, 2.20000E-07, 2.50000E-07,
-                                           2.80000E-07, 3.00000E-07, 3.20000E-07, 3.50000E-07, 4.00000E-07, 5.00000E-07,
-                                           6.25000E-07, 7.80000E-07, 8.50000E-07, 9.10000E-07, 9.50000E-07, 9.72000E-07,
-                                           9.96000E-07, 1.02000E-06, 1.04500E-06, 1.07100E-06, 1.09700E-06, 1.12300E-06,
-                                           1.15000E-06, 1.30000E-06, 1.50000E-06, 1.85500E-06, 2.10000E-06, 2.60000E-06,
-                                           3.30000E-06, 4.00000E-06, 9.87700E-06, 1.59680E-05, 2.77000E-05, 4.80520E-05,
-                                           7.55014E-05, 1.48728E-04, 3.67262E-04, 9.06898E-04, 1.42510E-03, 2.23945E-03,
-                                           3.51910E-03, 5.50000E-03, 9.11800E-03, 1.50300E-02, 2.47800E-02, 4.08500E-02,
-                                           6.74300E-02, 1.11000E-01, 1.83000E-01, 3.02500E-01, 5.00000E-01, 8.21000E-01,
-                                           1.35300E+00, 2.23100E+00, 3.67900E+00, 6.06550E+00, 2.00000E+01])
-        self.expectedGroups = numpy.array([1.00000E+37, 6.25000E-07, 0.00000E+00])
-        self.expectedInfVals = numpy.array([8.71807E+14, 4.80974E+13])
-        self.expectedInfUnc = numpy.array([0.00097, 0.00121])
+        self.expectedInfExp = {
+                'infAbs', 'infCapt', 'infChid', 'infChip', 'infChit',
+                'infDiffcoef', 'infFiss', 'infFissFlx', 'infFlx',
+                'infInvv', 'infKappa', 'infKinf', 'infMicroFlx',
+                'infNsf', 'infNubar', 'infRabsxs', 'infRemxs',
+                'infS0', 'infS1', 'infS2', 'infS3', 'infS4', 'infS5',
+                'infS6', 'infS7', 'infScatt0', 'infScatt1',
+                'infScatt2', 'infScatt3', 'infScatt4', 'infScatt5',
+                'infScatt6', 'infScatt7', 'infTot', 'infTranspxs',
+                }
+        self.expectedUnivgcData = {
+                'cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY',
+                'cmmDiffcoefZ', 'cmmTranspxs', 'cmmTranspxsX',
+                'cmmTranspxsY', 'cmmTranspxsZ',
+                }
+        self.expectedCMM = array([1.80522E-01, 4.44568E-01])
+        self.expectedCMMunc = array([0.00181, 0.01952])
+        self.expectedMicroGroups = (
+                array([1.00000E-11, 5.00000E-09, 1.00000E-08,
+                       1.50000E-08, 2.00000E-08, 2.50000E-08,
+                       3.00000E-08, 3.50000E-08, 4.20000E-08,
+                       5.00000E-08, 5.80000E-08, 6.70000E-08,
+                       8.00000E-08, 1.00000E-07, 1.40000E-07,
+                       1.80000E-07, 2.20000E-07, 2.50000E-07,
+                       2.80000E-07, 3.00000E-07, 3.20000E-07,
+                       3.50000E-07, 4.00000E-07, 5.00000E-07,
+                       6.25000E-07, 7.80000E-07, 8.50000E-07,
+                       9.10000E-07, 9.50000E-07, 9.72000E-07,
+                       9.96000E-07, 1.02000E-06, 1.04500E-06,
+                       1.07100E-06, 1.09700E-06, 1.12300E-06,
+                       1.15000E-06, 1.30000E-06, 1.50000E-06,
+                       1.85500E-06, 2.10000E-06, 2.60000E-06,
+                       3.30000E-06, 4.00000E-06, 9.87700E-06,
+                       1.59680E-05, 2.77000E-05, 4.80520E-05,
+                       7.55014E-05, 1.48728E-04, 3.67262E-04,
+                       9.06898E-04, 1.42510E-03, 2.23945E-03,
+                       3.51910E-03, 5.50000E-03, 9.11800E-03,
+                       1.50300E-02, 2.47800E-02, 4.08500E-02,
+                       6.74300E-02, 1.11000E-01, 1.83000E-01,
+                       3.02500E-01, 5.00000E-01, 8.21000E-01,
+                       1.35300E+00, 2.23100E+00, 3.67900E+00,
+                       6.06550E+00, 2.00000E+01]))
+        self.expectedGroups = array(
+                [1.00000E+37, 6.25000E-07, 0.00000E+00])
+        self.expectedInfVals = array([8.71807E+14, 4.80974E+13])
+        self.expectedInfUnc = array([0.00097, 0.00121])
+
 
 del TesterCommonResultsReader
 
