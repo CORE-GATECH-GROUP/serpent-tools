@@ -9,9 +9,9 @@ from matplotlib.colors import LogNorm, Normalize
 
 from serpentTools.messages import warning
 
-__all__ = ['cartMeshPlot',
-
-]
+__all__ = [
+    'cartMeshPlot',
+    ]
 
 #
 # DOCSTRING EXTRAS
