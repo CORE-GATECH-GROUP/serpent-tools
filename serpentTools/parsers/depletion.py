@@ -5,8 +5,8 @@ from matplotlib import pyplot
 from six import iteritems
 
 from serpentTools.plot import (
-        magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
-        )
+    magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+)
 from serpentTools.utils import convertVariableName, str2vec
 from serpentTools.engines import KeywordParser
 from serpentTools.parsers.base import MaterialReader
@@ -95,10 +95,10 @@ class DepPlotMixin(object):
                 continue
 
             ax = self.materials[mat].plot(
-                    xUnits, yUnits, timePoints, names,
-                    zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel,
-                    logx=False, logy=False, loglog=False, labelFmt=labelFmt,
-                    **kwargs)
+                xUnits, yUnits, timePoints, names,
+                zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel,
+                logx=False, logy=False, loglog=False, labelFmt=labelFmt,
+                **kwargs)
         if missing:
             warning("The following materials were not found in materials "
                     "dictionary: {}".format(', '.join(missing)))

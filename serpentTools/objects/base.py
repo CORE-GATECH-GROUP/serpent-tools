@@ -10,7 +10,8 @@ from matplotlib.pyplot import axes
 
 from serpentTools.messages import debug, warning, SerpentToolsException
 from serpentTools.plot import (
-        plot, magicPlotDocDecorator, formatPlot, cartMeshPlot)
+    plot, magicPlotDocDecorator, formatPlot, cartMeshPlot,
+)
 
 
 class NamedObject(object):

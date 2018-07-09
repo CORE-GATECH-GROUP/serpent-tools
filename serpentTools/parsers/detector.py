@@ -121,8 +121,8 @@ def cleanDetChunk(chunk):
     """
     if chunk[0][:3] != 'DET':
         raise SerpentToolsException(
-                "Could not determine name of detector from chunk: {}"
-                .format(chunk[0]))
+            "Could not determine name of detector from chunk: {}"
+            .format(chunk[0]))
     leader = chunk.pop(0)
     name = leader.split()[0][3:]
     if chunk[-1][:2] == '];':

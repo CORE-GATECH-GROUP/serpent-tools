@@ -211,8 +211,8 @@ class MicroXSReader(BaseReader):
         IndYield = self.nfy[(parent, energy)]['indYield']
         CumYield = self.nfy[(parent, energy)]['cumYield']
         if daughter in FP:
-            return float(IndYield[FP == daughter]), \
-                   float(CumYield[FP == daughter])
+            return (float(IndYield[FP == daughter]),
+                    float(CumYield[FP == daughter]))
         raise SerpentToolsException(
             "There is no fission product {0} for parent {1} at energy {2} in "
             "{3}".format(daughter, parent, energy, self.filePath))
@@ -256,8 +256,8 @@ class MicroXSReader(BaseReader):
                                         .format(isotope, self.filePath))
         key = (isotope, reaction, isomeric)
         if key in self.xsVal[universe]:
-            return self.xsVal[universe][key], \
-                   self.xsUnc[universe][key]
+            return (self.xsVal[universe][key],
+                    self.xsUnc[universe][key])
         raise SerpentToolsException("There is no isotope {0} with reaction {1}"
                                     " and isomeric flag {2} in {3}"
                                     .format(isotope, reaction, isomeric,

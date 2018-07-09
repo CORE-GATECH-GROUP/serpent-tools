@@ -1,3 +1,7 @@
+"""
+Test the sensitivity reader
+"""
+# noqa: E126
 import unittest
 from collections import OrderedDict
 
@@ -107,7 +111,7 @@ class SensitivityTester(unittest.TestCase):
 
                  [[0.00000000e+00, 0.00000000e+00],
                   [2.17649000e-03, 5.30000000e-01]]]]])
-         }
+        }
         compareDictOfArrays(expected, self.reader.sensitivities,
                             'Error in sensitivities at {key}', testCase=self)
 
