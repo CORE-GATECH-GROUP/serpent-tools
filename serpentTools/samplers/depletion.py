@@ -11,13 +11,13 @@ from matplotlib import pyplot
 
 from serpentTools.messages import SamplerError, warning
 from serpentTools.plot import (
-        magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
-        )
+    magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+)
 from serpentTools.objects.materials import DepletedMaterialBase
 from serpentTools.parsers.depletion import DepletionReader, DepPlotMixin
 from serpentTools.samplers.base import (
-        Sampler, SampledContainer, SPREAD_PLOT_KWARGS,
-        )
+    Sampler, SampledContainer, SPREAD_PLOT_KWARGS,
+)
 
 CONSTANT_MDATA = ('names', 'zai')
 """metadata that should be invariant throughout repeated runs"""
