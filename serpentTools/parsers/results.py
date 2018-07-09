@@ -14,13 +14,13 @@ from serpentTools.messages import (warning, debug, SerpentToolsException)
 
 
 MapStrVersions = {
-        '2.1.29': {
-            'meta': 'VERSION ', 'rslt': 'MIN_MACROXS',
-            'univ': 'GC_UNIVERSE_NAME', 'days': 'BURN_DAYS',
-            'burn': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
-            'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E'],
-            },
-        }
+    '2.1.29': {
+        'meta': 'VERSION ', 'rslt': 'MIN_MACROXS',
+        'univ': 'GC_UNIVERSE_NAME', 'days': 'BURN_DAYS',
+        'burn': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
+        'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E'],
+    },
+}
 MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
 """
 Assigns search strings for different Serpent versions
@@ -111,7 +111,7 @@ class ResultsReader(XSReader):
         self.__serpentVersion = rc['serpentVersion']
         self._counter = {'meta': 0, 'rslt': 0, 'univ': 0}
         self._univlist = []
-        self.metadata,  self.resdata, self.universes = {}, {}, {}
+        self.metadata, self.resdata, self.universes = {}, {}, {}
 
     def _read(self):
         """Read through the results file and store requested data."""
@@ -145,7 +145,7 @@ class ResultsReader(XSReader):
         elif self._keysVersion['rslt'] in tline:
             self._posFile = 'rslt'
             self._counter['rslt'] = divmod(
-                    self._counter['meta']-1, self._counter['univ'])[0] + 1
+                self._counter['meta'] - 1, self._counter['univ'])[0] + 1
         elif self._keysVersion['univ'] in tline:
             self._posFile = 'univ'
             varType, varVals = self._getVarValues(tline)  # universe name
@@ -181,8 +181,8 @@ class ResultsReader(XSReader):
                     self.resdata[varNamePy] = stacked
                 except Exception as ee:
                     raise SerpentToolsException(
-                            "Error in appending {}  into {} of resdata:\n{}"
-                            .format(varNamePy, vals, str(ee)))
+                        "Error in appending {}  into {} of resdata:\n{}"
+                        .format(varNamePy, vals, str(ee)))
         else:
             self.resdata[varNamePy] = array(vals)  # define a new matrix
 
@@ -228,13 +228,13 @@ class ResultsReader(XSReader):
         varType, varVals = [], []
         if strMatch is not None:
             varType = 'string'
-            varVals = tline[strMatch.span()[0]+1:strMatch.span()[1]-1]
+            varVals = tline[strMatch.span()[0] + 1:strMatch.span()[1] - 1]
         elif vecMatch is not None:
             varType = 'vector'
-            varVals = tline[vecMatch.span()[0]+1:vecMatch.span()[1]-2]
+            varVals = tline[vecMatch.span()[0] + 1:vecMatch.span()[1] - 2]
         elif sclMatch is not None:
             varType = 'scalar'
-            varVals = tline[sclMatch.span()[0]+1:sclMatch.span()[1]-2]
+            varVals = tline[sclMatch.span()[0] + 1:sclMatch.span()[1] - 2]
         return varType, varVals
 
     def getUniv(self, univ, burnup=None, index=None, timeDays=None):
@@ -269,7 +269,7 @@ class ResultsReader(XSReader):
         """
         if index is None and burnup is None and timeDays is None:
             raise SerpentToolsException(
-                    'Burnup, time or index are required inputs')
+                'Burnup, time or index are required inputs')
         searchIndex = (2 if index is not None else 1 if burnup is not None
                        else 3)
         searchValue = (index if index is not None
@@ -336,8 +336,8 @@ class ResultsReader(XSReader):
             for keys, dictUniv in iteritems(self.universes):
                 if not dictUniv.hasData():
                     raise SerpentToolsException(
-                            "metadata, resdata and universes are all empty "
-                            "from {}".format(self.filePath))
+                        "metadata, resdata and universes are all empty "
+                        "from {}".format(self.filePath))
         self._cleanMetadata()
 
     def _cleanMetadata(self):
