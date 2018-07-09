@@ -416,7 +416,7 @@ class HomogUniv(NamedObject):
         mapping = {
             "{k}": key, "{u}": self.name, "{i}": self.step,
             "{b}": self.bu, "{d}": self.day
-            }
+        }
         for lookF, value in iteritems(mapping):
             label = label.replace(lookF, str(value))
         return label
