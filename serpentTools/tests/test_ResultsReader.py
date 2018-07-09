@@ -158,15 +158,19 @@ class TesterCommonResultsReader(unittest.TestCase):
                 assert_equal(self.reader.metadata[key], expectedValue)
 
     def test_resdata(self):
-        """Verify that user-defined metadata is properly stored."""
+        """Verify that results data is properly stored."""
         expectedKeys = self.expectedResdata
         actualKeys = set(self.reader.resdata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
         assert_equal(self.reader.resdata['absKeff'], self.expectedKeff)
-        try:
-            assert_equal(self.reader.resdata['burnDays'], self.expectedDays)
-        except:
-            assert_equal([], self.expectedDays)
+
+    def test_burnup(self):
+        """Verify the burnup vector is properly stored."""
+        actualBurnDays = self.reader.resdata.get('burnDays', None)
+        if actualBurnDays is None:
+            raise self.skipTest(
+                "{} does not, and should not, have burnup".format(self))
+        assert_equal(actualBurnDays, self.expectedDays)
 
     def test_universes(self):
         """Verify that results for all states (univ, bu, buIdx, days) exist.
