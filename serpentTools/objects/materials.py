@@ -5,8 +5,8 @@ from matplotlib import pyplot
 
 from serpentTools.messages import warning, debug
 from serpentTools.plot import (
-        magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
-    )
+    magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+)
 from serpentTools.objects.base import NamedObject
 from serpentTools.utils import convertVariableName
 
