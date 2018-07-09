@@ -1,7 +1,6 @@
 """
 Test the sensitivity reader
 """
-# noqa: E126
 import unittest
 from collections import OrderedDict
 
@@ -26,7 +25,7 @@ class SensitivityTester(unittest.TestCase):
         """Verify the sensitivity arrays are loaded correctly."""
         expected = {
             'fis2flx': array([[[
-                 [[-2.61375000e-01, 7.10000000e-02],
+                [[-2.61375000e-01, 7.10000000e-02],  # noqa: E126
                   [-1.04396000e-01, 1.30000000e-01]],
 
                  [[8.14309000e-04, 1.00000000e+00],
@@ -118,7 +117,7 @@ class SensitivityTester(unittest.TestCase):
     def test_integratedSensitivities(self):
         """Verify the energy integrated sensitivities are correct."""
         expected = {
-                'fis2flx': array([[
+                'fis2flx': array([[  # noqa: E126
                        [[-3.65771000e-01, 5.50000000e-02],
                         [-1.08269000e-03, 1.00000000e+00],
                         [0.00000000e+00, 0.00000000e+00],
