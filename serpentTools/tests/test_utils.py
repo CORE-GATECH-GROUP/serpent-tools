@@ -19,8 +19,8 @@ class VariableConverterTester(unittest.TestCase):
         testCases = {
             "VERSION": "version",
             "INF_KINF": "infKinf",
-            "ADJ_PERT_KEFF_SENS": "adjPertKeffSens"
-            ,}
+            "ADJ_PERT_KEFF_SENS": "adjPertKeffSens",
+        }
         for serpentStyle, expected in iteritems(testCases):
             actual = convertVariableName(serpentStyle)
             self.assertEqual(expected, actual, msg=serpentStyle)
@@ -54,7 +54,7 @@ class VectorConverterTester(unittest.TestCase):
             actual = str2vec(case, of=valType, out=outType)
             self.assertIsInstance(actual, compareType, msg=case)
             ofRightType = [isinstance(xx, valType) for xx in actual]
-            self.assertTrue(all(ofRightType), 
+            self.assertTrue(all(ofRightType),
                             msg="{} -> {}, {}".format(case, actual,
                                                       type(actual)))
             self.assertEqual(expected, actual, msg=case)
@@ -80,7 +80,7 @@ class SplitValsTester(unittest.TestCase):
         copyV, copyU = splitValsUncs(self.input, copy=True)
         for view, copy, msg in zip(
                 (viewV, viewU), (copyV, copyU), ('value', 'uncertainty')):
-            assert_array_equal(view, copy,err_msg=msg)
+            assert_array_equal(view, copy, err_msg=msg)
             self.assertFalse(view is copy, msg=msg)
 
     def test_splitAtCols(self):
@@ -95,4 +95,3 @@ class SplitValsTester(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

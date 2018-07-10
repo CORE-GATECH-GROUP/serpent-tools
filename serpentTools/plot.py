@@ -9,8 +9,8 @@ from matplotlib.colors import LogNorm, Normalize
 
 from serpentTools.messages import warning
 
-__all__ = ['cartMeshPlot',
-
+__all__ = [
+    'cartMeshPlot',
 ]
 
 #
@@ -74,11 +74,11 @@ UNIV_FMT_DOC = """labelFmt: str or None
 """
 
 LEGEND_KWARGS = {
-        'above': {'bbox_to_anchor': (0., 1.02, 1., 1.02),
-                  'loc': 3, 'mode': 'expand'},
-        'right': {'bbox_to_anchor': (1.02, 1),
-                  'loc': 2}
-        }
+    'above': {'bbox_to_anchor': (0., 1.02, 1., 1.02),
+              'loc': 3, 'mode': 'expand'},
+    'right': {'bbox_to_anchor': (1.02, 1),
+              'loc': 2}
+}
 """
 Settings for modifying the position of the legend
 source: `<https://matplotlib.org/users/legend_guide.html>`_
@@ -88,7 +88,7 @@ source: `<https://matplotlib.org/users/legend_guide.html>`_
 LEGEND = """legend: bool or str
     Automatically label the plot. Pass one of the following values
     to place the legend outside the plot: {}""".format(
-        ', '.join(LEGEND_KWARGS.keys()))
+    ', '.join(LEGEND_KWARGS.keys()))
 
 NCOL = """ncol: int\n    Integer number of columns to apply to the legend."""
 
@@ -113,7 +113,7 @@ DEPLETION_PLOT_LABELS = {
     'inhTox': 'Inhalation toxicity $[Sv]$',
     'days': 'Burnup $[d]$',
     'burnup': 'Burnup $[MWd/kgU]$',
-    }
+}
 
 
 def magicPlotDocDecorator(f):

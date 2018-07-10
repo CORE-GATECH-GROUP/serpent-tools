@@ -16,7 +16,7 @@ except ImportError:
     HAS_SCIPY = False
     csc_matrix = array
 
-from serpentTools.messages import warning, SerpentToolsException, info, debug
+from serpentTools.messages import SerpentToolsException, debug
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.parsers.branching import BranchingReader
 from serpentTools.parsers.detector import DetectorReader
@@ -36,7 +36,7 @@ READERS = {
     'fission': FissionMatrixReader,
     'bumat': BumatReader,
     'history': HistoryReader,
-    'xsplot' : XSPlotReader,
+    'xsplot': XSPlotReader,
     'sensitivity': SensitivityReader,
     'microxs': MicroXSReader
 }
@@ -49,14 +49,15 @@ REGEXES = {
     r'(.*_fmtx\d+\.m)': FissionMatrixReader,
     r'(.*\.bumat\d+)': BumatReader,
     r'(.*_his\d+\.m)': HistoryReader,
-    r'(.*_xs\d*\.m)' : XSPlotReader,
+    r'(.*_xs\d*\.m)': XSPlotReader,
     r'(.*_sens\d*.m)': SensitivityReader,
     r'(.*_mdx\d+\.m)': MicroXSReader,
 }
 
 __all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES',
            'DepletionReader', 'BranchingReader', 'DetectorReader',
-           'BumatReader', 'ResultsReader', 'FissionMatrixReader', 'MicroXSReader']
+           'BumatReader', 'ResultsReader', 'FissionMatrixReader',
+           'MicroXSReader']
 
 
 def inferReader(filePath):
@@ -142,7 +143,7 @@ def read(filePath, reader='infer'):
                 )
     else:
         assert callable(reader), (
-                'Reader {} is not callable'.format(str(reader)))
+            'Reader {} is not callable'.format(str(reader)))
         loader = reader
     returnedFromLoader = loader(filePath)
     returnedFromLoader.read()
@@ -265,4 +266,3 @@ def _parseIsoBlock(stream, storage, match, line, regex):
         line = stream.readline()
         match = re.match(regex, line)
     return storage, line, items
-

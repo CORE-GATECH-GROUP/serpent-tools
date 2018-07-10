@@ -47,6 +47,7 @@ class DetectorSampler(Sampler):
     def __getitem__(self, name):
         """Retrieve a detector from :attr:`detectors`."""
         return self.detectors[name]
+
     def _precheck(self):
         self._checkParserDictKeys('detectors')
         self._checkSizes()
@@ -263,4 +264,3 @@ class SampledDetector(SampledContainer, DetectorBase):
         if loglog or logy:
             ax.set_yscale('log')
         return ax
-
