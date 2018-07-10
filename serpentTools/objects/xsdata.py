@@ -54,7 +54,7 @@ class XSData(NamedObject):
         -56: "Macro He-3 production",
         -57: "Macro He-4 production",
         -100: "User response function",
-        }
+    }
 
     def __init__(self, name, metadata, isIso=False):
         NamedObject.__init__(self, name)
@@ -277,13 +277,13 @@ class XSData(NamedObject):
         """
         outstr = ""
         outstr += "MT numbers available for {}:\n".format(self.name)
-        outstr += "--------------------------"+len(self.name)*'-'+'\n'
+        outstr += "--------------------------" + len(self.name) * '-' + '\n'
         for i, mt in enumerate(self.MT):
             if self.isIso:
                 descr = self.MTdescrip[i]
             else:
                 descr = XSData.negativeMTDescription(mt)
-            spaces = (4-len(str(mt)))*' '
+            spaces = (4 - len(str(mt))) * ' '
             outstr += str(mt) + spaces + descr + '\n'
         if retstring:
             return outstr

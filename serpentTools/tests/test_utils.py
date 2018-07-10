@@ -20,7 +20,7 @@ class VariableConverterTester(unittest.TestCase):
             "VERSION": "version",
             "INF_KINF": "infKinf",
             "ADJ_PERT_KEFF_SENS": "adjPertKeffSens",
-            }
+        }
         for serpentStyle, expected in iteritems(testCases):
             actual = convertVariableName(serpentStyle)
             self.assertEqual(expected, actual, msg=serpentStyle)

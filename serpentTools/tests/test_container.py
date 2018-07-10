@@ -33,11 +33,11 @@ class _HomogUnivTestHelper(unittest.TestCase):
         attrs = {'MACRO_E': groupStructure}
         # Partial dictionaries
         self.b1Unc = self.b1Exp = {
-                'b11': vec, 'b1AsList': vec, 'b1Kinf': testK,
-                }
+            'b11': vec, 'b1AsList': vec, 'b1Kinf': testK,
+        }
         self.infUnc = self.infExp = {
-                'inf1': vec, 'infS0': mat, 'infKeff': testK, 'infKinf': testK,
-                }
+            'inf1': vec, 'infS0': mat, 'infKeff': testK, 'infKinf': testK,
+        }
         self.gcUnc = self.gc = {'cmmTranspX': vec, 'impKeff': testK}
         self.expAttrs = {'groups': groupStructure, 'numGroups': NUM_GROUPS}
         # Use addData

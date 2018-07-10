@@ -40,9 +40,9 @@ class DetectorHelper(TestCase):
         for name, cls in iteritems(self.EXPECTED_DETECTORS):
             actualDet = self.detectors[name]
             self.assertIsInstance(
-                    actualDet, cls, msg="{} is {}, should be {}: - {}"
-                    .format(name, actualDet.__class__.__name__, cls,
-                            self.FILE_PATH))
+                actualDet, cls, msg="{} is {}, should be {}: - {}"
+                .format(name, actualDet.__class__.__name__, cls,
+                        self.FILE_PATH))
 
     def test_detectorGrids(self):
         """Verify that all grids are loaded."""
@@ -78,8 +78,8 @@ class DetectorHelper(TestCase):
                     (expectedTallies, expectedErrors),
                     (tallies, errors), ('tallies', 'errors')):
                 assert_equal(expected, actual,
-                             err_msg="Detector {} {}\nFixed: {}".format(
-                                detName, what, fixed))
+                             err_msg="Detector {} {}\nFixed: {}"
+                             .format(detName, what, fixed))
 
     def test_iterDets(self):
         """Verify the iterDets method is functional."""
@@ -129,7 +129,7 @@ class CartesianDetectorTester(DetectorHelper):
         ['reaction', arange(2)],
         ['ymesh', arange(5)],
         ['xmesh', arange(5)],
-        ])
+    ])
     EXPECTED_INDEXES = {DET_NAME: _INDEXES}
 
     SLICING = {DET_NAME: {
@@ -148,7 +148,7 @@ class CartesianDetectorTester(DetectorHelper):
             [0.01081, 0.00885, 0.01127, 0.00893, 0.01161],
             [0.01250, 0.01121, 0.01460, 0.01142, 0.01219],
         ]),
-        },
+    },
     }
 
 
@@ -164,7 +164,7 @@ class HexagonalDetectorTester(DetectorHelper):
     _INDEXES = OrderedDict([
         ['ycoord', arange(5)],
         ['xcoord', arange(5)],
-        ])
+    ])
     EXPECTED_INDEXES = {'hex2': _INDEXES}
     EXPECTED_INDEXES['hex3'] = EXPECTED_INDEXES['hex2']
 
@@ -184,17 +184,17 @@ class HexagonalDetectorTester(DetectorHelper):
                 [1.000000E+00, -1.732051E+00], [1.500000E+00, -8.660254E-01],
                 [2.000000E+00, 0.000000E+00], [2.500000E+00, 8.660254E-01],
                 [3.000000E+00, 1.732051E+00],
-                ]),
+            ]),
             'Z': array([[0, 0, 0]]),
-            }
         }
+    }
 
     # Hex grid for type 3 detector, given the same parameters as a type 2
     # contains the same coordinates, with the x and y values swapped
     EXPECTED_GRIDS['hex3'] = {
         'Z': EXPECTED_GRIDS['hex2']['Z'],
         'COORD': EXPECTED_GRIDS['hex2']['COORD'][:, ::-1],
-        }
+    }
 
     SLICING = {
         'hex2': {
@@ -211,14 +211,14 @@ class HexagonalDetectorTester(DetectorHelper):
                 [0.188575, 0.189483, 0.19107, 0.190542, 0.19633],
                 [0.199519, 0.196765, 0.196656, 0.193902, 0.186121],
                 [0.191783, 0.187015, 0.187476, 0.182367, 0.175803],
-                ]),
+            ]),
             'errors': array([
                 [0.02523, 0.02492, 0.01933, 0.02428, 0.02403],
                 [0.02212, 0.0286, 0.02614, 0.02321, 0.01673],
                 [0.01913, 0.0226, 0.01927, 0.021, 0.02622],
                 [0.02301, 0.01718, 0.02042, 0.02583, 0.02797],
                 [0.02167, 0.02281, 0.02397, 0.02289, 0.02602],
-                ])
+            ])
         },
     }
 
@@ -254,10 +254,11 @@ class CylindricalDetectorTester(DetectorHelper):
     ])
     EXPECTED_INDEXES = {DET_NAME: _INDEXES}
 
-    SLICING = {DET_NAME: {
-        'fixed': {'rmesh': 2},
-        'tallies': array([0.0341559, 0.032754, 0.0332801, 0.0326715]),
-        'errors': array([0.04018, 0.04582, 0.0467, 0.04346]),
+    SLICING = {
+        DET_NAME: {
+            'fixed': {'rmesh': 2},
+            'tallies': array([0.0341559, 0.032754, 0.0332801, 0.0326715]),
+            'errors': array([0.04018, 0.04582, 0.0467, 0.04346]),
         },
     }
 

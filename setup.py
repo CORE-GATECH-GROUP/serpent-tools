@@ -90,6 +90,6 @@ setup(**setupArgs)
 
 if not HAS_SETUPTOOLS:
     warnings.warn(
-            'The following packages are required to use serpentTools version '
-            '{}:\n{}\nPlease ensure they are installed prior to use'
-            .format(versioneer.get_version(), '\n'.join(installRequires)))
+        'The following packages are required to use serpentTools version '
+        '{}:\n{}\nPlease ensure they are installed prior to use'
+        .format(versioneer.get_version(), '\n'.join(installRequires)))
