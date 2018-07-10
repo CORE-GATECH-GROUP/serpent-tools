@@ -1,6 +1,4 @@
 """Parser responsible for reading the ``*res.m`` files"""
-import re
-
 from six import iteritems
 
 from numpy import array, vstack
@@ -9,7 +7,10 @@ from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers.base import XSReader
-from serpentTools.utils import str2vec, splitValsUncs
+from serpentTools.utils import (
+    str2vec, splitValsUncs,
+    STR_REGEX, VEC_REGEX, SCALAR_REGEX, FIRST_WORD_REGEX,
+)
 from serpentTools.messages import (warning, debug, SerpentToolsException)
 
 
@@ -62,11 +63,6 @@ METADATA_CONV = {
 """
 Convert items in metadata dictionary from arrays to these data types
 """
-
-STR_REGEX = re.compile(r'\'.+\'')  # string
-VEC_REGEX = re.compile(r'(?<==.)\[.+?\]')  # vector
-SCALAR_REGEX = re.compile(r'=.+;')  # scalar
-FIRST_WORD_REGEX = re.compile(r'^\w+')  # first word in the line
 
 
 class ResultsReader(XSReader):

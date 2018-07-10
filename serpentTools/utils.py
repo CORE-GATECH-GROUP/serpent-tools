@@ -1,8 +1,16 @@
 """
 Commonly used functions and utilities
 """
+from re import compile
 
 from numpy import array, ndarray
+
+# Regular expressions
+
+STR_REGEX = compile(r'\'.+\'')  # string
+VEC_REGEX = compile(r'(?<==.)\[.+?\]')  # vector
+SCALAR_REGEX = compile(r'=.+;')  # scalar
+FIRST_WORD_REGEX = compile(r'^\w+')  # first word in the line
 
 
 def str2vec(iterable, of=float, out=array):
