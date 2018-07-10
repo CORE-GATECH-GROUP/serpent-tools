@@ -232,7 +232,7 @@ for key in EXPECTED_ARRAYS_SHAPE:
     for arrayD, arrayT in zip((EXPECTED_ARRAY_HEADS, EXPECTED_ARRAY_TAILS),
                               ('heads', 'tails')):
         assert key in arrayD, (
-                'Missing {} from history {}'.format(key, arrayT))
+            'Missing {} from history {}'.format(key, arrayT))
 
 
 class HistoryTester(unittest.TestCase):

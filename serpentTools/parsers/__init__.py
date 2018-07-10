@@ -143,7 +143,7 @@ def read(filePath, reader='infer'):
                 )
     else:
         assert callable(reader), (
-                'Reader {} is not callable'.format(str(reader)))
+            'Reader {} is not callable'.format(str(reader)))
         loader = reader
     returnedFromLoader = loader(filePath)
     returnedFromLoader.read()

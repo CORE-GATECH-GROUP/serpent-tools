@@ -12,7 +12,7 @@ def _cleanChunk(string):
     newstring = string.rstrip()
     if '=' in newstring:
         i = newstring.index('=')
-        return newstring[:i-1]
+        return newstring[:i - 1]
     return newstring
 
 
