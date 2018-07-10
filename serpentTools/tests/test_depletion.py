@@ -158,7 +158,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
     def test_getValues_adens(self):
         """Verify getValues can return a requested subsection."""
         names = ['Xe135', 'U235', 'lost']
-        zai = [541350, 922350, 0]
+        zai = [541350, 922350, 666]
         expected = array([
             [0.00000E+00, 3.92719E-09, 5.62744E-09, 6.14629E-09, 6.14402E-09,
              6.10821E-09, 6.18320E-09],
@@ -172,7 +172,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
         usingZai = self.material.getValues('days', 'adens', zai=zai,
                                            timePoints=self.requestedDays)
         assert_equal(usingNames, expected, err_msg="Using <names> argument")
-        assert_equal(usingNames, expected, err_msg="Using <zai> argument")
+        assert_equal(usingZai, expected, err_msg="Using <zai> argument")
 
     def test_getValues_raisesError_badTime(self):
         """Verify that a ValueError is raised for non-present requested days.""" # noqa
