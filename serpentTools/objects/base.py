@@ -211,7 +211,7 @@ class DetectorBase(NamedObject):
         if ylabel is None:
             ylabel = 'Tally data'
             ylabel += ' normalized per unit lethargy' if normalize else ''
-            ylabel += r' $\pm${}\sigma$'.format(sigma) if sigma else ''
+            ylabel += r' $\pm{}\sigma$'.format(sigma) if sigma else ''
 
         ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
                         xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
