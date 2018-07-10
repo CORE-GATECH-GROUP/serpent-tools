@@ -23,8 +23,6 @@ import sys
 sys.path.append(os.path.abspath('../serpentTools/'))
 from _version import get_versions
 
-from unittest.mock import MagicMock
-
 ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
 
 # -- General configuration ------------------------------------------------
@@ -103,7 +101,7 @@ extlinks = {
     'issue': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
               'issues/%s', '#'),
     'pull': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
-             'pull/%s', '#'), 
+             'pull/%s', '#'),
     'release-tag': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
                     'releases/tag/%s', ''),
     'ex-notebook': ('https://github.com/CORE-GATECH-GROUP/serpent-tools/'
@@ -196,8 +194,7 @@ autodoc_default_flags = ['members', 'inherited-members']
 
 # -- Links to external documentation
 intersphinx_mapping = {
-        'python': ('https://docs.python.org/3.5', None),
-        'matplotlib': ('https://matplotlib.org', None),
-        'numpy': ('https://docs.scipy.org/doc/numpy/', None)
-    }
-
+    'python': ('https://docs.python.org/3.5', None),
+    'matplotlib': ('https://matplotlib.org', None),
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None)
+}
