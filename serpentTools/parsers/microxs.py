@@ -112,13 +112,13 @@ class MicroXSReader(BaseReader):
 
     def _storeFluxRatio(self, chunk):
         """store flux ratios"""
-        currVar = self._strtok.search(chunk[0]).group()
+        chunk0 = chunk[0]
+        currVar = self._strtok.search(chunk0).group()
         # obtain the universe id
         univ = currVar.split('_')[-1]
-        vals = self._regexpVec.search(chunk[0])  # group flux values
-        self.fluxRatio[univ], self.fluxUnc[univ] = \
-            splitValsUncs(str2vec(chunk[0][vals.span()[0] +
-                                           1:vals.span()[1] - 2]))
+        search = self._regexpVec.search(chunk0)  # group flux values
+        vals = str2vec(chunk0[search.span()[0] + 1:search.span()[1] - 2])
+        self.fluxRatio[univ], self.fluxUnc[univ] = splitValsUncs(vals)
 
     def _storeMicroXS(self, chunk):
         """store micro cross-section and uncertainty values"""
