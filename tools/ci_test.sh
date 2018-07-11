@@ -17,18 +17,32 @@ set -o pipefail
 
 if [ -z "TRAVIS" ]; then
     PY_RUNNER="coverage run"
+    if [ $TRAVIS_PULL_REQUEST != "false"]; then
+        # Run lint on the whole project later
+        FLAKE_DIFF=0
+    else
+        TARGET=$TRAVIS_BRANCH
+    fi
 else
-    PY_RUNNER="python"
+    if [ -z $PY_RUNNER ]; then
+        PY_RUNNER="python"
+    fi
+    FLAKE_DIFF=1
 fi
+
+echo "Python runner" $PY_RUNNER
+
 #
 # Main test suite
 #
 
+echo "----------------------------------------"
 echo "Running all unit tests"
 echo "----------------------------------------"
 
 $PY_RUNNER setup.py test
 
+echo "----------------------------------------"
 echo "Testing jupyter notebooks"
 echo "----------------------------------------"
 
@@ -38,6 +52,7 @@ source tools/testNotebooks.sh
 # Check for lint
 #
 
+echo "----------------------------------------"
 echo "Checking for lint"
 echo "----------------------------------------"
 
@@ -53,3 +68,5 @@ else
     git diff --unified=0 $TRAVIS_BRANCH | flake8 --diff
 
 fi
+
+echo "No lint found"
