@@ -20,7 +20,7 @@ before_script:
 
 # run
 script:
-  - bash tools/ci_test.sh
+  - bash scripts/travis/testScript.sh
 
 # only if build succeeds
 after_success:

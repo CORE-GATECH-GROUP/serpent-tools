@@ -45,9 +45,9 @@ echo "----------------------------------------"
 echo "Testing jupyter notebooks"
 echo "----------------------------------------"
 
-source tools/testNotebooks.sh
+source scripts/travis/testNotebooks.sh
 
 #
 # Check for lint
 #
-source tools/checkLint.sh
+source scripts/travis/checkLint.sh
