@@ -42,8 +42,9 @@ fi
 
 # Determine against what branch to diff
 
+CURRENT=$(git rev-parse --abbrev-ref HEAD) 
+
 if [ ! -z $TARGET ]; then
-    CURRENT=$(git rev-parse --abbrev-ref HEAD) 
     if [ $CURRENT=="develop" ] || [ $CURRENT=="master" ]; then
         # Assume on one of our "production" branches
         # run linter on the whole thing
@@ -63,5 +64,4 @@ fi
 echo Linting ${CURRENT} vs. ${TARGET}
 git diff --unified=0 $TARGET | $LINTER --diff $LINT_OPTS
 echo "No lint found"
-exit
 
