@@ -23,6 +23,6 @@ script:
   - bash tools/ci_test.sh
 
 # only if build succeeds
-after-success:
+after_success:
   - coverage report
 
