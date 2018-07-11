@@ -10,8 +10,9 @@ The detectors contained in this module are tasked with storing such
 data and proving easy access to the data, as well as the underlying
 bins used to define the detector.
 
-Detectors
----------
+Detector Types
+--------------
+
 * :class:`~serpentTools.objects.detectors.Detector`
 * :class:`~serpentTools.objects.detectors.CartesianDetector`
 * :class:`~serpentTools.objects.detectors.HexagonalDetector`
