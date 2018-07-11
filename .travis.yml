@@ -20,8 +20,7 @@ before_script:
 
 # run
 script:
-  - coverage run setup.py test 
-  - ./testNotebooks.sh 
+  - bash tools/ci_test.sh
 
 # only if build succeeds
 after-success:
