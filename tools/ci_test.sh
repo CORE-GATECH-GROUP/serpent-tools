@@ -27,7 +27,6 @@ else
     if [ -z $PY_RUNNER ]; then
         PY_RUNNER="python"
     fi
-    FLAKE_DIFF=1
 fi
 
 echo "Python runner" $PY_RUNNER
@@ -51,22 +50,4 @@ source tools/testNotebooks.sh
 #
 # Check for lint
 #
-
-echo "----------------------------------------"
-echo "Checking for lint"
-echo "----------------------------------------"
-
-if [ $TRAVIS_PULL_REQUEST != "false" ]; then
-    # not a pull request
-    # and we don't build pushes so it is either a tag
-    # or a cron build
-    # check the whole project for lint
-    flake8
-else
-    # pull request
-    # check lint of proposed code to be introduced
-    git diff --unified=0 $TRAVIS_BRANCH | flake8 --diff
-
-fi
-
-echo "No lint found"
+source tools/checkLint.sh

@@ -51,6 +51,7 @@ if [ ! -z $TARGET ]; then
         echo "No lint found"
         exit
     fi
+else
     # Not on production/release branch
     # Determine the "upstream" or
     # reference branch against which to diff and then
