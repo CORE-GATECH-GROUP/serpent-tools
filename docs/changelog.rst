@@ -23,6 +23,7 @@ Next
 * :pull:`205` - Access materials from :class:`serpentTools.readers.depletion.DepletionReader`
   and :class:`serpentTools.samplers.depletion.DepletionSampler` using key-like
   indexing, e.g. ``reader[matName] == reader.material[matName]``
+* :pull:`213` - Better default x-axis labels for simple detector plots
 
 .. _vNext-api:
 

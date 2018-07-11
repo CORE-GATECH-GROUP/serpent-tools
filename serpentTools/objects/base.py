@@ -11,6 +11,7 @@ from matplotlib.pyplot import axes
 from serpentTools.messages import debug, warning, SerpentToolsException
 from serpentTools.plot import (
     plot, magicPlotDocDecorator, formatPlot, cartMeshPlot,
+    DETECTOR_PLOT_LABELS,
 )
 
 
@@ -211,7 +212,7 @@ class DetectorBase(NamedObject):
         if ylabel is None:
             ylabel = 'Tally data'
             ylabel += ' normalized per unit lethargy' if normalize else ''
-            ylabel += r' $\pm${}\sigma$'.format(sigma) if sigma else ''
+            ylabel += r' $\pm{}\sigma$'.format(sigma) if sigma else ''
 
         ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
                         xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
@@ -402,12 +403,13 @@ class DetectorBase(NamedObject):
         return None
 
     def _getPlotXData(self, qty, ydata):
-        fallback = arange(len(ydata)), 'Bin Index'
+        fallbackX = arange(len(ydata))
+        xlabel = DETECTOR_PLOT_LABELS.get(qty, 'Bin Index')
         if qty is None:
-            return fallback
+            return fallbackX, xlabel
         xdata = self._inGridsAs(qty)
         if xdata is not None:
-            return xdata[:, 0], qty
+            return xdata[:, 0], xlabel
         if qty in self.indexes:
-            return self.indexes[qty], qty
-        return fallback
+            return self.indexes[qty], xlabel
+        return fallbackX, xlabel

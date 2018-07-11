@@ -115,7 +115,23 @@ DEPLETION_PLOT_LABELS = {
     'burnup': 'Burnup $[MWd/kgU]$',
 }
 
+DETECTOR_PLOT_LABELS = {
+    'energy': 'Energy [MeV]',
+    'xmesh': 'X Position [cm]',
+    'ymesh': 'Y Position [cm]',
+    'zmesh': 'Z Position [cm]',
+}
 
+_DET_LABEL_INDEXES = {
+    'reaction', 'material', 'cell', 'universe', 'lattice',
+}
+# bins that increment by integer indices and reflect discrete quantities,
+# unlike energy inidices
+
+for key in _DET_LABEL_INDEXES:
+    DETECTOR_PLOT_LABELS[key] = key.capitalize() + " Index"
+
+del _DET_LABEL_INDEXES
 def magicPlotDocDecorator(f):
     """
     Decorator that replaces a lot magic strings used in plot functions.
