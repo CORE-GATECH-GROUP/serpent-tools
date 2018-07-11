@@ -10,6 +10,13 @@ if [ ! -d examples ]; then
 	exit 1
 fi
 
+if [ -z $PY_RUNNER ]; then
+    # this is set from the ci_test script
+    # set to plain python
+    PY_RUNNER="python"
+    echo "Running with " $($PY_RUNNER --version)
+fi
+
 cd examples
 
 echo "jupyter version: $(jupyter --version)"
@@ -23,7 +30,7 @@ for pyFile in *.py; do
 	# comment out the get_ipython functions
 	sed -i 's/get_ipython/#get_ipython/' $pyFile
 	outFile=out_$pyFile
-	python $pyFile > $outFile
+	$PY_RUNNER $pyFile > $outFile
 	if [ $? == 0 ]; then
 		echo Script $pyFile passed
 		rm $pyFile $outFile
