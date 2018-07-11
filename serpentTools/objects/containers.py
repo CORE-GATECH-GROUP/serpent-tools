@@ -104,9 +104,9 @@ class HomogUniv(NamedObject):
 
     def __init__(self, name, bu, step, day):
         if not all(isNonNeg(xx) for xx in (bu, step, day)):
-            tail = ['{}: {}'.format(name, val)
-                    for name, val in zip(('burnup', 'index', 'days'),
-                                         (bu, step, day))]
+            tail = ['{}: {}'.format(valName, val)
+                    for valName, val in zip(('burnup', 'index', 'days'),
+                                            (bu, step, day))]
             raise SerpentToolsException(
                 "Will not create universe with negative burnup\n{}"
                 .format(', '.join(tail)))
