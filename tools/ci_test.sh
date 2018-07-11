@@ -7,7 +7,7 @@
 # Exit immediately if a simple command fails
 set -e
 # Propagate error codes through pipes
-set -o pipefile
+set -o pipefail
 
 #
 # Main test suite
