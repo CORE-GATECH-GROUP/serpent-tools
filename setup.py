@@ -47,7 +47,7 @@ installRequires = [
     'pyyaml>=3.08',
 ]
 
-if not getenv('ONTRAVIS', False):
+if not getenv('TRAVIS', None) == 'true':
     # hack to install scipy if not on cluster
     # PR 45/44
     installRequires.append('scipy')
