@@ -6,10 +6,10 @@
 Changelog
 =========
 
-.. _vNext:
+.. _v0.5.2:
 
-Next
-====
+:release-tag:`0.5.2`
+====================
 
 * :pull:`198` - Import test and example files using :mod:`serpentTools.data`. 
   Load example readers with :func:`serpentTools.data.readDataFile`
@@ -25,7 +25,7 @@ Next
   indexing, e.g. ``reader[matName] == reader.material[matName]``
 * :pull:`213` - Better default x-axis labels for simple detector plots
 
-.. _vNext-api:
+.. _v0.5.2-api:
 
 API Changes
 -----------
@@ -33,7 +33,7 @@ API Changes
   are now stored as :class:`int` or :class:`float`, depending upon their nature.
   Many of these settings refer to flags of settings used by ``SERPENT``
 
-.. _v0.5.0:
+.. _v0.5.1:
 
 :release-tag:`0.5.1`
 ====================
