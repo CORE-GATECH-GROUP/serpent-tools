@@ -35,8 +35,6 @@ else
     fi
 fi
 
-echo "Python runner" $PY_RUNNER
-
 #
 # Main test suite
 #
