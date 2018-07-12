@@ -23,6 +23,9 @@ Glossary
             that installs and updates conda packages and their
             dependencies.
 
+    CI
+        Continuous integration. Software we utilize to check that pull
+        requests don't break the code.
     git
         Distributed version control system. Allows us to test and implement
         new features with ease. For more information, see
@@ -34,7 +37,12 @@ Glossary
             The Jupyter Notebook is an open-source web application that allows
             you to create and share documents that contain live code, equations,
             visualizations and narrative text.
-
+    
+    lint
+        Bits of potentially erroneous code. Can be identified by a :term:`linter`
+    linter
+        Program that analyzes source code to check for errors, bugs,
+        stylistic issues, and other potential hangups.
     matplotlib
         Primary python package for plotting data. Highly customizable
         and extensible. More information at `<https://matplotlib.org>`_

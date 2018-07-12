@@ -132,6 +132,8 @@ for key in _DET_LABEL_INDEXES:
     DETECTOR_PLOT_LABELS[key] = key.capitalize() + " Index"
 
 del _DET_LABEL_INDEXES
+
+
 def magicPlotDocDecorator(f):
     """
     Decorator that replaces a lot magic strings used in plot functions.
