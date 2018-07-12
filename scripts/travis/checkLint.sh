@@ -44,7 +44,7 @@ fi
 
 CURRENT=$(git rev-parse --abbrev-ref HEAD) 
 
-if [ ! -z $TARGET ]; then
+if [ $TARGET ]; then
     if [ $CURRENT=="develop" ] || [ $CURRENT=="master" ]; then
         # Assume on one of our "production" branches
         # run linter on the whole thing
