@@ -57,8 +57,8 @@ class BumatReader(MaterialReader):
 
     @classmethod
     @willChange(
-            "Storage of material in materials dictionary will utilize "
-            "custom container objects in the future.")
+        "Storage of material in materials dictionary will utilize "
+        "custom container objects in the future.")
     def warn(cls):
         cls.HAS_BEEN_WARNED = True
 
@@ -82,6 +82,7 @@ class BumatReader(MaterialReader):
         if noNucs:
             warning("The following materials did not have any nuclides:\n{}"
                     .format(noNucs))
+
     def _read(self):
 
         self.materials = {}
