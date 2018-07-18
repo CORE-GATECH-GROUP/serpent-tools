@@ -4,7 +4,7 @@ from re import compile
 
 from six import iteritems
 
-from serpentTools.messages import warning
+from serpentTools.messages import warning, willChange
 from serpentTools.parsers.base import MaterialReader
 
 
@@ -46,13 +46,21 @@ class BumatReader(MaterialReader):
         Burnup [days] for this file
     """
 
+    HAS_BEEN_WARNED = False
+
     def __init__(self, filePath):
-        FutureWarning(
-            "Storage of material in materials dictionary will utilize "
-            "custom container objects in the future.")
+        if not BumatReader.HAS_BEEN_WARNED:
+            BumatReader.warn()
         MaterialReader.__init__(self, filePath, 'bumat')
         self.burnup = None
         self.days = None
+
+    @classmethod
+    @willChange(
+            "Storage of material in materials dictionary will utilize "
+            "custom container objects in the future.")
+    def warn(cls):
+        cls.HAS_BEEN_WARNED = True
 
     def __getitem__(self, key):
         return self.materials[key]
