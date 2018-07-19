@@ -1,5 +1,4 @@
 """Test the depletion file."""
-import os
 import unittest
 
 from numpy import array
@@ -145,9 +144,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
         assert_equal(self.material['ingTox'], expectedIngTox)
 
     def test_getValues_burnup_full(self):
-        """
-        Verify the material can produce the full burnup vector through getValues.
-        """
+        """ Verify that getValues can produce the full burnup vector."""
         actual = self.material.getValues('days', 'burnup', )
         assert_equal(actual, self.fuelBU)
 
@@ -159,9 +156,9 @@ class DepletedMaterialTester(_DepletionTestHelper):
         assert_equal(actual, expected)
 
     def test_getValues_adens(self):
-        """Verify depletedMaterial getValues can return a requested subsection."""
+        """Verify getValues can return a requested subsection."""
         names = ['Xe135', 'U235', 'lost']
-        zai = [541350, 922350, 0]
+        zai = [541350, 922350, 666]
         expected = array([
             [0.00000E+00, 3.92719E-09, 5.62744E-09, 6.14629E-09, 6.14402E-09,
              6.10821E-09, 6.18320E-09],
@@ -173,12 +170,12 @@ class DepletedMaterialTester(_DepletionTestHelper):
         usingNames = self.material.getValues('days', 'adens', names=names,
                                              timePoints=self.requestedDays)
         usingZai = self.material.getValues('days', 'adens', zai=zai,
-                                            timePoints=self.requestedDays)
+                                           timePoints=self.requestedDays)
         assert_equal(usingNames, expected, err_msg="Using <names> argument")
-        assert_equal(usingNames, expected, err_msg="Using <zai> argument")
+        assert_equal(usingZai, expected, err_msg="Using <zai> argument")
 
     def test_getValues_raisesError_badTime(self):
-        """Verify that a ValueError is raised for non-present requested days."""
+        """Verify that a ValueError is raised for non-present requested days.""" # noqa
         badDays = [-1, 0, 50]
         with self.assertRaises(KeyError):
             self.material.getValues('days', 'adens', timePoints=badDays)
@@ -186,7 +183,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
     def test_fetchData(self):
         """Verify that key errors are raised when bad data are requested."""
         with self.assertRaises(KeyError):
-            _ = self.material['fake units']
+            self.material['fake units']
 
     def test_plotter(self):
         """Verify the plotting functionality is operational."""

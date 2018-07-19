@@ -1,14 +1,15 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
 
 from six import iteritems
-from numpy import asfortranarray, empty
+from numpy import empty
 
 from serpentTools.utils import str2vec
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.detectors import detectorFactory
 from serpentTools.parsers.base import BaseReader
-from serpentTools.messages import error, debug, warning
+from serpentTools.messages import error, debug, warning, SerpentToolsException
 from serpentTools.settings import rc
+
 
 class DetectorReader(BaseReader):
     """
@@ -120,8 +121,8 @@ def cleanDetChunk(chunk):
     """
     if chunk[0][:3] != 'DET':
         raise SerpentToolsException(
-                "Could not determine name of detector from chunk: {}"
-                .format(chunk[0]))
+            "Could not determine name of detector from chunk: {}"
+            .format(chunk[0]))
     leader = chunk.pop(0)
     name = leader.split()[0][3:]
     if chunk[-1][:2] == '];':

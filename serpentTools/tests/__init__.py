@@ -88,4 +88,3 @@ def compareDictOfArrays(expected, actual, fmtMsg=None, rtol=0, atol=0,
         actualValue = actual[key]
         assert_allclose(value, actualValue, rtol=rtol, atol=atol,
                         err_msg=fmtMsg.format(key=key))
-

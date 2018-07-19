@@ -15,7 +15,6 @@ File Descriptions
 
 """
 import unittest
-from os import path
 
 from six import iteritems
 from numpy import where, fabs, ndarray
@@ -105,5 +104,7 @@ class DepletedSamplerTester(unittest.TestCase):
         for name, mat in iteritems(self.sampler.materials):
             fromGetItem = self.sampler[name]
             self.assertIs(fromGetItem, mat, msg=name)
+
+
 if __name__ == '__main__':
     unittest.main()

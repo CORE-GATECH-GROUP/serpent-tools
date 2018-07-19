@@ -4,7 +4,9 @@ import numpy
 from matplotlib import pyplot
 
 from serpentTools.messages import warning, debug
-from serpentTools.plot import magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS
+from serpentTools.plot import (
+    magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+)
 from serpentTools.objects.base import NamedObject
 from serpentTools.utils import convertVariableName
 
@@ -37,8 +39,8 @@ class DepletedMaterialBase(NamedObject):
         2D array of mass {densStruct:s}""".format(
         densStruct="densities where where row ``j`` corresponds to isotope "
                    "``j`` and column ``i`` corresponds to time ``i``")
-    docEquiv = """    While ``adens``, ``mdens``, and ``burnup`` are 
-        accessible directly with ``material.adens``, all variables read in 
+    docEquiv = """    While ``adens``, ``mdens``, and ``burnup`` are
+        accessible directly with ``material.adens``, all variables read in
         from the file can be accessed through the ``data`` dictionary::
 
             >>> assert material.adens is material.data['adens']
@@ -221,7 +223,7 @@ class DepletedMaterialBase(NamedObject):
             if allList is None and repl in fmtr:
                 warning("Isotope {} not stored on material and requested in "
                         "labelFmt. Check setting <depletion.metadataKeys>")
-                fmtr = fmtr.replace(rpl, '')
+                fmtr = fmtr.replace(repl, '')
         iterator = zai if names is None else names
         lookup = allZai if names is None else allNames
         labels = []
@@ -229,9 +231,10 @@ class DepletedMaterialBase(NamedObject):
             index = lookup.index(item)
             iso = allNames[index] if allNames else ''
             zai = allZai[index] if allZai else ''
-            labels.append(fmtr.format( mat=self.name, iso=iso, zai=zai))
+            labels.append(fmtr.format(mat=self.name, iso=iso, zai=zai))
 
         return labels
+
 
 class DepletedMaterial(DepletedMaterialBase):
     __doc__ = DepletedMaterialBase.__doc__
@@ -257,10 +260,10 @@ class DepletedMaterial(DepletedMaterialBase):
                 if line:
                     scratch.append([float(item) for item in line.split()])
         self.data[newName] = numpy.array(scratch)
-    
+
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None, 
-             ax=None, legend=True, xlabel=None, ylabel=None, logx=False, 
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None,
+             ax=None, legend=True, xlabel=None, ylabel=None, logx=False,
              logy=False, loglog=False, labelFmt=None, ncol=1, title=None,
              **kwargs):
         """
@@ -285,7 +288,7 @@ class DepletedMaterial(DepletedMaterialBase):
             If given, plot  values corresponding to these isotope
             names. Otherwise, plot values for all isotopes.
         zai: int or list or None
-            If given, plot values corresponding to these 
+            If given, plot values corresponding to these
             isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
 
             .. versionadded:: 0.5.1
@@ -338,10 +341,9 @@ class DepletedMaterial(DepletedMaterialBase):
         labels = self._formatLabel(labelFmt, names, zai)
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
-        
+
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
                         xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
-                        ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits], 
+                        ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits],
                         title=title, legend=legend)
         return ax
-

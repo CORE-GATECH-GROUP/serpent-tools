@@ -1,6 +1,7 @@
 """
 Commonly used functions and utilities
 """
+from re import compile
 
 from textwrap import dedent
 from functools import wraps
@@ -22,10 +23,17 @@ from serpentTools.messages import (
     logIdenticalWithUncs,
     logInsideConfInt,
     logOutsideConfInt,
-    )
+)
 
 LOWER_LIM_DIVISION = 1E-8
 """Lower limit for denominator for division"""
+
+# Regular expressions
+
+STR_REGEX = compile(r'\'.+\'')  # string
+VEC_REGEX = compile(r'(?<==.)\[.+?\]')  # vector
+SCALAR_REGEX = compile(r'=.+;')  # scalar
+FIRST_WORD_REGEX = compile(r'^\w+')  # first word in the line
 
 
 def str2vec(iterable, of=float, out=array):
@@ -77,7 +85,7 @@ def splitValsUncs(iterable, copy=False):
     Return even and odd indexed values from iterable
 
     Designed to extract expected values and uncertainties from
-    SERPENT vectors/matrices of the form 
+    SERPENT vectors/matrices of the form
     ``[x1, u1, x2, u2, ...]``
 
     Slices along the last axis present on ``iterable``, e.g.
@@ -86,10 +94,10 @@ def splitValsUncs(iterable, copy=False):
     Parameters
     ----------
     iterable: :class:`numpy.ndarray`or iterable
-        Initial arguments to be processed. If not 
+        Initial arguments to be processed. If not
         :class:`numpy.ndarray`, then strings will be converted
         by calling :func:`str2vec`. Lists and tuples
-        will be sent directly to arrays with 
+        will be sent directly to arrays with
         :func:`numpy.array`.
     copy: bool
         If true, return a unique instance of the values
@@ -122,7 +130,7 @@ def splitValsUncs(iterable, copy=False):
     """
 
     if not isinstance(iterable, ndarray):
-        iterable = (str2vec(iterable) if isinstance(iterable, str) 
+        iterable = (str2vec(iterable) if isinstance(iterable, str)
                     else array(iterable))
     vals = iterable[..., 0::2]
     uncs = iterable[..., 1::2]
@@ -435,11 +443,11 @@ def logDirectCompare(obj0, obj1, lower, upper, quantity):
     if result < 0:  # failures
         if result == -1:
             raise TypeError(
-                  "directCompare is not configured to make tests on objects "
-                  "of type {tp}\n\tQuantity: {k}\n\tUsers: Create a issue on "
-                  "GitHub to alert developers.\n\tDevelopers: Update this "
-                  "function or create a compare function "
-                  "for {tp} objects.".format(k=quantity, tp=type(obj0)))
+                "directCompare is not configured to make tests on objects "
+                "of type {tp}\n\tQuantity: {k}\n\tUsers: Create a issue on "
+                "GitHub to alert developers.\n\tDevelopers: Update this "
+                "function or create a compare function "
+                "for {tp} objects.".format(k=quantity, tp=type(obj0)))
     noticeTuple = [obj0, obj1, quantity]
     if result in COMPARE_STATUS_CODES:
         func, returnV = COMPARE_STATUS_CODES[result]
@@ -546,7 +554,7 @@ def getKeyMatchingShapes(map0, map1, quantity, keySet=None, desc0='first',
     * :func:`splitDictByKeys`
     """
     missing0, missing1, differentTypes, badShapes, goodKeys = (
-            splitDictByKeys(map0, map1, keySet))
+        splitDictByKeys(map0, map1, keySet))
 
     # raise some messages
     if any(missing0) or any(missing1):
@@ -628,7 +636,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma, relative=True):
     --------
     * :func:`getLogOverlaps` - High-level function that
       uses this to report if two values have overlapping
-      confidence intervals 
+      confidence intervals
     """
     shapes = {arg.shape for arg in (arr0, arr1, unc1, unc0)}
     if len(shapes) != 1:

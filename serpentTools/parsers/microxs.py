@@ -1,10 +1,12 @@
 """Parser responsible for reading the ``mdx[i].m`` files"""
-import re
 
 from numpy import array
 
 from serpentTools.engines import KeywordParser
-from serpentTools.utils import splitValsUncs, str2vec
+from serpentTools.utils import (
+    splitValsUncs, str2vec,
+    VEC_REGEX, SCALAR_REGEX, FIRST_WORD_REGEX,
+)
 from serpentTools.parsers.base import BaseReader
 
 from serpentTools.messages import SerpentToolsException
@@ -65,9 +67,6 @@ class MicroXSReader(BaseReader):
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'microxs')
         self._energyFY = []
-        self._strtok = re.compile(r'^\w+')  # first word in the line
-        self._regexpScl = re.compile(r'=.+;')  # scalar
-        self._regexpVec = re.compile(r'(?<==.)\[.+?\]')  # vector
         self.nfy = {}
         self.xsVal, self.xsUnc = {}, {}
         self.fluxRatio, self.fluxUnc = {}, {}
@@ -88,11 +87,11 @@ class MicroXSReader(BaseReader):
     def _storeFissionYields(self, chunk):
         """store fission yields data"""
         fissProd, indYield, cumYield = [], [], []
-        currVar = self._strtok.search(chunk[0]).group()  # NFY_902270_1
+        currVar = FIRST_WORD_REGEX.search(chunk[0]).group()  # NFY_902270_1
         # Obtain the parent ID: AAZZZ0/1, e.g., 922350
         parentFY = int(str2vec(currVar.split('_')[-2]))
         if 'E' in currVar.split('_')[-1]:  # e.g., NFY_902270_1E
-            sclVal = self._regexpScl.search(chunk[0])
+            sclVal = SCALAR_REGEX.search(chunk[0])
             # energy must be stored on the reader
             self._energyFY = float(str2vec(
                 chunk[0][sclVal.span()[0] + 1:sclVal.span()[1] - 2]))
@@ -112,18 +111,18 @@ class MicroXSReader(BaseReader):
 
     def _storeFluxRatio(self, chunk):
         """store flux ratios"""
-        currVar = self._strtok.search(chunk[0]).group()
+        chunk0 = chunk[0]
+        currVar = FIRST_WORD_REGEX.search(chunk0).group()
         # obtain the universe id
         univ = currVar.split('_')[-1]
-        vals = self._regexpVec.search(chunk[0])  # group flux values
-        self.fluxRatio[univ], self.fluxUnc[univ] = \
-            splitValsUncs(str2vec(chunk[0][vals.span()[0] +
-                                           1:vals.span()[1] - 2]))
+        search = VEC_REGEX.search(chunk0)  # group flux values
+        vals = str2vec(chunk0[search.span()[0] + 1:search.span()[1] - 2])
+        self.fluxRatio[univ], self.fluxUnc[univ] = splitValsUncs(vals)
 
     def _storeMicroXS(self, chunk):
         """store micro cross-section and uncertainty values"""
         currXS, currUnc = {}, {}
-        currVar = self._strtok.search(chunk[0]).group()
+        currVar = FIRST_WORD_REGEX.search(chunk[0]).group()
         # obtain the universe id
         univ = currVar.split('_')[-1]
         for tline in chunk:
@@ -211,8 +210,8 @@ class MicroXSReader(BaseReader):
         IndYield = self.nfy[(parent, energy)]['indYield']
         CumYield = self.nfy[(parent, energy)]['cumYield']
         if daughter in FP:
-            return float(IndYield[FP == daughter]), \
-                   float(CumYield[FP == daughter])
+            return (float(IndYield[FP == daughter]),
+                    float(CumYield[FP == daughter]))
         raise SerpentToolsException(
             "There is no fission product {0} for parent {1} at energy {2} in "
             "{3}".format(daughter, parent, energy, self.filePath))
@@ -256,8 +255,8 @@ class MicroXSReader(BaseReader):
                                         .format(isotope, self.filePath))
         key = (isotope, reaction, isomeric)
         if key in self.xsVal[universe]:
-            return self.xsVal[universe][key], \
-                   self.xsUnc[universe][key]
+            return (self.xsVal[universe][key],
+                    self.xsUnc[universe][key])
         raise SerpentToolsException("There is no isotope {0} with reaction {1}"
                                     " and isomeric flag {2} in {3}"
                                     .format(isotope, reaction, isomeric,
