@@ -18,7 +18,7 @@ DATA_EXTS = {'*.m', '*.coe'}
 
 def getDataFiles():
     """Return all matlab files from ``serpentTools/data``"""
-    
+
     files = []
     for ext in DATA_EXTS:
         files.extend(glob(join('serpentTools', 'data', ext)))
@@ -47,7 +47,7 @@ installRequires = [
     'pyyaml>=3.08',
 ]
 
-if not getenv('ONTRAVIS', False):
+if not getenv('TRAVIS', None) == 'true':
     # hack to install scipy if not on cluster
     # PR 45/44
     installRequires.append('scipy')
@@ -90,6 +90,6 @@ setup(**setupArgs)
 
 if not HAS_SETUPTOOLS:
     warnings.warn(
-            'The following packages are required to use serpentTools version '
-            '{}:\n{}\nPlease ensure they are installed prior to use'
-            .format(versioneer.get_version(), '\n'.join(installRequires)))
+        'The following packages are required to use serpentTools version '
+        '{}:\n{}\nPlease ensure they are installed prior to use'
+        .format(versioneer.get_version(), '\n'.join(installRequires)))

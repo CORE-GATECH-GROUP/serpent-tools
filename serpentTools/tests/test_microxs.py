@@ -221,5 +221,6 @@ class TestMicroXSReader(unittest.TestCase):
         with self.assertRaises(SerpentToolsException):
             self.reader.getXS('0', 10050, 205, 0)
 
+
 if __name__ == '__main__':
     unittest.main()

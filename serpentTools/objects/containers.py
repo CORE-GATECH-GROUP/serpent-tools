@@ -121,14 +121,14 @@ class HomogUniv(NamedObject):
 
     def __init__(self, name, bu, step, day):
         if not all(isNonNeg(xx) for xx in (bu, step, day)):
-            tail = ['{}: {}'.format(name, val)
-                for name, val in zip(('burnup', 'index', 'days'),
-                                               (bu, step, day))]
+            tail = ['{}: {}'.format(valName, val)
+                    for valName, val in zip(('burnup', 'index', 'days'),
+                                            (bu, step, day))]
             raise SerpentToolsException(
                 "Will not create universe with negative burnup\n{}"
                 .format(', '.join(tail)))
         NamedObject.__init__(self, name)
-        if step is not None and step == 0:  
+        if step is not None and step == 0:
             bu = bu if bu is not None else 0.0
             day = day if day is not None else 0.0
         self.bu = bu
@@ -166,7 +166,7 @@ class HomogUniv(NamedObject):
     def numMicroGroups(self):
         if self._numMicroGroups is None and self.microGroups is not None:
             self._numMicroGroups = self.microGroups.size - 1
-        return self._numMicroGroups 
+        return self._numMicroGroups
 
     @numMicroGroups.setter
     def numMicroGroups(self, value):
@@ -185,14 +185,14 @@ class HomogUniv(NamedObject):
             extras = ': ' + ', '.join(extras)
         return '<{} {}{}>'.format(self.__class__.__name__, self.name,
                                   extras or '')
-    
+
     def addData(self, variableName, variableValue, uncertainty=False):
         r"""
         Sets the value of the variable and, optionally, the associate s.d.
 
         .. versionadded:: 0.5.0
 
-            Reshapes scattering matrices according to setting 
+            Reshapes scattering matrices according to setting
             ``xs.reshapeScatter``. Matrices are of the form
             :math:`S[i, j]=\Sigma_{s,i\rightarrow j}`
 
@@ -207,7 +207,7 @@ class HomogUniv(NamedObject):
         variableValue:
             Variable Value
         uncertainty: bool
-            Set to ``True`` if this data is an uncertainty 
+            Set to ``True`` if this data is an uncertainty
 
         Raises
         ------
@@ -218,7 +218,7 @@ class HomogUniv(NamedObject):
         if not isinstance(uncertainty, bool):
             raise TypeError('The variable uncertainty has type {}, '
                             'should be boolean.'.format(type(uncertainty)))
-        
+
         value = self._cleanData(variableName, variableValue)
         if variableName in HOMOG_VAR_TO_ATTR:
             value = value if variableValue.size > 1 else value[0]
@@ -249,12 +249,12 @@ class HomogUniv(NamedObject):
         if self.__reshaped and name in SCATTER_MATS:
             if ng is None:
                 info("Number of groups is unknown at this time. "
-                        "Will not reshape variable {}"
-                        .format(name))
+                     "Will not reshape variable {}"
+                     .format(name))
             else:
                 value = value.reshape(ng, ng, order="F")
         return value
-        
+
     def get(self, variableName, uncertainty=False):
         """
         Gets the value of the variable VariableName from the dictionaries
@@ -310,14 +310,14 @@ class HomogUniv(NamedObject):
             if not uncertainty:
                 return self.infExp
             return self.infUnc
-        elif "b1" ==  variableName[:2]:
+        elif "b1" == variableName[:2]:
             if not uncertainty:
                 return self.b1Exp
             return self.b1Unc
         return self.gcUnc if uncertainty else self.gc
-    
+
     @magicPlotDocDecorator
-    def plot(self, qtys, limitE=True, ax=None, logx=True, logy=True, 
+    def plot(self, qtys, limitE=True, ax=None, logx=True, logy=True,
              loglog=None, sigma=3, xlabel=None, ylabel=None, legend=None,
              ncol=1, steps=True, labelFmt=None, labels=None):
         """
@@ -326,10 +326,10 @@ class HomogUniv(NamedObject):
         Parameters
         ----------
         qtys: str or iterable
-            Plot this or these value against energy. 
+            Plot this or these value against energy.
         limitE: bool
-            If given, set the maximum energy value to be 
-            that of the micro group structure. By default, 
+            If given, set the maximum energy value to be
+            that of the micro group structure. By default,
             SERPENT macro group structures can reach
             1E37, leading for a very large tail on the plots.
         {ax}
@@ -343,7 +343,7 @@ class HomogUniv(NamedObject):
         {legend}
         {ncol}
         steps: bool
-            If ``True``, plot values as constant within 
+            If ``True``, plot values as constant within
             energy bins.
         {univLabelFmt}
 
@@ -361,15 +361,15 @@ class HomogUniv(NamedObject):
         onlyXS = True
         sigma = max(0, int(sigma))
         drawstyle = 'steps-post' if steps else None
-        limitE = limitE and (self.groups is not None 
+        limitE = limitE and (self.groups is not None
                              and self.microGroups is not None)
         macroBins = self.numGroups + 1 if self.numGroups is not None else None
-        microBins = (self.numMicroGroups + 1 
+        microBins = (self.numMicroGroups + 1
                      if self.numMicroGroups is not None else None)
         labelFmt = labelFmt or "{k}"
         if limitE:
             eneCap = min(self.microGroups.max(), self.groups.max())
-        
+
         if isinstance(labels, str):
             labels = [labels, ]
         if labels is None:
@@ -403,12 +403,12 @@ class HomogUniv(NamedObject):
                 xdata = xdata.copy()
                 xdata[xdata.argmax()] = eneCap
             label = self.__formatLabel(label, key)
-            ax.errorbar(xdata, yVals, yerr=yUncs, label=label, 
+            ax.errorbar(xdata, yVals, yerr=yUncs, label=label,
                         drawstyle=drawstyle)
 
         if ylabel is None:
-            ylabel, yUnits = (("Cross Section", "[cm$^{-1}$]") if onlyXS 
-                      else ("Group Constant", ""))
+            ylabel, yUnits = (("Cross Section", "[cm$^{-1}$]") if onlyXS
+                              else ("Group Constant", ""))
             sigStr = r" $\pm{}\sigma$".format(sigma) if sigma else ""
             ylabel = ' '.join((ylabel, sigStr, yUnits))
 
@@ -433,7 +433,7 @@ class HomogUniv(NamedObject):
         mapping = {
             "{k}": key, "{u}": self.name, "{i}": self.step,
             "{b}": self.bu, "{d}": self.day
-            }
+        }
         for lookF, value in iteritems(mapping):
             label = label.replace(lookF, str(value))
         return label
@@ -717,7 +717,7 @@ class BranchContainer(BaseObject):
         """
         if burnup is None and index is None:
             raise SerpentToolsException('Burnup or index are required inputs')
-        searchIndex = 2 if index is not None else 1 
+        searchIndex = 2 if index is not None else 1
         searchValue = index if index is not None else burnup
         for key in self.__keys:
             if key[0] == univID and key[searchIndex] == searchValue:
@@ -736,4 +736,3 @@ class BranchContainer(BaseObject):
             raise AttributeError("Need to load at least one universe with "
                                  "non-zero burnup first.""")
         return self.__hasDays
-

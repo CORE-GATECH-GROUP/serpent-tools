@@ -10,8 +10,9 @@ The detectors contained in this module are tasked with storing such
 data and proving easy access to the data, as well as the underlying
 bins used to define the detector.
 
-Detectors
----------
+Detector Types
+--------------
+
 * :class:`~serpentTools.objects.detectors.Detector`
 * :class:`~serpentTools.objects.detectors.CartesianDetector`
 * :class:`~serpentTools.objects.detectors.HexagonalDetector`
@@ -36,7 +37,7 @@ from serpentTools.objects.base import DetectorBase
 from serpentTools.plot import (
     magicPlotDocDecorator, formatPlot, setAx_xlims, setAx_ylims,
     addColorbar, normalizerFactory,
-    )
+)
 
 __all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
            'CylindricalDetector', 'SphericalDetector']
@@ -299,8 +300,8 @@ class HexagonalDetector(Detector):
             fig = kwargs['figure']
             if not isinstance(fig, Figure):
                 raise TypeError(
-                        "Expected 'figure' to be of type Figure, is {}"
-                        .format(type(fig)))
+                    "Expected 'figure' to be of type Figure, is {}"
+                    .format(type(fig)))
             if len(fig.axes) != 1 and not ax:
                 raise TypeError("Don't know where to place the figure since"
                                 "'figure' argument has multiple axes.")

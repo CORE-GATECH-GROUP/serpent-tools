@@ -1,6 +1,7 @@
 """
 Commonly used functions and utilities
 """
+from re import compile
 
 from textwrap import dedent
 from functools import wraps
@@ -26,6 +27,13 @@ from serpentTools.messages import (
 
 LOWER_LIM_DIVISION = 1E-8
 """Lower limit for denominator for division"""
+
+# Regular expressions
+
+STR_REGEX = compile(r'\'.+\'')  # string
+VEC_REGEX = compile(r'(?<==.)\[.+?\]')  # vector
+SCALAR_REGEX = compile(r'=.+;')  # scalar
+FIRST_WORD_REGEX = compile(r'^\w+')  # first word in the line
 
 
 def str2vec(iterable, of=float, out=array):
@@ -77,7 +85,7 @@ def splitValsUncs(iterable, copy=False):
     Return even and odd indexed values from iterable
 
     Designed to extract expected values and uncertainties from
-    SERPENT vectors/matrices of the form 
+    SERPENT vectors/matrices of the form
     ``[x1, u1, x2, u2, ...]``
 
     Slices along the last axis present on ``iterable``, e.g.
@@ -86,10 +94,10 @@ def splitValsUncs(iterable, copy=False):
     Parameters
     ----------
     iterable: :class:`numpy.ndarray`or iterable
-        Initial arguments to be processed. If not 
+        Initial arguments to be processed. If not
         :class:`numpy.ndarray`, then strings will be converted
         by calling :func:`str2vec`. Lists and tuples
-        will be sent directly to arrays with 
+        will be sent directly to arrays with
         :func:`numpy.array`.
     copy: bool
         If true, return a unique instance of the values
@@ -122,7 +130,7 @@ def splitValsUncs(iterable, copy=False):
     """
 
     if not isinstance(iterable, ndarray):
-        iterable = (str2vec(iterable) if isinstance(iterable, str) 
+        iterable = (str2vec(iterable) if isinstance(iterable, str)
                     else array(iterable))
     vals = iterable[..., 0::2]
     uncs = iterable[..., 1::2]

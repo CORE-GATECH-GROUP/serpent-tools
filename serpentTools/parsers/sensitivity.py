@@ -5,7 +5,7 @@ from collections import OrderedDict
 from itertools import product
 
 from six import iteritems
-from numpy import transpose, array, hstack
+from numpy import transpose, hstack
 from matplotlib.pyplot import axes
 
 from serpentTools.plot import magicPlotDocDecorator, formatPlot
@@ -22,17 +22,17 @@ class SensitivityReader(BaseReader):
     The arrays that are stored in ``sensitivities`` and
     ``energyIntegratedSens`` are stored under converted names.
     The original names from SERPENT are of the form
-    ``ADJ_PERT_KEFF_SENS`` or ``ADJ_PERT_KEFF_SENS_E_INT``, 
+    ``ADJ_PERT_KEFF_SENS`` or ``ADJ_PERT_KEFF_SENS_E_INT``,
     respectively. Since this reader stores the resulting arrays
     in unique locations, the names are converted to a succint form.
-    The two arrays listed above would be stored both as ``keff`` 
-    in ``sensitivities`` and ``energyIntegratedSens``. 
+    The two arrays listed above would be stored both as ``keff``
+    in ``sensitivities`` and ``energyIntegratedSens``.
     All names are converted to ``mixedCaseNames`` to fit the
     style of the project.
 
-    Ordered dictionaries ``materials``, ``zais``, and 
+    Ordered dictionaries ``materials``, ``zais``, and
     ``perts`` contain keys of the names of their respective
-    data, and the corresponding index, ``iSENS_ZAI_zzaaai``, 
+    data, and the corresponding index, ``iSENS_ZAI_zzaaai``,
     in the sensitivity arrays. These arrays are zero-indexed,
     so the first item will have an index of zero. The data stored
     in the ``sensitivities`` and ``energyIntegratedSens`` dictionaries
@@ -49,21 +49,21 @@ class SensitivityReader(BaseReader):
     nMat: None or int
         Number of materials
     nZai: None or int
-        Number of perturbed isotopes 
+        Number of perturbed isotopes
     nPert: None or int
-        Number of perturbations 
+        Number of perturbations
     nEne: None or int
         Number of energy groups
     nMu: None or int
         Number of perturbed materials
     materials: :py:class:`~collections.OrderedDict`
         Ordered dictionary of materials that have
-        been perturbed. 
+        been perturbed.
     zais: :py:class:`~collections.OrderedDict`
         Ordered dictionary of nuclides that
         have been perturbed
     perts: :py:class:`~collections.OrderedDict`
-        Ordered dictionary of reactions that 
+        Ordered dictionary of reactions that
         have been perturbed, e.g `'total xs'`
     latGen: int
         Number of latent generations used to generate
@@ -75,7 +75,7 @@ class SensitivityReader(BaseReader):
         Array of lethargy widths of each energy group.
     sensitivities: dict
         Dictionary of names of sensitivities and their corresponding
-        arrays. 
+        arrays.
     energyIntegratedSens: dict
         Dictionary of names of the sensitivities that have been integrated
         against energy, and their corresponding arrays
@@ -100,15 +100,6 @@ class SensitivityReader(BaseReader):
         self.sensitivities = {}
         self.energyIntegratedSens = {}
 
-    def _precheck(self):
-        # maybe check if "SENS" is in the first few lines
-        pass
-
-    def _postcheck(self):
-        if not self.sensitivities:
-            warning("No sensitivity files stored from "
-                    "{}".format(self.filePath))
-
     def _read(self):
         keys = stops = ['%']
         throughParams = False
@@ -126,7 +117,7 @@ class SensitivityReader(BaseReader):
                     elif 'latent' in chunk0:
                         split = chunk0.split()
                         self.latGen = int(split[split.index('latent') - 1])
-                        throughParams = True 
+                        throughParams = True
                     continue
                 self.__processSensChunk(chunk)
         if self.zais:
@@ -234,7 +225,7 @@ class SensitivityReader(BaseReader):
                     return
         warning("Could not find any lines starting with SENS. "
                 "Is {} a sensitivity file?".format(self.filePath))
-    
+
     def _postcheck(self):
         if not self.sensitivities:
             raise SerpentToolsException("No sensitivity data stored on reader")
@@ -243,8 +234,8 @@ class SensitivityReader(BaseReader):
                                         "stored on reader")
 
     @magicPlotDocDecorator
-    def plot(self, resp, zai=None, pert=None, mat=None, sigma=3, 
-             normalize=True, ax=None, labelFmt=None, titleFmt=None, 
+    def plot(self, resp, zai=None, pert=None, mat=None, sigma=3,
+             normalize=True, ax=None, labelFmt=None, titleFmt=None,
              title=None, logx=True, logy=False, loglog=False, xlabel=None,
              ylabel=None, legend=True, ncol=1):
         """
@@ -252,8 +243,8 @@ class SensitivityReader(BaseReader):
 
         .. note::
 
-            Without passing ``zai``, ``pert``, or ``mat`` 
-            arguments, this method will plot all permutations of 
+            Without passing ``zai``, ``pert``, or ``mat``
+            arguments, this method will plot all permutations of
             sensitivities for a given response.
 
         Parameters
@@ -262,20 +253,20 @@ class SensitivityReader(BaseReader):
             Name of the specific response to be examined. Must be a key
             in ``sensitivities`` and ``energyIntegratedSens``
         zai: None or str or int or iterable
-            Plot sensitivities due to these isotopes. Passing ``None`` 
+            Plot sensitivities due to these isotopes. Passing ``None``
             will plot against all isotopes.
         pert: None or str or list of strings
-            Plot sensitivities due to these perturbations. Passing ``None`` 
+            Plot sensitivities due to these perturbations. Passing ``None``
             will plot against all perturbations.
         mat: None or str or list of strings
-            Plot sensitivities due to these materials. Passing ``None`` 
+            Plot sensitivities due to these materials. Passing ``None``
             will plot against all materials.
         {sigma}
         normalize: True
             Normalize plotted data per unit lethargy
         {ax}
         labelFmt: None or str
-            Formattable string to be applied to the labels. 
+            Formattable string to be applied to the labels.
             The following entries will be formatted for each plot
             permuation::
 
@@ -298,8 +289,8 @@ class SensitivityReader(BaseReader):
 
         Raises
         ------
-        KeyError 
-            If response or any passed perturbation settings are not 
+        KeyError
+            If response or any passed perturbation settings are not
             present on the object
 
         See Also
@@ -318,7 +309,7 @@ class SensitivityReader(BaseReader):
         perts = self._getCleanedPertOpt('perts', pert)
         mats = self._getCleanedPertOpt('materials', mat)
 
-        ax = ax or axes() 
+        ax = ax or axes()
 
         sigma = max(int(sigma), 0)
         resMat = self.sensitivities[resp]
@@ -338,7 +329,8 @@ class SensitivityReader(BaseReader):
             yErrs = errors[iM, iZ, iP]
             yErrs = hstack((yErrs, yErrs[-1]))
             label = labelFmt.format(r=resp, z=z, m=m, p=p)
-            ax.errorbar(energies, yVals, yErrs, label=label, drawstyle='steps-post')
+            ax.errorbar(energies, yVals, yErrs, label=label,
+                        drawstyle='steps-post')
 
         xlabel = xlabel or 'Energy [eV]'
         ylabel = ylabel or (
@@ -370,5 +362,3 @@ def reshapePermuteSensMat(vec, newShape):
     reshaped = vec.reshape(newShape, order='F')
     newAx = list(reversed(range(len(newShape))))
     return transpose(reshaped, newAx)
-
-

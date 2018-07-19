@@ -9,7 +9,7 @@ from abc import ABCMeta, abstractmethod
 
 from six import add_metaclass
 
-from serpentTools.messages import debug, info
+from serpentTools.messages import info
 from serpentTools.settings import rc
 from serpentTools.messages import info
 from serpentTools.objects.base import BaseObject
@@ -94,7 +94,6 @@ class XSReader(BaseReader):
         self.settings.pop('variableGroups')
         self.settings.pop('variableExtras')
 
-
     def _checkAddVariable(self, variableName):
         """Check if the data for the variable should be stored"""
         # no variables given -> get all
@@ -110,4 +109,3 @@ class XSReader(BaseReader):
                 self.settings['variables']):
             return True
         return False
-

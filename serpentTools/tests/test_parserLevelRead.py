@@ -1,5 +1,4 @@
 """Class to test the read commands from serpentTools.parsers"""
-from os import path
 import unittest
 
 import six
@@ -35,7 +34,7 @@ class DepmtxTester(unittest.TestCase):
         self.assertTupleEqual(self.n1.shape, (N, 1), 'final isotopics')
 
     def test_correctSlices(self):
-        """Verify that the first and last few elements are correctly captured"""
+        """Verify that the first and last few elements are correctly captured""" # noqa
 
         assert_array_equal(self.n0[:5], array(
             [[1.173442217504030343064509202267E-07],

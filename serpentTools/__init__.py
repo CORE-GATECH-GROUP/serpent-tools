@@ -1,3 +1,4 @@
+# flake8: noqa
 from serpentTools.parsers import *
 from serpentTools.data import *
 from serpentTools.samplers import *
