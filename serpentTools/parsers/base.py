@@ -11,7 +11,6 @@ from six import add_metaclass
 
 from serpentTools.messages import info
 from serpentTools.settings import rc
-from serpentTools.messages import info
 from serpentTools.objects.base import BaseObject
 
 

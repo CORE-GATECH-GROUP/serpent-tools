@@ -16,7 +16,7 @@ from serpentTools.utils import (
     directCompare,
     getOverlaps,
     splitDictByKeys,
-    )
+)
 
 
 class VariableConverterTester(TestCase):
@@ -224,8 +224,9 @@ class OverlapTester(TestCase):
                           relative):
         """Call symmetric test twice, using reshaped arrays the second time."""
         self._test(expected, a0, a1, u0, u1, sigma, relative)
-        ra0, ra1, ru0, ru1  = [arg.reshape(*shape) for arg in [a0, a1, u0, u1]]
-        self._test(expected.reshape(*shape), ra0, ra1, ru0, ru1, sigma, relative)
+        ra0, ra1, ru0, ru1 = [arg.reshape(*shape) for arg in [a0, a1, u0, u1]]
+        self._test(expected.reshape(*shape), ra0, ra1, ru0, ru1, sigma,
+                   relative)
 
     def test_overlap_absolute(self):
         """Verify the getOverlaps works using absolute uncertainties."""

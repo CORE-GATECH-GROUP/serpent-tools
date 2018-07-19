@@ -23,7 +23,7 @@ from serpentTools.messages import (
     logIdenticalWithUncs,
     logInsideConfInt,
     logOutsideConfInt,
-    )
+)
 
 LOWER_LIM_DIVISION = 1E-8
 """Lower limit for denominator for division"""
@@ -443,11 +443,11 @@ def logDirectCompare(obj0, obj1, lower, upper, quantity):
     if result < 0:  # failures
         if result == -1:
             raise TypeError(
-                  "directCompare is not configured to make tests on objects "
-                  "of type {tp}\n\tQuantity: {k}\n\tUsers: Create a issue on "
-                  "GitHub to alert developers.\n\tDevelopers: Update this "
-                  "function or create a compare function "
-                  "for {tp} objects.".format(k=quantity, tp=type(obj0)))
+                "directCompare is not configured to make tests on objects "
+                "of type {tp}\n\tQuantity: {k}\n\tUsers: Create a issue on "
+                "GitHub to alert developers.\n\tDevelopers: Update this "
+                "function or create a compare function "
+                "for {tp} objects.".format(k=quantity, tp=type(obj0)))
     noticeTuple = [obj0, obj1, quantity]
     if result in COMPARE_STATUS_CODES:
         func, returnV = COMPARE_STATUS_CODES[result]
@@ -554,7 +554,7 @@ def getKeyMatchingShapes(map0, map1, quantity, keySet=None, desc0='first',
     * :func:`splitDictByKeys`
     """
     missing0, missing1, differentTypes, badShapes, goodKeys = (
-            splitDictByKeys(map0, map1, keySet))
+        splitDictByKeys(map0, map1, keySet))
 
     # raise some messages
     if any(missing0) or any(missing1):
@@ -636,7 +636,7 @@ def getOverlaps(arr0, arr1, unc0, unc1, sigma, relative=True):
     --------
     * :func:`getLogOverlaps` - High-level function that
       uses this to report if two values have overlapping
-      confidence intervals 
+      confidence intervals
     """
     shapes = {arg.shape for arg in (arr0, arr1, unc1, unc0)}
     if len(shapes) != 1:

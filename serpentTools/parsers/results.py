@@ -8,10 +8,10 @@ from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers.base import XSReader
 from serpentTools.parsers._collections import RES_DATA_NO_UNCS
-from serpentTools.objects.base import (DEF_COMP_LOWER, 
+from serpentTools.objects.base import (DEF_COMP_LOWER,
                                        DEF_COMP_SIGMA, DEF_COMP_UPPER)
 from serpentTools.utils import (
-    str2vec, 
+    str2vec,
     splitValsUncs,
     getCommonKeys,
     logDirectCompare,
@@ -24,10 +24,8 @@ from serpentTools.utils import (
     FIRST_WORD_REGEX,
 )
 from serpentTools.messages import (
-        warning, debug, SerpentToolsException,
-        info,
-        logInsideConfInt,
-        logOutsideConfInt,
+    warning, debug, SerpentToolsException,
+    info,
 )
 
 
@@ -123,13 +121,13 @@ class ResultsReader(XSReader):
     """
 
     __METADATA_COMP_SKIPS = {
-        'title', 
-        'inputFileName', 
+        'title',
+        'inputFileName',
         'workingDirectory',
         'startDate',
         'completeDate',
         'seed',
-        }
+    }
     """Metadata keys that will not be compared."""
 
     def __init__(self, filePath):
@@ -403,7 +401,7 @@ class ResultsReader(XSReader):
         skips = commonKeys.intersection(self.__METADATA_COMP_SKIPS)
         if any(skips):
             info("The following items will be skipped in the comparison\n\t{}"
-                  .format(', '.join(sorted(skips))))
+                 .format(', '.join(sorted(skips))))
         for key in sorted(commonKeys):
             if key in self.__METADATA_COMP_SKIPS:
                 continue
@@ -455,12 +453,12 @@ class ResultsReader(XSReader):
                 continue
             myVals, myUncs = splitValsUncs(mine)
             theirVals, theirUncs = splitValsUncs(theirs)
-            similar &= getLogOverlaps(key, myVals, theirVals, myUncs, 
+            similar &= getLogOverlaps(key, myVals, theirVals, myUncs,
                                       theirUncs, sigma, relative=True)
         return similar
 
     @compareDocDecorator
-    def compareUniverses(self, other, lower=DEF_COMP_LOWER, 
+    def compareUniverses(self, other, lower=DEF_COMP_LOWER,
                          upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
         """
         Compare the contents of the ``universes`` dictionary

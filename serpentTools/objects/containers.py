@@ -461,7 +461,7 @@ class HomogUniv(NamedObject):
         similar &= self.compareInfData(other, sigma)
         similar &= self.compareB1Data(other, sigma)
         similar &= self.compareGCData(other, sigma)
-        
+
         return similar
 
     @compareDocDecorator
@@ -491,7 +491,7 @@ class HomogUniv(NamedObject):
 
         myMeta = {}
         otherMeta = {}
-        
+
         for key in {'bu', 'step', 'groups', 'microGroups', 'reshaped'}:
             for meta, obj in zip((myMeta, otherMeta), (self, other)):
                 try:
@@ -507,7 +507,6 @@ class HomogUniv(NamedObject):
                                         lower, upper, key)
 
         return similar
-
 
     __docCompare = """
     Return ``True`` if contents of ``{qty}Exp`` and ``{qty}Unc`` agree
@@ -530,8 +529,8 @@ class HomogUniv(NamedObject):
     def _helpCompareGCDict(self, other, attrBase, sigma):
         """
         Method that actually compare group constant dictionaries.
-        
-        ``attrBase`` is used to find dictionaries by appending 
+
+        ``attrBase`` is used to find dictionaries by appending
         ``'Exp'`` and ``'Unc'`` to ``attrBase``
         """
         self._checkCompareObj(other)
@@ -545,13 +544,13 @@ class HomogUniv(NamedObject):
             otherUncs = getattr(other, uncName)
         except Exception as ee:
             critical("The following error was raised extracting {} and "
-                    "{} from universes {} and {}:\n\t{}"
-                    .format(valName, uncName, self, other, ee))
+                     "{} from universes {} and {}:\n\t{}"
+                     .format(valName, uncName, self, other, ee))
             return False
 
         keys = getKeyMatchingShapes(myVals, otherVals, valName)
         similar = len(keys) == len(myVals) == len(otherVals)
-        
+
         for key in keys:
             if key not in myUncs or key not in otherUncs:
                 loc = self if key in otherUncs else other
@@ -580,6 +579,7 @@ class HomogUniv(NamedObject):
     compareInfData.__doc__ = __docCompare.format(qty='inf')
     compareB1Data.__doc__ = __docCompare.format(qty='b1')
     compareGCData.__doc__ = __docCompare.format(qty='gc')
+
 
 class BranchContainer(BaseObject):
     """

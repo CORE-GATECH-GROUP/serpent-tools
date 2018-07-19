@@ -108,8 +108,8 @@ class BaseObject(object):
             oName = other.__class__.__name__
             name = self.__class__.__name__
             raise TypeError(
-                    "Cannot compare against {} - not instance nor subclass "
-                    "of {}".format(oName, name))
+                "Cannot compare against {} - not instance nor subclass "
+                "of {}".format(oName, name))
 
     def _compareLogPreMsg(self, other, lower=None, upper=None, sigma=None,
                           quantity=None):

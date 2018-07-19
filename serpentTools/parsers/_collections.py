@@ -85,7 +85,7 @@ RES_DATA_NO_UNCS = {
     "transportCycleTime",
     "processTime",
     "initTime",
-    }
+}
 """
 Set containing keys for objects stored in :attr:`ResultsReader.resdata`
 that do not contain uncertainties.
