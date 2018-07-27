@@ -16,7 +16,7 @@ class LoggerMixin(object):
 
     Attributes
     ----------
-    handler: :class:`serpentTools.messages.DictHandler
+    handler: :class:`serpentTools.messages.DictHandler`
         Logging handler that stores messages in a
         :attr:`serpentTools.messages.DictHandler.logMessages`
         dictionary according to level.
@@ -82,8 +82,7 @@ class LoggerMixin(object):
         KeyError:
             If the level was not found in the logs
         AttributeError:
-            If the :attr:`handler` has not been
-            :meth:`attach`ed
+            If the :attr:`handler` has not been created with :meth:`attach`
         """
         if self.handler is None:
             raise AttributeError("Handler has not been attached. Must run "
@@ -120,9 +119,9 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
         """
         Method to be called before every individual test.
 
-        :meth:`~LoggerMixin.attach`es to capture any log messages
-        that would be presented during testing. Should be called
-        during any subclassing.
+        Call :meth:`~serpentTools.tests.utils.LoggerMixin.attach`
+        to capture any log messages that would be presented during testing.
+        Should be called during any subclassing.
         """
         LoggerMixin.attach(self)
 
@@ -130,8 +129,9 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
         """
         Method to be called immediately after calling and recording test
 
-        :meth:`~LoggerMixin.detach`es to reset the module logger to
-        its original state. Should be called during any subclassing.
+        Call :meth:`~serpentTools.tests.utils.LoggerMixin.detach`
+        to reset the module logger to its original state.
+        Should be called during any subclassing.
         """
         LoggerMixin.detach(self)
 

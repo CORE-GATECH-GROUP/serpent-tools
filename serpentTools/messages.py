@@ -170,6 +170,7 @@ class DictHandler(Handler):
     Handler that stores log messages in a dictionary
 
     Attributes
+    ----------
     logMessages: dict
         Dictionary of lists where each key is a log level such
         as ``'DEBUG'`` or ``'WARNING'``. The list associated
@@ -197,7 +198,7 @@ class DictHandler(Handler):
         the message in :attr:`logMessages` dictionary
         according to the records ``levelname``
 
-        Anticipates a :class:`python.logging.LogRecord` object
+        Anticipates a :class:`logging.LogRecord` object
         """
         level = record.levelname
         if level not in self.logMessages:

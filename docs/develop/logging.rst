@@ -31,3 +31,10 @@ or removed in the future.
 
 .. autofunction:: serpentTools.messages.willChange
 
+
+Custom Handlers
+===============
+
+.. autoclass:: serpentTools.messages.DictHandler
+    :show-inheritance:
+    :no-inherited-members:
