@@ -134,3 +134,27 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
         its original state. Should be called during any subclassing.
         """
         LoggerMixin.detach(self)
+
+    def assertMsgInLogs(self, level, msg, partial=False):
+        """
+        Assert that the message was stored under a given level
+
+        Combines :meth:`LoggerMixin.msgInLogs` with
+        :meth:`unittest.TestCase.assertTrue`
+        """
+        matchType = "a partial" if partial else "an exact"
+        failMsg = "Could not find {} match for {} under {}"
+        self.assertTrue(self.msgInLogs(level, msg, partial),
+                        msg=failMsg.format(matchType, msg, level))
+
+    def assertMsgNotInLogs(self, level, msg, partial=False):
+        """
+        Assert that the message was not stored under a given level
+
+        Combines :meth:`LoggerMixin.msgInLogs` with
+        :meth:`unittest.TestCase.assertFalse`
+        """
+        matchType = "a partial" if partial else "an exact"
+        failMsg = "Found {} match for {} under {} but should not have"
+        self.assertFalse(self.msgInLogs(level, msg, partial),
+                         msg=failMsg.format(matchType, msg, level))

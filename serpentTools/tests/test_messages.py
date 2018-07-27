@@ -79,10 +79,10 @@ class LoggingTester(TestCaseWithLogCapture):
         """Verify the behavrior of LoggerMixin.msgInLogs"""
         message = "look for me"
         warning(message)
-        self.assertTrue(self.msgInLogs('WARNING', message))
-        self.assertTrue(self.msgInLogs("WARNING", message[:5], partial=True))
-        self.assertFalse(self.msgInLogs("WARNING", "<none>"))
-        self.assertFalse(self.msgInLogs("WARNING", "<none>", partial=True))
+        self.assertMsgInLogs("WARNING", message)
+        self.assertMsgInLogs("WARNING", message[:5], partial=True)
+        self.assertMsgNotInLogs("WARNING", "<none>")
+        self.assertMsgNotInLogs("WARNING", "<none>", partial=True)
         with self.assertRaises(KeyError):
             self.msgInLogs("DEBUG", message)
         with self.assertRaises(AttributeError):
