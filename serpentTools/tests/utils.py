@@ -135,6 +135,10 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
         """
         LoggerMixin.detach(self)
 
+    def _concatLogs(self, level):
+        logs = self.handler.logMessages.get(level, [])
+        return "\n- ".join([str(item) for item in logs])
+
     def assertMsgInLogs(self, level, msg, partial=False):
         """
         Assert that the message was stored under a given level
@@ -143,9 +147,10 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
         :meth:`unittest.TestCase.assertTrue`
         """
         matchType = "a partial" if partial else "an exact"
-        failMsg = "Could not find {} match for {} under {}"
+        failMsg = "Could not find {} match for {} under {}\n{}".format(
+            matchType, msg, level, self._concatLogs(level))
         self.assertTrue(self.msgInLogs(level, msg, partial),
-                        msg=failMsg.format(matchType, msg, level))
+                        msg=failMsg)
 
     def assertMsgNotInLogs(self, level, msg, partial=False):
         """
