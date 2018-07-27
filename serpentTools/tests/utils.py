@@ -2,6 +2,7 @@
 Utilities to make testing easier
 """
 
+from unittest import TestCase
 from logging import NOTSET
 
 from serpentTools.messages import (
@@ -97,3 +98,39 @@ class LoggerMixin(object):
             if msg in message:
                 return True
         return False
+
+
+class TestCaseWithLogCapture(TestCase, LoggerMixin):
+    """
+    Lightly overwritten :class:`unittest.TestCase` that captures logs
+
+    Mix in the :class:`LoggerMixin` to automatically
+    :meth:`~LoggerMixin.attach` during
+    :meth:`~unittest.TestCase.setUp` and :meth:`~LoggerMixin.detach`
+    during :meth:`~unittest.TestCase.tearDown`
+
+    Intended to be subclassed for actual test methods
+    """
+
+    def __init__(self, *args, **kwargs):
+        TestCase.__init__(self, *args, **kwargs)
+        LoggerMixin.__init__(self)
+
+    def setUp(self):
+        """
+        Method to be called before every individual test.
+
+        :meth:`~LoggerMixin.attach`es to capture any log messages
+        that would be presented during testing. Should be called
+        during any subclassing.
+        """
+        LoggerMixin.attach(self)
+
+    def tearDown(self):
+        """
+        Method to be called immediately after calling and recording test
+
+        :meth:`~LoggerMixin.detach`es to reset the module logger to
+        its original state. Should be called during any subclassing.
+        """
+        LoggerMixin.detach(self)

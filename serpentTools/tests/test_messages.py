@@ -12,7 +12,7 @@ from serpentTools.messages import (
     debug, info, warning, error, critical,
 )
 from serpentTools.settings import rc
-from serpentTools.tests.utils import LoggerMixin
+from serpentTools.tests.utils import TestCaseWithLogCapture, LoggerMixin
 
 
 LOGGER_FUNCTIONS = [debug, info, warning, error, critical]
@@ -49,20 +49,10 @@ class DecoratorTester(TestCase):
                               'Did not catch two warnings::deprecation')
 
 
-class LoggingTester(TestCase, LoggerMixin):
+class LoggingTester(TestCaseWithLogCapture):
     """
     Class for testing various logging capabilities
     """
-
-    def __init__(self, *args, **kwargs):
-        TestCase.__init__(self, *args, **kwargs)
-        LoggerMixin.__init__(self)
-
-    def setUp(self):
-        self.attach()
-
-    def tearDown(self):
-        self.detach()
 
     def test_logger(self):
         """Test the basic logging functions."""
