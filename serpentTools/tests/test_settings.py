@@ -1,14 +1,15 @@
 """Tests for the settings loaders."""
 from os import remove
-import unittest
+from unittest import TestCase
 
 import yaml
 import six
 
 from serpentTools import settings
+from serpentTools.tests.utils import TestCaseWithLogCapture
 
 
-class DefaultSettingsTester(unittest.TestCase):
+class DefaultSettingsTester(TestCase):
     """Class to test the functionality of the master loader."""
 
     @classmethod
@@ -32,7 +33,7 @@ class DefaultSettingsTester(unittest.TestCase):
         return self.defaultLoader[setting].default
 
 
-class RCTester(unittest.TestCase):
+class RCTester(TestCase):
     """Class to test the functionality of the scriptable settings manager."""
 
     @classmethod
@@ -105,7 +106,7 @@ class RCTester(unittest.TestCase):
         self.assertSetEqual(expected, actual)
 
 
-class ConfigLoaderTester(unittest.TestCase):
+class ConfigLoaderTester(TestCaseWithLogCapture):
     """Class to test loading multiple setttings at once, i.e. config files"""
 
     @classmethod
@@ -166,7 +167,9 @@ class ConfigLoaderTester(unittest.TestCase):
         badSettings.update(self.nestedSettings)
         self._writeTestRemoveConfFile(badSettings, self.files['nested'],
                                       self.configSettings, False)
+        self.assertMsgInLogs("ERROR", "bad setting", partial=True)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()
