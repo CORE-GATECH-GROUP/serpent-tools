@@ -37,12 +37,12 @@ class DepletionSamplerFailTester(TestCaseWithLogCapture):
     def test_badInventory(self):
         """Verify an error is raised for files with dissimilar isotopics"""
         self._mismatchedFiles(DEP_FILES['badInventory'])
-        self.assertMsgInLogs("ERROR", "zai metadata", partial=True)
+        self.assertMsgInLogs("ERROR", DEP_FILES['badInventory'], partial=True)
 
     def test_missingTimeSteps(self):
         """Verify an error is raised if length of time steps are dissimilar"""
         self._mismatchedFiles(DEP_FILES['missingT'])
-        self.assertMsgInLogs("ERROR", "days metadata", partial=True)
+        self.assertMsgInLogs("ERROR", DEP_FILES['missingT'], partial=True)
 
     def _mismatchedFiles(self, badFilePath,
                          errorType=MismatchedContainersError):
