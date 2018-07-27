@@ -64,14 +64,6 @@ class LoggingTester(TestCase, LoggerMixin):
     def tearDown(self):
         self.detach()
 
-    def _assertLogInLevel(self, level, msg):
-        """Assert that the specified message is in the handler"""
-        messages = self.handler.logMessages
-        self.assertIn(level, messages,
-                      msg="Level {} missing from logs".format(level))
-        self.assertIn(msg, messages[level],
-                      msg="Message missing from log level")
-
     def test_logger(self):
         """Test the basic logging functions."""
         searchMessage = "test_logger"
@@ -80,7 +72,7 @@ class LoggingTester(TestCase, LoggerMixin):
             for logFunc in LOGGER_FUNCTIONS:
                 funcLevel = logFunc.__name__.upper()
                 logFunc(searchMessage)
-                self._assertLogInLevel(funcLevel, searchMessage)
+                self.msgInLogs(funcLevel, searchMessage)
 
     def test_addRemoveHandlers(self):
         """Test that the add/remove handler functions work."""
@@ -92,6 +84,20 @@ class LoggingTester(TestCase, LoggerMixin):
         removeHandler(self.handler)
         self.assertNotIn(self.handler, __logger__.handlers,
                          msg="removeHandler did not remove the handler")
+
+    def test_keyInLogs(self):
+        """Verify the behavrior of LoggerMixin.msgInLogs"""
+        message = "look for me"
+        warning(message)
+        self.assertTrue(self.msgInLogs('WARNING', message))
+        self.assertTrue(self.msgInLogs("WARNING", message[:5], partial=True))
+        self.assertFalse(self.msgInLogs("WARNING", "<none>"))
+        self.assertFalse(self.msgInLogs("WARNING", "<none>", partial=True))
+        with self.assertRaises(KeyError):
+            self.msgInLogs("DEBUG", message)
+        with self.assertRaises(AttributeError):
+            newM = LoggerMixin()
+            newM.msgInLogs("WARNING", message)
 
 
 if __name__ == '__main__':
