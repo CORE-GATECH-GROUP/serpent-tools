@@ -1,16 +1,15 @@
 """Tests for the settings loaders."""
 from os import remove
-import warnings
-import unittest
+from unittest import TestCase
 
 import yaml
 import six
 
 from serpentTools import settings
-from serpentTools.messages import deprecated, willChange
+from serpentTools.tests.utils import TestCaseWithLogCapture
 
 
-class DefaultSettingsTester(unittest.TestCase):
+class DefaultSettingsTester(TestCase):
     """Class to test the functionality of the master loader."""
 
     @classmethod
@@ -34,7 +33,7 @@ class DefaultSettingsTester(unittest.TestCase):
         return self.defaultLoader[setting].default
 
 
-class RCTester(unittest.TestCase):
+class RCTester(TestCase):
     """Class to test the functionality of the scriptable settings manager."""
 
     @classmethod
@@ -107,7 +106,7 @@ class RCTester(unittest.TestCase):
         self.assertSetEqual(expected, actual)
 
 
-class ConfigLoaderTester(unittest.TestCase):
+class ConfigLoaderTester(TestCaseWithLogCapture):
     """Class to test loading multiple setttings at once, i.e. config files"""
 
     @classmethod
@@ -168,38 +167,9 @@ class ConfigLoaderTester(unittest.TestCase):
         badSettings.update(self.nestedSettings)
         self._writeTestRemoveConfFile(badSettings, self.files['nested'],
                                       self.configSettings, False)
-
-
-class MessagingTester(unittest.TestCase):
-    """Class to test the messaging framework."""
-
-    def test_futureDecorator(self):
-        """Verify that the future decorator doesn't break"""
-
-        @willChange('This function will be updated in the future, '
-                    'but will still exist')
-        def demoFuture(x, val=5):
-            return x + val
-
-        with warnings.catch_warnings(record=True) as record:
-            self.assertEqual(7, demoFuture(2))
-            self.assertEqual(7, demoFuture(2, 5))
-            self.assertEquals(len(record), 2,
-                              'Did not catch two warnings::willChange')
-
-    def test_depreciatedDecorator(self):
-        """Verify that the depreciated decorator doesn't break things"""
-
-        @deprecated('this nonexistent function')
-        def demoFunction(x, val=5):
-            return x + val
-
-        with warnings.catch_warnings(record=True) as record:
-            self.assertEqual(7, demoFunction(2))
-            self.assertEqual(7, demoFunction(2, 5))
-            self.assertEquals(len(record), 2,
-                              'Did not catch two warnings::deprecation')
+        self.assertMsgInLogs("ERROR", "bad setting", partial=True)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()

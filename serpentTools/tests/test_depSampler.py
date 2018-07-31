@@ -14,7 +14,7 @@ File Descriptions
 *. ``bwr_missingT`` is missing the final burnup step
 
 """
-import unittest
+from unittest import TestCase
 
 from six import iteritems
 from numpy import where, fabs, ndarray
@@ -25,21 +25,24 @@ from serpentTools.data import getFile
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.samplers.depletion import DepletionSampler
 from serpentTools.tests import computeMeansErrors
+from serpentTools.tests.utils import TestCaseWithLogCapture
 
 _testFileNames = {'0', '1', 'badInventory', 'longT', 'missingT'}
 DEP_FILES = {key: getFile('bwr_{}_dep.m'.format(key))
              for key in _testFileNames}
 
 
-class DepletionSamplerFailTester(unittest.TestCase):
+class DepletionSamplerFailTester(TestCaseWithLogCapture):
 
     def test_badInventory(self):
         """Verify an error is raised for files with dissimilar isotopics"""
         self._mismatchedFiles(DEP_FILES['badInventory'])
+        self.assertMsgInLogs("ERROR", DEP_FILES['badInventory'], partial=True)
 
     def test_missingTimeSteps(self):
         """Verify an error is raised if length of time steps are dissimilar"""
         self._mismatchedFiles(DEP_FILES['missingT'])
+        self.assertMsgInLogs("ERROR", DEP_FILES['missingT'], partial=True)
 
     def _mismatchedFiles(self, badFilePath,
                          errorType=MismatchedContainersError):
@@ -48,7 +51,7 @@ class DepletionSamplerFailTester(unittest.TestCase):
             DepletionSampler(files)
 
 
-class DepletedSamplerTester(unittest.TestCase):
+class DepletedSamplerTester(TestCase):
     """
     Class that reads two similar files and validates the averaging
     and uncertainty propagation.
@@ -107,4 +110,5 @@ class DepletedSamplerTester(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()
