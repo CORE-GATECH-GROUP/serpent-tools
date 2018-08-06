@@ -8,7 +8,7 @@ from numpy import arange
 from matplotlib.colors import Normalize, LogNorm
 from matplotlib.pyplot import subplots
 
-from serpentTools.plot import (
+from serpentTools.utils import (
     formatPlot, normalizerFactory, setAx_xlims, setAx_ylims,
 )
 

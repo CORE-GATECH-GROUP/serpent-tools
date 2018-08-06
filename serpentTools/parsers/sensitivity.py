@@ -8,7 +8,7 @@ from six import iteritems
 from numpy import transpose, hstack
 from matplotlib.pyplot import axes
 
-from serpentTools.plot import magicPlotDocDecorator, formatPlot
+from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.utils import convertVariableName, str2vec

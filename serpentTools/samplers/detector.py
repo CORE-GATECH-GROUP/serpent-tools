@@ -9,7 +9,7 @@ from matplotlib import pyplot
 
 from serpentTools.messages import (MismatchedContainersError, warning,
                                    SamplerError, SerpentToolsException)
-from serpentTools.plot import magicPlotDocDecorator
+from serpentTools.utils import magicPlotDocDecorator
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.objects.base import DetectorBase
 from serpentTools.samplers.base import (Sampler, SampledContainer,

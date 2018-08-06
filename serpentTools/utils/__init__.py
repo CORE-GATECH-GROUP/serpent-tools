@@ -5,6 +5,9 @@ from re import compile
 
 from numpy import array, ndarray
 
+from serpentTools.utils.docstrings import *  # noqa
+from serpentTools.utils.plot import *  # noqa
+
 # Regular expressions
 
 STR_REGEX = compile(r'\'.+\'')  # string
