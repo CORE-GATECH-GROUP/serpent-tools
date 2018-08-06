@@ -6,6 +6,13 @@
 Changelog
 =========
 
+.. _vNext:
+
+Next
+====
+
+* :pull:`221` - Expanded ``utils`` module to better assist developers
+
 .. _v0.5.2:
 
 :release-tag:`0.5.2`
