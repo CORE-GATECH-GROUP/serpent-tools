@@ -10,6 +10,7 @@ See Also
 import functools
 import warnings
 import logging
+from logging import Handler
 from logging.config import dictConfig
 from collections import Callable
 
@@ -27,6 +28,10 @@ class SamplerError(SerpentToolsException):
 class MismatchedContainersError(SamplerError):
     """Attempting to sample from dissimilar containers"""
     pass
+
+#
+# Logger options
+#
 
 
 LOG_OPTS = ['critical', 'error', 'warning', 'info', 'debug']
@@ -47,15 +52,47 @@ loggingConfig = {
             'stream': 'ext://sys.stdout'
         }
     },
-    'root': {
-        'handlers': ['console'],
-        'level': logging.WARNING
+    'loggers': {
+        'serpentTools': {
+            'handlers': ['console'],
+            'level': logging.WARNING,
+            'propagate': False,
+        },
     }
 }
 
 dictConfig(loggingConfig)
 
 __logger__ = logging.getLogger('serpentTools')
+
+
+def addHandler(handler):
+    """
+    Add a handler to the logger
+
+    Parameters
+    ----------
+    handler: :class:`python.logging.Handler`
+        Subclass to handle the formatting and emitting
+        of log messages
+    """
+    if not issubclass(handler.__class__, Handler):
+        raise TypeError("Handler {} is of class {} and does not appear "
+                        "to be a subclass of {}"
+                        .format(handler, handler.__class__, Handler))
+    return __logger__.addHandler(handler)
+
+
+def removeHandler(handler):
+    """
+    Remove a handler from the internal logger
+
+    Parameters
+    ----------
+    handler: :class:`python.logging.Handler`
+        Handler to be removed
+    """
+    return __logger__.removeHandler(handler)
 
 
 def debug(message):
@@ -305,3 +342,44 @@ def logBadShapes(quantity, desc0, desc1, shapes):
         t0, t1 = shapes[key]
         msg += BAD_OBJ_SUBJ.format(key=key, t0=t0, t1=t1)
     error(msg)
+
+
+class DictHandler(Handler):
+    """
+    Handler that stores log messages in a dictionary
+
+    Attributes
+    ----------
+    logMessages: dict
+        Dictionary of lists where each key is a log level such
+        as ``'DEBUG'`` or ``'WARNING'``. The list associated
+        with each key contains all messages called under that
+        logging level
+    """
+    def __init__(self, level=logging.NOTSET):
+        Handler.__init__(self, level)
+        self.logMessages = {}
+
+    def flush(self):
+        """Clear the log messages dictionary"""
+        self.logMessages = {}
+
+    def close(self):
+        """Tidy up before removing from list of handlers"""
+        self.logMessages = {}
+        Handler.close(self)
+
+    def emit(self, record):
+        """
+        Store the message in the log messages by level.
+
+        Does no formatting to the record, simply stores
+        the message in :attr:`logMessages` dictionary
+        according to the records ``levelname``
+
+        Anticipates a :class:`logging.LogRecord` object
+        """
+        level = record.levelname
+        if level not in self.logMessages:
+            self.logMessages[level] = []
+        self.logMessages[level].append(record.getMessage())
