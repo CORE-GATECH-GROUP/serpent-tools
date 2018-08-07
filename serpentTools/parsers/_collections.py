@@ -3,6 +3,11 @@ Collections of objects that are helpful for the parsers
 """
 
 RES_DATA_NO_UNCS = {
+    "burnMaterials",
+    "burnMode",
+    "burnStep",
+    "iniBurnFmass",
+    "totBurnFmass",
     "resMemsize",
     "totNuclides",
     "fissionProductInhTox",
