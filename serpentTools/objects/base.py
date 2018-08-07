@@ -14,6 +14,7 @@ from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DETECTOR_PLOT_LABELS,
     compareDocDecorator, DEF_COMP_LOWER, DEF_COMP_SIGMA, DEF_COMP_UPPER,
 )
+from serpentTools.settings import rc
 
 
 class BaseObject(object):

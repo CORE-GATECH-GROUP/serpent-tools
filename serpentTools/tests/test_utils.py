@@ -310,8 +310,8 @@ class SplitDictionaryTester(TestCase):
     def test_noKeys(self):
         """Verify that splitDictByKeys works when keySet is None."""
         m0, m1, badTypes, badShapes, goodKeys = self.callTest(None)
-        self.assertSetEqual(set(), m0)
-        self.assertSetEqual(set(), m1)
+        self.assertSetEqual({'missingFrom0', }, m0)
+        self.assertSetEqual({'missingFrom1', }, m1)
         self.assertDictEqual(self.badTypes, badTypes)
         self.assertDictEqual(self.badShapes, badShapes)
         self.assertSetEqual(self.goodKeys, goodKeys)
@@ -335,7 +335,6 @@ class SplitDictionaryTester(TestCase):
         self.assertDictEqual(self.badTypes, badTypes)
         self.assertDictEqual(self.badShapes, badShapes)
         self.assertSetEqual(self.goodKeys, goodKeys)
-
 
 if __name__ == '__main__':
     from unittest import main
