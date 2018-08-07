@@ -31,12 +31,11 @@ from matplotlib.patches import RegularPolygon
 from matplotlib.collections import PatchCollection
 from matplotlib.pyplot import axes
 
-from serpentTools.utils import linkToWiki
 from serpentTools.messages import warning, debug, SerpentToolsException
 from serpentTools.objects.base import DetectorBase
-from serpentTools.plot import (
+from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, setAx_xlims, setAx_ylims,
-    addColorbar, normalizerFactory,
+    addColorbar, normalizerFactory, linkToWiki,
 )
 
 __all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',

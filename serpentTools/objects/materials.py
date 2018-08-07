@@ -4,11 +4,11 @@ import numpy
 from matplotlib import pyplot
 
 from serpentTools.messages import warning, debug
-from serpentTools.plot import (
+from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+    convertVariableName,
 )
 from serpentTools.objects.base import NamedObject
-from serpentTools.utils import convertVariableName
 
 
 class DepletedMaterialBase(NamedObject):

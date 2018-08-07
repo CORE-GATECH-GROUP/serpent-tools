@@ -15,7 +15,7 @@ from matplotlib import pyplot
 from numpy import array, arange, hstack, ndarray, zeros_like
 
 from serpentTools.settings import rc
-from serpentTools.plot import magicPlotDocDecorator, formatPlot
+from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.objects.base import NamedObject
 from serpentTools.utils import convertVariableName
 from serpentTools.messages import warning, SerpentToolsException, debug, info

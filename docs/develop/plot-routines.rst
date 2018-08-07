@@ -27,21 +27,21 @@ Plot Formatters
 The following functions can be used to tidy up a plot given our wide-range
 of supported arguments.
 
-.. autofunction:: serpentTools.plot.formatPlot
+.. autofunction:: serpentTools.utils.plot.formatPlot
 
-.. autoattribute:: serpentTools.plot.PLOT_FORMAT_DEFAULTS
+.. autoattribute:: serpentTools.utils.plot.PLOT_FORMAT_DEFAULTS
 
-.. autoattribute:: serpentTools.plot.LEGEND_KWARGS
+.. autoattribute:: serpentTools.utils.plot.LEGEND_KWARGS
 
-.. autofunction:: serpentTools.plot.placeLegend
+.. autofunction:: serpentTools.utils.plot.placeLegend
 
-.. autofunction:: serpentTools.plot.setAx_xlims
+.. autofunction:: serpentTools.utils.plot.setAx_xlims
 
-.. autofunction:: serpentTools.plot.setAx_ylims
+.. autofunction:: serpentTools.utils.plot.setAx_ylims
 
-.. autofunction:: serpentTools.plot.addColorbar
+.. autofunction:: serpentTools.utils.plot.addColorbar
 
-.. autofunction:: serpentTools.plot.normalizerFactory
+.. autofunction:: serpentTools.utils.plot.normalizerFactory
 
 .. _dev-plot-docformatters:
 
@@ -57,9 +57,9 @@ extra code.
 See :ref:`dev-plot-magicStrings` for a listing of what is replaced
 by what when calling :func:`serpentTools.plot.magicPlotDocDecorator`.
 
-.. autofunction:: serpentTools.plot.magicPlotDocDecorator
+.. autofunction:: serpentTools.utils.docstrings.magicPlotDocDecorator
 
-.. autoattribute:: serpentTools.plot.PLOT_MAGIC_STRINGS
+.. autoattribute:: serpentTools.utils.docstrings.PLOT_MAGIC_STRINGS
     :annotation: Magic strings that, if found as {x}, will be replaced
                  by PLOT_MAGIC_STRINGS[x]
 
