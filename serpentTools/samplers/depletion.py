@@ -10,7 +10,7 @@ from numpy import zeros, zeros_like
 from matplotlib import pyplot
 
 from serpentTools.messages import SamplerError, warning
-from serpentTools.plot import (
+from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
 )
 from serpentTools.objects.materials import DepletedMaterialBase

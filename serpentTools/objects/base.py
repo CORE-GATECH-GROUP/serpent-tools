@@ -9,11 +9,10 @@ from numpy import arange, hstack, log, divide
 from matplotlib.pyplot import axes
 
 from serpentTools.messages import debug, warning, SerpentToolsException, info
-from serpentTools.settings import rc
-from serpentTools.utils import compareDocDecorator
-from serpentTools.plot import (
-    plot, magicPlotDocDecorator, formatPlot, cartMeshPlot,
-    DETECTOR_PLOT_LABELS,
+from serpentTools.plot import plot, cartMeshPlot
+from serpentTools.utils import (
+    magicPlotDocDecorator, formatPlot, DETECTOR_PLOT_LABELS,
+    compareDocDecorator,
 )
 
 #

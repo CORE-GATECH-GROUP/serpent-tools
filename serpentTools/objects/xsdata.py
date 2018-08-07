@@ -4,7 +4,7 @@ from matplotlib import pyplot
 
 from serpentTools.messages import error
 from serpentTools.objects.base import NamedObject
-from serpentTools.plot import magicPlotDocDecorator, formatPlot
+from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 
 
 class XSData(NamedObject):

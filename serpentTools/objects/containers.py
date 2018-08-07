@@ -15,7 +15,6 @@ from matplotlib import pyplot
 from numpy import array, arange, hstack, ndarray, zeros_like
 
 from serpentTools.settings import rc
-from serpentTools.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.objects.base import NamedObject, BaseObject
 from serpentTools.utils import (
     COMPARE_DOC_SIGMA,
@@ -25,6 +24,8 @@ from serpentTools.utils import (
     logDirectCompare,
     getLogOverlaps,
     compareDocDecorator,
+    magicPlotDocDecorator,
+    formatPlot,
 )
 from serpentTools.objects.base import (DEF_COMP_LOWER,
                                        DEF_COMP_UPPER, DEF_COMP_SIGMA)

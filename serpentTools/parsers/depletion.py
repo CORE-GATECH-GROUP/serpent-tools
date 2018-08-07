@@ -4,10 +4,11 @@ import re
 from matplotlib import pyplot
 from six import iteritems
 
-from serpentTools.plot import (
+from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+    convertVariableName, str2vec,
 )
-from serpentTools.utils import convertVariableName, str2vec
+
 from serpentTools.engines import KeywordParser
 from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial

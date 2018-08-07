@@ -28,6 +28,9 @@ from serpentTools.messages import (
 LOWER_LIM_DIVISION = 1E-8
 """Lower limit for denominator for division"""
 
+from serpentTools.utils.docstrings import *  # noqa
+from serpentTools.utils.plot import *  # noqa
+
 # Regular expressions
 
 STR_REGEX = compile(r'\'.+\'')  # string
