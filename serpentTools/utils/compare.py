@@ -24,6 +24,13 @@ from serpentTools.utils.docstrings import compareDocDecorator
 LOWER_LIM_DIVISION = 1E-8
 """Lower limit for denominator for division"""
 
+#
+# Defaults for comparison
+#
+DEF_COMP_LOWER = 0
+DEF_COMP_UPPER = 10
+DEF_COMP_SIGMA = 2
+
 
 @compareDocDecorator
 def getCommonKeys(d0, d1, quantity, desc0='first', desc1='second',
@@ -45,7 +52,7 @@ def getCommonKeys(d0, d1, quantity, desc0='first', desc1='second',
     d1: dict or iterable
         Dictionary of keys or iterable of keys to be compared
     quantity: str
-        Indicator as to what is being compared, e.g. ``'metadta'``
+        Indicator as to what is being compared, e.g. ``'metadata'``
     {desc}
     {herald}
     Returns
@@ -237,8 +244,8 @@ def splitDictByKeys(map0, map1, keySet=None):
         or point to arrays of the same shape
     """
     if keySet is None:
-        k1 = set(map1.keys())
-        keySet = k1.intersection(set(map0.keys()))
+        keySet = set(map1.keys())
+        keySet.update(set(map0.keys()))
     missing = {0: set(), 1: set()}
     differentTypes = {}
     badShapes = {}
@@ -472,3 +479,59 @@ def getLogOverlaps(quantity, arr0, arr1, unc0, unc1, sigma, relative=True):
         return True
     logOutsideConfInt(arr0, unc0, arr1, unc1, quantity)
     return False
+
+
+@compareDocDecorator
+def compareDictOfArrays(d0, d1, desc, lower=DEF_COMP_LOWER,
+                        upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA,
+                        u0={}, u1={}, relative=True):
+    """
+    High-level routine for evaluating the similarities of two dictionaries
+
+    The following tests are performed
+
+        1. Find a set of keys that both exist in ``d0`` and ``d1``
+          and point to arrays with identical shapes using
+          :meth:`getKeyMatchingShapes`
+        2. For each key in this common set, compare the values
+          with :meth:`logDirectCompare` or :meth:`getLogOverlaps`.
+          The latter is used if the key exists in  ``u0`` and
+          ``u1``, provided uncertainty arrays are of identical shapes.
+
+    Parameters
+    ----------
+    d0: dict
+    d1: dict
+        Dictionaries to be compared
+    desc: str
+        Descption of the two dictionaries. What data do they represent?
+    {compLimits}
+    {sigma}
+    u0: dict
+    u1: dict
+        If uncKeys is not ``None``, then find the uncertainties for data in
+        ``d0`` and ``d1`` under the same keys.
+    relative: bool
+        If this evaluates to ``true``, then uncertainties in ``u0`` and ``u1``
+        are relative.
+
+    Returns
+    -------
+    bool
+        ``True`` If all comparisons pass
+    """
+    similar = len(d0) == len(d1)
+    keysMatchingTypes = getKeyMatchingShapes(d0, d1, desc)
+    similar &= len(d0) == len(keysMatchingTypes)
+
+    for key in sorted(keysMatchingTypes):
+        val0 = d0[key]
+        val1 = d1[key]
+        if key in u0 and key in u1:
+            unc0 = u0[key]
+            unc1 = u1[key]
+            similar &= getLogOverlaps(key, val0, val1, unc0, unc1,
+                                      sigma, relative)
+            continue
+        similar &= logDirectCompare(val0, val1, lower, upper, key)
+    return similar

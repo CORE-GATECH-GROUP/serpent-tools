@@ -79,21 +79,23 @@ comparison routines. If the situation calls for custom comparison
 functions, utilize or extend logging routines from :ref:`dev-comp-log`
 appropriately.
 
-.. autofunction:: serpentTools.utils.compareDocDecorator
+.. autofunction:: serpentTools.utils.compare.compareDictOfArrays
 
-.. autofunction:: serpentTools.utils.getCommonKeys
+.. autofunction:: serpentTools.utils.compare.getCommonKeys
 
-.. autofunction:: serpentTools.utils.directCompare
+.. autofunction:: serpentTools.utils.compare.directCompare
 
-.. autofunction:: serpentTools.utils.logDirectCompare
+.. autofunction:: serpentTools.utils.compare.logDirectCompare
 
-.. autofunction:: serpentTools.utils.splitdictByKeys
+.. autofunction:: serpentTools.utils.compare.splitdictByKeys
 
-.. autofunction:: serpentTools.utils.getKeyMatchingShapes
+.. autofunction:: serpentTools.utils.compare.getKeyMatchingShapes
 
-.. autofunction:: serpentTools.utils.getOverlaps
+.. autofunction:: serpentTools.utils.compare.getOverlaps
 
-.. autofunction:: serpentTools.utils.getLogOverlaps
+.. autofunction:: serpentTools.utils.compare.getLogOverlaps
+
+.. autofunction:: serpentTools.utils.docstrings.compareDocDecorator
 
 .. _dev-comp-log:
 
