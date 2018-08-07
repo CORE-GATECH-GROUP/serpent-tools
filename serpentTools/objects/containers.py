@@ -17,16 +17,16 @@ from numpy import array, arange, hstack, ndarray, zeros_like
 from serpentTools.settings import rc
 from serpentTools.objects.base import NamedObject, BaseObject
 from serpentTools.utils import (
-    COMPARE_DOC_SIGMA,
-    COMPARE_DOC_TYPE_ERR,
     convertVariableName,
     getKeyMatchingShapes,
     logDirectCompare,
     getLogOverlaps,
+    compareDocReplacer,
     compareDocDecorator,
     magicPlotDocDecorator,
     formatPlot,
 )
+
 from serpentTools.objects.base import (DEF_COMP_LOWER,
                                        DEF_COMP_UPPER, DEF_COMP_SIGMA)
 from serpentTools.messages import (
@@ -509,14 +509,14 @@ class HomogUniv(NamedObject):
 
         return similar
 
-    __docCompare = """
+    __docCompare = compareDocReplacer("""
     Return ``True`` if contents of ``{qty}Exp`` and ``{qty}Unc`` agree
 
     Parameters
     ----------
     other: :class:`HomogUniv`
         Object from which to grab group constant dictionaries
-    <s>
+    {sigma}
 
     Returns
     bool
@@ -524,8 +524,8 @@ class HomogUniv(NamedObject):
         and if those values have overlapping confidence intervals
     Raises
     ------
-    <e>
-    """.replace('<s>', COMPARE_DOC_SIGMA).replace('<e>', COMPARE_DOC_TYPE_ERR)
+    {compTypeErr}
+    """)
 
     def _helpCompareGCDict(self, other, attrBase, sigma):
         """
