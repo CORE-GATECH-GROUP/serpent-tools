@@ -12,6 +12,9 @@ Next
 ====
 
 * :pull:`221` - Expanded ``utils`` module to better assist developers
+* :pull:`227` - Better documentation of our :ref:`cli`.
+  Better documentation and testing of functions for generating input
+  files with unique random seeds - :mod:`serpentTools.seed`
 
 .. _v0.5.2:
 
