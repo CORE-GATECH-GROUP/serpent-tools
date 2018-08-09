@@ -4,7 +4,6 @@ Test object-level compare methods
 
 from serpentTools.tests.utils import TestCaseWithLogCapture
 from serpentTools.data import readDataFile
-from serpentTools.settings import rc
 
 
 RES_DATA_FILE = 'pwr_res.m'
@@ -14,6 +13,7 @@ IDENTICAL_KEY_FMT = "for {} are identical"
 OVERLAPPING_KEY_FMT = "{} overlap"
 WITHIN_TOLS_KEY_FMT = "{} are different, but within tolerance"
 OUTSIDE_TOLS_KEY_FMT = "{} are outside acceptable tolerances"
+
 
 class ResultsCompareTester(TestCaseWithLogCapture):
     """
@@ -30,7 +30,6 @@ class ResultsCompareTester(TestCaseWithLogCapture):
             cls.univKeys.update(set(univ.b1Exp.keys()))
             cls.univKeys.update(set(univ.gc.keys()))
             break
-
 
     def setUp(self):
         self.r1 = readDataFile(RES_DATA_FILE)
@@ -49,9 +48,12 @@ class ResultsCompareTester(TestCaseWithLogCapture):
                                  partial=True)
 
     def test_moddedResults(self):
-        """Verify that the results comparison picks up on changes to modified data."""
+        """
+        Verify that the results comparison logs errors in modified data.
+        """
         resd = self.r1.resdata
-        # drastically increase one value with uncertainties to ensure disagreement
+        # drastically increase one value with uncertainties
+        # to ensure disagreement
         resd['anaKeff'][:, ::2] *= 2
         # slightly modify one value with uncertainties to force overlapping
         # confidence intervals, but not identical quantities
@@ -64,9 +66,15 @@ class ResultsCompareTester(TestCaseWithLogCapture):
         out = self._runCompare('debug')
         self.assertFalse(out)
         self.assertMsgInLogs('ERROR', 'anaKeff', partial=True)
-        self.assertMsgInLogs('DEBUG', OVERLAPPING_KEY_FMT.format('colKeff'), partial=True)
-        self.assertMsgInLogs('WARNING', WITHIN_TOLS_KEY_FMT.format('allocMemsize'), partial=True)
-        self.assertMsgInLogs('ERROR', OUTSIDE_TOLS_KEY_FMT.format('uresAvail'), partial=True)
+        self.assertMsgInLogs(
+            'DEBUG', OVERLAPPING_KEY_FMT.format('colKeff'), partial=True)
+        self.assertMsgInLogs(
+            'WARNING', WITHIN_TOLS_KEY_FMT.format('allocMemsize'),
+            partial=True)
+        self.assertMsgInLogs(
+            'ERROR', OUTSIDE_TOLS_KEY_FMT.format('uresAvail'), partial=True)
+
+
 if __name__ == '__main__':
     from unittest import main
     main()

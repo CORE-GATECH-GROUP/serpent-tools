@@ -336,6 +336,7 @@ class SplitDictionaryTester(TestCase):
         self.assertDictEqual(self.badShapes, badShapes)
         self.assertSetEqual(self.goodKeys, goodKeys)
 
+
 if __name__ == '__main__':
     from unittest import main
     main()
