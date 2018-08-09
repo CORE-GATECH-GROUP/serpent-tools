@@ -2,6 +2,7 @@
 Function to copy an input file N times with N randomly generated seeds
 """
 
+from math import log10
 import os
 from os import path
 from shutil import copy
@@ -61,7 +62,7 @@ def generateSeed(length):
 
 def _seedFromBits(bits, length):
     seed = random.getrandbits(bits)
-    while len(str(seed)) != length:
+    while int(log10(seed)) + 1 != length:
         seed = random.getrandbits(bits)
     return seed
 

@@ -2,6 +2,7 @@
 Test the seedFiles function
 """
 
+from math import log10
 import re
 import random
 from tempfile import TemporaryDirectory
@@ -35,7 +36,7 @@ class SeedInspector(TestCase):
     """Class that just ensures that seeds are the correct length"""
 
     def examineSeed(self, seed):
-        self.assertEqual(len(str(seed)), LENGTH_SEEDS, msg=seed)
+        self.assertEqual(int(log10(seed)) + 1, LENGTH_SEEDS, msg=seed)
 
 
 class SeedGeneratorTester(SeedInspector):
