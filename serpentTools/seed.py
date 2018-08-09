@@ -36,19 +36,27 @@ def _makeFileFmt(inputFile):
 
 
 def _include(inputFile, numSeeds, fileFmt, bits, length):
+    """Write input files utilizing the ``include`` directive."""
+    files = []
     for N in range(numSeeds):
         name = fileFmt.format(N)
+        files.append(name)
         with open(name, 'w') as stream:
             stream.write('include \"{}\"\n'.format(inputFile))
             _writeSeed(stream, bits, length)
+    return files
 
 
 def _copy(inputFile, numSeeds, fileFmt, bits, length):
+    """Write input files while copying the entire base input file."""
+    files = []
     for N in range(numSeeds):
         name = fileFmt.format(N)
         copy(inputFile, name)
+        files.append(name)
         with open(name, 'a') as stream:
             _writeSeed(stream, bits, length)
+    return files
 
 
 def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
@@ -74,6 +82,11 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
         with 'include <inputFile>' and the new seed declaration.
     digits: int
         Average number of digits for random seeds
+
+    Returns
+    -------
+    list:
+        List of the names of all files created
 
     See Also
     --------
@@ -113,6 +126,5 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
     fileFmt = path.join(fPrefix, _makeFileFmt(inputFile))
 
     writeFunc = _include if link else _copy
-    writeFunc(inputPath, numSeeds, fileFmt, bits, digits)
+    return writeFunc(inputPath, numSeeds, fileFmt, bits, digits)
 
-    return
