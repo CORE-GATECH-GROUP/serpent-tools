@@ -1,5 +1,5 @@
 """
-Functions to copy an input file N times with N randomly generated seeds
+Functions to copy an input file ``N`` times with ``N`` randomly generated seeds
 """
 
 from math import log10
