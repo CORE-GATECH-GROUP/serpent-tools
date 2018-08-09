@@ -7,7 +7,7 @@ import re
 import random
 from tempfile import TemporaryDirectory
 from unittest import TestCase
-from os import remove, listdir
+from os import remove, listdir, rmdir
 
 from serpentTools import seedFiles, generateSeed
 
@@ -116,15 +116,24 @@ class SeedFileHelper(SeedInspector):
         self._examineLinksInFiles(files)
         self._examineSeedsInFiles(files)
 
-    def test_outDir(self):
-        """Verify the file writer can write to new directories."""
-        tempDir = TemporaryDirectory()
+    def _setupAndTestWithDirectories(self, dirName):
         files = seedFiles(BASE_INPUT_FILE, NUM_FILES, self.SEED,
-                          outputDir=tempDir.name, link=False)
-        itemsInDir = listdir(tempDir.name)
+                          outputDir=dirName, link=False)
+        itemsInDir = listdir(dirName)
         self.assertEqual(len(itemsInDir), NUM_FILES, msg=itemsInDir)
         self._examineSeedsInFiles(files)
+
+    def test_outDir_existing(self):
+        """Verify the file writer can write into existing directories."""
+        tempDir = TemporaryDirectory()
+        self._setupAndTestWithDirectories(tempDir.name)
         tempDir.cleanup()
+
+    def test_outDir_makeNew(self):
+        """Verify the file writer can create new directories."""
+        outDir = 'rm-seed-d'
+        self._setupAndTestWithDirectories(outDir)
+        rmdir(outDir)
 
 
 class SeedlessFileWriter(SeedFileHelper):
@@ -153,6 +162,21 @@ class SeededFileWriter(SeedFileHelper):
             candidate = generateSeed(LENGTH_SEEDS)
             cls.EXPECTED_SEEDS.append(candidate)
         random.setstate(state)
+
+
+class SeedWriterErrorChecker(TestCase):
+    """Check the error conditions for seedFiles."""
+
+    def test_missingInput(self):
+        """Verify an error is raised if the input does not exist"""
+        with self.assertRaises(OSError):
+            seedFiles("THIS SHOULD FAIL", NUM_FILES)
+
+    def test_nonPosNumber(self):
+        """Verify an error is raised if the number of files is non-positive"""
+        badInputs = [0, -1, '0']
+        for badN in badInputs:
+            self.assertRaises(ValueError, seedFiles, BASE_INPUT_FILE, badN)
 
 
 del SeedFileHelper
