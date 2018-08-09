@@ -3,9 +3,10 @@ Test the seedFiles function
 """
 
 import re
+import random
+from tempfile import TemporaryDirectory
 from unittest import TestCase
-from shutil import rmtree
-from os import remove
+from os import remove, listdir
 
 from serpentTools import seedFiles, generateSeed
 
@@ -30,13 +31,14 @@ def tearDownModule():
     remove(BASE_INPUT_FILE)
 
 
-class SeedTesterHelper(TestCase):
+class SeedInspector(TestCase):
+    """Class that just ensures that seeds are the correct length"""
 
-    def _examineSeed(self, seed):
+    def examineSeed(self, seed):
         self.assertEqual(len(str(seed)), LENGTH_SEEDS, msg=seed)
 
 
-class SeedGeneratorTester(SeedTesterHelper):
+class SeedGeneratorTester(SeedInspector):
     """
     Test the capabilities of the generateSeed function
     """
@@ -52,35 +54,43 @@ class SeedGeneratorTester(SeedTesterHelper):
         """Check the length of random seeds given a variety of input types"""
         for typeFunc in [int, float, str]:
             actual = generateSeed(typeFunc(LENGTH_SEEDS))
-            self._examineSeed(actual)
+            self.examineSeed(actual)
 
 
-class SeedlessFileWriter(SeedTesterHelper):
-    """
-    Test the writer without passing a value of ``seed`` to the function
-    """
+class SeedFileHelper(SeedInspector):
 
-    SEED = None
+    @property
+    def SEED(self):
+        raise NotImplementedError
+
+    @property
+    def EXPECTED_SEEDS(self):
+        raise NotImplementedError
+
+    def _examineSeed(self, seed, index):
+        SeedInspector.examineSeed(self, seed)
+        if self.EXPECTED_SEEDS is not None:
+            self.assertEqual(seed, self.EXPECTED_SEEDS[index])
 
     def _examineSeedsInFiles(self, files):
         self.assertEqual(NUM_FILES, len(files), msg="Number of files written.")
-        for fileP in files:
-            self._examineSeedInFile(fileP)
+        for fileIndex, fileP in enumerate(files):
+            self._examineSeedInFile(fileP, fileIndex)
             remove(fileP)
 
-    def _examineSeedInFile(self, fileP):
+    def _examineSeedInFile(self, fileP, fileIndex):
         with open(fileP) as stream:
             lines = stream.read()
-            match = SEED_REGEX.search(lines)
-            self.assertTrue(match is not None,
-                            msg="No seed setting found in {}".format(fileP))
+        match = SEED_REGEX.search(lines)
+        self.assertTrue(match is not None,
+                        msg="No seed setting found in {}".format(fileP))
 
-            groups = match.groups()
-            self.assertEqual(1, len(groups),
-                             msg=("Did not find a solitary seed declaration "
-                                  "in {}".format(fileP)))
-            actualSeed = int(groups[0])
-            self._examineSeed(actualSeed)
+        groups = match.groups()
+        self.assertEqual(1, len(groups),
+                         msg=("Did not find a solitary seed declaration "
+                              "in {}".format(fileP)))
+        actualSeed = int(groups[0])
+        self._examineSeed(actualSeed, fileIndex)
 
     def _examineLinksInFiles(self, files):
         for fileP in files:
@@ -104,6 +114,47 @@ class SeedlessFileWriter(SeedTesterHelper):
                           outputDir=None, link=True)
         self._examineLinksInFiles(files)
         self._examineSeedsInFiles(files)
+
+    def test_outDir(self):
+        """Verify the file writer can write to new directories."""
+        tempDir = TemporaryDirectory()
+        files = seedFiles(BASE_INPUT_FILE, NUM_FILES, self.SEED,
+                          outputDir=tempDir.name, link=False)
+        itemsInDir = listdir(tempDir.name)
+        self.assertEqual(len(itemsInDir), NUM_FILES, msg=itemsInDir)
+        self._examineSeedsInFiles(files)
+        tempDir.cleanup()
+
+
+class SeedlessFileWriter(SeedFileHelper):
+    """
+    Test the writer without passing a value of ``seed`` to the function
+    """
+
+    EXPECTED_SEEDS = SEED = None
+
+
+class SeededFileWriter(SeedFileHelper):
+    """
+    Test the reproducability of the file writer by explictely passing a seed.
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        """
+        Generate expected seeds before resetting the random state
+        """
+        cls.SEED = 123456789
+        state = random.getstate()
+        random.seed(cls.SEED)
+        cls.EXPECTED_SEEDS = []
+        for _n in range(NUM_FILES):
+            candidate = generateSeed(LENGTH_SEEDS)
+            cls.EXPECTED_SEEDS.append(candidate)
+        random.setstate(state)
+
+
+del SeedFileHelper
 
 
 if __name__ == '__main__':
