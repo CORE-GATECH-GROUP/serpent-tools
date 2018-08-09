@@ -103,7 +103,7 @@ def _copy(inputFile, numSeeds, fileFmt, bits, length):
 
 
 def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
-              digits=10):
+              length=10):
     """
     Copy input file multiple times with unique seeds.
 
@@ -123,34 +123,49 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
     link: bool
         If True, do not copy the full file. Instead, create a new file
         with 'include <inputFile>' and the new seed declaration.
-    digits: int
-        Average number of digits for random seeds
+    length: int
+        Number of digits for random seeds
 
     Returns
     -------
     list:
         List of the names of all files created
 
+    Raises
+    ------
+    OSError:
+        If the requested input file could not be found
+        and ``link`` does not evaluate to true.
+    ValueError:
+        If the number of requested seeds is not a positive
+        integer, nor can be converted to one, or if the length
+        of the random seeds cannot be converted to a positive
+        integer.
+    TypeError:
+        Raised if the values passed to ``length`` or ``nseeds``
+        cannot be converted to integers with :func:`int`
+
     See Also
     --------
-    :py:mod:`random`
-    :py:func:`random.seed()`
-    :py:func:`random.getrandbits()`
+    :func:`generateSeed`
+    :mod:`random`
+    :func:`random.seed()`
+    :func:`random.getrandbits()`
 
     """
     if '~' in inputFile:
         inputFile = os.path.expanduser(inputFile)
 
     if not path.exists(inputFile):
-        error('Input file {} does not exist'.format(inputFile))
-        return
+        raise OSError('Input file {} does not exist'.format(inputFile))
+
+    if not isinstance(numSeeds, int):
+        numSeeds = int(numSeeds)
 
     if numSeeds < 1:
-        error('Require positive number of files to create')
-        return
+        raise ValueError('Require positive number of files to create')
 
-    if digits < 1:
-        error('Require positive number of digits in random seeds')
+    bits = _getBitsForLength(digits)
 
     random.seed(seed)
 
@@ -168,6 +183,5 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
     fileFmt = path.join(fPrefix, _makeFileFmt(inputFile))
 
     writeFunc = _include if link else _copy
-    bits = _getBitsForLength(digits)
-    return writeFunc(inputPath, numSeeds, fileFmt, bits, digits)
+    return writeFunc(inputPath, numSeeds, fileFmt, bits, length)
 
