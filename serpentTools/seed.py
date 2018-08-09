@@ -11,16 +11,59 @@ from six.moves import range
 
 from serpentTools.messages import error, debug
 
-__all__ = ['seedFiles']
-SLOPE = 0.3010142116935483
-OFFSET = 0.0701126088709696
+__all__ = ['seedFiles', 'generateSeed']
 
 
 def _writeSeed(stream, bits, length):
+    stream.write('\nset seed {}\n'.format(_seedFromBits(bits, length)))
+
+
+def _getBitsForLength(length):
+    """
+    Return the number of bits required to obtain a random digit
+    of a given length.
+    """
+    SLOPE = 0.3010142116935483
+    OFFSET = 0.0701126088709696
+    return int((length - OFFSET) / SLOPE)
+
+
+def generateSeed(length):
+    """
+    Generate a random seed with ``length`` digits
+
+    Parameters
+    ----------
+    length: int
+        Positive number of digits in seed
+
+    Returns
+    -------
+    int:
+        Randomly generated seed with
+        ``length`` digits
+
+    Raises
+    ------
+    ValueError:
+        If the value of ``length`` is non-positive
+    TypeError:
+        If ``length`` is not an integer, nor can be
+        coerced into one with :func:`int`
+    """
+    if not isinstance(length, int):
+        length = int(length)
+    if length <= 0:
+        raise ValueError("length must be positive, not {}".format(length))
+    bits = _getBitsForLength(length)
+    return _seedFromBits(bits, length)
+
+
+def _seedFromBits(bits, length):
     seed = random.getrandbits(bits)
     while len(str(seed)) != length:
         seed = random.getrandbits(bits)
-    stream.write('\nset seed {}\n'.format(seed))
+    return seed
 
 
 def _makeFileFmt(inputFile):
@@ -108,7 +151,6 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
 
     if digits < 1:
         error('Require positive number of digits in random seeds')
-    bits = int((digits - OFFSET) / SLOPE)
 
     random.seed(seed)
 
@@ -126,5 +168,6 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
     fileFmt = path.join(fPrefix, _makeFileFmt(inputFile))
 
     writeFunc = _include if link else _copy
+    bits = _getBitsForLength(digits)
     return writeFunc(inputPath, numSeeds, fileFmt, bits, digits)
 
