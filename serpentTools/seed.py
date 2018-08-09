@@ -20,7 +20,7 @@ def _writeSeed(stream, bits, length):
     seed = random.getrandbits(bits)
     while len(str(seed)) != length:
         seed = random.getrandbits(bits)
-    stream.write('\nset seed {}'.format(seed))
+    stream.write('\nset seed {}\n'.format(seed))
 
 
 def _makeFileFmt(inputFile):
