@@ -12,15 +12,9 @@ from serpentTools.messages import debug, warning, SerpentToolsException, info
 from serpentTools.plot import plot, cartMeshPlot
 from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DETECTOR_PLOT_LABELS,
-    compareDocDecorator,
+    compareDocDecorator, DEF_COMP_LOWER, DEF_COMP_SIGMA, DEF_COMP_UPPER,
 )
-
-#
-# Defaults for comparison
-#
-DEF_COMP_LOWER = 0
-DEF_COMP_UPPER = 10
-DEF_COMP_SIGMA = 2
+from serpentTools.settings import rc
 
 
 class BaseObject(object):

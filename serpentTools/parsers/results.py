@@ -491,6 +491,7 @@ class ResultsReader(XSReader):
             myUniv = myUniverses[univKey]
             otherUniv = otherUniverses[univKey]
             similar &= myUniv.compare(otherUniv, lower, upper, sigma)
+        return similar
 
     def _cleanMetadata(self):
         """Replace some items in metadata dictionary with easier data types."""
