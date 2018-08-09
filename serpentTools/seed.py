@@ -165,7 +165,7 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
     if numSeeds < 1:
         raise ValueError('Require positive number of files to create')
 
-    bits = _getBitsForLength(digits)
+    bits = _getBitsForLength(length)
 
     random.seed(seed)
 

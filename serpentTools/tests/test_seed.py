@@ -1,0 +1,111 @@
+"""
+Test the seedFiles function
+"""
+
+import re
+from unittest import TestCase
+from shutil import rmtree
+from os import remove
+
+from serpentTools import seedFiles, generateSeed
+
+BASE_INPUT_FILE = "base-seed.sss"
+BASE_CONTENTS = "% EMPTY FILE"
+LENGTH_SEEDS = 10
+NUM_FILES = 5
+
+SEED_REGEX = re.compile(r'set seed (\d+)')
+# Match the value used to set the serpent SEED
+INCLUDE_REGEX = re.compile(r'include ".*{}"'.format(BASE_INPUT_FILE))
+
+
+def setUpModule():
+    """Initialize the base input file"""
+    with open(BASE_INPUT_FILE, 'w') as out:
+        out.write(BASE_CONTENTS)
+
+
+def tearDownModule():
+    """Remove the base input file."""
+    remove(BASE_INPUT_FILE)
+
+
+class SeedTesterHelper(TestCase):
+
+    def _examineSeed(self, seed):
+        self.assertEqual(len(str(seed)), LENGTH_SEEDS, msg=seed)
+
+
+class SeedGeneratorTester(SeedTesterHelper):
+    """
+    Test the capabilities of the generateSeed function
+    """
+
+    def test_badLength(self):
+        """Try a variety of bad lengths and check for failure."""
+        self.assertRaises(ValueError, generateSeed, -1)
+        self.assertRaises(TypeError, generateSeed, {'fail': True})
+        self.assertRaises(ValueError, generateSeed, 0)
+        self.assertRaises(ValueError, generateSeed, '-1')
+
+    def test_goodLength(self):
+        """Check the length of random seeds given a variety of input types"""
+        for typeFunc in [int, float, str]:
+            actual = generateSeed(typeFunc(LENGTH_SEEDS))
+            self._examineSeed(actual)
+
+
+class SeedlessFileWriter(SeedTesterHelper):
+    """
+    Test the writer without passing a value of ``seed`` to the function
+    """
+
+    SEED = None
+
+    def _examineSeedsInFiles(self, files):
+        self.assertEqual(NUM_FILES, len(files), msg="Number of files written.")
+        for fileP in files:
+            self._examineSeedInFile(fileP)
+            remove(fileP)
+
+    def _examineSeedInFile(self, fileP):
+        with open(fileP) as stream:
+            lines = stream.read()
+            match = SEED_REGEX.search(lines)
+            self.assertTrue(match is not None,
+                            msg="No seed setting found in {}".format(fileP))
+
+            groups = match.groups()
+            self.assertEqual(1, len(groups),
+                             msg=("Did not find a solitary seed declaration "
+                                  "in {}".format(fileP)))
+            actualSeed = int(groups[0])
+            self._examineSeed(actualSeed)
+
+    def _examineLinksInFiles(self, files):
+        for fileP in files:
+            with open(fileP) as stream:
+                includeMatch = INCLUDE_REGEX.search(stream.read())
+                self.assertTrue(includeMatch is not None, msg=fileP)
+
+    def test_noOutdir_noLink(self):
+        """
+        Write the files and verify contents with no output dir nor linking.
+        """
+        files = seedFiles(BASE_INPUT_FILE, NUM_FILES, self.SEED,
+                          outputDir=None, link=False)
+        self._examineSeedsInFiles(files)
+
+    def test_noOutdir_withLink(self):
+        """
+        Write the files and verify contents with no output dir.
+        """
+        files = seedFiles(BASE_INPUT_FILE, NUM_FILES, self.SEED,
+                          outputDir=None, link=True)
+        self._examineLinksInFiles(files)
+        self._examineSeedsInFiles(files)
+
+
+if __name__ == '__main__':
+    from unittest import main
+    main()
