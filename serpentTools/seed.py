@@ -10,7 +10,7 @@ import random
 
 from six.moves import range
 
-from serpentTools.messages import error, debug
+from serpentTools.messages import info
 
 __all__ = ['seedFiles', 'generateSeed']
 
@@ -176,7 +176,7 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
     if outputDir is not None:
         fPrefix = path.abspath(path.join(inputRoot, outputDir))
         if not path.isdir(fPrefix):
-            debug('Creating directory at {}'.format(fPrefix))
+            info('Creating directory at {}'.format(fPrefix))
             os.mkdir(fPrefix)
     else:
         fPrefix = inputRoot
@@ -185,4 +185,3 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
 
     writeFunc = _include if link else _copy
     return writeFunc(inputPath, numSeeds, fileFmt, bits, length)
-
