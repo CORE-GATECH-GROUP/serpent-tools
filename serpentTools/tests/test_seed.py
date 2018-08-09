@@ -5,7 +5,7 @@ Test the seedFiles function
 from math import log10
 import re
 import random
-from tempfile import TemporaryDirectory
+from tempfile import mkdtemp
 from unittest import TestCase
 from os import remove, listdir, rmdir
 
@@ -122,18 +122,17 @@ class SeedFileHelper(SeedInspector):
         itemsInDir = listdir(dirName)
         self.assertEqual(len(itemsInDir), NUM_FILES, msg=itemsInDir)
         self._examineSeedsInFiles(files)
+        rmdir(dirName)
 
-    def test_outDir_existing(self):
+    def test_outDir(self):
         """Verify the file writer can write into existing directories."""
-        tempDir = TemporaryDirectory()
-        self._setupAndTestWithDirectories(tempDir.name)
-        tempDir.cleanup()
+        tempDir = mkdtemp()
+        self._setupAndTestWithDirectories(tempDir)
 
     def test_outDir_makeNew(self):
         """Verify the file writer can create new directories."""
         outDir = 'rm-seed-d'
         self._setupAndTestWithDirectories(outDir)
-        rmdir(outDir)
 
 
 class SeedlessFileWriter(SeedFileHelper):
