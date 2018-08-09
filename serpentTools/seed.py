@@ -1,5 +1,5 @@
 """
-Function to copy an input file N times with N randomly generated seeds
+Functions to copy an input file N times with N randomly generated seeds
 """
 
 from math import log10
@@ -123,7 +123,7 @@ def seedFiles(inputFile, numSeeds, seed=None, outputDir=None, link=False,
         relative to directory that contains the input file
     link: bool
         If True, do not copy the full file. Instead, create a new file
-        with 'include <inputFile>' and the new seed declaration.
+        with ``'include <inputFile>'`` and the new seed declaration.
     length: int
         Number of digits for random seeds
 
