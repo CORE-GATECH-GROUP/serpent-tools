@@ -103,8 +103,8 @@ class DetGridsCompareTester(DetCompareHelper):
             partial=True)
 
 
-class DetectorTallyTester(DetCompareHelper):
-    """Class that modifies detector tallies prior to comparisons."""
+class TallyModifier(DetCompareHelper):
+    """Base class that modifies detectors and checks the comparisons."""
 
     IDENTICAL_TALLY_MSG = "Expected values for tallies are identical"
     INSIDE_CONF_MSG = "Confidence intervals for tallies overlap"
@@ -112,7 +112,20 @@ class DetectorTallyTester(DetCompareHelper):
                         "statistical limits")
 
     def compare(self):
-        return compareObjs(self.refDetector, self.otherDetector)
+        """Compare the two test objects and return the result."""
+        return compareObjs(self.refObj, self.otherObj)
+
+    @property
+    def refObj(self):
+        raise AttributeError
+
+    @property
+    def otherObj(self):
+        raise AttributeError
+
+    def checkUnmodifiedDetectors(self):
+        """Check all other detectors in the comparison."""
+        pass
 
     def checkFinalStatus(self, obj0, obj1, status):
         """Assert that the correct final status is logged."""
@@ -127,8 +140,8 @@ class DetectorTallyTester(DetCompareHelper):
         self.assertMsgInLogs(
             "DEBUG", self.IDENTICAL_TALLY_MSG,
             partial=True)
-        self.checkFinalStatus(self.refDetector, self.otherDetector, True)
-
+        self.checkFinalStatus(self.refObj, self.otherObj, True)
+        self.checkUnmodifiedDetectors()
 
     def test_withinConfIntervals(self):
         """Verify that slight differences in tallies are logged."""
@@ -137,8 +150,8 @@ class DetectorTallyTester(DetCompareHelper):
         self.assertTrue(similar)
         self.assertMsgInLogs(
             "DEBUG", self.INSIDE_CONF_MSG, partial=True)
-        self.checkFinalStatus(self.refDetector, self.otherDetector, True)
-
+        self.checkFinalStatus(self.refObj, self.otherObj, True)
+        self.checkUnmodifiedDetectors()
 
     def test_outsideConfIntervals(self):
         """Verify that large differences in tallies are logged."""
@@ -147,7 +160,42 @@ class DetectorTallyTester(DetCompareHelper):
         self.assertFalse(similar)
         self.assertMsgInLogs(
             "ERROR", self.OUTISDE_CONF_MSG, partial=True)
-        self.checkFinalStatus(self.refDetector, self.otherDetector, False)
+        self.checkFinalStatus(self.refObj, self.otherObj, False)
+        self.checkUnmodifiedDetectors()
+
+
+class DetectorCompareTester(TallyModifier):
+    """Class that tests a compare across detectors"""
+
+    @property
+    def refObj(self):
+        return self.refDetector
+
+    @property
+    def otherObj(self):
+        return self.otherDetector
+
+
+class DetectorReaderCompareTester(TallyModifier):
+    """Class that also tests the reader-level compare for completeness."""
+
+    @property
+    def refObj(self):
+        return self.refReader
+
+    @property
+    def otherObj(self):
+        return self.otherReader
+
+    def checkUnmodifiedDetectors(self):
+        for detName in UNMODIFIED_DETS:
+            myDet = self.refReader.detectors[detName]
+            otherDet = self.otherReader.detectors[detName]
+            finalMsg = finalCompareMsg(myDet, otherDet, True)
+            self.assertMsgInLogs("INFO", finalMsg)
+
+
+del TallyModifier
 
 if __name__ == '__main__':
     from unittest import main
