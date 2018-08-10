@@ -3,6 +3,7 @@ Test the comparison utilities for detectors
 """
 
 from serpentTools.tests.utils import TestCaseWithLogCapture
+from serpentTools.utils.compare import finalCompareMsg
 from serpentTools import readDataFile
 
 TEST_FILE = 'bwr_det0.m'
@@ -113,6 +114,12 @@ class DetectorTallyTester(DetCompareHelper):
     def compare(self):
         return compareObjs(self.refDetector, self.otherDetector)
 
+    def checkFinalStatus(self, obj0, obj1, status):
+        """Assert that the correct final status is logged."""
+        expected = finalCompareMsg(obj0, obj1, status)
+        level = "INFO" if status else "WARNING"
+        self.assertMsgInLogs(level, expected)
+
     def test_unmodifiedCompare(self):
         """Verify that w/o modifications the test passes"""
         similar = self.compare()
@@ -120,6 +127,8 @@ class DetectorTallyTester(DetCompareHelper):
         self.assertMsgInLogs(
             "DEBUG", self.IDENTICAL_TALLY_MSG,
             partial=True)
+        self.checkFinalStatus(self.refDetector, self.otherDetector, True)
+
 
     def test_withinConfIntervals(self):
         """Verify that slight differences in tallies are logged."""
@@ -128,6 +137,8 @@ class DetectorTallyTester(DetCompareHelper):
         self.assertTrue(similar)
         self.assertMsgInLogs(
             "DEBUG", self.INSIDE_CONF_MSG, partial=True)
+        self.checkFinalStatus(self.refDetector, self.otherDetector, True)
+
 
     def test_outsideConfIntervals(self):
         """Verify that large differences in tallies are logged."""
@@ -136,6 +147,7 @@ class DetectorTallyTester(DetCompareHelper):
         self.assertFalse(similar)
         self.assertMsgInLogs(
             "ERROR", self.OUTISDE_CONF_MSG, partial=True)
+        self.checkFinalStatus(self.refDetector, self.otherDetector, False)
 
 if __name__ == '__main__':
     from unittest import main

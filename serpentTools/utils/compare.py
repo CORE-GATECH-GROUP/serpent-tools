@@ -537,6 +537,9 @@ def compareDictOfArrays(d0, d1, desc, lower=DEF_COMP_LOWER,
     return similar
 
 
+FINAL_COMPARE_MSG = "Objects {} and {}{} agree within given tolerances"
+
+
 def finalCompareMsg(obj0, obj1, similar):
     """
     Return the string used to signify the conclusion of a comparison
@@ -556,3 +559,4 @@ def finalCompareMsg(obj0, obj1, similar):
     str:
         Concluding remark about the comparison.
     """
+    return FINAL_COMPARE_MSG.format(obj0, obj1, "" if similar else "do not")
