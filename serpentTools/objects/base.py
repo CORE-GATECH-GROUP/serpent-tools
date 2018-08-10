@@ -95,10 +95,13 @@ class BaseObject(object):
         areSimilar = self._compare(other, lower, upper, sigma)
 
         if areSimilar:
-            info("Objects agree within tolerances.")
+            herald = info
+            doagree = ""
         else:
-            warning("Objects do not agree within tolerances.")
-
+            herald = warning
+            doagree = " do not"
+        herald("Objects {} and {}{} agree with given tolerances".format(
+               self, other, doagree))
         if previousVerb is not None:
             rc['verbosity'] = previousVerb
 
