@@ -91,6 +91,11 @@ class BaseObject(object):
 
         areSimilar = self._compare(other, lower, upper, sigma)
 
+        if areSimilar:
+            info("Objects agree within tolerances.")
+        else:
+            warning("Objects do not agree within tolerances.")
+
         if previousVerb is not None:
             rc['verbosity'] = previousVerb
 
