@@ -18,7 +18,10 @@ from serpentTools.plot import plot, cartMeshPlot
 from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DETECTOR_PLOT_LABELS,
     compareDocDecorator, DEF_COMP_LOWER, DEF_COMP_SIGMA,
-    DEF_COMP_UPPER,
+    DEF_COMP_UPPER, compareDictOfArrays,
+)
+from serpentTools.utils.compare import (
+    getLogOverlaps,
 )
 from serpentTools.settings import rc
 
@@ -542,7 +545,8 @@ class DetectorBase(NamedObject):
             error("Detector tallies do not have identical shapes"
                   + BAD_OBJ_SUBJ.format('tallies', myShape, otherShape))
             return False
-        similar = self._compareGrids(other, lower, upper)
+        similar = compareDictOfArrays(self.grids, other.grids, 'grids',
+                                      lower=lower, upper=upper)
 
         similar &= getLogOverlaps('tallies', self.tallies, other.tallies,
                                   self.errors, other.errors, sigma,
@@ -564,5 +568,3 @@ class DetectorBase(NamedObject):
         error("{} detector has scores while {} does not"
               .format(firstK.capitalize(), secondK))
         return similar
-
-    def _compareGrids(self, other, lower):
