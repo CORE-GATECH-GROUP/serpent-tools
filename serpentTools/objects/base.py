@@ -21,7 +21,7 @@ from serpentTools.utils import (
     DEF_COMP_UPPER, compareDictOfArrays,
 )
 from serpentTools.utils.compare import (
-    getLogOverlaps,
+    getLogOverlaps, finalCompareMsg,
 )
 from serpentTools.settings import rc
 
@@ -96,12 +96,9 @@ class BaseObject(object):
 
         if areSimilar:
             herald = info
-            doagree = ""
         else:
             herald = warning
-            doagree = " do not"
-        herald("Objects {} and {}{} agree with given tolerances".format(
-               self, other, doagree))
+        herald(finalCompareMsg(self, other, areSimilar))
         if previousVerb is not None:
             rc['verbosity'] = previousVerb
 
