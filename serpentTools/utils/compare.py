@@ -535,3 +535,28 @@ def compareDictOfArrays(d0, d1, desc, lower=DEF_COMP_LOWER,
             continue
         similar &= logDirectCompare(val0, val1, lower, upper, key)
     return similar
+
+
+FINAL_COMPARE_MSG = "Objects {} and {}{} agree within given tolerances"
+
+
+def finalCompareMsg(obj0, obj1, similar):
+    """
+    Return the string used to signify the conclusion of a comparison
+
+    Mainly exposed to developers for testing purposes.
+
+    Parameters
+    ----------
+    obj0:
+    obj1: Subclass of :class:`~serpentTools.objects.base.BaseObject`
+        Objects that have been compared
+    similar: bool
+        Result of comparison
+
+    Returns
+    -------
+    str:
+        Concluding remark about the comparison.
+    """
+    return FINAL_COMPARE_MSG.format(obj0, obj1, "" if similar else "do not")

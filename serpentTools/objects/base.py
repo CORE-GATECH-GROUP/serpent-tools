@@ -8,11 +8,20 @@ from six import add_metaclass
 from numpy import arange, hstack, log, divide
 from matplotlib.pyplot import axes
 
-from serpentTools.messages import debug, warning, SerpentToolsException, info
+from serpentTools.messages import (
+    debug, warning, SerpentToolsException, info,
+    error,
+    BAD_OBJ_SUBJ,
+
+)
 from serpentTools.plot import plot, cartMeshPlot
 from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DETECTOR_PLOT_LABELS,
-    compareDocDecorator, DEF_COMP_LOWER, DEF_COMP_SIGMA, DEF_COMP_UPPER,
+    compareDocDecorator, DEF_COMP_LOWER, DEF_COMP_SIGMA,
+    DEF_COMP_UPPER, compareDictOfArrays,
+)
+from serpentTools.utils.compare import (
+    getLogOverlaps, finalCompareMsg,
 )
 from serpentTools.settings import rc
 
@@ -85,6 +94,11 @@ class BaseObject(object):
 
         areSimilar = self._compare(other, lower, upper, sigma)
 
+        if areSimilar:
+            herald = info
+        else:
+            herald = warning
+        herald(finalCompareMsg(self, other, areSimilar))
         if previousVerb is not None:
             rc['verbosity'] = previousVerb
 
@@ -523,3 +537,34 @@ class DetectorBase(NamedObject):
         if qty in self.indexes:
             return self.indexes[qty], xlabel
         return fallbackX, xlabel
+
+    def _compare(self, other, lower, upper, sigma):
+        myShape = self.tallies.shape
+        otherShape = other.tallies.shape
+        if myShape != otherShape:
+            error("Detector tallies do not have identical shapes"
+                  + BAD_OBJ_SUBJ.format('tallies', myShape, otherShape))
+            return False
+        similar = compareDictOfArrays(self.grids, other.grids, 'grids',
+                                      lower=lower, upper=upper)
+
+        similar &= getLogOverlaps('tallies', self.tallies, other.tallies,
+                                  self.errors, other.errors, sigma,
+                                  relative=True)
+        hasScores = [obj.scores is not None for obj in (self, other)]
+
+        similar &= hasScores[0] == hasScores[1]
+
+        if not any(hasScores):
+            return similar
+        if all(hasScores):
+            similar &= getLogOverlaps('scores', self.scores, other.scores,
+                                      self.errors, other.errors, sigma,
+                                      relative=True)
+            return similar
+        firstK, secondK = "first", "second"
+        if hasScores[1]:
+            firstK, secondK = secondK, firstK
+        error("{} detector has scores while {} does not"
+              .format(firstK.capitalize(), secondK))
+        return similar
