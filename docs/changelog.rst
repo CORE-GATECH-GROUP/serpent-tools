@@ -12,6 +12,8 @@ Next
 ====
 
 * :pull:`221` - Expanded ``utils`` module to better assist developers
+* :pull:`229` - :meth:`serpentTools.parsers.sensitivity.SensitivityReader.plot`
+  now respects the option to not set x nor y labels.
 
 .. _v0.5.2:
 
