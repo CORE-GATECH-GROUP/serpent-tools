@@ -2,6 +2,7 @@
 Utilities to make testing easier
 """
 
+from functools import wraps
 from unittest import TestCase
 from logging import NOTSET
 
@@ -163,3 +164,20 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
         failMsg = "Found {} match for {} under {} but should not have"
         self.assertFalse(self.msgInLogs(level, msg, partial),
                          msg=failMsg.format(matchType, msg, level))
+
+
+def plotTest(f):
+    """Decorator that clears up existing plots prior to test."""
+    from matplotlib.pyplot import close, figure
+    @wraps(f)
+    def wrappedTest(*args, **kwargs):
+        close('all')
+        figure()
+        return f(*args, **kwargs)
+    return wrappedTest
+
+
+def getLegendTexts(ax):
+    """Return all texts for items in legend."""
+    lgd = ax.legend()
+    return [item.get_text() for item in lgd.get_texts()]

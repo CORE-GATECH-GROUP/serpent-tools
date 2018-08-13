@@ -1,8 +1,9 @@
 """
 Test the sensitivity reader
 """
-import unittest
+from unittest import TestCase
 from collections import OrderedDict
+from itertools import product
 
 from six import iteritems
 from numpy import array, inf
@@ -11,15 +12,19 @@ from numpy.testing import assert_allclose
 from serpentTools.data import getFile
 from serpentTools.parsers.sensitivity import SensitivityReader
 from serpentTools.tests import compareDictOfArrays
+from serpentTools.tests.utils import (plotTest, getLegendTexts)
 
 TEST_FILE = getFile('bwr_sens0.m')
 
 
-class SensitivityTester(unittest.TestCase):
-    """Class for testing the sensitivity reader."""
+class SensitivityTestHelper(TestCase):
     def setUp(self):
         self.reader = SensitivityReader(TEST_FILE)
         self.reader.read()
+
+
+class SensitivityTester(SensitivityTestHelper):
+    """Class for testing the sensitivity reader."""
 
     def test_expectedSensitivities(self):
         """Verify the sensitivity arrays are loaded correctly."""
@@ -194,5 +199,89 @@ class SensitivityTester(unittest.TestCase):
         self.assertDictEqual(expected, actual)
 
 
+class SensitivityPlotTester(SensitivityTestHelper):
+    """Class for testing rudimentary plot aspects of the reader."""
+
+    ZAIS = [922350]
+    RESP = 'keff'
+    DEFAULT_XLABEL = "Energy [eV]"
+
+    def _plot(self, **kwargs):
+        """Shortcut for plotting."""
+        return self.reader.plot(self.RESP, **kwargs)
+
+    def _checkAxisLabels(self, ax, xlabel, ylabel, msg=None):
+        self.assertEqual(ax.get_xlabel(), xlabel, msg=msg)
+        self.assertEqual(ax.get_ylabel(), ylabel, msg=msg)
+
+    @plotTest
+    def test_plot_normalized(self):
+        """Verify the default axis labels when normalized and with errors."""
+        ax = self._plot(normalize=True, sigma=3)
+        self._checkAxisLabels(ax, self.DEFAULT_XLABEL,
+                              'Sensitivity per unit lethargy $\\pm3\\sigma$')
+
+    @plotTest
+    def test_plot_notNormalized_noSigma(self):
+        """
+        Verify the default axis labels when not normalized nor errors given.
+        """
+        ax = self._plot(normalize=False, sigma=0)
+        self._checkAxisLabels(ax, self.DEFAULT_XLABEL,
+                              'Sensitivity')
+
+    @plotTest
+    def test_plot_passLabels_noset(self):
+        """Verify that the axis labels can be set to empty strings."""
+        xlabel = False
+        ylabel = ""
+        nosetLabel = ""  # un-set matplotlib axis label
+        ax = self._plot(xlabel=xlabel, ylabel=ylabel)
+        self._checkAxisLabels(ax, nosetLabel, nosetLabel)
+
+    def _generateLegendTexts(self, formatter, zais=None, mats=None,
+                             perts=None):
+        reader = self.reader
+        zais = zais or list(reader.zais.keys())
+        mats = mats or list(reader.materials.keys())
+        perts = perts or list(reader.perts.keys())
+        texts = []
+        # match iteration order of sensitivity reader
+        for z, m, p in product(zais, mats, perts):
+            texts.append(formatter.format(z=z, m=m, p=p, r=self.RESP))
+        return texts
+
+    @plotTest
+    def test_plot_labelFormatter(self):
+        """Verify the label formatter for sensitivity plots."""
+        labelFmt = "{m} {z} {p} {r}"
+        ax = self._plot(labelFmt=labelFmt)
+        actual = getLegendTexts(ax)
+        expected = self._generateLegendTexts(labelFmt)
+        self.assertListEqual(actual, expected)
+
+    @plotTest
+    def test_plot_labelFormatter_oneIso(self):
+        """Verify the label formatter for sensitivity plots - pass one ZAI."""
+        labelFmt = "{m} {z} {p} {r}"
+        ax = self._plot(zai=922350, labelFmt=labelFmt)
+        actual = getLegendTexts(ax)
+        expected = self._generateLegendTexts(labelFmt, zais=[922350, ])
+        self.assertListEqual(actual, expected)
+
+    @plotTest
+    def test_plot_raiseError_missingPert(self):
+        """Verify that an error is raised if a bad perturbation is passed."""
+        with self.assertRaises(KeyError):
+            self._plot(zai=-100)
+
+    @plotTest
+    def test_plot_raiseError_missingResp(self):
+        """Verify that an error is raised if a bad response is passed."""
+        with self.assertRaises(KeyError):
+            self.reader.plot("THIS SHOULD FAIL")
+
+
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()
