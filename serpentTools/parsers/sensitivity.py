@@ -332,13 +332,13 @@ class SensitivityReader(BaseReader):
             ax.errorbar(energies, yVals, yErrs, label=label,
                         drawstyle='steps-post')
 
-        xlabel = xlabel or 'Energy [eV]'
-        ylabel = ylabel or (
+        xlabel = 'Energy [eV]' if xlabel is None else xlabel
+        ylabel = ylabel if ylabel is not None else (
             'Sensitivity {} {}'.format(
                 'per unit lethargy' if normalize else '',
                 r'$\pm{}\sigma$'.format(sigma) if sigma else ''))
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        legend=legend, xlabel=xlabel, ylabel=ylabel)
+                        legend=legend, xlabel=xlabel, ylabel=ylabel.strip())
         return ax
 
     def _getCleanedPertOpt(self, key, value):
