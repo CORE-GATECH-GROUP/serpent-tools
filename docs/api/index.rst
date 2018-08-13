@@ -25,3 +25,4 @@ API
    xsplot.rst
    microxs.rst
    exceptions.rst
+   seed.rst
