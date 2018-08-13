@@ -344,11 +344,11 @@ class SensitivityReader(BaseReader):
     def _getCleanedPertOpt(self, key, value):
         """Return a set of all or some of the requested perturbations."""
         assert hasattr(self, key), key
-        opts = set(getattr(self, key).keys())
+        opts = getattr(self, key).keys()
         if value is None:
-            return opts
+            return list(opts)
         requested = set([value, ]) if isinstance(value, str) else set(value)
-        missing = {str(xx) for xx in requested.difference(opts)}
+        missing = {str(xx) for xx in requested.difference(set(opts))}
         if missing:
             raise KeyError("Could not find the following perturbations: "
                            "{}".format(', '.join(missing)))
