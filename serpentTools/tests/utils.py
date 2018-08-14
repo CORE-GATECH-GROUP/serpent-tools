@@ -169,6 +169,7 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
 def plotTest(f):
     """Decorator that clears up existing plots prior to test."""
     from matplotlib.pyplot import close, figure
+
     @wraps(f)
     def wrappedTest(*args, **kwargs):
         close('all')
