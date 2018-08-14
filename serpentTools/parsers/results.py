@@ -105,7 +105,8 @@ class ResultsReader(XSReader):
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'results')
         self.__serpentVersion = rc['serpentVersion']
-        self._counter = {'meta': 0, 'rslt': 0, 'univ': 0}
+        self._counter = {'meta': 0, 'rslt': 0}
+        self._numUniverses = 0
         self._univlist = []
         self.metadata, self.resdata, self.universes = {}, {}, {}
 
@@ -140,8 +141,11 @@ class ResultsReader(XSReader):
             self._counter['meta'] += 1
         elif self._keysVersion['rslt'] in tline:
             self._posFile = 'rslt'
-            self._counter['rslt'] = (
-                self._counter['meta'] - 1 // self._counter['univ'] + 1)
+            if self._numUniv:
+                self._counter['rslt'] = (
+                    (self._counter['meta'] - 1) // self._numUniv + 1)
+                return
+                self._counter['rslt'] = self._counter['meta']
         elif self._keysVersion['univ'] in tline:
             self._posFile = 'univ'
             varType, varVals = self._getVarValues(tline)  # universe name
@@ -312,19 +316,17 @@ class ResultsReader(XSReader):
                     if varVals in univSet:
                         break
                     univSet.add(varVals)  # add the new universe
-            if not univSet:
-                self._counter['univ'] = 1
-                return
-            self._counter['univ'] = len(univSet)
+            self._numUniv = len(univSet)
 
     def _inspectData(self):
         """ensure the parser grabbed expected materials."""
-        obtainedRes = self._counter['meta'] // self._counter['univ']
+        obtainedRes = (self._counter['meta'] // self._numUniv if self._numUniv
+                       else self._counter['meta'])
         if obtainedRes != self._counter['rslt']:
             raise SerpentToolsException(
                 "The file {} is not complete. The reader found {} universes, "
                 "{} time-points, and {} overall result points "
-                .format(self.filePath, self._counter['univ'],
+                .format(self.filePath, self._numUniv,
                         self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
             if not self.settings['expectGcu']:
