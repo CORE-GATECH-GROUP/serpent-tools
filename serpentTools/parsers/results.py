@@ -103,9 +103,10 @@ class ResultsReader(XSReader):
     """
 
     def __init__(self, filePath):
-        XSReader.__init__(self, filePath, 'xs')
+        XSReader.__init__(self, filePath, 'results')
         self.__serpentVersion = rc['serpentVersion']
-        self._counter = {'meta': 0, 'rslt': 0, 'univ': 0}
+        self._counter = {'meta': 0, 'rslt': 0}
+        self._numUniverses = 0
         self._univlist = []
         self.metadata, self.resdata, self.universes = {}, {}, {}
 
@@ -140,8 +141,11 @@ class ResultsReader(XSReader):
             self._counter['meta'] += 1
         elif self._keysVersion['rslt'] in tline:
             self._posFile = 'rslt'
-            self._counter['rslt'] = divmod(
-                self._counter['meta'] - 1, self._counter['univ'])[0] + 1
+            if self._numUniv:
+                self._counter['rslt'] = (
+                    (self._counter['meta'] - 1) // self._numUniv + 1)
+                return
+                self._counter['rslt'] = self._counter['meta']
         elif self._keysVersion['univ'] in tline:
             self._posFile = 'univ'
             varType, varVals = self._getVarValues(tline)  # universe name
@@ -311,29 +315,34 @@ class ResultsReader(XSReader):
                     varType, varVals = self._getVarValues(tline)  # universe
                     if varVals in univSet:
                         break
-                    else:
-                        univSet.add(varVals)  # add the new universe
-            if not univSet:
-                raise SerpentToolsException("No universes are found in the "
-                                            "file {}".format(self.filePath))
-            else:
-                self._counter['univ'] = len(univSet)
+                    univSet.add(varVals)  # add the new universe
+            self._numUniv = len(univSet)
 
-    def _postcheck(self):
+    def _inspectData(self):
         """ensure the parser grabbed expected materials."""
-        obtainedRes = divmod(self._counter['meta'], self._counter['univ'])[0]
+        obtainedRes = (self._counter['meta'] // self._numUniv if self._numUniv
+                       else self._counter['meta'])
         if obtainedRes != self._counter['rslt']:
             raise SerpentToolsException(
                 "The file {} is not complete. The reader found {} universes, "
                 "{} time-points, and {} overall result points "
-                .format(self.filePath, self._counter['univ'],
+                .format(self.filePath, self._numUniv,
                         self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
+            if not self.settings['expectGcu']:
+                raise SerpentToolsException(
+                    "Metadata and results data were not found in {}"
+                    .format(self.filePath))
             for keys, dictUniv in iteritems(self.universes):
-                if not dictUniv.hasData():
-                    raise SerpentToolsException(
-                        "metadata, resdata and universes are all empty "
-                        "from {}".format(self.filePath))
+                if dictUniv.hasData():
+                    return
+            raise SerpentToolsException(
+                "metadata, resdata and universes are all empty "
+                "from {} and <results.expectGcu> is True"
+                .format(self.filePath))
+
+    def _postcheck(self):
+        self._inspectData()
         self._cleanMetadata()
 
     def _cleanMetadata(self):
