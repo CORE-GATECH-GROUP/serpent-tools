@@ -235,7 +235,7 @@ class SensitivityReader(BaseReader):
 
     @magicPlotDocDecorator
     def plot(self, resp, zai=None, pert=None, mat=None, sigma=3,
-             normalize=True, ax=None, labelFmt=None, titleFmt=None,
+             normalize=True, ax=None, labelFmt=None,
              title=None, logx=True, logy=False, loglog=False, xlabel=None,
              ylabel=None, legend=True, ncol=1):
         """
@@ -332,23 +332,23 @@ class SensitivityReader(BaseReader):
             ax.errorbar(energies, yVals, yErrs, label=label,
                         drawstyle='steps-post')
 
-        xlabel = xlabel or 'Energy [eV]'
-        ylabel = ylabel or (
+        xlabel = 'Energy [eV]' if xlabel is None else xlabel
+        ylabel = ylabel if ylabel is not None else (
             'Sensitivity {} {}'.format(
                 'per unit lethargy' if normalize else '',
                 r'$\pm{}\sigma$'.format(sigma) if sigma else ''))
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        legend=legend, xlabel=xlabel, ylabel=ylabel)
+                        legend=legend, xlabel=xlabel, ylabel=ylabel.strip())
         return ax
 
     def _getCleanedPertOpt(self, key, value):
         """Return a set of all or some of the requested perturbations."""
         assert hasattr(self, key), key
-        opts = set(getattr(self, key).keys())
+        opts = getattr(self, key).keys()
         if value is None:
-            return opts
+            return list(opts)
         requested = set([value, ]) if isinstance(value, str) else set(value)
-        missing = {str(xx) for xx in requested.difference(opts)}
+        missing = {str(xx) for xx in requested.difference(set(opts))}
         if missing:
             raise KeyError("Could not find the following perturbations: "
                            "{}".format(', '.join(missing)))

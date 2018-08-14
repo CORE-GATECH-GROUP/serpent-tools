@@ -15,6 +15,9 @@ Next
 * :pull:`227` - Better documentation of our :ref:`cli`.
   Better documentation and testing of functions for generating input
   files with unique random seeds - :mod:`serpentTools.seed`
+* :pull:`229` - :meth:`serpentTools.parsers.sensitivity.SensitivityReader.plot`
+  now respects the option to not set x nor y labels.
+  
 
 .. _v0.5.2:
 
