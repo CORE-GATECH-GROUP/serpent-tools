@@ -1,7 +1,9 @@
 """
 Comparison utilities
 """
-from numpy import fabs, where, zeros_like, ndarray
+from numpy import (
+    fabs, zeros_like, ndarray, array, greater, multiply, subtract,
+)
 
 from serpentTools.messages import (
     error,
@@ -131,7 +133,9 @@ def directCompare(obj0, obj1, lower, upper):
     """
     type0 = type(obj0)
     type1 = type(obj1)
+
     if type0 != type1:
+        # can still compare floats and ints easily
         if type0 not in TPL_FLOAT_INT or type1 not in TPL_FLOAT_INT:
             return 255
     if type0 in (str, bool):
@@ -139,22 +143,31 @@ def directCompare(obj0, obj1, lower, upper):
             return 200
         return 0
 
-    if type0 in (float, int, ndarray) or hasattr(obj0, 'dtype'):
-        diff = fabs(obj0 - obj1) * 100
-        if type0 is ndarray:
-            nonZI = where(obj0 > LOWER_LIM_DIVISION)
-            diff[nonZI] /= obj0[nonZI]
-        elif obj0 > LOWER_LIM_DIVISION:
-            diff /= obj0
-        maxDiff = diff.max() if isinstance(diff, ndarray) else diff
-        if maxDiff < LOWER_LIM_DIVISION:
-            return 0
-        if maxDiff <= lower:
-            return 1
-        if maxDiff >= upper:
-            return 100
-        return 10
-    return -1
+    # Convert all to numpy arrays
+    if type0 in TPL_FLOAT_INT:
+        obj0 = array([obj0])
+        obj1 = array([obj1])
+    else:
+        # convert to array, but return if data-type is object
+        # need some indexable structure so dicts and sets won't work
+        obj0 = array(obj0)
+        obj1 = array(obj1)
+        if obj0.dtype.name == 'object':
+            return -1
+
+    diff = multiply(
+        fabs(subtract(obj0, obj1)), 100
+    )
+    nonZI = greater(fabs(obj1), LOWER_LIM_DIVISION)
+    diff[nonZI] /= obj0[nonZI]
+    maxDiff = diff.max()
+    if maxDiff < LOWER_LIM_DIVISION:
+        return 0
+    if maxDiff <= lower:
+        return 1
+    if maxDiff >= upper:
+        return 100
+    return 10
 
 
 @compareDocDecorator
