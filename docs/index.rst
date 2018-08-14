@@ -50,6 +50,7 @@ using :term:`SERPENT`.
    settingsTop
    variableGroupsTop
    api/index
+   command-line
    develop/index
    license
    contributors
