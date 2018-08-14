@@ -1,6 +1,6 @@
 """Test the results reader."""
 
-import os
+from os import remove
 import unittest
 
 from numpy import array
@@ -33,14 +33,7 @@ class TestBadFiles(unittest.TestCase):
         badReader = ResultsReader(badFile)
         with self.assertRaises(SerpentToolsException):
             badReader.read()
-        os.remove(badFile)
-
-    def test_noUniverses(self):
-        """Verify that the reader raises an error if no universes are stored on the file""" # noqa
-        univFile = getFile('pwr_noUniv_res.m')
-        univReader = ResultsReader(univFile)
-        with self.assertRaises(SerpentToolsException):
-            univReader.read()
+        remove(badFile)
 
 
 class TestEmptyAttributes(unittest.TestCase):
