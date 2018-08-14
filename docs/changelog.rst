@@ -17,6 +17,10 @@ Next
   files with unique random seeds - :mod:`serpentTools.seed`
 * :pull:`229` - :meth:`serpentTools.parsers.sensitivity.SensitivityReader.plot`
   now respects the option to not set x nor y labels.
+* :pull:`231` - :class:`~serpentTools.parsers.results.ResultsReader` objects
+  can now read files that do not contain group constant data. The setting
+  :ref:`results-expectGcu` should be used to inform the reader that no
+  group constant data is anticipated
   
 
 .. _v0.5.2:
