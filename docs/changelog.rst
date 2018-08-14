@@ -6,10 +6,10 @@
 Changelog
 =========
 
-.. _vNext:
+.. _v0.5.3:
 
-Next
-====
+:release-tag:`0.5.3`
+====================
 
 * :pull:`221` - Expanded ``utils`` module to better assist developers
 * :pull:`227` - Better documentation of our :ref:`cli`.
