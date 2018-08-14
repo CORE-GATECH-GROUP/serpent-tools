@@ -103,7 +103,7 @@ class ResultsReader(XSReader):
     """
 
     def __init__(self, filePath):
-        XSReader.__init__(self, filePath, 'xs')
+        XSReader.__init__(self, filePath, 'results')
         self.__serpentVersion = rc['serpentVersion']
         self._counter = {'meta': 0, 'rslt': 0, 'univ': 0}
         self._univlist = []
@@ -140,8 +140,8 @@ class ResultsReader(XSReader):
             self._counter['meta'] += 1
         elif self._keysVersion['rslt'] in tline:
             self._posFile = 'rslt'
-            self._counter['rslt'] = divmod(
-                self._counter['meta'] - 1, self._counter['univ'])[0] + 1
+            self._counter['rslt'] = (
+                self._counter['meta'] - 1 // self._counter['univ'] + 1)
         elif self._keysVersion['univ'] in tline:
             self._posFile = 'univ'
             varType, varVals = self._getVarValues(tline)  # universe name
@@ -311,17 +311,15 @@ class ResultsReader(XSReader):
                     varType, varVals = self._getVarValues(tline)  # universe
                     if varVals in univSet:
                         break
-                    else:
-                        univSet.add(varVals)  # add the new universe
+                    univSet.add(varVals)  # add the new universe
             if not univSet:
-                raise SerpentToolsException("No universes are found in the "
-                                            "file {}".format(self.filePath))
-            else:
-                self._counter['univ'] = len(univSet)
+                self._counter['univ'] = 1
+                return
+            self._counter['univ'] = len(univSet)
 
     def _postcheck(self):
         """ensure the parser grabbed expected materials."""
-        obtainedRes = divmod(self._counter['meta'], self._counter['univ'])[0]
+        obtainedRes = self._counter['meta'] // self._counter['univ']
         if obtainedRes != self._counter['rslt']:
             raise SerpentToolsException(
                 "The file {} is not complete. The reader found {} universes, "
