@@ -13,6 +13,25 @@ from serpentTools.parsers import ResultsReader
 from serpentTools.messages import SerpentToolsException
 
 
+GCU_START_STR = "GCU_UNIVERSE_NAME"
+NO_GCU_FILE = "./pwr_noGcu_res.m"
+GOOD_FILE = getFile("pwr_noBU_res.m")
+
+
+def setUpModule():
+    """Write the result file with no group constant data."""
+    with open(NO_GCU_FILE, 'w') as noGcu, open(GOOD_FILE) as good:
+        for line in good:
+            if GCU_START_STR in line:
+                break
+            noGcu.write(line)
+
+
+def tearDownModule():
+    """Remove the noGcu file."""
+    remove(NO_GCU_FILE)
+
+
 class TestBadFiles(unittest.TestCase):
     """
     Test bad files.
@@ -31,6 +50,20 @@ class TestBadFiles(unittest.TestCase):
             for _line in range(5):
                 badObj.write(str(_line))
         badReader = ResultsReader(badFile)
+        with self.assertRaises(SerpentToolsException):
+            badReader.read()
+        remove(badFile)
+
+    def test_emptyFile_noGcu(self):
+        """
+        Verify an exception is raised for empty files w/ no gcu data expected.
+        """
+        badFile = 'bad_results_file.m'
+        with open(badFile, 'w') as badObj:
+            for _line in range(5):
+                badObj.write(str(_line))
+        badReader = ResultsReader(badFile)
+        badReader.settings['expectGcu'] = False
         with self.assertRaises(SerpentToolsException):
             badReader.read()
         remove(badFile)
@@ -133,6 +166,9 @@ class TesterCommonResultsReader(unittest.TestCase):
             Raises SerpentToolsException
     """
 
+    HAS_UNIV = True
+    HAS_BURNUP = True
+
     def test_varsMatchSettings(self):
         """Verify that the obtained variables match the settings."""
         self.assertSetEqual(self.expVarSettings,
@@ -161,6 +197,9 @@ class TesterCommonResultsReader(unittest.TestCase):
         """Verify the burnup vector is properly stored."""
         actualBurnDays = self.reader.resdata.get('burnDays', None)
         if actualBurnDays is None:
+            if self.HAS_BURNUP:
+                raise AttributeError(
+                    "{} should have burnup, but does not".format(self))
             raise self.skipTest(
                 "{} does not, and should not, have burnup".format(self))
         assert_equal(actualBurnDays, self.expectedDays)
@@ -172,6 +211,9 @@ class TesterCommonResultsReader(unittest.TestCase):
            infExp keys and values"""
         actualStates = set(self.reader.universes.keys())
         if not actualStates:
+            if self.HAS_UNIV:
+                raise AttributeError(
+                    "{} does not have universe data, but should".format(self))
             raise self.skipTest(
                 "{} does not, and should not, have universe data".format(self))
         self.assertSetEqual(set(self.expectedStates), actualStates)
@@ -405,13 +447,13 @@ class TestReadAllResults(TesterCommonResultsReader):
         [1.00000E+37, 6.25000E-07, 0.00000E+00])
     expectedInfVals = array([2.46724E+18, 2.98999E+17])
     expectedInfUnc = array([0.00115, 0.00311])
+    expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
 
     def setUp(self):
         self.file = getFile('pwr_filter_res.m')
         # universe id, burnup, step, days
         with rc:
             rc['serpentVersion'] = '2.1.29'
-            self.expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
             self.reader = ResultsReader(self.file)
             self.reader.read()
 
@@ -430,6 +472,8 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
         4. test_universes:
                         univ is filtered
     """
+
+    HAS_BURNUP = False
     expVarSettings = {
         'VERSION', 'COMPILE_DATE', 'DEBUG', 'TITLE',
         'CONFIDENTIAL_DATA', 'INPUT_FILE_NAME',
@@ -520,17 +564,35 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
         [1.00000E+37, 6.25000E-07, 0.00000E+00])
     expectedInfVals = array([8.71807E+14, 4.80974E+13])
     expectedInfUnc = array([0.00097, 0.00121])
+    expectedStates = (('0', 1, 1, 1), ('0', 1, 1, 1))
 
     def setUp(self):
         self.file = getFile('pwr_noBU_res.m')
         # universe id, Idx, Idx, Idx
-        self.expectedStates = (('0', 1, 1, 1), ('0', 1, 1, 1))
         with rc:
             rc['serpentVersion'] = '2.1.30'
             rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
                                        'diffusion', 'eig', 'burnup-coeff']
             rc['xs.getInfXS'] = True  # only store inf cross sections
             rc['xs.getB1XS'] = False
+            self.reader = ResultsReader(self.file)
+            self.reader.read()
+
+
+class TestResultsNoBurnNoGcu(TestFilterResultsNoBurnup):
+    """Test with no group constant data present in the file."""
+
+    HAS_UNIV = False
+
+    def setUp(self):
+        self.file = NO_GCU_FILE
+        with rc:
+            rc['serpentVersion'] = '2.1.30'
+            rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
+                                       'diffusion', 'eig', 'burnup-coeff']
+            rc['xs.getInfXS'] = True  # only store inf cross sections
+            rc['xs.getB1XS'] = False
+            rc['results.expectGcu'] = False
             self.reader = ResultsReader(self.file)
             self.reader.read()
 
