@@ -317,7 +317,7 @@ class ResultsReader(XSReader):
                 return
             self._counter['univ'] = len(univSet)
 
-    def _postcheck(self):
+    def _inspectData(self):
         """ensure the parser grabbed expected materials."""
         obtainedRes = self._counter['meta'] // self._counter['univ']
         if obtainedRes != self._counter['rslt']:
@@ -327,11 +327,20 @@ class ResultsReader(XSReader):
                 .format(self.filePath, self._counter['univ'],
                         self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
+            if not self.settings['expectGcu']:
+                raise SerpentToolsException(
+                    "Metadata and results data were not found in {}"
+                    .format(self.filePath))
             for keys, dictUniv in iteritems(self.universes):
-                if not dictUniv.hasData():
-                    raise SerpentToolsException(
-                        "metadata, resdata and universes are all empty "
-                        "from {}".format(self.filePath))
+                if dictUniv.hasData():
+                    return
+            raise SerpentToolsException(
+                "metadata, resdata and universes are all empty "
+                "from {} and <results.expectGcu> is True"
+                .format(self.filePath))
+
+    def _postcheck(self):
+        self._inspectData()
         self._cleanMetadata()
 
     def _cleanMetadata(self):
