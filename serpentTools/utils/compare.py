@@ -3,6 +3,7 @@ Comparison utilities
 """
 from numpy import (
     fabs, zeros_like, ndarray, array, greater, multiply, subtract,
+    equal,
 )
 
 from serpentTools.messages import (
@@ -155,10 +156,16 @@ def directCompare(obj0, obj1, lower, upper):
         if obj0.dtype.name == 'object':
             return -1
 
+    if not upper:
+        # exact comparison between arrays
+        if not equal(obj0, obj1).all():
+            return 200
+        return 0
+
     diff = multiply(
         fabs(subtract(obj0, obj1)), 100
     )
-    nonZI = greater(fabs(obj1), LOWER_LIM_DIVISION)
+    nonZI = greater(fabs(obj0), LOWER_LIM_DIVISION)
     diff[nonZI] /= obj0[nonZI]
     maxDiff = diff.max()
     if maxDiff < LOWER_LIM_DIVISION:
