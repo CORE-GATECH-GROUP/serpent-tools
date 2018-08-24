@@ -149,11 +149,11 @@ class DirectCompareTester(TestCase):
         [array([1, 1, ]), array([1, 1.0001])],
     )
 
-    def checkStatus(self, expected, *args, **kwargs):
+    def checkStatus(self, expected, obj0, obj1, lower, upper, msg=None):
         """Wrapper around directCompare with ``args``. Pass ``kwargs`` to
         assertEqual."""
-        actual = directCompare(*args)
-        self.assertEqual(expected, actual, **kwargs)
+        actual = directCompare(obj0, obj1, lower, upper)
+        self.assertEqual(expected, actual, msg=msg)
 
     def test_badTypes(self):
         """Verify that two objects of different types return -1."""
