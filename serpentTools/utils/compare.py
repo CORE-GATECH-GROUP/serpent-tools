@@ -4,6 +4,7 @@ Comparison utilities
 
 from collections import Iterable
 
+from numpy.core.defchararray import equal as charEqual
 from numpy import (
     fabs, zeros_like, ndarray, array, greater, multiply, subtract,
     equal,
@@ -166,7 +167,7 @@ def directCompare(obj0, obj1, lower, upper):
         return DC_STAT_GOOD
 
     # Convert all to numpy arrays
-    if not isinstance(type0, Iterable):
+    if not isinstance(obj0, Iterable):
         obj0 = array([obj0])
         obj1 = array([obj1])
     else:
@@ -178,11 +179,24 @@ def directCompare(obj0, obj1, lower, upper):
             return DC_STAT_NOT_IMPLEMENTED
 
     if not upper:
-        # exact comparison between arrays
-        if not equal(obj0, obj1).all():
-            return DC_STAT_NOT_IDENTICAL
-        return DC_STAT_GOOD
+        return _directCompareIdentical(obj0, obj1)
+    return _directCompareWithTols(obj0, obj1, lower, upper)
 
+
+def _directCompareIdentical(obj0, obj1):
+    """Compare arrays that should be identical"""
+    # special case for strings
+    if obj0.dtype.name[:3] == 'str':
+        compArray = charEqual(obj0, obj1)
+    else:
+        compArray = equal(obj0, obj1)
+    if compArray.all():
+        return DC_STAT_GOOD
+    return DC_STAT_NOT_IDENTICAL
+
+
+def _directCompareWithTols(obj0, obj1, lower, upper):
+    """Compare arrays that have some allowable tolerances"""
     diff = multiply(
         fabs(subtract(obj0, obj1)), 100
     )
@@ -196,7 +210,6 @@ def directCompare(obj0, obj1, lower, upper):
     if maxDiff >= upper:
         return DC_STAT_GE_UPPER
     return DC_STAT_MID
-
 
 directCompare.__doc__ = directCompare.__doc__.format(
     good=DC_STAT_GOOD,
