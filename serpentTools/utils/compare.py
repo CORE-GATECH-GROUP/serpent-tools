@@ -1,6 +1,9 @@
 """
 Comparison utilities
 """
+
+from collections import Iterable
+
 from numpy import (
     fabs, zeros_like, ndarray, array, greater, multiply, subtract,
     equal,
@@ -145,7 +148,7 @@ def directCompare(obj0, obj1, lower, upper):
         return 0
 
     # Convert all to numpy arrays
-    if type0 in TPL_FLOAT_INT:
+    if not isinstance(type0, Iterable):
         obj0 = array([obj0])
         obj1 = array([obj1])
     else:
