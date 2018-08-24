@@ -16,6 +16,13 @@ from serpentTools.utils import (
     directCompare,
     getOverlaps,
     splitDictByKeys,
+    DC_STAT_GOOD,
+    DC_STAT_LE_LOWER,
+    DC_STAT_MID,
+    DC_STAT_GE_UPPER,
+    DC_STAT_NOT_IDENTICAL,
+    DC_STAT_NOT_IMPLEMENTED,
+    DC_STAT_DIFF_TYPES,
 )
 
 
@@ -150,7 +157,7 @@ class DirectCompareTester(TestCase):
 
     def test_badTypes(self):
         """Verify that two objects of different types return -1."""
-        status = 255
+        status = DC_STAT_DIFF_TYPES
         value = 1
         for otherType in (bool, str):
             self.checkStatus(status, value, otherType(value), 0, 1,
@@ -163,13 +170,13 @@ class DirectCompareTester(TestCase):
     def test_identicalString(self):
         """Verify that identical strings return 0."""
         msg = obj = 'identicalStrings'
-        status = 0
+        status = DC_STAT_GOOD
         self.checkStatus(status, obj, obj, 0, 1, msg=msg)
 
     def test_dissimilarString(self):
         """Verify returns the proper code for dissimilar strings."""
         msg = "dissimilarStrings"
-        status = 200
+        status = DC_STAT_NOT_IDENTICAL
         self.checkStatus(status, 'item0', 'item1', 0, 1, msg=msg)
 
     def _testNumericsForItems(self, status, lower, upper):
@@ -183,19 +190,24 @@ class DirectCompareTester(TestCase):
         """Verify returns the proper code for close numerics."""
         lower = 5
         upper = 1E4
-        self._testNumericsForItems(1, lower, upper)
+        self._testNumericsForItems(DC_STAT_LE_LOWER, lower, upper)
 
     def test_acceptableHigh(self):
         """Verify returns the proper code for close but not quite values."""
         lower = 0
         upper = 1E4
-        self._testNumericsForItems(10, lower, upper)
+        self._testNumericsForItems(DC_STAT_MID, lower, upper)
 
     def test_outsideTols(self):
         """Verify returns the proper code for values outside tolerances."""
         lower = 1E-8
         upper = 1E-8
-        self._testNumericsForItems(100, lower, upper)
+        self._testNumericsForItems(DC_STAT_GE_UPPER, lower, upper)
+
+    def test_notImplemented(self):
+        """Check the not-implemented cases."""
+        self.checkStatus(DC_STAT_NOT_IMPLEMENTED, {'hello': 'world'},
+                         {'hello': 'world'}, 0, 0, msg="Testing on dictionaries")
 
 
 class OverlapTester(TestCase):
