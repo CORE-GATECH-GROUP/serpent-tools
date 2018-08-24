@@ -110,8 +110,6 @@ COMPARE_STATUS_CODES = {
 """Keys of status codes with ``(caller, return)`` values."""
 
 
-
-
 @compareDocDecorator
 def directCompare(obj0, obj1, lower, upper):
     """
@@ -210,6 +208,7 @@ def _directCompareWithTols(obj0, obj1, lower, upper):
     if maxDiff >= upper:
         return DC_STAT_GE_UPPER
     return DC_STAT_MID
+
 
 directCompare.__doc__ = directCompare.__doc__.format(
     good=DC_STAT_GOOD,

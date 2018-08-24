@@ -207,16 +207,20 @@ class DirectCompareTester(TestCase):
     def test_notImplemented(self):
         """Check the not-implemented cases."""
         self.checkStatus(DC_STAT_NOT_IMPLEMENTED, {'hello': 'world'},
-                         {'hello': 'world'}, 0, 0, msg="testing on dictionaries")
+                         {'hello': 'world'}, 0, 0,
+                         msg="testing on dictionaries")
 
     def test_stringArrays(self):
         """Verify the function handles string arrays properly."""
         stringList = ['hello', 'world', '1', '-1']
         vec0 = array(stringList)
-        self.checkStatus(DC_STAT_GOOD, vec0, vec0, 0, 0, msg='Identical string arrays')
+        self.checkStatus(DC_STAT_GOOD, vec0, vec0, 0, 0,
+                         msg='Identical string arrays')
         vec1 = array(stringList)
         vec1[-1] = 'foobar'
-        self.checkStatus(DC_STAT_NOT_IDENTICAL, vec0, vec1, 0, 0, msg='Dissimilar string arrays')
+        self.checkStatus(DC_STAT_NOT_IDENTICAL, vec0, vec1, 0, 0,
+                         msg='Dissimilar string arrays')
+
 
 class OverlapTester(TestCase):
     """Class for testing the Overlapping uncertainties function."""
