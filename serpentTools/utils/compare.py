@@ -1,7 +1,14 @@
 """
 Comparison utilities
 """
-from numpy import fabs, where, zeros_like, ndarray
+
+from collections import Iterable
+
+from numpy.core.defchararray import equal as charEqual
+from numpy import (
+    fabs, zeros_like, ndarray, array, greater, multiply, subtract,
+    equal,
+)
 
 from serpentTools.messages import (
     error,
@@ -76,13 +83,29 @@ def getCommonKeys(d0, d1, quantity, desc0='first', desc1='second',
 
 TPL_FLOAT_INT = float, int
 
+# Error codes for direct compare
+DC_STAT_GOOD = 0
+"""Values are identical to FP precision, or by ``==`` operator."""
+DC_STAT_LE_LOWER = 1
+"""Values are not identical, but max diff <= lower tolerance."""
+DC_STAT_MID = 10
+"""Values differ with max difference between lower and upper tolerance."""
+DC_STAT_GE_UPPER = 100
+"""Values differ with max difference greater than or equal to upper tolerance"""  # noqa
+DC_STAT_NOT_IDENTICAL = 200
+"""Values should be identical but are not, e.g. strings or bools."""
+DC_STAT_DIFF_TYPES = 255
+"""Values are of different types"""
+DC_STAT_NOT_IMPLEMENTED = -1
+"""Direct compare is not implemented for these types"""
+
 COMPARE_STATUS_CODES = {
-    0: (logIdentical, True),
-    1: (logAcceptableLow, True),
-    10: (logAcceptableHigh, True),
-    200: (logNotIdentical, False),
-    100: (logOutsideTols, False),
-    255: (logDifferentTypes, False),
+    DC_STAT_GOOD: (logIdentical, True),
+    DC_STAT_LE_LOWER: (logAcceptableLow, True),
+    DC_STAT_MID: (logAcceptableHigh, True),
+    DC_STAT_NOT_IDENTICAL: (logNotIdentical, False),
+    DC_STAT_GE_UPPER: (logOutsideTols, False),
+    DC_STAT_DIFF_TYPES: (logDifferentTypes, False),
 }
 """Keys of status codes with ``(caller, return)`` values."""
 
@@ -110,17 +133,17 @@ def directCompare(obj0, obj1, lower, upper):
     int:
         Status code of the comparison.
 
-        * 0 - Values are identical to floating point precision or,
+        * {good} - Values are identical to floating point precision or,
           for strings/booleans, are identical with the ``==`` operator
-        * 1 - Values are not identical, but the max difference
+        * {leLower} - Values are not identical, but the max difference
           is less than ``lower``.
-        * 10 - Values differ, with the max difference greater
+        * {mid} - Values differ, with the max difference greater
           than ``lower`` but less than ``upper``
-        * 100 - Values differ by greater than or equal to ``upper``
-        * 200 - Values should be identical (strings, booleans),
+        * {geUpper} - Values differ by greater than or equal to ``upper``
+        * {notIdentical} - Values should be identical (strings, booleans),
           but are not
-        * 255 - Values are of different types
-        * -1 - Type comparison is not supported. This means that
+        * {diffTypes} - Values are of different types
+        * {notImplemented} - Type comparison is not supported. This means that
           developers should either implement a test for this
           data type, or use a different function
 
@@ -131,30 +154,71 @@ def directCompare(obj0, obj1, lower, upper):
     """
     type0 = type(obj0)
     type1 = type(obj1)
+
     if type0 != type1:
+        # can still compare floats and ints easily
         if type0 not in TPL_FLOAT_INT or type1 not in TPL_FLOAT_INT:
-            return 255
+            return DC_STAT_DIFF_TYPES
     if type0 in (str, bool):
         if obj0 != obj1:
-            return 200
-        return 0
+            return DC_STAT_NOT_IDENTICAL
+        return DC_STAT_GOOD
 
-    if type0 in (float, int, ndarray) or hasattr(obj0, 'dtype'):
-        diff = fabs(obj0 - obj1) * 100
-        if type0 is ndarray:
-            nonZI = where(obj0 > LOWER_LIM_DIVISION)
-            diff[nonZI] /= obj0[nonZI]
-        elif obj0 > LOWER_LIM_DIVISION:
-            diff /= obj0
-        maxDiff = diff.max() if isinstance(diff, ndarray) else diff
-        if maxDiff < LOWER_LIM_DIVISION:
-            return 0
-        if maxDiff <= lower:
-            return 1
-        if maxDiff >= upper:
-            return 100
-        return 10
-    return -1
+    # Convert all to numpy arrays
+    if not isinstance(obj0, Iterable):
+        obj0 = array([obj0])
+        obj1 = array([obj1])
+    else:
+        # convert to array, but return if data-type is object
+        # need some indexable structure so dicts and sets won't work
+        obj0 = array(obj0)
+        obj1 = array(obj1)
+        if obj0.dtype.name == 'object':
+            return DC_STAT_NOT_IMPLEMENTED
+
+    if not upper:
+        return _directCompareIdentical(obj0, obj1)
+    return _directCompareWithTols(obj0, obj1, lower, upper)
+
+
+def _directCompareIdentical(obj0, obj1):
+    """Compare arrays that should be identical"""
+    # special case for strings
+    if obj0.dtype.name[:3] == 'str':
+        compArray = charEqual(obj0, obj1)
+    else:
+        compArray = equal(obj0, obj1)
+    if compArray.all():
+        return DC_STAT_GOOD
+    return DC_STAT_NOT_IDENTICAL
+
+
+def _directCompareWithTols(obj0, obj1, lower, upper):
+    """Compare arrays that have some allowable tolerances"""
+    diff = multiply(
+        fabs(subtract(obj0, obj1)), 100
+    )
+    nonZI = greater(fabs(obj0), LOWER_LIM_DIVISION)
+    diff[nonZI] /= obj0[nonZI]
+    maxDiff = diff.max()
+    if maxDiff < LOWER_LIM_DIVISION:
+        return DC_STAT_GOOD
+    if maxDiff <= lower:
+        return DC_STAT_LE_LOWER
+    if maxDiff >= upper:
+        return DC_STAT_GE_UPPER
+    return DC_STAT_MID
+
+
+directCompare.__doc__ = directCompare.__doc__.format(
+    good=DC_STAT_GOOD,
+    leLower=DC_STAT_LE_LOWER,
+    mid=DC_STAT_MID,
+    geUpper=DC_STAT_GE_UPPER,
+    notIdentical=DC_STAT_NOT_IDENTICAL,
+    diffTypes=DC_STAT_DIFF_TYPES,
+    notImplemented=DC_STAT_NOT_IMPLEMENTED,
+)
 
 
 @compareDocDecorator
@@ -194,7 +258,7 @@ def logDirectCompare(obj0, obj1, lower, upper, quantity):
     """
     result = directCompare(obj0, obj1, lower, upper)
     if result < 0:  # failures
-        if result == -1:
+        if result == DC_STAT_NOT_IMPLEMENTED:
             raise TypeError(
                 "directCompare is not configured to make tests on objects "
                 "of type {tp}\n\tQuantity: {k}\n\tUsers: Create a issue on "
