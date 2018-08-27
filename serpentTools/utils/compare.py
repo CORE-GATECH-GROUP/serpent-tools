@@ -98,6 +98,8 @@ DC_STAT_DIFF_TYPES = 255
 """Values are of different types"""
 DC_STAT_NOT_IMPLEMENTED = -1
 """Direct compare is not implemented for these types"""
+DC_STAT_DIFF_SHAPES = 250
+"""Values are of different shapes."""
 
 COMPARE_STATUS_CODES = {
     DC_STAT_GOOD: (logIdentical, True),
@@ -106,6 +108,7 @@ COMPARE_STATUS_CODES = {
     DC_STAT_NOT_IDENTICAL: (logNotIdentical, False),
     DC_STAT_GE_UPPER: (logOutsideTols, False),
     DC_STAT_DIFF_TYPES: (logDifferentTypes, False),
+    DC_STAT_DIFF_SHAPES: (logBadShapes, False),
 }
 """Keys of status codes with ``(caller, return)`` values."""
 
@@ -142,6 +145,7 @@ def directCompare(obj0, obj1, lower, upper):
         * {geUpper} - Values differ by greater than or equal to ``upper``
         * {notIdentical} - Values should be identical (strings, booleans),
           but are not
+        * {diffShapes} - Numeric data has different shapes
         * {diffTypes} - Values are of different types
         * {notImplemented} - Type comparison is not supported. This means that
           developers should either implement a test for this
@@ -175,6 +179,8 @@ def directCompare(obj0, obj1, lower, upper):
         obj1 = array(obj1)
         if obj0.dtype.name == 'object':
             return DC_STAT_NOT_IMPLEMENTED
+    if obj0.shape != obj1.shape:
+        return DC_STAT_DIFF_SHAPES
 
     if not upper:
         return _directCompareIdentical(obj0, obj1)
@@ -218,6 +224,7 @@ directCompare.__doc__ = directCompare.__doc__.format(
     notIdentical=DC_STAT_NOT_IDENTICAL,
     diffTypes=DC_STAT_DIFF_TYPES,
     notImplemented=DC_STAT_NOT_IMPLEMENTED,
+    diffShapes=DC_STAT_DIFF_SHAPES,
 )
 
 
