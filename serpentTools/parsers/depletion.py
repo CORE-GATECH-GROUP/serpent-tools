@@ -15,7 +15,7 @@ from serpentTools.objects.materials import DepletedMaterial
 
 from serpentTools.messages import (warning, debug, error,
                                    SerpentToolsException)
-
+from serpentTools.utils.compare import getKeyMatchingShapes
 
 METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 
@@ -263,3 +263,16 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
         if 'bu' in self.metadata:
             self.metadata['burnup'] = self.metadata.pop('bu')
+
+    def _compare(self, other, lower, upper, sigma):
+
+            commonKeys = getKeyMatchingShapes(
+                self.materials, other.materials, 'materials')
+            similar = (
+                len(self.materials) == len(other.materials) == len(commonKeys))
+
+            for matName in sorted(commonKeys):
+                myMat = self[matName]
+                otherMat = other[matName]
+                similar &= myMat.compare(otherMat, lower, upper, sigma)
+            return similar
