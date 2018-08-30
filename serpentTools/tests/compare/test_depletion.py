@@ -22,7 +22,7 @@ class DepletionCompareHelper(TestCaseWithLogCapture):
         self.otherMaterial = self.otherReader[REF_MATERIAL]
         TestCaseWithLogCapture.setUp(self)
 
-    def compare(self, lower, upper, sigma):
+    def compare(self, lower=0, upper=0, sigma=0, verbosity='info'):
         raise NotImplementedError
 
     def test_compareIdentical(self):
@@ -35,20 +35,47 @@ class DepletionCompareHelper(TestCaseWithLogCapture):
         self.otherMaterial.names = self.refMaterial.names[:numNames - 1]
         self.assertFalse(self.compare(0, 0, 0))
 
+    def test_missingData(self):
+        """Verify that the test fails if one object is missing data."""
+        keys = list(self.refMaterial.data.keys())
+        for key in keys:
+            data = self.otherMaterial.data.pop(key)
+            self.assertFalse(self.compare(0, 0, 0))
+            self.assertMsgInLogs('ERROR', key, partial=True)
+
+            # put things back in place
+            self.handler.logMessages = {}
+            self.otherMaterial.data[key] = data
+
+    def test_minorTweakData(self):
+        """Verify that the test passes after minor tweaks to data"""
+        key = 'adens'
+        diffInPercent = 1
+        self.otherMaterial.data[key] *= (1 + diffInPercent / 100)
+        # Test by setting the lower tolerance to barely above perturbation
+        self.assertTrue(self.compare(diffInPercent + 1E-6, diffInPercent * 2, verbosity='info'))
+        self.assertMsgInLogs("INFO", key, partial=True)
+        for level in ["WARNING", "ERROR", "CRITICAL"]:
+            self.assertTrue(level not in self.handler.logMessages)
+        # Test again, with tighter lower tolerance and look for warning
+        self.assertTrue(self.compare(diffInPercent, diffInPercent * 2, verbosity='info'))
+        self.assertMsgInLogs("WARNING", key, partial=True)
+
 
 class DepletedMaterialComparisonTester(DepletionCompareHelper):
     """TestCase that only compares depleted materials"""
 
-    def compare(self, lower, upper, sigma):
+    def compare(self, lower=0, upper=0, sigma=0, verbosity='info'):
         return self.refMaterial.compare(self.otherMaterial, lower, upper,
-                                        sigma)
+                                        sigma, verbosity=verbosity)
 
 
 class DepletionReaderComparisonTester(DepletionCompareHelper):
     """Class for comparing the reader compare method"""
 
-    def compare(self, lower, upper, sigma):
-        return self.refReader.compare(self.otherReader, lower, upper, sigma)
+    def compare(self, lower=0, upper=0, sigma=0, verbosity='info'):
+        return self.refReader.compare(self.otherReader, lower, upper, sigma,
+                                      verbosity=verbosity)
 
 
 del DepletionCompareHelper
