@@ -21,6 +21,7 @@ from serpentTools.messages import (
     logMissingKeys,
     logBadTypes,
     logBadShapes,
+    logMapOfBadShapes,
     logIdenticalWithUncs,
     logInsideConfInt,
     logOutsideConfInt,
@@ -386,7 +387,7 @@ def getKeyMatchingShapes(map0, map1, quantity, keySet=None, desc0='first',
     if differentTypes:
         logBadTypes(quantity, desc0, desc1, differentTypes)
     if badShapes:
-        logBadShapes(quantity, desc0, desc1, badShapes)
+        logMapOfBadShapes(quantity, desc0, desc1, badShapes)
     return goodKeys
 
 
