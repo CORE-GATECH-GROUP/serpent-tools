@@ -13,9 +13,13 @@ from serpentTools.engines import KeywordParser
 from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools.messages import (warning, debug, error,
-                                   SerpentToolsException)
-from serpentTools.utils.compare import getKeyMatchingShapes
+from serpentTools.messages import (
+    warning, debug, error, SerpentToolsException,
+)
+from serpentTools.utils.compare import (
+    getKeyMatchingShapes,
+    logDirectCompare,
+)
 
 METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 
@@ -266,13 +270,35 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
     def _compare(self, other, lower, upper, sigma):
 
-            commonKeys = getKeyMatchingShapes(
-                self.materials, other.materials, 'materials')
-            similar = (
-                len(self.materials) == len(other.materials) == len(commonKeys))
+        # Check sizes of names and burnup vectors first
+        # If these don't agree, then all material comparisons
+        # will fail
 
-            for matName in sorted(commonKeys):
-                myMat = self[matName]
-                otherMat = other[matName]
-                similar &= myMat.compare(otherMat, lower, upper, sigma)
-            return similar
+        for key, myVec in iteritems(self.metadata):
+            otherVec = other.metadata[key]
+            if len(myVec) != len(otherVec):
+                error("Stopping comparison early due to mismatched {} vectors"
+                      "\n\t>{}\n\t<{}".format(key, myVec, otherVec))
+                return False
+        similar = logDirectCompare(
+            self.metadata['names'], other.metadata['names'],
+            0, 0, 'names')
+        similar &= logDirectCompare(
+            self.metadata['zai'], other.metadata['zai'],
+            0, 0, 'zai')
+        similar &= logDirectCompare(
+            self.metadata['days'], other.metadata['days'],
+            lower, upper, 'days')
+        similar &= logDirectCompare(
+            self.metadata['burnup'], other.metadata['burnup'],
+            lower, upper, 'burnup')
+        commonMats = getKeyMatchingShapes(
+            self.materials, other.materials, 'materials')
+        similar &= (
+            len(self.materials) == len(other.materials) == len(commonMats))
+
+        for matName in sorted(commonMats):
+            myMat = self[matName]
+            otherMat = other[matName]
+            similar &= myMat.compare(otherMat, lower, upper, sigma)
+        return similar
