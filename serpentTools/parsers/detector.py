@@ -4,6 +4,7 @@ from six import iteritems
 from numpy import empty
 
 from serpentTools.utils import str2vec
+from serpentTools.utils.compare import getKeyMatchingShapes
 from serpentTools.engines import KeywordParser
 from serpentTools.objects.detectors import detectorFactory
 from serpentTools.parsers.base import BaseReader
@@ -94,6 +95,20 @@ class DetectorReader(BaseReader):
     def _postcheck(self):
         if not self.detectors:
             warning("No detectors stored from file {}".format(self.filePath))
+
+    def _compare(self, other, lower, upper, sigma):
+        """Compare two detector readers."""
+        similar = len(self.detectors) == len(other.detectors)
+
+        commonKeys = getKeyMatchingShapes(self.detectors, other.detectors,
+                                          'detectors')
+        similar &= len(commonKeys) == len(self.detectors)
+
+        for detName in sorted(commonKeys):
+            myDetector = self[detName]
+            otherDetector = other[detName]
+            similar &= myDetector.compare(otherDetector, lower, upper, sigma)
+        return similar
 
 
 def cleanDetChunk(chunk):

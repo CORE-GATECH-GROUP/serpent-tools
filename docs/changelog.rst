@@ -1,4 +1,8 @@
 .. |homogUniv| replace:: :py:class:`~serpentTools.objects.containers.HomogUniv`
+.. |resultReader| replace:: :class:`~serpentTools.parsers.results.ResultsReader` 
+.. |detector| replace:: :class:`~serpentTools.objects.detectors.Detector`
+.. |detectorReader| replace:: :class:`~serpentTools.parsers.detector.DetectorReader`
+.. |depletionReader| replace:: :class:`~serpentTools.parsers.depletion.DepletionReader`
 
 .. _changelog:
 
@@ -6,16 +10,28 @@
 Changelog
 =========
 
+.. _v0.6.0:
+
 0.6.0
 =====
 
+* :pull:`174` - Added parent object ``BaseObject`` with basic comparison
+  method from which all objects inherit. Comparison method contains
+  upper and lower bounds for values w/o uncertainties, :pull:`191`
+* :pull:`196` - Add comparison methods for |resultReader| and 
+  |homogUniv| objects
+* :pull:`228` - Add comparison methods for |detectorReader| and
+  |detector| objects
+* :pull:`236` - Add comparison methods for |depletionReader| and
+  :class:`~serpentTools.objects.materials.DepletedMaterial` objects
 * :pull:`241` - Fix a bug in the CLI that rendered the ability to generate files with
   unique random seeds. ``python -m serpentTools seed <input> <N>`` can now be properly
-  used.
+  used.  
+
 
 .. _v0.5.4:
 
-:release-tag:`0.5.3`
+:release-tag:`0.5.4`
 ====================
 
 * :pull:`239` - Update python dependencies to continue use of python 2
@@ -31,7 +47,7 @@ Changelog
   files with unique random seeds - :mod:`serpentTools.seed`
 * :pull:`229` - :meth:`serpentTools.parsers.sensitivity.SensitivityReader.plot`
   now respects the option to not set x nor y labels.
-* :pull:`231` - :class:`~serpentTools.parsers.results.ResultsReader` objects
+* :pull:`231` - |resultReader| objects
   can now read files that do not contain group constant data. The setting
   :ref:`results-expectGcu` should be used to inform the reader that no
   group constant data is anticipated
@@ -48,10 +64,10 @@ Changelog
   :func:`serpentTools.plot.cartMeshPlot`
 * :pull:`201` - Support for plotting hexagonal meshes with
   :meth:`serpentTools.objects.detectors.HexagonalDetector.hexPlot`
-* :pull:`204` - Access :class:`serpentTools.objects.detectors.Detector`
-  objects directly from :class:`serpentTools.parsers.detector.DetectorReader`
+* :pull:`204` - Access |detector|
+  objects directly from |detectorReader|
   with ``reader[detName]``
-* :pull:`205` - Access materials from :class:`serpentTools.readers.depletion.DepletionReader`
+* :pull:`205` - Access materials from |depletionReader|
   and :class:`serpentTools.samplers.depletion.DepletionSampler` using key-like
   indexing, e.g. ``reader[matName] == reader.material[matName]``
 * :pull:`213` - Better default x-axis labels for simple detector plots

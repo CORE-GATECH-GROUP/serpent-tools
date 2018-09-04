@@ -8,6 +8,10 @@ from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
     convertVariableName,
 )
+from serpentTools.utils.compare import (
+    logDirectCompare,
+    compareDictOfArrays,
+)
 from serpentTools.objects.base import NamedObject
 
 
@@ -234,6 +238,23 @@ class DepletedMaterialBase(NamedObject):
             labels.append(fmtr.format(mat=self.name, iso=iso, zai=zai))
 
         return labels
+
+    def _compare(self, other, lower, upper, sigma):
+        # look for identical isotope names and
+        similar = logDirectCompare(self.names, other.names, 0, 0,
+                                   'isotope names')
+        similar &= logDirectCompare(self.zai, other.zai, 0, 0, 'isotope ZAI')
+
+        # test data dictionary
+        # if uncertianties exist, use those
+        myUncs = self.uncertainties if hasattr(self, 'uncertainties') else {}
+        otherUncs = (other.uncertainties if hasattr(other, 'uncertainties')
+                     else {})
+        similar &= compareDictOfArrays(
+            self.data, other.data, 'data', lower=lower, upper=upper,
+            sigma=sigma, u0=myUncs, u1=otherUncs, relative=False)
+
+        return similar
 
 
 class DepletedMaterial(DepletedMaterialBase):

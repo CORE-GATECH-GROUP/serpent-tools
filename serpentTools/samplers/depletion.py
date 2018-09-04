@@ -163,7 +163,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
     ----------
     {depAttrs:s}
     uncertainties: dict
-        Uncertainties for all variables stored in ``data``
+        Absolute uncertainties for all variables stored in ``data``
     allData: dict
         Dictionary where key, value pairs correspond to names of
         variables stored on this object and arrays of data from all files.

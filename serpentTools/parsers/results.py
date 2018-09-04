@@ -7,11 +7,26 @@ from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.parsers.base import XSReader
+from serpentTools.parsers._collections import RES_DATA_NO_UNCS
+from serpentTools.objects.base import (DEF_COMP_LOWER,
+                                       DEF_COMP_SIGMA, DEF_COMP_UPPER)
 from serpentTools.utils import (
-    str2vec, splitValsUncs,
-    STR_REGEX, VEC_REGEX, SCALAR_REGEX, FIRST_WORD_REGEX,
+    str2vec,
+    splitValsUncs,
+    getCommonKeys,
+    logDirectCompare,
+    compareDocDecorator,
+    getKeyMatchingShapes,
+    getLogOverlaps,
+    STR_REGEX,
+    VEC_REGEX,
+    SCALAR_REGEX,
+    FIRST_WORD_REGEX,
 )
-from serpentTools.messages import (warning, debug, SerpentToolsException)
+from serpentTools.messages import (
+    warning, debug, SerpentToolsException,
+    info,
+)
 
 
 MapStrVersions = {
@@ -65,6 +80,9 @@ Convert items in metadata dictionary from arrays to these data types
 """
 
 
+__all__ = ['ResultsReader', ]
+
+
 class ResultsReader(XSReader):
     """
     Parser responsible for reading and working with result files.
@@ -101,6 +119,16 @@ class ResultsReader(XSReader):
                             Corrupted results
     IOError: file is unexpectedly closes while reading
     """
+
+    __METADATA_COMP_SKIPS = {
+        'title',
+        'inputFileName',
+        'workingDirectory',
+        'startDate',
+        'completeDate',
+        'seed',
+    }
+    """Metadata keys that will not be compared."""
 
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'results')
@@ -344,6 +372,135 @@ class ResultsReader(XSReader):
     def _postcheck(self):
         self._inspectData()
         self._cleanMetadata()
+
+    def _compare(self, other, lower, upper, sigma):
+        similar = self.compareMetadata(other)
+        similar &= self.compareResults(other, lower, upper, sigma)
+        similar &= self.compareUniverses(other, lower, upper, sigma)
+        return similar
+
+    @compareDocDecorator
+    def compareMetadata(self, other, header=False):
+        """
+        Return True if the metadata (settings) are identical.
+
+        Parameters
+        ----------
+        other: :class:`ResultsReader`
+            Class against which to compare
+        {header}
+
+        Returns
+        -------
+        bool:
+            If the metadata are identical
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+
+        self._checkCompareObj(other)
+        if header:
+            self._compareLogPreMsg(other, quantity='metadata')
+        myKeys = set(self.metadata.keys())
+        otherKeys = set(other.metadata.keys())
+        similar = not any(myKeys.symmetric_difference(otherKeys))
+        commonKeys = getCommonKeys(myKeys, otherKeys, 'metadata')
+        skips = commonKeys.intersection(self.__METADATA_COMP_SKIPS)
+        if any(skips):
+            info("The following items will be skipped in the comparison\n\t{}"
+                 .format(', '.join(sorted(skips))))
+        for key in sorted(commonKeys):
+            if key in self.__METADATA_COMP_SKIPS:
+                continue
+            selfV = self.metadata[key]
+            otherV = other.metadata[key]
+            similar &= logDirectCompare(selfV, otherV, 0., 0., key)
+
+        return similar
+
+    @compareDocDecorator
+    def compareResults(self, other, lower=DEF_COMP_LOWER,
+                       upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA,
+                       header=False):
+        """
+        Compare the contents of the results dictionary
+
+        Parameters
+        ----------
+        other: :class:`ResultsReader`
+            Class against which to compare
+        {compLimits}
+        {sigma}
+        {header}
+
+        Returns
+        -------
+        bool:
+            If the results data agree to given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+        self._checkCompareObj(other)
+        if header:
+            self._compareLogPreMsg(other, lower, upper, sigma, 'results')
+        myRes = self.resdata
+        otherR = other.resdata
+
+        commonTypeKeys = getKeyMatchingShapes(myRes, otherR, 'results')
+
+        similar = len(commonTypeKeys) == len(myRes) == len(otherR)
+
+        for key in sorted(commonTypeKeys):
+            mine = myRes[key]
+            theirs = otherR[key]
+            if key in RES_DATA_NO_UNCS:
+                similar &= logDirectCompare(mine, theirs, lower, upper, key)
+                continue
+            myVals, myUncs = splitValsUncs(mine)
+            theirVals, theirUncs = splitValsUncs(theirs)
+            similar &= getLogOverlaps(key, myVals, theirVals, myUncs,
+                                      theirUncs, sigma, relative=True)
+        return similar
+
+    @compareDocDecorator
+    def compareUniverses(self, other, lower=DEF_COMP_LOWER,
+                         upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Compare the contents of the ``universes`` dictionary
+
+        Parameters
+        ----------
+        other: :class:`ResultsReader`
+            Reader by which to compare
+        {compLimits}
+        {sigma}
+
+        Returns
+        -------
+        bool:
+            If the contents of the universes agree to given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+        self._checkCompareObj(other)
+        myUniverses = self.universes
+        otherUniverses = other.universes
+        keyGoodTypes = getKeyMatchingShapes(myUniverses, otherUniverses,
+                                            'universes')
+
+        similar = len(keyGoodTypes) == len(myUniverses) == len(otherUniverses)
+
+        for univKey in keyGoodTypes:
+            myUniv = myUniverses[univKey]
+            otherUniv = otherUniverses[univKey]
+            similar &= myUniv.compare(otherUniv, lower, upper, sigma)
+        return similar
 
     def _cleanMetadata(self):
         """Replace some items in metadata dictionary with easier data types."""

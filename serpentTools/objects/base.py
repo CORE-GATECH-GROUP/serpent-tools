@@ -8,14 +8,138 @@ from six import add_metaclass
 from numpy import arange, hstack, log, divide
 from matplotlib.pyplot import axes
 
-from serpentTools.messages import debug, warning, SerpentToolsException
+from serpentTools.messages import (
+    debug, warning, SerpentToolsException, info,
+    error,
+    BAD_OBJ_SUBJ,
+
+)
 from serpentTools.plot import plot, cartMeshPlot
 from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DETECTOR_PLOT_LABELS,
+    compareDocDecorator, DEF_COMP_LOWER, DEF_COMP_SIGMA,
+    DEF_COMP_UPPER, compareDictOfArrays,
 )
+from serpentTools.utils.compare import (
+    getLogOverlaps, finalCompareMsg,
+)
+from serpentTools.settings import rc
 
 
-class NamedObject(object):
+class BaseObject(object):
+    """Most basic class shared by all other classes."""
+
+    @compareDocDecorator
+    def compare(self, other, lower=DEF_COMP_LOWER, upper=DEF_COMP_UPPER,
+                sigma=DEF_COMP_SIGMA, verbosity=None):
+        """
+        Compare the results of this reader to another.
+
+        For values without uncertainties, the upper and lower
+        arguments control what passes and what messages get
+        raised. If a quantity in ``other`` is less than
+        ``lower`` percent different that the same quantity
+        on this object, consider this allowable and make
+        no messages.
+        Quantities that are greater than ``upper`` percent
+        different will have a error messages printed and
+        the comparison will return ``False``, but continue.
+        Quantities with difference between these ranges will
+        have warning messages printed.
+
+        Parameters
+        ----------
+        other:
+            Other reader instance against which to compare.
+            Must be a similar class as this one.
+        {compLimits}
+        {sigma}
+        verbosity: None or str
+            If given, update the verbosity just for this comparison.
+
+        Returns
+        -------
+        bool:
+            ``True`` if the objects are in agreement with
+            each other according to the parameters specified
+
+        Raises
+        ------
+        {compTypeErr}
+        ValueError
+            If upper > lower,
+            If sigma, lower, or upper are negative
+        """
+        upper = float(upper)
+        lower = float(lower)
+        sigma = int(sigma)
+        if upper < lower:
+            raise ValueError("Upper limit must be greater than lower. "
+                             "{} is not greater than {}"
+                             .format(upper, lower))
+        for item, key in zip((upper, lower, sigma),
+                             ('upper', 'lower', 'sigma')):
+            if item < 0:
+                raise ValueError("{} must be non-negative, is {}"
+                                 .format(key, item))
+
+        self._checkCompareObj(other)
+
+        previousVerb = None
+        if verbosity is not None:
+            previousVerb = rc['verbosity']
+            rc['verbosity'] = verbosity
+
+        self._compareLogPreMsg(other, lower, upper, sigma)
+
+        areSimilar = self._compare(other, lower, upper, sigma)
+
+        if areSimilar:
+            herald = info
+        else:
+            herald = warning
+        herald(finalCompareMsg(self, other, areSimilar))
+        if previousVerb is not None:
+            rc['verbosity'] = previousVerb
+
+        return areSimilar
+
+    def _compare(self, other, lower, upper, sigma):
+        """Actual comparison method for similar classes."""
+        raise NotImplementedError
+
+    def _checkCompareObj(self, other):
+        """Verify that the two objects are same class or subclasses."""
+        if not (isinstance(other, self.__class__) or
+                issubclass(other.__class__, self.__class__)):
+            oName = other.__class__.__name__
+            name = self.__class__.__name__
+            raise TypeError(
+                "Cannot compare against {} - not instance nor subclass "
+                "of {}".format(oName, name))
+
+    def _compareLogPreMsg(self, other, lower=None, upper=None, sigma=None,
+                          quantity=None):
+        """Log an INFO message about this specific comparison."""
+        leader = "Comparing {}> against < with the following tolerances:"
+        tols = [leader.format((quantity + ' from ') if quantity else ''), ]
+        for leader, obj in zip(('>', '<'), (self, other)):
+            tols.append("{} {}".format(leader, obj))
+        for title, val in zip(('Lower', 'Upper'), (lower, upper)):
+            if val is None:
+                continue
+            tols.append("{} tolerance: {:5.3F} [%]".format(title, val))
+        if sigma is not None:
+            sigmaStr = ("Confidence interval for statistical values: {:d} "
+                        "sigma or {} %")
+            sigmaDict = {1: 68, 2: 95}
+            tols.append(
+                sigmaStr.format(sigma, sigmaDict.get(sigma, '>= 99.7')
+                                if sigma else 0))
+        info('\n\t'.join(tols))
+
+
+class NamedObject(BaseObject):
     """Class for named objects like materials and detectors."""
 
     def __init__(self, name):
@@ -413,3 +537,34 @@ class DetectorBase(NamedObject):
         if qty in self.indexes:
             return self.indexes[qty], xlabel
         return fallbackX, xlabel
+
+    def _compare(self, other, lower, upper, sigma):
+        myShape = self.tallies.shape
+        otherShape = other.tallies.shape
+        if myShape != otherShape:
+            error("Detector tallies do not have identical shapes"
+                  + BAD_OBJ_SUBJ.format('tallies', myShape, otherShape))
+            return False
+        similar = compareDictOfArrays(self.grids, other.grids, 'grids',
+                                      lower=lower, upper=upper)
+
+        similar &= getLogOverlaps('tallies', self.tallies, other.tallies,
+                                  self.errors, other.errors, sigma,
+                                  relative=True)
+        hasScores = [obj.scores is not None for obj in (self, other)]
+
+        similar &= hasScores[0] == hasScores[1]
+
+        if not any(hasScores):
+            return similar
+        if all(hasScores):
+            similar &= getLogOverlaps('scores', self.scores, other.scores,
+                                      self.errors, other.errors, sigma,
+                                      relative=True)
+            return similar
+        firstK, secondK = "first", "second"
+        if hasScores[1]:
+            firstK, secondK = secondK, firstK
+        error("{} detector has scores while {} does not"
+              .format(firstK.capitalize(), secondK))
+        return similar
