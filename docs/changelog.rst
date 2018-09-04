@@ -6,6 +6,13 @@
 Changelog
 =========
 
+.. _v0.5.4:
+
+:release-tag:`0.5.3`
+====================
+
+* :pull:`239` - Update python dependencies to continue use of python 2
+
 .. _v0.5.3:
 
 :release-tag:`0.5.3`
