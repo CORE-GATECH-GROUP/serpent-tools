@@ -76,7 +76,7 @@ def _seedInterface(args):
     """Interface to launch the uniquely-seeded file generation"""
     from serpentTools.seed import seedFiles
     seedFiles(args.file, args.N, seed=args.seed, outputDir=args.output_dir,
-              link=args.link, digits=args.length)
+              link=args.link, length=args.length)
 
 
 def _listDefaults(args):
