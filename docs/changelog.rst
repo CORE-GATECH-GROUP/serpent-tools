@@ -6,6 +6,13 @@
 Changelog
 =========
 
+0.6.0
+=====
+
+* :pull:`241` - Fix a bug in the CLI that rendered the ability to generate files with
+  unique random seeds. ``python -m serpentTools seed <input> <N>`` can now be properly
+  used.
+
 .. _v0.5.4:
 
 :release-tag:`0.5.3`
