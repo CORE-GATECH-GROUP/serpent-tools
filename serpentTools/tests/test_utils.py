@@ -224,7 +224,7 @@ class DirectCompareTester(TestCase):
 
     def test_diffShapes(self):
         """
-        Verify that that the direct compare fails for arrays of different shape.
+        Verify that that directCompare fails for arrays of different shape.
         """
         vec0 = [0, 1, 2, 3, 4]
         vec1 = [0, 1]

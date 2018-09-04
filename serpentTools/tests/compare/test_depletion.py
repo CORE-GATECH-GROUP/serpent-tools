@@ -53,12 +53,14 @@ class DepletionCompareHelper(TestCaseWithLogCapture):
         diffInPercent = 1
         self.otherMaterial.data[key] *= (1 + diffInPercent / 100)
         # Test by setting the lower tolerance to barely above perturbation
-        self.assertTrue(self.compare(diffInPercent + 1E-6, diffInPercent * 2, verbosity='info'))
+        self.assertTrue(self.compare(diffInPercent + 1E-6, diffInPercent * 2,
+                        verbosity='info'))
         self.assertMsgInLogs("INFO", key, partial=True)
         for level in ["WARNING", "ERROR", "CRITICAL"]:
             self.assertTrue(level not in self.handler.logMessages)
         # Test again, with tighter lower tolerance and look for warning
-        self.assertTrue(self.compare(diffInPercent, diffInPercent * 2, verbosity='info'))
+        self.assertTrue(self.compare(diffInPercent, diffInPercent * 2,
+                        verbosity='info'))
         self.assertMsgInLogs("WARNING", key, partial=True)
 
 

@@ -263,7 +263,8 @@ def logBadShapes(obj0, obj1, quantity):
         Descriptor of the quantity being compared, e.g. what these objects
         represent
     """
-    shapes = [obj.shape if isinstance(obj, ndarray) else len(obj) for obj in (obj0, obj1)]
+    shapes = [obj.shape if isinstance(obj, ndarray)
+              else len(obj) for obj in (obj0, obj1)]
     _notify(error, quantity, "Shapes for {} are different.",
             shapes[0], shapes[1])
 
