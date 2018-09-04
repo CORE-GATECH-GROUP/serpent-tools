@@ -1,4 +1,4 @@
-.. _dev-utils:
+.. _api-utils:
 
 =========
 Utilities
@@ -6,7 +6,6 @@ Utilities
 
 
 .. automodule:: serpentTools.utils
-    :members: convertVariableName, linkToWiki, str2vec, splitValsUnc
 
 
 .. _dev-testUtils:

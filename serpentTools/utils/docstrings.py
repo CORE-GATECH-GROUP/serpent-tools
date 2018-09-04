@@ -4,8 +4,12 @@ Utilities for modifying docstrings
 from functools import wraps
 from textwrap import dedent
 
+from six import iteritems
+
 __all__ = [
     'magicPlotDocDecorator',
+    'compareDocDecorator',
+    'compareDocReplacer',
 ]
 
 _MPL_AX = ':py:class:`matplotlib.axes.Axes`'
@@ -101,4 +105,74 @@ def magicPlotDocDecorator(f):
         if lookF in doc:
             doc = doc.replace(lookF, replace)
     decorated.__doc__ = doc
+    return decorated
+
+
+COMPARE_DOC_DESC = """
+    desc0: dict or None
+    desc1: dict or None
+        Description of the origin of each value set. Only needed
+        if ``quiet`` evalues to ``True``."""
+COMPARE_DOC_HERALD = """herald: callable
+        Function that accepts a single string argument used to
+        notify that differences were found. If
+        the function is not a callable object, a
+        :func:`serpentTools.messages.critical` message
+        will be printed and :func:`serpentTools.messages.error`
+        will be used."""
+COMPARE_DOC_LIMITS = """
+    lower: float or int
+        Lower limit for relative tolerances in percent
+        Differences below this will be considered allowable
+    upper: float or int
+        Upper limit for relative tolerances in percent. Differences
+        above this will be considered failure and errors
+        messages will be raised"""
+COMPARE_DOC_SIGMA = """sigma: int
+        Size of confidence interval to apply to
+        quantities with uncertainties. Quantities that do not
+        have overlapping confidence intervals will fail"""
+COMPARE_DOC_TYPE_ERR = """TypeError
+        If ``other`` is not of the same class as this class
+        nor a subclass of this class"""
+COMPARE_DOC_HEADER = """header: bool
+        Print/log an ``info`` message about this comparison."""
+COMPARE_DOC_MAPPING = {
+    'herald': COMPARE_DOC_HERALD,
+    'desc': COMPARE_DOC_DESC,
+    'compLimits': COMPARE_DOC_LIMITS,
+    'sigma': COMPARE_DOC_SIGMA,
+    'compTypeErr': COMPARE_DOC_TYPE_ERR,
+    'header': COMPARE_DOC_HEADER,
+}
+
+COMPARE_FAIL_MSG = "Values {desc0} and {desc1} are not identical:\n\t"
+COMPARE_WARN_MSG = ("Values {desc0} and {desc1} are not identical, but within "
+                    "tolerances:\n\t")
+COMPARE_PASS_MSG = "Values {desc0} and {desc0} are identical:\n\t"
+
+
+def compareDocReplacer(doc):
+    """Make replacements for comparison docstrings."""
+    if not doc:
+        return ""
+    doc = dedent(doc)
+    for magic, replace in iteritems(COMPARE_DOC_MAPPING):
+        lookF = '{' + magic + '}'
+        if lookF in doc:
+            doc = doc.replace(lookF, dedent(replace))
+    return doc
+
+
+def compareDocDecorator(f):
+    """Decorator that updates doc strings for comparison methods.
+
+    Similar to :func:`serpentTools.plot.magicPlotDocDecorator`
+    but for comparison functions
+    """
+
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        return f(*args, **kwargs)
+    decorated.__doc__ = compareDocReplacer(f.__doc__)
     return decorated
