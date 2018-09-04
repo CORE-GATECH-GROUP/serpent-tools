@@ -50,7 +50,7 @@ class DepletionCompareHelper(TestCaseWithLogCapture):
     def test_minorTweakData(self):
         """Verify that the test passes after minor tweaks to data"""
         key = 'adens'
-        diffInPercent = 1
+        diffInPercent = 1.
         self.otherMaterial.data[key] *= (1 + diffInPercent / 100)
         # Test by setting the lower tolerance to barely above perturbation
         self.assertTrue(self.compare(diffInPercent + 1E-6, diffInPercent * 2,
