@@ -41,9 +41,9 @@ classifiers = [
 ]
 
 installRequires = [
-    'six',
-    'numpy>=1.11.1',
-    'matplotlib>=1.5.0',
+    'six>=1.11.0',
+    'numpy>=1.15.1',
+    'matplotlib==2.2.3',
     'pyyaml>=3.08',
 ]
 
