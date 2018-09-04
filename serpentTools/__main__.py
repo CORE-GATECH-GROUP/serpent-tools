@@ -54,7 +54,7 @@ def __buildParser():
                             help='Seed to start with the builtin random '
                                  'generator')
     seedParser.add_argument('-l', '--length', type=int, default=10,
-                            help='Average number of digits in random seeds')
+                            help='Number of digits in random seeds')
     seedParser.add_argument('--output-dir', type=str, default=None,
                             help='Copy files into this directory')
     seedParser.add_argument('--link', action='store_true',

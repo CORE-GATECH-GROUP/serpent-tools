@@ -6,12 +6,29 @@
 Changelog
 =========
 
-.. _vNext:
+.. _v0.5.4:
 
-Next
-====
+:release-tag:`0.5.3`
+====================
+
+* :pull:`239` - Update python dependencies to continue use of python 2
+
+.. _v0.5.3:
+
+:release-tag:`0.5.3`
+====================
 
 * :pull:`221` - Expanded ``utils`` module to better assist developers
+* :pull:`227` - Better documentation of our :ref:`cli`.
+  Better documentation and testing of functions for generating input
+  files with unique random seeds - :mod:`serpentTools.seed`
+* :pull:`229` - :meth:`serpentTools.parsers.sensitivity.SensitivityReader.plot`
+  now respects the option to not set x nor y labels.
+* :pull:`231` - :class:`~serpentTools.parsers.results.ResultsReader` objects
+  can now read files that do not contain group constant data. The setting
+  :ref:`results-expectGcu` should be used to inform the reader that no
+  group constant data is anticipated
+  
 
 .. _v0.5.2:
 
