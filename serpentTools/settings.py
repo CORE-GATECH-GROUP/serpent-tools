@@ -76,6 +76,13 @@ defaultSettings = {
                        'detectors',
         'type': list
     },
+    'results.expectGcu': {
+        'default': True,
+        'description': 'Set this to False if no homogenized group contants '
+                       'are present in the output, as if ``set gcu -1`` is '
+                       'preset in the input file',
+        'type': bool,
+    },
     'verbosity': {
         'default': 'warning',
         'options': messages.LOG_OPTS,
