@@ -13,9 +13,17 @@ from serpentTools.engines import KeywordParser
 from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools.messages import (warning, debug, error,
-                                   SerpentToolsException)
-from serpentTools.utils.compare import getKeyMatchingShapes
+from serpentTools.messages import (
+    warning, debug, error, SerpentToolsException,
+)
+from serpentTools.utils import (
+    getKeyMatchingShapes,
+    logDirectCompare,
+    compareDocDecorator,
+    DEF_COMP_LOWER,
+    DEF_COMP_UPPER,
+    DEF_COMP_SIGMA,
+)
 
 METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 
@@ -264,15 +272,108 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         if 'bu' in self.metadata:
             self.metadata['burnup'] = self.metadata.pop('bu')
 
-    def _compare(self, other, lower, upper, sigma):
+    def _compare(self, other, lower, upper, _sigma):
 
-            commonKeys = getKeyMatchingShapes(
-                self.materials, other.materials, 'materials')
-            similar = (
-                len(self.materials) == len(other.materials) == len(commonKeys))
+        similar = self._compareMetadata(other, lower, upper, _sigma)
+        if not self._comparePrecheckMetadata(other):
+            return False
+        similar &= self._compareMaterials(other, lower, upper, _sigma)
+        return similar
 
-            for matName in sorted(commonKeys):
-                myMat = self[matName]
-                otherMat = other[matName]
-                similar &= myMat.compare(otherMat, lower, upper, sigma)
-            return similar
+    def _comparePrecheckMetadata(self, other):
+        for key, myVec in iteritems(self.metadata):
+            otherVec = other.metadata[key]
+            if len(myVec) != len(otherVec):
+                error("Stopping comparison early due to mismatched {} vectors"
+                      "\n\t>{}\n\t<{}".format(key, myVec, otherVec))
+                return False
+        return True
+
+    @compareDocDecorator
+    def compareMaterials(self, other, lower=DEF_COMP_LOWER,
+                         upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Return the result of comparing all materials on two readers
+
+        Parameters
+        ----------
+        other: :class:`DepletionReader`
+            Reader to compare against
+        {compLimits}
+        {sigma}
+
+        Returns
+        -------
+        bool:
+            ``True`` if all materials agree to the given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+        self._checkCompareObj(other)
+        self._compareLogPreMsg(other, lower, upper, quantity='materials')
+
+        if not self._comparePrecheckMetadata(other):
+            return False
+
+        return self._compareMaterials(other, lower, upper, sigma)
+
+    def _compareMaterials(self, other, lower, upper, sigma):
+        """Private method for going directly into the comparison."""
+        commonMats = getKeyMatchingShapes(
+            self.materials, other.materials, 'materials')
+        similar = (
+            len(self.materials) == len(other.materials) == len(commonMats))
+
+        for matName in sorted(commonMats):
+            myMat = self[matName]
+            otherMat = other[matName]
+            similar &= myMat.compare(otherMat, lower, upper, sigma)
+        return similar
+
+    @compareDocDecorator
+    def compareMetadata(self, other, lower=DEF_COMP_LOWER,
+                        upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Return the result of comparing metadata on two readers
+
+        Parameters
+        ----------
+        other: :class:`DepletionReader`
+            Object to compare against
+        {compLimits}
+        {header}
+
+        Returns
+        -------
+        bool
+            True if the metadata agree within the given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+
+        self._checkCompareObj(other)
+
+        self._compareLogPreMsg(other, lower, upper, quantity='metadata')
+
+        return self._compareMetadata(other, lower, upper, sigma)
+
+    def _compareMetadata(self, other, lower, upper, _sigma):
+        """Private method for comparing metadata"""
+
+        similar = logDirectCompare(
+            self.metadata['names'], other.metadata['names'],
+            0, 0, 'names')
+        similar &= logDirectCompare(
+            self.metadata['zai'], other.metadata['zai'],
+            0, 0, 'zai')
+        similar &= logDirectCompare(
+            self.metadata['days'], other.metadata['days'],
+            lower, upper, 'days')
+        similar &= logDirectCompare(
+            self.metadata['burnup'], other.metadata['burnup'],
+            lower, upper, 'burnup')
+        return similar
