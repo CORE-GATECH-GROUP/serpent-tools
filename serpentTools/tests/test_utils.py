@@ -23,6 +23,7 @@ from serpentTools.utils import (
     DC_STAT_NOT_IDENTICAL,
     DC_STAT_NOT_IMPLEMENTED,
     DC_STAT_DIFF_TYPES,
+    DC_STAT_DIFF_SHAPES,
 )
 
 
@@ -220,6 +221,21 @@ class DirectCompareTester(TestCase):
         vec1[-1] = 'foobar'
         self.checkStatus(DC_STAT_NOT_IDENTICAL, vec0, vec1, 0, 0,
                          msg='Dissimilar string arrays')
+
+    def test_diffShapes(self):
+        """
+        Verify that that directCompare fails for arrays of different shape.
+        """
+        vec0 = [0, 1, 2, 3, 4]
+        vec1 = [0, 1]
+        mat0 = [[0, 1], [1, 2]]
+        mat1 = [[0, 1, 2], [3, 4, 5], [6, 7, 8]]
+        self.checkStatus(DC_STAT_DIFF_SHAPES, vec0, vec1, 0, 0,
+                         msg="Compare two vectors.")
+        self.checkStatus(DC_STAT_DIFF_SHAPES, vec0, mat0, 0, 0,
+                         msg="Compare vector and array.")
+        self.checkStatus(DC_STAT_DIFF_SHAPES, mat0, mat1, 0, 0,
+                         msg="Compare vector and array.")
 
 
 class OverlapTester(TestCase):

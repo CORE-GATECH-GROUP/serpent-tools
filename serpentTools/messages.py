@@ -14,6 +14,8 @@ from logging import Handler
 from logging.config import dictConfig
 from collections import Callable
 
+from numpy import ndarray
+
 
 class SerpentToolsException(Exception):
     """Base-class for all exceptions in this project"""
@@ -248,6 +250,25 @@ def logDifferentTypes(type0, type1, quantity):
             type0, type1)
 
 
+def logBadShapes(obj0, obj1, quantity):
+    """
+    Log an error message that two arrays are of different shapes.
+
+    Parameters
+    ----------
+    obj0: :class:`numpy.ndarray`
+    obj1: :class:`numpy.ndarray`
+        Arrays that have been compared and found to have different shapes
+    quantity: str
+        Descriptor of the quantity being compared, e.g. what these objects
+        represent
+    """
+    shapes = [obj.shape if isinstance(obj, ndarray)
+              else len(obj) for obj in (obj0, obj1)]
+    _notify(error, quantity, "Shapes for {} are different.",
+            shapes[0], shapes[1])
+
+
 MISSING_MSG_HEADER = "{} from {} and {} contain different items"
 MISSING_MSG_SUBJ = "\n\tItems present in {} but not in {}:\n\t\t{}"
 
@@ -320,7 +341,7 @@ def logBadTypes(quantity, desc0, desc1, types):
     error(msg)
 
 
-def logBadShapes(quantity, desc0, desc1, shapes):
+def logMapOfBadShapes(quantity, desc0, desc1, shapes):
     """
     Log an error message for containers with mismatched shapes
 
