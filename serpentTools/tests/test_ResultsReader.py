@@ -8,7 +8,7 @@ from numpy.testing import assert_equal
 from six import iteritems
 
 from serpentTools.settings import rc
-from serpentTools.data import getFile
+from serpentTools.data import getFile, readDataFile
 from serpentTools.parsers import ResultsReader
 from serpentTools.messages import SerpentToolsException
 
@@ -595,6 +595,40 @@ class TestResultsNoBurnNoGcu(TestFilterResultsNoBurnup):
             rc['results.expectGcu'] = False
             self.reader = ResultsReader(self.file)
             self.reader.read()
+
+
+class RestrictedResultsReader(unittest.TestCase):
+    """Class that restricts the variables read from the results file"""
+
+    expectedInfFlux_bu0 = TestReadAllResults.expectedInfVals
+    expectedAbsKeff = TestReadAllResults.expectedKeff
+    dataFile = "pwr_res.m"
+
+    def _testUnivFlux(self, reader):
+        univ = reader.getUniv('0', index=1)
+        assert_equal(self.expectedInfFlux_bu0, univ.get("infFlx"))
+
+    def test_justFlux(self):
+        """Restrict the variables to gcu inf flux and verify their values"""
+        with rc:
+            rc['xs.variableExtras'] = ["INF_FLX", ]
+            r = readDataFile(self.dataFile)
+        self._testUnivFlux(r)
+
+    def test_xsGroups(self):
+        """Restrict the variables groups to gc-meta to obtain flux and test."""
+        with rc:
+            rc['xs.variableGroups'] = ['gc-meta', ]
+            r = readDataFile(self.dataFile)
+        self._testUnivFlux(r)
+
+    def test_fluxAndKeff(self):
+        """Restrict to two unique parameters and verify their contents."""
+        with rc:
+            rc['xs.variableExtras'] = ['ABS_KEFF', 'INF_FLX']
+            r = readDataFile(self.dataFile)
+        self._testUnivFlux(r)
+        assert_equal(self.expectedAbsKeff, r.resdata['absKeff'])
 
 
 del TesterCommonResultsReader

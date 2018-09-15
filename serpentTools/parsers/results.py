@@ -183,9 +183,10 @@ class ResultsReader(XSReader):
         """Process universes' data"""
         brState = self._getBUstate()  # obtain the branching tuple
         values = str2vec(varVals)  # convert the string to float numbers
-        if not self.universes or brState not in self.universes.keys():
+        if brState not in self.universes:
             self.universes[brState] = \
                 HomogUniv(brState[0], brState[1], brState[2], brState[3])
+        if varNameSer == self._keysVersion['univ']:
             return
         if varNameSer not in self._keysVersion['varsUnc']:
             vals, uncs = splitValsUncs(values)
