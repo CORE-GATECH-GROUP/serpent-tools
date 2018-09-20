@@ -27,10 +27,12 @@ The output files are described in more detail on the
 Basic Operation
 ---------------
 
-The simplest way to read these files is using the 
-:func:`~serpentTools.parsers.read` function. Here, we will read the 
-reference file distributed with this package by using
-:func:`~serpentTools.data.readDataFile`.
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
 
 .. note::
 

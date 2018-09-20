@@ -19,6 +19,12 @@ as documented on the Serpent wiki. ``serpentTools`` can then read the
 output, figuring out its filetype automatically as with other readers.
 Let’s plot some data used in the ``serpentTools`` regression suite.
 
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
 
 .. code:: 
     

@@ -51,6 +51,13 @@ lattice bins.
     >>> from matplotlib import pyplot
     >>> import serpentTools
 
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
+
 .. code:: 
     
     >>> pinFile = 'fuelPin_det0.m'
