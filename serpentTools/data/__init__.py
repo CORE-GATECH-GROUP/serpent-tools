@@ -3,6 +3,7 @@ Module for loading reference and example data files
 """
 
 from os.path import join, exists
+from warnings import warn
 
 from serpentTools import __path__, read
 
@@ -66,5 +67,19 @@ def readDataFile(path, **kwargs):
     --------
     * :func:`serpentTools.read`
     """
-    filePath = getFile(path)
+    if not exists(path):
+        # assume this is a example/test file contained in this project
+        filePath = getFile(path)
+    else:
+        _warnDataFilePurpose()
+        filePath = path
     return read(filePath, **kwargs)
+
+
+def _warnDataFilePurpose():
+    """
+    Issue a warning indicating that readDataFile is not primary read function.
+    """
+    warn("Please use serpentTools.read as the primary read function. "
+         "readDataFile is intended for testing and example and may "
+         "be changed or removed in the future.", UserWarning)

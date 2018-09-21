@@ -30,6 +30,14 @@ Each such object has methods and attributes that should ease analysis.
     >>> import serpentTools
     >>> from serpentTools.settings import rc
 
+
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
+
 .. code:: 
     
     >>> depFile = 'demo_dep.m'

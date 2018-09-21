@@ -36,6 +36,13 @@ should ease the analyses.
     >>> from serpentTools.settings import rc
     >>> rc['serpentVersion'] = '2.1.30'
 
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
+
 .. code:: 
     
     >>> resFile = 'InnerAssembly_res.m'
