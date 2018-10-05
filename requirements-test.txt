@@ -2,7 +2,7 @@ matplotlib==2.2.3
 numpy==1.15.1
 pyyaml==3.12
 six==1.11.0
-ipython==7.0.0
+ipython>=5.8.0,<=7.0.0
 flake8==3.5.0
 pandas==0.21.0
 jupyter==1.0.0
