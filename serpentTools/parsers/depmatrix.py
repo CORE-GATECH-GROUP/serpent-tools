@@ -17,7 +17,7 @@ from serpentTools.messages import SerpentToolsException
 
 NDENS_REGEX = re.compile(r'N\d\(\s*([\d]+).*=\s+([\d\.E\+-]+)')
 # matches index and quantity for N0 and N1 vectors
-ZAI_REGEX = re.compile(r'ZAI\(\s*[\d]+\).*=\s+(-?\d+)')
+ZAI_REGEX = re.compile(r'ZAI\(\s*(\d)+\).*=\s+(-?\d+)')
 # matches index and name for ZAI vector
 DEPMTX_REGEX = re.compile(r'A\(\s*(\d+),\s*(\d+)\)\s+=\s+([\dE\.\+-]+)')
 # matches row and column index, as well as value
@@ -65,6 +65,9 @@ class DepmtxReader(BaseReader):
             raise SerpentToolsException(
                 "File does not appear to be a depmtx file")
 
+    def _postcheck(self):
+        pass
+
     def _getMatch(self, line, regex, desc):
         match = regex.search(line)
         if match is not None:
@@ -77,7 +80,7 @@ class DepmtxReader(BaseReader):
         tempN0 = {}
         with open(self.filePath) as stream:
             line = stream.readline()
-            self.deltaT = float(line.split(-1)[:-1])
+            self.deltaT = float(line.split()[-1][:-1])
 
             # process initial isotopics
             line = stream.readline()
@@ -95,23 +98,24 @@ class DepmtxReader(BaseReader):
             line = _parseIsoBlock(stream, self.zai, match, line, ZAI_REGEX)
 
             match = self._getMatch(line, SIZE_REGEX, 'matrix size')
-            matrixSize = [int(xx) for xx in match.groups()[0]]
+            matrixSize = [int(xx) for xx in match.groups()]
 
             if self.__sparse:
-                line = self.__processDenseMatrix(stream, matrixSize)
-            else:
                 line = self.__processSparseMatrix(stream, matrixSize)
+            else:
+                line = self.__processDenseMatrix(stream, matrixSize)
 
             match = self._getMatch(line, NDENS_REGEX, 'n1 vector')
             _parseIsoBlock(stream, self.n1, match, line, NDENS_REGEX)
 
-    def _processDensMatrix(self, stream, matrixSize):
-        self.depmtx = zeros(*matrixSize, dtype=longfloat)
+    def __processDenseMatrix(self, stream, matrixSize):
+        self.depmtx = zeros(matrixSize, dtype=longfloat)
         line = stream.readline()
         match = self._getMatch(line, DEPMTX_REGEX, 'depletion matrix')
         while match:
-            row, col, value = match.groups()[0]
-            self.depmtx[int(row), int(col)] = longfloat(value)
+            row, col = [int(xx) - 1 for xx in match.groups()[:2]]
+            value = longfloat(match.groups()[2])
+            self.depmtx[row, col] = longfloat(value)
             line = stream.readline()
             match = DEPMTX_REGEX.search(line)
         return line
