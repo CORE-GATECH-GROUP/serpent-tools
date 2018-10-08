@@ -11,13 +11,18 @@ try:
 except ImportError:
     HAS_SCIPY = False
 
+if HAS_SCIPY:
+    from scipy.sparse import csc_matrix
+    from serpentTools.parsers.sparseReader import SparseCSCStreamProcessor
+
+
 from serpentTools.parsers.base import BaseReader
 from serpentTools.messages import SerpentToolsException
 
 
 NDENS_REGEX = re.compile(r'N\d\(\s*([\d]+).*=\s+([\d\.E\+-]+)')
 # matches index and quantity for N0 and N1 vectors
-ZAI_REGEX = re.compile(r'ZAI\(\s*(\d)+\).*=\s+(-?\d+)')
+ZAI_REGEX = re.compile(r'ZAI\(\s*(\d+)\).*=\s+(-?\d+)')
 # matches index and name for ZAI vector
 DEPMTX_REGEX = re.compile(r'A\(\s*(\d+),\s*(\d+)\)\s+=\s+([\dE\.\+-]+)')
 # matches row and column index, as well as value
@@ -118,6 +123,15 @@ class DepmtxReader(BaseReader):
             self.depmtx[row, col] = longfloat(value)
             line = stream.readline()
             match = DEPMTX_REGEX.search(line)
+        return line
+
+    def __processSparseMatrix(self, stream, matrixSize):
+        cscProcessor = SparseCSCStreamProcessor(stream, DEPMTX_REGEX, longfloat)
+        line = cscProcessor.process()
+        self.depmtx = csc_matrix(
+            (cscProcessor.data[:, 0], cscProcessor.indices, cscProcessor.indptr),
+            dtype=longfloat, shape=matrixSize)
+
         return line
 
 
