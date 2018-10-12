@@ -29,6 +29,15 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
     """
     Reader for processing depletion matrix files
 
+    Parameters
+    ----------
+    filePath: str
+        Path to file to be read
+    sparse: bool or ``None``
+        Use :term:`scipy` sparse matrices if ``True``. If
+        passed as ``None``, only use sparse if :term:`scipy`
+        is installed
+
     Attributes
     ----------
     deltaT: float
@@ -227,6 +236,7 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
                    ylabel=ylabel,
                    )
         return ax
+
 
 def _parseIsoBlock(stream, storage, match, line, regex):
     """Read through the N0, N1 block and add data to storage"""

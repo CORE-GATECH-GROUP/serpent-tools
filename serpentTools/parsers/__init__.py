@@ -54,7 +54,7 @@ REGEXES = {
     r'(.*_xs\d*\.m)': XSPlotReader,
     r'(.*_sens\d*.m)': SensitivityReader,
     r'(.*_mdx\d+\.m)': MicroXSReader,
-    r'(depmtx_.*\.m)': DepmtxReader,
+    r'(.*depmtx_.*\.m)': DepmtxReader,
 }
 
 __all__ = ['read',

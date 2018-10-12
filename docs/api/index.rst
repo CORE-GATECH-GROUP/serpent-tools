@@ -24,5 +24,6 @@ API
    sensitivity.rst
    xsplot.rst
    microxs.rst
+   DepletionMatrix.rst
    exceptions.rst
    seed.rst

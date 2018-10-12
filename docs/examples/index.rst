@@ -16,3 +16,4 @@ Examples
    XSPlot.rst
    ResultsReader.rst
    MicroXSReader.rst
+   DepletionMatrix.rst
