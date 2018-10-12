@@ -146,11 +146,11 @@ class SparseReaderMixin(object):
         else:
             self.__sparse = bool(sparse)
 
-        def checkSparse(self):
-            """
-            Return ``True`` if the object is configured for sparse support
-            """
-            return self.__sparse is True
+    def checkSparse(self):
+        """
+        Return ``True`` if the object is configured for sparse support
+        """
+        return self.__sparse is True
 
 
 class SparseCSCStreamProcessor(object):

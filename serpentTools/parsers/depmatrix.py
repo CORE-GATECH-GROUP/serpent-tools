@@ -33,7 +33,7 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
         Integer vector of isotope ZAI (zzaaai) identifiers
     depmtx: :class:`numpy.ndarray` or :class:`scipy.sparse.csc_matrix`
         Depletion matrix for this material. Will be sparse if
-        ``scipy`` is installed and the sparse-engine option
+        :term:`scipy` is installed and the sparse-engine option
         is either not specified (``None``) during :meth:`read`
         or passed as ``True``.
     n1: :class:`numpy.ndarray`
@@ -95,7 +95,7 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
             match = self._getMatch(line, SIZE_REGEX, 'matrix size')
             matrixSize = [int(xx) for xx in match.groups()]
 
-            if self.__sparse:
+            if self.sparse:
                 line = self.__processSparseMatrix(stream, matrixSize)
             else:
                 line = self.__processDenseMatrix(stream, matrixSize)
@@ -117,7 +117,7 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
 
     def __processSparseMatrix(self, stream, matrixSize):
         from scipy.sparse import csc_matrix
-        from serpentTools.parsers.sparseReader import SparseCSCStreamProcessor
+        from serpentTools.parsers.base import SparseCSCStreamProcessor
 
         cscProcessor = SparseCSCStreamProcessor(
             stream, DEPMTX_REGEX, longfloat)
