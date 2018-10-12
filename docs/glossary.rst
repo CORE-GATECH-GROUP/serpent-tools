@@ -59,6 +59,12 @@ Glossary
         Widely-used python package that allows multidimensional arrays
         and linear algebra routines. More information at
         `<www.numpy.org>`_
+   scipy
+         Widely-used python package that contains more mathematical support
+         and data structures, such as sparse matrices. Builds off of
+         :term:`numpy`. Not required for this package, but allows the
+         sparsity of some matrices to be exploited. More information at
+         `<https://docs.scipy.org/doc/scipy/reference/>`_
     SERPENT
         Monte Carlo particle transport code developed at VTT Technical
         Research Centre of Finland, Ltd. Produces output files
