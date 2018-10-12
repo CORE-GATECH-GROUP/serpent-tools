@@ -5,18 +5,8 @@ import re
 from six.moves import range
 
 from numpy import empty, empty_like, longfloat, zeros
-try:
-    import scipy
-    HAS_SCIPY = True
-except ImportError:
-    HAS_SCIPY = False
 
-if HAS_SCIPY:
-    from scipy.sparse import csc_matrix
-    from serpentTools.parsers.sparseReader import SparseCSCStreamProcessor
-
-
-from serpentTools.parsers.base import BaseReader
+from serpentTools.parsers.base import BaseReader, SparseReaderMixin
 from serpentTools.messages import SerpentToolsException
 
 
@@ -29,7 +19,7 @@ DEPMTX_REGEX = re.compile(r'A\(\s*(\d+),\s*(\d+)\)\s+=\s+([\dE\.\+-]+)')
 SIZE_REGEX = re.compile(r'A\s+=\s+zeros\((\d+),\s+(\d+)\)')
 
 
-class DepmtxReader(BaseReader):
+class DepmtxReader(BaseReader, SparseReaderMixin):
     """
     Reader for processing depletion matrix files
 
@@ -52,7 +42,7 @@ class DepmtxReader(BaseReader):
 
     def __init__(self, filePath, sparse=None):
         BaseReader.__init__(self, filePath, 'depmtx')
-        self.__sparse = HAS_SCIPY and (sparse is True or sparse is None)
+        SparseReaderMixin.__init__(self, sparse)
         self.deltaT = None
         self.n0 = None
         self.n1 = None
@@ -61,7 +51,7 @@ class DepmtxReader(BaseReader):
 
     @property
     def sparse(self):
-        return self.__sparse
+        return SparseReaderMixin.checkSparse(self)
 
     def _precheck(self):
         with open(self.filePath) as stream:
@@ -126,11 +116,15 @@ class DepmtxReader(BaseReader):
         return line
 
     def __processSparseMatrix(self, stream, matrixSize):
-        cscProcessor = SparseCSCStreamProcessor(stream, DEPMTX_REGEX, longfloat)
+        from scipy.sparse import csc_matrix
+        from serpentTools.parsers.sparseReader import SparseCSCStreamProcessor
+
+        cscProcessor = SparseCSCStreamProcessor(
+            stream, DEPMTX_REGEX, longfloat)
         line = cscProcessor.process()
         self.depmtx = csc_matrix(
-            (cscProcessor.data[:, 0], cscProcessor.indices, cscProcessor.indptr),
-            dtype=longfloat, shape=matrixSize)
+            (cscProcessor.data[:, 0], cscProcessor.indices,
+             cscProcessor.indptr), dtype=longfloat, shape=matrixSize)
 
         return line
 

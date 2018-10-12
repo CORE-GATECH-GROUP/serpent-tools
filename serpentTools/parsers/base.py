@@ -14,6 +14,7 @@ from numpy import array
 from serpentTools.messages import info
 from serpentTools.settings import rc
 from serpentTools.objects.base import BaseObject
+from serpentTools.utils import hasScipy
 
 
 @add_metaclass(ABCMeta)
@@ -110,6 +111,46 @@ class XSReader(BaseReader):
                 self.settings['variables']):
             return True
         return False
+
+
+class SparseReaderMixin(object):
+    """
+    Helper class for working with files containing sparse matrices
+
+    Matrices may or may not be sparse, depending upon the value of
+    ``sparse`` passed to the constructor and if :term:`scipy` is
+    installed.
+
+    Paramters
+    ---------
+    sparse: bool or ``None``
+        Flag to store sparse matrices or full matrices.
+        If ``None``, use full only if :term:`scipy` is not installed.
+        Otherwise use full arrays. If ``sparse`` is ``True``, then
+        sparse matrices will be used only if :term:`scipy` is installed
+
+    Raises
+    ------
+    ImportError:
+        If :term:`scipy` is not installed and ``sparse`` was passed as
+        ``True``.
+    """
+
+    def __init__(self, sparse):
+        HAS_SCIPY = hasScipy()
+        if sparse is None:
+            self.__sparse = HAS_SCIPY
+        elif sparse is True and not HAS_SCIPY:
+            raise ImportError(
+                "scipy not installed and required for sparse support")
+        else:
+            self.__sparse = bool(sparse)
+
+        def checkSparse(self):
+            """
+            Return ``True`` if the object is configured for sparse support
+            """
+            return self.__sparse is True
 
 
 class SparseCSCStreamProcessor(object):
