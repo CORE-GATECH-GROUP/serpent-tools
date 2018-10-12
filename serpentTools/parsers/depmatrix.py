@@ -8,6 +8,7 @@ from numpy import empty, empty_like, longfloat, zeros
 
 from serpentTools.parsers.base import BaseReader, SparseReaderMixin
 from serpentTools.messages import SerpentToolsException
+from serpentTools.utils import magicPlotDocDecorator, formatPlot
 
 
 NDENS_REGEX = re.compile(r'N\d\(\s*([\d]+).*=\s+([\d\.E\+-]+)')
@@ -17,6 +18,11 @@ ZAI_REGEX = re.compile(r'ZAI\(\s*(\d+)\).*=\s+(-?\d+)')
 DEPMTX_REGEX = re.compile(r'A\(\s*(\d+),\s*(\d+)\)\s+=\s+([\dE\.\+-]+)')
 # matches row and column index, as well as value
 SIZE_REGEX = re.compile(r'A\s+=\s+zeros\((\d+),\s+(\d+)\)')
+
+
+DENS_PLOT_WHAT_VALS = [
+    'both', 'n0', 'n1', 'initial', 'final',
+]
 
 
 class DepmtxReader(BaseReader, SparseReaderMixin):
@@ -128,6 +134,99 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
 
         return line
 
+    @magicPlotDocDecorator
+    def plotDensity(self, what='both', ax=None, logx=False, logy=True,
+                    loglog=None, legend=None, title=None, labels=None,
+                    markers=None, xlabel=None, ylabel=None,
+                    ylim=None):
+        """
+        Plot initial, final, or both number densities.
+
+        Parameters
+        ----------
+        what: str
+            Concentrations to plot.
+
+                1. ``'both'``: plot initial and final
+                2. ``'n0'`` or ``'initial'``: only initial
+                3. ``'n1'`` or ``'final'``: only final
+        {ax}
+        {logx}
+        {logy}
+        {loglog}
+        {legend}
+        {title}
+        labels: None or str or list of strings
+            Labels to apply to concentration plot(s). If given, must have
+            length equal to the number of quantities plotted, e.g.
+            plotting both concentrations and passing a single string
+            for ``labels`` is not allowed
+        markers: None or str or list of strings
+            Markers to apply to each plot. Must be a valid
+            ``matplotlib`` marker such as ``'o'``, ``'>'``, etc.
+            If given, the number of markers given must equal the
+            number of quantities to plot.
+        {xlabel}
+        {ylabel}
+        ylim: None or float or list of floats
+            If a single value is given, set the lower y-axis limit to
+            this value. If two values are given, set the upper and
+            lower y-axis limits to this value
+
+        Returns
+        -------
+        {rax}
+        """
+        from matplotlib.pyplot import gca
+        ax = gca() if ax is None else ax
+        if what == 'both':
+            plotAttrs = [self.n0, self.n1]
+        elif what in ['n0', 'initial']:
+            plotAttrs = self.n0,
+        elif what in ['n1', 'final']:
+            plotAttrs = self.n1,
+        else:
+            raise ValueError(
+                "Value of {} not understood. Please pass one of {}"
+                .format(what, ' '.join(DENS_PLOT_WHAT_VALS)))
+        if isinstance(labels, str):
+            labels = labels,
+        elif labels is None:
+            if len(plotAttrs) == 2:
+                labels = ('Initial', 'Final')
+            else:
+                labels = (None, )
+        if len(labels) != len(plotAttrs):
+            raise ValueError(
+                "Number of labels {} not equal to number of quantities "
+                "to plot {}".format(len(labels), len(plotAttrs)))
+
+        if isinstance(markers, str):
+            markers = markers,
+        elif markers is None:
+            markers = ('o', 'x')
+        if len(markers) != len(plotAttrs):
+            raise ValueError(
+                "Number of markers {} not equal to number of quantities "
+                "to plot {}".format(len(markers), len(plotAttrs)))
+
+        if legend is None:
+            legend = any(labels)
+
+        for qty, label, marker in zip(plotAttrs, labels, markers):
+            ax.plot(self.zai, qty, 'o', marker=marker, label=label)
+
+        if ylim is not None:
+            ax.set_ylim(ylim)
+
+        ylabel = r"Atomic Density $[\#/b-cm]$" if ylabel is None else ylabel
+
+        formatPlot(ax, legend=legend, title=title, logx=logx, logy=logy,
+                   loglog=loglog,
+                   xlabel="Isotope ZAI" if xlabel is None else xlabel,
+                   ylabel=ylabel,
+                   )
+        return ax
 
 def _parseIsoBlock(stream, storage, match, line, regex):
     """Read through the N0, N1 block and add data to storage"""
