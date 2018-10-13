@@ -8,5 +8,8 @@ For information on each individual reader, please see the
 
 .. autofunction:: serpentTools.parsers.read
 
+.. autofunction:: serpentTools.parsers.readDepmtx
+
 .. autofunction:: serpentTools.parsers.depmtx
+
 
