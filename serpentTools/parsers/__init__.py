@@ -1,12 +1,11 @@
 """
 Package dedicated for reading ``SERPENT`` output files
 """
-from os import path
 import re
 
 import six
 
-from numpy import zeros, empty, empty_like, array, longfloat
+from numpy import array
 
 try:
     from scipy.sparse import csc_matrix
