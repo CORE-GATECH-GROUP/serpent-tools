@@ -26,7 +26,7 @@ class CSCStreamTester(TestCase):
     vectors can be shared across all test cases
     """
 
-    FINAL_LINE = "THIS SHOULD BE THE FINAL LINE"
+    FINAL_LINE = u"THIS SHOULD BE THE FINAL LINE"
 
     EXP_INDPTR = array([0, 1, 2])
     EXP_INDICES = array([0, 1])
@@ -51,7 +51,7 @@ class CSCStreamTester(TestCase):
 class CaseOneStringBasedProcessor(object):
     """Object that reads with string-based regular expression"""
     regex = r'A\((\d+),\s+(\d+)\)\s+=\s+([\d\.]+)'
-    testString = """
+    testString = u"""
 A(1, 1) = 1.0;
 A(2, 2) = 1.0;
 """
@@ -64,7 +64,7 @@ A(2, 2) = 1.0;
 class CaseTwoStringBasedProcessor(object):
     """Read the second test case with string regular expression"""
     regex = r'A\((\d+),\s+(\d+)\)\s+=\s+([\d+\.]).*=\s+([\d\.]+)'
-    testString = """
+    testString = u"""
 A(1, 1) = 1.0; B(1, 1) = 0.05
 A(2, 2) = 1.0; B(2, 2) = 0.07
 """
@@ -160,7 +160,7 @@ class BadCSCStreamProcessorTester(TestCase):
         """
         Verify that something with a search method can be used as the regex.
         """
-        dummyStream = StringIO("Hello world\n")
+        dummyStream = StringIO(u"Hello world\n")
         with self.assertRaises(AttributeError):
             CSCStreamProcessor(dummyStream, 1.0)
 
