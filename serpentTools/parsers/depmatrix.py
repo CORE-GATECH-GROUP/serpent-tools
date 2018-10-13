@@ -46,11 +46,13 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
         Vector of original isotopics
     zai: :class:`numpy.ndarray`
         Integer vector of isotope ZAI (zzaaai) identifiers
-    depmtx: :class:`numpy.ndarray` or :class:`scipy.sparse.csc_matrix`
-        Depletion matrix for this material. Will be sparse if
+    depmtx: :class:`numpy.ndarray` or
+        Depletion matrix for this material. Will be
+        :class:`scipy.sparse.csc_matrix` if
         :term:`scipy` is installed and the sparse-engine option
         is either not specified (``None``) during :meth:`read`
-        or passed as ``True``.
+        or passed as ``True``. Otherwise, will be a
+        :class:`numpy.ndarray`
     n1: :class:`numpy.ndarray`
         Vector for isotopics after depletion
     """

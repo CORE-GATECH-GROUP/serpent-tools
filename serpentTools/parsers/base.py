@@ -202,7 +202,7 @@ class CSCStreamProcessor(object):
 
     See Also
     --------
-    *. :class:`scipy.sparse.csc_matrix`
+    * :class:`scipy.sparse.csc_matrix`
     """
 
     def __init__(self, stream, regex, dtype=float):

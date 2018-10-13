@@ -179,13 +179,13 @@ def depmtx(fileP):
     -------
     t: float
         Length of time
-    n0: numpy.ndarray
+    n0: :class:`numpy.ndarray`
         Initial isotopic vector
-    zai: numpy.array
+    zai: :class:`numpy.ndarray`
         String identifiers for each isotope in ``n0`` and ``n1``
-    a: numpy.array or scipy.sparse.csc_matrix
+    a: :class:`numpy.ndarray` or :class:`scipy.sparse.csc_matrix`
         Decay matrix. Will be sparse if scipy is installed
-    n1: numpy.array
+    n1: :class:`numpy.ndarray`
         Final isotopic vector
     """
     t, n0, zai, a, n1 = readDepmtx(fileP)
