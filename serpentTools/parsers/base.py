@@ -198,8 +198,11 @@ class SparseCSCStreamProcessor(object):
 
     def __init__(self, stream, regex, dtype=float):
         self._stream = stream
-        if not (isinstance(regex, re.Pattern)):
+        if isinstance(regex, str):
             self._regex = re.compile(regex)
+        elif not hasattr(regex, 'search'):
+            raise AttributeError(
+                "Passed regular expression does not have search method")
         else:
             self._regex = regex
         self.dtype = dtype
