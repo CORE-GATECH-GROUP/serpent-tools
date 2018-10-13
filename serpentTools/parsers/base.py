@@ -5,6 +5,7 @@ Contains the abstract base class upon which all readers
 are built.
 """
 
+from collections import Callable
 from abc import ABCMeta, abstractmethod
 import re
 
@@ -200,7 +201,10 @@ class SparseCSCStreamProcessor(object):
         self._stream = stream
         if isinstance(regex, str):
             self._regex = re.compile(regex)
-        elif not hasattr(regex, 'search'):
+        elif (
+                not hasattr(regex, 'search')
+                or not isinstance(regex.search, Callable)
+        ):
             raise AttributeError(
                 "Passed regular expression does not have search method")
         else:

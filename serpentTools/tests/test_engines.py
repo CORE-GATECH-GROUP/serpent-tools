@@ -49,7 +49,7 @@ class CSCStreamTester(TestCase):
 
 
 class CaseOneStringBasedProcessor(object):
-    """Object that reads using a string-based regular expression"""
+    """Object that reads with string-based regular expression"""
     regex = r'A\((\d+),\s+(\d+)\)\s+=\s+([\d\.]+)'
     testString = """
 A(1, 1) = 1.0;
@@ -60,8 +60,9 @@ A(2, 2) = 1.0;
         [1.0],
     ]
 
+
 class CaseTwoStringBasedProcessor(object):
-    """Read the second test case using a string regular expression"""
+    """Read the second test case with string regular expression"""
     regex = r'A\((\d+),\s+(\d+)\)\s+=\s+([\d+\.]).*=\s+([\d\.]+)'
     testString = """
 A(1, 1) = 1.0; B(1, 1) = 0.05
@@ -97,55 +98,79 @@ class LongFloatProcessor(object):
 class CaseOneStringFloatTester(
         CSCStreamTester, CaseOneStringBasedProcessor, FloatProcessor):
     """
-    Class that reads the first case using a string-regex and stores as floats.
+    Class that reads the first case with string-regex and stores floats.
     """
 
 
 class CaseOneStringLongfloatTester(
         CSCStreamTester, CaseOneStringBasedProcessor, LongFloatProcessor):
     """
-    Class that reads the first case using a string-regex and stores as longfloats.
+    Class that reads the first case with string-regex and stores longfloats.
     """
+
 
 class CaseTwoStringFloatTester(
         CSCStreamTester, CaseTwoStringBasedProcessor, FloatProcessor):
     """
-    Class that reads the second case using a string-regex and stores as floats.
+    Class that reads the second case with string-regex and stores floats.
     """
 
 
 class CaseTwoStringLongfloatTester(
         CSCStreamTester, CaseTwoStringBasedProcessor, LongFloatProcessor):
     """
-    Class that reads the second case using a string-regex and stores as longfloats.
+    Class that reads the second case with string-regex and stores longfloats.
     """
 
 
 class CaseOneRegexFloatTester(
         CSCStreamTester, CaseOneRegexBasedProcessor, FloatProcessor):
     """
-    Class that reads the first case using a compiled regex and stores as floats.
+    Class that reads the first case with compiled regex and stores floats.
     """
 
 
 class CaseOneRegexLongfloatTester(
         CSCStreamTester, CaseOneRegexBasedProcessor, LongFloatProcessor):
     """
-    Class that reads the first case using a compiled regex and stores as longfloats.
+    Class that reads the first case with compiled regex and stores longfloats.
     """
+
 
 class CaseTwoRegexFloatTester(
         CSCStreamTester, CaseTwoRegexBasedProcessor, FloatProcessor):
     """
-    Class that reads the second case using a compiled regex and stores as floats.
+    Class that reads the second case with compiled regex and stores floats.
     """
 
 
 class CaseTwoRegexLongfloatTester(
         CSCStreamTester, CaseTwoRegexBasedProcessor, LongFloatProcessor):
     """
-    Class that reads the second case using a compiled regex and stores as longfloats.
+    Class that reads the second case with compiled regex and stores longfloats.
     """
+
+
+class BadCSCStreamProcessorTester(TestCase):
+    """
+    Test some non-ideal conditions for using/creating the processor
+    """
+
+    def test_badRegex(self):
+        """
+        Verify that something with a search method can be used as the regex.
+        """
+        dummyStream = StringIO("Hello world\n")
+        with self.assertRaises(AttributeError):
+            CSCStreamProcessor(dummyStream, 1.0)
+
+        class ObjWithSearchAttr(object):
+            """Dummy object that contains a search attribute"""
+            search = False
+
+        with self.assertRaises(AttributeError):
+            CSCStreamProcessor(dummyStream, ObjWithSearchAttr())
+
 
 del CSCStreamTester
 
