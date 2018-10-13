@@ -132,9 +132,9 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
 
     def __processSparseMatrix(self, stream, matrixSize):
         from scipy.sparse import csc_matrix
-        from serpentTools.parsers.base import SparseCSCStreamProcessor
+        from serpentTools.parsers.base import CSCStreamProcessor
 
-        cscProcessor = SparseCSCStreamProcessor(
+        cscProcessor = CSCStreamProcessor(
             stream, DEPMTX_REGEX, longfloat)
         line = cscProcessor.process()
         self.depmtx = csc_matrix(

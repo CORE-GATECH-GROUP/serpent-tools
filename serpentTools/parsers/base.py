@@ -154,9 +154,17 @@ class SparseReaderMixin(object):
         return self.__sparse is True
 
 
-class SparseCSCStreamProcessor(object):
+class CSCStreamProcessor(object):
     """
     Read through a block of text and produce sparse matrices
+
+    .. note::
+
+        Rows and columns matched by ``regex`` will be reduced
+        by one prior to storage. Since we primarily interact
+        with one-indexed MATLAB arrays, we need to convert
+        the indices to something :term:`numpy` can properly
+        understand
 
     Paramters
     ---------
