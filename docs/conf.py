@@ -196,5 +196,6 @@ autodoc_default_flags = ['members', 'inherited-members']
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3.5', None),
     'matplotlib': ('https://matplotlib.org', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy/', None)
+    'numpy': ('https://docs.scipy.org/doc/numpy/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
 }

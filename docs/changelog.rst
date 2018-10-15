@@ -3,6 +3,7 @@
 .. |detector| replace:: :class:`~serpentTools.objects.detectors.Detector`
 .. |detectorReader| replace:: :class:`~serpentTools.parsers.detector.DetectorReader`
 .. |depletionReader| replace:: :class:`~serpentTools.parsers.depletion.DepletionReader`
+.. |depmtxReader| replace:: :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
 
 .. _changelog:
 
@@ -27,6 +28,16 @@ Changelog
 * :pull:`241` - Fix a bug in the CLI that rendered the ability to generate files with
   unique random seeds. ``python -m serpentTools seed <input> <N>`` can now be properly
   used.  
+* :pull:`249` - Better sparse support for depletion matrix, ``depmtx`` files with a
+  |depmtxReader|
+
+
+Deprecations
+------------
+
+* :func:`~serpentTools.parsers.depmtx` is deprecated in favor of either
+  :func:`~serpentTools.parsers.readDepmtx` or the class-based
+  |depmtxReader|
 
 
 .. _v0.5.4:

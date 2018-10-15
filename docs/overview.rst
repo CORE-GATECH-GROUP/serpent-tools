@@ -143,6 +143,17 @@ Cross Section Plot File
 * Example - notebook: :ex-notebook:`XSPlot`
 * Example - manual: :ref:`ex-xsplot`
 
+.. _ov-depmtx:
+
+Depletion Matrix File
+=====================
+* File Description: Data pertaining to depletion for a single burnable material
+  at a single point in time - ``depmtx_[material-identifier]-s[step].m``
+* Primary Reader: :class:`serpentTools.parsers.depmatrix.DepmtxReader`
+* Example - notebook: :ex-notebook:`DepletionMatrix`
+* Example - manual: :ref:`depmtx-reader-ex`
+
 .. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
     <http://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
+
