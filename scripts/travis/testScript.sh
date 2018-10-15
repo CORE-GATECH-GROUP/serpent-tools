@@ -23,7 +23,7 @@ fi
 
 if [ $TRAVIS ]; then
     PY_RUNNER="coverage run -a"
-    if [ $TRAVIS_PULL_REQUEST != "false"]; then
+    if [ $TRAVIS_PULL_REQUEST != "false" ]; then
         # Run lint on the whole project later
         FLAKE_DIFF=0
     else
