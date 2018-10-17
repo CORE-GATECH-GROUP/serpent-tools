@@ -122,20 +122,17 @@ class FissionMatrixReader(BaseReader):
             Negative fission matrix entries
 
         """
-        mex = "Negative Values in Fission Matrix {}".format(self.filePath)
         dims = self.metaFind(dimsEx)
         dimCheck(dims)
-        FissMat = np.zeros((int(dims[0]), int(dims[1])))
-        FissMatUnc = np.zeros((int(dims[0]), int(dims[1])))
+        self.fMat = np.zeros((int(dims[0]), int(dims[1])))
+        self.fMatU = np.zeros((int(dims[0]), int(dims[1])))
         with open(self.filePath) as fp:
             for lineNo, line in enumerate(fp):
                 m = re.match(fMVal, line)
                 if m is not None:
                     lista = str2vec(m.groups())
-                    FissMat[int(lista[0]) - 1, int(lista[1]) - 1] = lista[2]
-                    FissMatUnc[int(lista[0]) - 1, int(lista[1]) - 1] = lista[5]
-        self.fMat = FissMat
-        self.fMatU = FissMatUnc
+                    self.fMat[int(lista[0]) - 1, int(lista[1]) - 1] = lista[2]
+                    self.fMatU[int(lista[0]) - 1, int(lista[1]) - 1] = lista[5]
         return self.fMat, self.fMatU
 
     def _postcheck(self):
