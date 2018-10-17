@@ -1,13 +1,11 @@
 """ Test the fission matrix reader"""
-
-import os
 import unittest
 
 import numpy as np
 from numpy.testing import assert_equal
 
+from serpentTools.data import getFile
 from serpentTools.parsers.fissionMatrix import FissionMatrixReader as fm
-from serpentTools.tests import TEST_ROOT
 
 
 class FissionMatrixReaderTester(unittest.TestCase):
@@ -17,7 +15,7 @@ class FissionMatrixReaderTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.file = os.path.join(TEST_ROOT, 'ref_fmtx0.m')
+        cls.file = getFile('ref_fmtx0.m')
         cls.reader = fm(cls.file)
         cls.reader.read()
         cls.reader.fMatEig()
@@ -111,21 +109,21 @@ class FissionMatrixReaderTester(unittest.TestCase):
 
     def test_ReadNegativeValue(self):
         """ Value error if negative values are read"""
-        filePath = os.path.join(TEST_ROOT, 'neg_fmtx0.m')
+        filePath = getFile('neg_fmtx0.m')
         fmtxRead = fm(filePath)
         with self.assertRaises(ValueError):
             _ = fmtxRead.read()
 
     def test_DimsConsistencyError(self):
         """ Value error if fission matrix is not square"""
-        filePath = os.path.join(TEST_ROOT, 'refrect_fmtx0.m')
+        filePath = getFile('refrect_fmtx0.m')
         fmtxRead = fm(filePath)
         with self.assertRaises(ValueError):
             _ = fmtxRead.read()
 
     def test_DimsZeroError(self):
         """ Value error if fission matrix has zero dimensions"""
-        filePath = os.path.join(TEST_ROOT, 'refzero_fmtx0.m')
+        filePath = getFile('refzero_fmtx0.m')
         fmtxRead = fm(filePath)
         with self.assertRaises(ValueError):
             _ = fmtxRead.read()
