@@ -5,16 +5,6 @@ import re
 
 import six
 
-from numpy import array
-
-try:
-    from scipy.sparse import csc_matrix
-
-    HAS_SCIPY = True
-except ImportError:
-    HAS_SCIPY = False
-    csc_matrix = array
-
 from serpentTools.messages import SerpentToolsException, debug, deprecated
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.parsers.branching import BranchingReader
@@ -61,6 +51,8 @@ __all__ = ['read',
            'BumatReader', 'ResultsReader', 'FissionMatrixReader',
            'MicroXSReader',
            'DepmtxReader',
+           'depmtx',
+           'readDepmtx',
            ]
 
 
