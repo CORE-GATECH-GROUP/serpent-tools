@@ -1,15 +1,125 @@
 .. |homogUniv| replace:: :py:class:`~serpentTools.objects.containers.HomogUniv`
+.. |resultReader| replace:: :class:`~serpentTools.parsers.results.ResultsReader` 
+.. |detector| replace:: :class:`~serpentTools.objects.detectors.Detector`
+.. |detectorReader| replace:: :class:`~serpentTools.parsers.detector.DetectorReader`
+.. |depletionReader| replace:: :class:`~serpentTools.parsers.depletion.DepletionReader`
+.. |depmtxReader| replace:: :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
 
 .. _changelog:
 
-*********
+=========
 Changelog
-*********
+=========
 
-.. _vNext:
+.. _v0.6.0:
 
-Next
-====
+0.6.0
+=====
+
+* :pull:`174` - Added parent object ``BaseObject`` with basic comparison
+  method from which all objects inherit. Comparison method contains
+  upper and lower bounds for values w/o uncertainties, :pull:`191`
+* :pull:`196` - Add comparison methods for |resultReader| and 
+  |homogUniv| objects
+* :pull:`228` - Add comparison methods for |detectorReader| and
+  |detector| objects
+* :pull:`236` - Add comparison methods for |depletionReader| and
+  :class:`~serpentTools.objects.materials.DepletedMaterial` objects
+* :pull:`241` - Fix a bug in the CLI that rendered the ability to generate files with
+  unique random seeds. ``python -m serpentTools seed <input> <N>`` can now be properly
+  used.  
+* :pull:`249` - Better sparse support for depletion matrix, ``depmtx`` files with a
+  |depmtxReader|
+
+
+Deprecations
+------------
+
+* :func:`~serpentTools.parsers.depmtx` is deprecated in favor of either
+  :func:`~serpentTools.parsers.readDepmtx` or the class-based
+  |depmtxReader|
+
+
+.. _v0.5.4:
+
+:release-tag:`0.5.4`
+====================
+
+* :pull:`239` - Update python dependencies to continue use of python 2
+
+.. _v0.5.3:
+
+:release-tag:`0.5.3`
+====================
+
+* :pull:`221` - Expanded ``utils`` module to better assist developers
+* :pull:`227` - Better documentation of our :ref:`cli`.
+  Better documentation and testing of functions for generating input
+  files with unique random seeds - :mod:`serpentTools.seed`
+* :pull:`229` - :meth:`serpentTools.parsers.sensitivity.SensitivityReader.plot`
+  now respects the option to not set x nor y labels.
+* :pull:`231` - |resultReader| objects
+  can now read files that do not contain group constant data. The setting
+  :ref:`results-expectGcu` should be used to inform the reader that no
+  group constant data is anticipated
+  
+
+.. _v0.5.2:
+
+:release-tag:`0.5.2`
+====================
+
+* :pull:`198` - Import test and example files using :mod:`serpentTools.data`. 
+  Load example readers with :func:`serpentTools.data.readDataFile`
+* :pull:`199` - Support for structured or unstructured matrix plotting with
+  :func:`serpentTools.plot.cartMeshPlot`
+* :pull:`201` - Support for plotting hexagonal meshes with
+  :meth:`serpentTools.objects.detectors.HexagonalDetector.hexPlot`
+* :pull:`204` - Access |detector|
+  objects directly from |detectorReader|
+  with ``reader[detName]``
+* :pull:`205` - Access materials from |depletionReader|
+  and :class:`serpentTools.samplers.depletion.DepletionSampler` using key-like
+  indexing, e.g. ``reader[matName] == reader.material[matName]``
+* :pull:`213` - Better default x-axis labels for simple detector plots
+
+.. _v0.5.2-api:
+
+API Changes
+-----------
+* :pull:`194` - Some settings in :attr:`serpentTools.parsers.results.ResultsReader.metadata`
+  are now stored as :class:`int` or :class:`float`, depending upon their nature.
+  Many of these settings refer to flags of settings used by ``SERPENT``
+
+.. _v0.5.1:
+
+:release-tag:`0.5.1`
+====================
+
+* :pull:`180` - Add capability to pass isotope ``zzaaai`` for 
+  :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues` 
+  and associated plot routines
+* :pull:`187` - Import all readers and samplers from the main package::
+
+    >>> from serpentTools import ResultsReader
+    >>> from serpentTools import DetectorSampler
+
+* :pull:`189` - Support for reading detectors with hexagonal, cylindrical, and 
+  spherical meshes.
+
+.. _v0.5.1-api:
+
+API Changes
+-----------
+
+* ``zzaaai`` data is stored on 
+  :attr:`~serpentTools.objects.materials.DepletedMaterial.zai` as a list
+  of integers, not strings
+
+.. _v0.5.0:
+
+:release-tag:`0.5.0`
+====================
 
 * :pull:`131` Updated variable groups between ``2.1.29`` and ``2.1.30`` - include
   poison cross section, kinetic parameters, six factor formula (2.1.30 exclusive),
@@ -31,20 +141,20 @@ Next
 * :pull:`165` - Add the :py:meth:`serpentTools.objects.containers.HomogUniv.plot` 
   method
    
-.. _vAPI-changes:
+.. _v0.5.0API-changes:
 
 API Changes
 -----------
 
 * :pull:`146` removed ``metadata`` dictionaries on |homogUniv| objects.
 
-.. _vDeprecated:
+.. _v0.5.0Deprecated:
 
 Deprecation
 -----------
 
-* Variable group ``xs-yields`` will be removed. Use ``poisons`` instead
-* Branches of a single name will only be accessible through 
+* Variable group ``xs-yields`` is removed. Use ``poisons`` instead
+* Branches of a single name are only be accessible through 
   ``branches['nom']``, not ``branches[('nom'), ]`` as per :pull:`114`
 
 .. _v0.4.0:

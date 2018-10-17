@@ -1,14 +1,14 @@
 """Settings to yield control to the user."""
 import os
-import six
 
 from six import iteritems
 import yaml
 
-from serpentTools import ROOT_DIR
-from serpentTools import messages
+from serpentTools import messages, __path__
 
 __all__ = ['defaultSettings', 'rc']
+
+ROOT_DIR = __path__[0]
 
 SETTING_HEADER_CHAR = '-'
 SETTING_DOC_FMTR = """.. _{tag}:
@@ -76,6 +76,13 @@ defaultSettings = {
                        'detectors',
         'type': list
     },
+    'results.expectGcu': {
+        'default': True,
+        'description': 'Set this to False if no homogenized group contants '
+                       'are present in the output, as if ``set gcu -1`` is '
+                       'preset in the input file',
+        'type': bool,
+    },
     'verbosity': {
         'default': 'warning',
         'options': messages.LOG_OPTS,
@@ -126,9 +133,10 @@ defaultSettings = {
     },
     'xs.reshapeScatter': {
         'default': False,
-        'description': 'If true, reshape the scattering matrices to square matrices. '
-                       'By default, these matrices are stored as vectors.',
-       'type': bool
+        'description': 'If true, reshape the scattering matrices to square '
+                       'matrices. By default, these matrices are stored '
+                       'as vectors.',
+        'type': bool
     },
     'xs.variableGroups': {
         'default': [],
@@ -205,7 +213,7 @@ class DefaultSetting(object):
                                'options: {}'
                                .format(self.name, value, opts))
         return True
-        
+
 
 class DefaultSettingsLoader(dict):
     """Base class for loading all the default settings."""
@@ -276,14 +284,14 @@ class UserSettingsLoader(dict):
         dict.__init__(self, self._defaultLoader.retrieveDefaults())
 
     def __enter__(self):
-        self.__inside= True
+        self.__inside = True
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__inside__ = False
         for key, originalValue in iteritems(self.__originals):
             self[key] = originalValue
-        self.__originals= {}
+        self.__originals = {}
 
     def setValue(self, name, value):
         """Set the value of a specific setting.
@@ -443,11 +451,10 @@ class UserSettingsLoader(dict):
                       if setting.options else '')
             desc = setting.description
             out += SETTING_DOC_FMTR.format(
-                header=header, name=setting.name, 
+                header=header, name=setting.name,
                 vtype=setting.type.__name__, default=setting.default,
                 desc=desc, options=optStr, tag=tag)
-        return out 
+        return out
 
 
 rc = UserSettingsLoader()
-

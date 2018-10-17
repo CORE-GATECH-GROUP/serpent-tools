@@ -16,6 +16,7 @@
 
 .. |settings| replace::  :py:class:`~serpentTools.settings.rc`
 
+.. _ex-microXS:
 
 =============
 MicroXSReader
@@ -41,12 +42,18 @@ files, the user must set the ``mdep`` card in the input
     
     >>> import serpentTools
     >>> from serpentTools.settings import rc
-    >>> mdxFile = '../serpentTools/tests/ref_mdx0.m'
+    >>> mdxFile = 'ref_mdx0.m'
+
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
 
 .. code:: 
     
-    >>> %time
-    >>> mdx = serpentTools.read(mdxFile)
+    >>> mdx = serpentTools.readDataFile(mdxFile)
 
 
 .. parsed-literal::
@@ -374,7 +381,7 @@ uncertainties
 
 .. code:: 
     
-    >>> mdx = serpentTools.read(mdxFile)
+    >>> mdx = serpentTools.readDataFile(mdxFile)
 
 .. code:: 
     

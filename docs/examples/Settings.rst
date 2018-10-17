@@ -190,7 +190,7 @@ Configuration Files
 
 The |rc| object allows for settings to be updated
 from a yaml configuration file using the
-:py:meth:`~serpentTools.settings.UserSettingsLoader.loadYaml` method.
+:py:meth:`~serpentTools.settings.rc.loadYaml` method.
 The file is structured with the names of settings as keys and the
 desired setting value as the values.
 The loader also attempts to expand nested settings, like reader-specific

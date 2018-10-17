@@ -10,10 +10,14 @@ from numpy import zeros, zeros_like
 from matplotlib import pyplot
 
 from serpentTools.messages import SamplerError, warning
-from serpentTools.plot import magicPlotDocDecorator
+from serpentTools.utils import (
+    magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+)
 from serpentTools.objects.materials import DepletedMaterialBase
 from serpentTools.parsers.depletion import DepletionReader, DepPlotMixin
-from serpentTools.samplers import Sampler, SampledContainer, SPREAD_PLOT_KWARGS
+from serpentTools.samplers.base import (
+    Sampler, SampledContainer, SPREAD_PLOT_KWARGS,
+)
 
 CONSTANT_MDATA = ('names', 'zai')
 """metadata that should be invariant throughout repeated runs"""
@@ -24,19 +28,19 @@ VARIED_MDATA = ('days', 'burnup')
 class DepletionSampler(DepPlotMixin, Sampler):
     __doc__ = """
     Class that reads and stores data from multiple ``*dep.m`` files
-    
-    The following checks are performed in order to ensure that depletion 
+
+    The following checks are performed in order to ensure that depletion
     files are of similar form:
-    
+
     1. Keys of ``materials`` dictionary are consistent for all parsers
     2. Metadata keys are consistent for all parsers
     3. Isotope names and ZZAAA metadata are equal for all parsers
 
     {skip:s}
-    
+
     Parameters
     ----------
-    {files:s}    
+    {files:s}
 
     Attributes
     ----------
@@ -49,7 +53,7 @@ class DepletionSampler(DepPlotMixin, Sampler):
         metadata arrays for all runs. Arrays with be of one greater dimension,
         as the first index corresponds to the file index.
     {samplerAttr:s}
-     
+
     """.format(files=Sampler.docFiles, samplerAttr=Sampler.docAttrs,
                skip=Sampler.docSkipChecks, depAttr=DepletionReader.docAttrs)
 
@@ -60,6 +64,10 @@ class DepletionSampler(DepPlotMixin, Sampler):
         self.allMdata = {}
         Sampler.__init__(self, files, DepletionReader)
         DepPlotMixin.__init__(self)
+
+    def __getitem__(self, name):
+        """Retrieve a material from :attr:`materials`."""
+        return self.materials[name]
 
     def _precheck(self):
         self._checkParserDictKeys('materials')
@@ -133,14 +141,14 @@ class DepletionSampler(DepPlotMixin, Sampler):
 class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
     __doc__ = """
     Class that stores data from a variety of depleted materials
-    
+
     {equiv:s}
-    
+
     .. note ::
 
         :py:func:`~serpentTools.samplers.depletion.SampledDepletedMaterial.free`
         sets ``allData`` to an empty dictionary {free:s}
-            
+
     Parameters
     ----------
     N: int
@@ -155,13 +163,13 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
     ----------
     {depAttrs:s}
     uncertainties: dict
-        Uncertainties for all variables stored in ``data``
+        Absolute uncertainties for all variables stored in ``data``
     allData: dict
         Dictionary where key, value pairs correspond to names of
         variables stored on this object and arrays of data from all files.
         The dimensionality will be increased by one, as the first index
         corresponds to the order in which files were loaded
-        
+
     """.format(free=SampledContainer.docFree,
                equiv=DepletedMaterialBase.docEquiv,
                depAttrs=DepletedMaterialBase.docAttrs)
@@ -194,11 +202,12 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
     def free(self):
         """Clear up data from all sampled parsers"""
         self.allData = {}
-    
+
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
              sigma=3, xlabel=None, ylabel=None, logx=False,
-             logy=False, loglog=False, legend=False, labelFmt=None, **kwargs):
+             logy=False, loglog=False, legend=False, ncol=1, labelFmt=None,
+             **kwargs):
         """
         Plot the average of some data vs. time for some or all isotopes.
 
@@ -229,6 +238,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         {logy}
         {loglog}
         {legend}
+        {ncol}
         {matLabelFmt}
         {kwargs} :py:func:`matplotlib.pyplot.errorbar`
 
@@ -238,8 +248,9 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         See Also
         --------
-        * :py:meth:`~serpentTools.objects.materials.DepletedMaterialBase.getValues`
-        * :py:func:`matplotlib.pyplot.errorbar`
+        * :meth:`~serpentTools.objects.materials.
+          DepletedMaterialBase.getValues`
+        * :func:`matplotlib.pyplot.errorbar`
 
         """
         if sigma and yUnits not in self.uncertainties:
@@ -269,20 +280,15 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             ax.errorbar(xVals, yVals[row], yerr=yUncs[row], xerr=xUncs,
                         label=labels[row], **kwargs)
 
-        # format the plot
-        if legend:
-            ax.legend()
-        ax = sigmaLabel(ax, xlabel or self.PLOT_XLABELS[xUnits],
-                        ylabel or yUnits, sigma)
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        ax = sigmaLabel(ax, xlabel or DEPLETION_PLOT_LABELS[xUnits],
+                        ylabel or DEPLETION_PLOT_LABELS[yUnits], sigma)
+        formatPlot(ax, legend=legend, ncol=ncol, loglog=loglog, logx=logx,
+                   logy=logy)
         return ax
 
     @magicPlotDocDecorator
     def spreadPlot(self, xUnits, yUnits, isotope, timePoints=None, ax=None,
-                   xlabel=None, ylabel=None, logx=False, logy=False, 
+                   xlabel=None, ylabel=None, logx=False, logy=False,
                    loglog=False, legend=True):
         """
         Plot the mean quantity and data from all sampled files.
@@ -339,13 +345,10 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             plotData = self._slice(sampledData[n], rows, cols)[0]
             ax.plot(xVals, plotData, **SPREAD_PLOT_KWARGS)
         ax.plot(xVals, primaryData, label='Mean value')
-        ax = sigmaLabel(ax, xlabel or self.PLOT_XLABELS[xUnits], ylabel or yUnits)
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
-        if legend:
-            ax.legend()
+
+        ax = sigmaLabel(ax, xlabel or DEPLETION_PLOT_LABELS[xUnits],
+                        ylabel or DEPLETION_PLOT_LABELS[yUnits])
+        formatPlot(ax, legend=legend, logx=logx, logy=logy, loglog=loglog)
         return ax
 
 
@@ -355,4 +358,3 @@ def sigmaLabel(ax, xlabel, ylabel, sigma=None):
     ax.set_xlabel(xlabel + confStr)
     ax.set_ylabel(ylabel + confStr)
     return ax
-

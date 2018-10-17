@@ -1,5 +1,3 @@
-env:
-  - ONTRAVIS=True
 language: python
 python:
   - "3.6"
@@ -8,7 +6,7 @@ python:
 
 # install
 install:
-  - pip install jupyter codecov coverage pandas
+  - pip install -r requirements-test.txt
   - python setup.py install
 
 # use xvfb to give the plot functions something to use
@@ -22,10 +20,9 @@ before_script:
 
 # run
 script:
-  - coverage run setup.py test 
-  - ./testNotebooks.sh 
+  - bash scripts/travis/testScript.sh
 
 # only if build succeeds
-after-success:
-  - codecov
+after_success:
+  - coverage report
 

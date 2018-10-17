@@ -1,26 +1,28 @@
+.. |detector| replace:: :class:`~serpentTools.objects.detectors.Detector`
+
+.. |detectorReader| replace:: :class:`~serpentTools.parsers.detector.DetectorReader`
+
+.. |detBins| replace:: :attr:`~serpentTools.objects.detectors.Detector.bins`
+
+.. |detIndx| replace:: :attr:`~serpentTools.objects.detectors.Detector.indexes`
+
+.. |detTallies| replace:: :attr:`~serpentTools.objects.detectors.Detector.tallies`
+
+.. |detErrors| replace:: :attr:`~serpentTools.objects.detectors.Detector.errors`
+
+.. |detGrids| replace:: :attr:`~serpentTools.objects.detectors.Detector.grids`
+
+.. |detSlice| replace:: :meth:`~serpentTools.objects.detectors.Detector.slice`
+
+.. |plot| replace:: :meth:`~serpentTools.objects.detectors.Detector.plot`
+
+.. |mesh| replace:: :meth:`~serpentTools.objects.detectors.Detector.meshPlot`
+
+.. |spectrum| replace:: :meth:`~serpentTools.objects.detectors.Detector.spectrumPlot`
+
+.. |hexDet| replace:: :class:`~serpentTools.objects.detectors.HexagonalDetector` 
+
 .. _detector-example:
-
-.. |detector| replace:: :py:class:`~serpentTools.objects.containers.Detector`
-
-.. |detectorReader| replace:: :py:class:`~serpentTools.parsers.detector.DetectorReader`
-
-.. |detBins| replace:: :py:attr:`~serpentTools.objects.containers.Detector.bins`
-
-.. |detIndx| replace:: :py:attr:`~serpentTools.objects.containers.Detector.indexes`
-
-.. |detTallies| replace:: :py:attr:`~serpentTools.objects.containers.Detector.tallies`
-
-.. |detErrors| replace:: :py:attr:`~serpentTools.objects.containers.Detector.errors`
-
-.. |detGrids| replace:: :py:attr:`~serpentTools.objects.containers.Detector.grids`
-
-.. |detSlice| replace:: :py:meth:`~serpentTools.objects.containers.Detector.slice`
-
-.. |plot| replace:: :py:meth:`~serpentTools.objects.containers.Detector.plot`
-
-.. |mesh| replace:: :py:meth:`~serpentTools.objects.containers.Detector.meshPlot`
-
-.. |spectrum| replace:: :py:meth:`~serpentTools.objects.containers.Detector.spectrumPlot`
 
 ==============
 DetectorReader
@@ -46,16 +48,22 @@ lattice bins.
 
 .. code:: 
     
-    >>> %matplotlib inline
     >>> from matplotlib import pyplot
     >>> import serpentTools
+
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
 
 .. code:: 
     
     >>> pinFile = 'fuelPin_det0.m'
     >>> bwrFile = 'bwr_det0.m'
-    >>> pin = serpentTools.read(pinFile)
-    >>> bwr = serpentTools.read(bwrFile)
+    >>> pin = serpentTools.readDataFile(pinFile)
+    >>> bwr = serpentTools.readDataFile(bwrFile)
 
 .. code:: 
     
@@ -136,6 +144,13 @@ Here, only three columns, shown as rows for readability, are changing:
 
     For SERPENT-1, there would be an additional column 12 that
     contained the scores for each bin
+
+Detectors can also be obtained by indexing into the |detectorReader|, as
+
+.. code::
+
+    >>> nf = pin['nodeFlx']
+    >>> assert nf is nodeFlx
 
 Once each detector is given this binned tally data, the
 :py:meth:`~serpentTools.objects.containers.Detector.reshape`
@@ -543,6 +558,137 @@ label each individual plot in the order of the bin index.
     >>> spectrum.spectrumPlot(labels=labels, legend='above', ncol=2);
 
 .. image:: Detector_files/Detector_47_0.png
+
+.. _ex-det-hex:
+
+Hexagonal Detectors
+-------------------
+
+SERPENT allows the creation of hexagonal detectors with the ``dh`` card,
+like::
+
+    det hex2 2 0.0 0.0 1 5 5 0.0 0.0 1
+    det hex3 3 0.0 0.0 1 5 5 0.0 0.0 1
+
+which would create two hexagonal detectors with different orientations.
+Type 2 detectors have two faces perpendicular to the x-axis, while type
+3 detectors have faces perpendicular to the y-axis. For more
+information, see the `dh card from SERPENT
+wiki <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#det_dh>`__.
+
+``serpentTools`` is capable of storing data tallies and grid structures
+from hexagonal detectors in
+|hexDet| objects.
+
+.. code:: 
+    
+    >>> hexFile = 'hexplot_det0.m'
+    >>> hexR = serpentTools.readDataFile(hexFile)
+    >>> hexR.detectors
+
+.. parsed-literal::
+ 
+
+    {'hex2': <serpentTools.objects.detectors.HexagonalDetector at 0x7f1ad03d5da0>,
+    'hex3': <serpentTools.objects.detectors.HexagonalDetector at 0x7f1ad03d5c88>}
+
+Here, two |hexDet| objects are produced, with similar
+|detTallies| and slicing methods as demonstrated above.
+
+.. code:: 
+    
+    >>> hex2 = hexR.detectors['hex2']
+    >>> hex2.tallies
+
+.. parsed-literal::
+ 
+    array([[0.185251, 0.184889, 0.189381, 0.184545, 0.195442],
+           [0.181565, 0.186038, 0.193088, 0.195448, 0.195652],
+           [0.1856  , 0.190278, 0.192013, 0.193353, 0.184309],
+           [0.186249, 0.191939, 0.192513, 0.194196, 0.186953],
+           [0.198196, 0.198623, 0.195612, 0.174804, 0.178053]])
+
+.. code:: 
+    
+    >>> hex2.grids
+
+
+.. parsed-literal::
+ 
+    {'COORD': array([[-3.       , -1.732051 ],
+            [-2.5      , -0.8660254],
+            [-2.       ,  0.       ],
+            [-1.5      ,  0.8660254],
+            [-1.       ,  1.732051 ],
+            [-2.       , -1.732051 ],
+            [-1.5      , -0.8660254],
+            [-1.       ,  0.       ],
+            [-0.5      ,  0.8660254],
+            [ 0.       ,  1.732051 ],
+            [-1.       , -1.732051 ],
+            [-0.5      , -0.8660254],
+            [ 0.       ,  0.       ],
+            [ 0.5      ,  0.8660254],
+            [ 1.       ,  1.732051 ],
+            [ 0.       , -1.732051 ],
+            [ 0.5      , -0.8660254],
+            [ 1.       ,  0.       ],
+            [ 1.5      ,  0.8660254],
+            [ 2.       ,  1.732051 ],
+            [ 1.       , -1.732051 ],
+            [ 1.5      , -0.8660254],
+            [ 2.       ,  0.       ],
+            [ 2.5      ,  0.8660254],
+            [ 3.       ,  1.732051 ]]),
+     'Z': array([[0., 0., 0.]])}
+
+.. code:: 
+    
+    >>> hex2.indexes
+
+.. parsed-literal::
+ 
+    OrderedDict([('ycoord', array([0, 1, 2, 3, 4])),
+                 ('xcoord', array([0, 1, 2, 3, 4]))])
+
+
+Creating hexagonal mesh plots with these objects requires setting the
+:attr:`~serpentTools.objects.detectors.HexagonalDetector.pitch`
+and :attr:`~serpentTools.objects.detectors.HexagonalDetector.hexType` attributes.
+
+.. code:: 
+    
+    >>> hex2.pitch = 1
+    >>> hex2.hexType = 2
+
+.. code:: 
+    
+    >>> hex2.hexPlot();
+
+.. image:: Detector_files/Detector_56_0.png
+
+
+.. code:: 
+    
+    >>> hex3 = hexR.detectors['hex3']
+    >>> hex3.pitch = 1
+    >>> hex3.hexType = 3
+    >>> hex3.hexPlot();
+
+
+.. image:: Detector_files/Detector_57_0.png
+
+
+.. _ex-det-lim:
+
+Limitations
+-----------
+
+``serpentTools`` does support reading detector files with hexagonal,
+cylindrical, and spherical mesh structures. However, creating 2D mesh
+plots with these detectors, and utilizing their mesh structure, is not
+fully supported. :issue:`169`
+is currently tracking progress for cylindrical plotting.
 
 Conclusion
 ----------

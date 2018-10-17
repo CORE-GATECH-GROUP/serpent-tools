@@ -1,8 +1,10 @@
-.. |reader| replace:: :py:class:`~serpentTools.parsers.xsplot.XSPlotReader
+.. |reader| replace:: :py:class:`~serpentTools.parsers.xsplot.XSPlotReader`
 
 .. |xsections| replace:: :py:attr:`~serpentTools.parsers.xsplot.XSPlotReader.xsections`
 
 .. |xsdata| replace:: :py:class:`~serpentTools.objects.xsdata.XSData`
+
+.. _ex-xsplot:
 
 Cross Section Reader/Plotter
 ============================
@@ -17,13 +19,17 @@ as documented on the Serpent wiki. ``serpentTools`` can then read the
 output, figuring out its filetype automatically as with other readers.
 Let’s plot some data used in the ``serpentTools`` regression suite.
 
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
 
 .. code:: 
     
     >>> import serpentTools
-    >>> %matplotlib inline
-    >>> 
-    >>> xsreader = serpentTools.read('../serpentTools/tests/plut_xs0.m')
+    >>> xsreader = serpentTools.readDataFile('plut_xs0.m')
 
 This file contains some cross sections from a Serpent case containing a
 chunk of plutonium metal reflected by beryllium. Let’s see what cross

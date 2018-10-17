@@ -1,17 +1,15 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
 
 from six import iteritems
-from numpy import asfortranarray, empty
+from numpy import empty
 
+from serpentTools.utils import str2vec
+from serpentTools.utils.compare import getKeyMatchingShapes
 from serpentTools.engines import KeywordParser
-from serpentTools.objects.containers import Detector
-from serpentTools.objects.readers import BaseReader
-from serpentTools.messages import error, debug, info
-
-NUM_COLS = 12
-# number of columns/bins in a single detector line
-
-__all__ = ['DetectorReader']
+from serpentTools.objects.detectors import detectorFactory
+from serpentTools.parsers.base import BaseReader
+from serpentTools.messages import error, debug, warning, SerpentToolsException
+from serpentTools.settings import rc
 
 
 class DetectorReader(BaseReader):
@@ -29,7 +27,8 @@ class DetectorReader(BaseReader):
     """
     docAttrs = """detectors: dict
         Dictionary where key, value pairs correspond to detector names
-        and their respective ``DetectorObject``"""
+        and their respective :class:`~serpentTools.objects.detector.Detector`
+        representations."""
     __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
@@ -39,47 +38,48 @@ class DetectorReader(BaseReader):
             self._loadAll = True
         else:
             self._loadAll = False
+        self.__numCols = 13 if rc['serpentVersion'][0] == '1' else 12
+
+    def __getitem__(self, name):
+        """Retrieve a detector from :attr:`detectors`"""
+        return self.detectors[name]
 
     def iterDets(self):
+        """Yield name, detector pairs by iterating over :attr:`detectors`."""
         for name, detector in iteritems(self.detectors):
             yield name, detector
 
     def _read(self):
         """Read the file and store the detectors."""
+        recentName = None
+        lenRecent = 0
+        recentGrids = {}
         keys = ['DET']
         separators = ['\n', '];']
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
-                detString = chunk.pop(0).split(' ')[0][3:]
-                if detString[:-1] in self.detectors:
-                    detName = detString[:-1]
-                    binType = detString[-1]
-                elif detString in self.settings['names'] or self._loadAll:
-                    detName = detString
-                    binType = None
-                else:
+                name, data = cleanDetChunk(chunk)
+                if recentName is None or name[:lenRecent] != recentName:
+                    if recentName is not None:
+                        self.__processDet(recentName, recentGrids)
+                    recentName = name
+                    lenRecent = len(name)
+                    recentGrids = {'tally': data}
                     continue
-                self._addDetector(chunk, detName, binType)
+                gridName = name[lenRecent:]
+                recentGrids[gridName] = data
+            self.__processDet(recentName, recentGrids)
 
-    def _addDetector(self, chunk, detName, binType):
-        if binType is None:
-            data = empty(shape=(len(chunk), NUM_COLS))
-        else:
-            data = empty(shape=(len(chunk), len(chunk[0].split())))
-        for indx, line in enumerate(chunk):
-            data[indx] = [float(xx) for xx in line.split()]
-        if detName not in self.detectors:
-            # new detector, this data is the tallies
-            detector = Detector(detName)
-            detector.addTallyData(data)
-            self.detectors[detName] = detector
-            debug('Adding detector {}'.format(detName))
+    def __processDet(self, name, grids):
+        """Add this detector with it's grid data to the reader."""
+        if not self._loadAll and name in self.settings['names']:
+            debug("Skipping detector {} due to setting <detector.names>"
+                  .format(name))
             return
-        # detector has already been defined, this must be a mesh
-        detector = self.detectors[detName]
-        detector.grids[binType] = asfortranarray(data)
-        debug('Added bin data {} to detector {}'
-              .format(binType, detName))
+        if name in self.detectors:
+            raise KeyError("Detector {} already stored on reader"
+                           .format(name))
+        self.detectors[name] = detectorFactory(name, grids)
 
     def _precheck(self):
         """ Count how many detectors are in the file."""
@@ -88,10 +88,62 @@ class DetectorReader(BaseReader):
                 sline = line.split()
                 if not sline:
                     continue
-                elif 'DET' in sline[0]:
+                if 'DET' in sline[0]:
                     return
         error("No detectors found in {}".format(self.filePath))
 
     def _postcheck(self):
         if not self.detectors:
             warning("No detectors stored from file {}".format(self.filePath))
+
+    def _compare(self, other, lower, upper, sigma):
+        """Compare two detector readers."""
+        similar = len(self.detectors) == len(other.detectors)
+
+        commonKeys = getKeyMatchingShapes(self.detectors, other.detectors,
+                                          'detectors')
+        similar &= len(commonKeys) == len(self.detectors)
+
+        for detName in sorted(commonKeys):
+            myDetector = self[detName]
+            otherDetector = other[detName]
+            similar &= myDetector.compare(otherDetector, lower, upper, sigma)
+        return similar
+
+
+def cleanDetChunk(chunk):
+    """
+    Return the name of the detector [grid] and the array of data.
+
+    Parameters
+    ----------
+    chunk: list
+        Chunk of text from the output file pertaining to this section.
+        Should begin with ``DET<name>[<grid>] = [`` with
+        array data on the subsequent lines
+
+    Returns
+    -------
+    str:
+        Name of the detector including grid characters
+    numpy.ndarray:
+        Array containing numeric data from the chunk
+
+    Raises
+    ------
+    SerpentToolsException:
+        If the name of the detector could not be determined
+    """
+    if chunk[0][:3] != 'DET':
+        raise SerpentToolsException(
+            "Could not determine name of detector from chunk: {}"
+            .format(chunk[0]))
+    leader = chunk.pop(0)
+    name = leader.split()[0][3:]
+    if chunk[-1][:2] == '];':
+        chunk.pop(-1)
+    nCols = len(chunk[0].split())
+    data = empty((len(chunk), nCols), order='F')
+    for indx, row in enumerate(chunk):
+        data[indx] = str2vec(row)
+    return name, data

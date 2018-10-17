@@ -4,7 +4,10 @@
 Parsing Engines
 ===============
 
-The classes contained in ``serpentTools/engines.py`` are part of the 
+The 
+:class:`serpentTools.engines.KeywordParser` and
+:class:`serpentTools.engines.PatternReader`
+contained in ``serpentTools/engines.py`` are part of the 
 `drewtils <https://github.com/drewejohnson/drewtils>`_ v0.1.9 package and
 are provided under the following license:
 
@@ -48,4 +51,4 @@ help break up these files into more digestible pieces.
 
 .. autoclass:: serpentTools.engines.PatternReader
 
-
+.. autoclass:: serpentTools.parsers.base.CSCStreamProcessor

@@ -6,7 +6,7 @@ import unittest
 import numpy
 
 from serpentTools.settings import rc
-from serpentTools.tests import TEST_ROOT
+from serpentTools.data import getFile
 from serpentTools.parsers import MicroXSReader
 from serpentTools.messages import SerpentToolsException
 
@@ -22,7 +22,7 @@ class TestBadFile(unittest.TestCase):
 
     def test_noResults(self):
         """Verify that an error is raised when no results exist in the file"""
-        badFile = os.path.join(TEST_ROOT, 'bad_results_file.m')
+        badFile = 'bad_results_file.m'
         with open(badFile, 'w') as badObj:
             for _line in range(5):
                 badObj.write(str(_line))
@@ -95,7 +95,7 @@ class TestMicroXSReader(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.file = os.path.join(TEST_ROOT, 'ref_mdx0.m')
+        cls.file = getFile('ref_mdx0.m')
         with rc:
             rc['microxs.getFY'] = True
             rc['microxs.getXS'] = True
@@ -105,7 +105,7 @@ class TestMicroXSReader(unittest.TestCase):
 
     def test_emptyAttributes(self):
         """Verify that variables are not all empty"""
-        mdxFile = os.path.join(TEST_ROOT, 'ref_mdx0_noXS.m')
+        mdxFile = getFile('ref_noXS_mdx0.m')
         with rc:
             rc['microxs.getFY'] = False  # do not store fission yields
             mdxReader = MicroXSReader(mdxFile)
@@ -220,6 +220,7 @@ class TestMicroXSReader(unittest.TestCase):
         """getXS method: non-existing cross-sections."""
         with self.assertRaises(SerpentToolsException):
             self.reader.getXS('0', 10050, 205, 0)
+
 
 if __name__ == '__main__':
     unittest.main()

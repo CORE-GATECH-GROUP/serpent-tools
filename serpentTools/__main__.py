@@ -54,7 +54,7 @@ def __buildParser():
                             help='Seed to start with the builtin random '
                                  'generator')
     seedParser.add_argument('-l', '--length', type=int, default=10,
-                            help='Average number of digits in random seeds')
+                            help='Number of digits in random seeds')
     seedParser.add_argument('--output-dir', type=str, default=None,
                             help='Copy files into this directory')
     seedParser.add_argument('--link', action='store_true',
@@ -76,7 +76,7 @@ def _seedInterface(args):
     """Interface to launch the uniquely-seeded file generation"""
     from serpentTools.seed import seedFiles
     seedFiles(args.file, args.N, seed=args.seed, outputDir=args.output_dir,
-              link=args.link, digits=args.length)
+              link=args.link, length=args.length)
 
 
 def _listDefaults(args):

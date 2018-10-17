@@ -8,11 +8,11 @@ API
    :caption: Contents:
 
    settings.rst
-   messages.rst
    parsers.rst
-   engines.rst
+   data.rst
    plot.rst
    containers.rst
+   detectors
    branching.rst
    bumat.rst
    depletion.rst
@@ -23,5 +23,7 @@ API
    sampler.rst
    sensitivity.rst
    xsplot.rst
-   utils.rst
    microxs.rst
+   DepletionMatrix.rst
+   exceptions.rst
+   seed.rst

@@ -21,19 +21,16 @@ File Descriptions
     tolerance can still be achieved.
 
 """
-from math import sqrt
-from os import path
-import unittest
-
 from six import iteritems
 
 from numpy import square, sqrt
 from numpy.testing import assert_allclose
 
 from serpentTools.messages import MismatchedContainersError
-from serpentTools.tests import TEST_ROOT
+from serpentTools.data import getFile
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.samplers.detector import DetectorSampler
+from serpentTools.tests.utils import TestCaseWithLogCapture
 
 _DET_FILES = {
     'bwr0': 'bwr_0',
@@ -41,7 +38,7 @@ _DET_FILES = {
     'noxy': 'bwr_noxy',
     'smallxy': 'bwr_smallxy'
 }
-DET_FILES = {key: path.join(TEST_ROOT, val + '_det0.m')
+DET_FILES = {key: getFile(val + '_det0.m')
              for key, val in iteritems(_DET_FILES)}
 
 SQRT2 = sqrt(2)
@@ -52,7 +49,7 @@ TOLERANCES = {
 }
 
 
-class DetSamplerTester(unittest.TestCase):
+class DetSamplerTester(TestCaseWithLogCapture):
     """
     Tester that looks for errors in mismatched detector files
     and validates the averaging and uncertainty propagation
@@ -72,6 +69,7 @@ class DetSamplerTester(unittest.TestCase):
 
     def setUp(self):
         self._checkContents()
+        TestCaseWithLogCapture.setUp(self)
 
     def test_properlyAveraged(self):
         """Validate the averaging for two unique detector files"""
@@ -89,19 +87,31 @@ class DetSamplerTester(unittest.TestCase):
 
     def test_missingDetectors(self):
         """Verify that an error is raised if detectors are missing"""
-        files = [path.join(TEST_ROOT, fp)
-                 for fp in ['bwr_0_det0*.m', 'bwr_noxy_det0.m']]
+        files = [getFile(fp)
+                 for fp in ['bwr_0_det0.m', 'bwr_noxy_det0.m']]
         self._raisesMisMatchError(files)
+        self.assertMsgInLogs("ERROR", "detectors: Parser files", partial=True)
 
     def test_differentSizedDetectors(self):
         """Verify that an error is raised if detector shapes are different"""
-        files = [path.join(TEST_ROOT, fp)
-                 for fp in ['bwr_0_det0*.m', 'bwr_smallxy_det0.m']]
+        files = [getFile(fp)
+                 for fp in ['bwr_0_det0.m', 'bwr_smallxy_det0.m']]
         self._raisesMisMatchError(files)
+        self.assertMsgInLogs(
+            "ERROR", "shape: Parser files",
+            partial=True)
 
     def _raisesMisMatchError(self, files):
         with self.assertRaises(MismatchedContainersError):
             DetectorSampler(files)
+
+    def test_getitem(self):
+        """Verify the getitem method for retrieving detectors works."""
+        for name, det in iteritems(self.sampler.detectors):
+            fromGetItem = self.sampler[name]
+            self.assertIs(det, fromGetItem, msg=name)
+        with self.assertRaises(KeyError):
+            self.sampler['this should fail']
 
 
 def _getExpectedAverages(d0, d1):
@@ -112,4 +122,5 @@ def _getExpectedAverages(d0, d1):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()

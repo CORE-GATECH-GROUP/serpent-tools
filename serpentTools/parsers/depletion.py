@@ -1,25 +1,40 @@
 """Parser responsible for reading the ``*dep.m`` files"""
 import re
 
-from numpy import array
 from matplotlib import pyplot
 from six import iteritems
 
-from serpentTools.plot import magicPlotDocDecorator
+from serpentTools.utils import (
+    magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
+    convertVariableName, str2vec,
+)
+
 from serpentTools.engines import KeywordParser
-from serpentTools.objects.readers import MaterialReader
+from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 
-from serpentTools.messages import (warning, info, debug, error,
-                                   SerpentToolsException)
+from serpentTools.messages import (
+    warning, debug, error, SerpentToolsException,
+)
+from serpentTools.utils import (
+    getKeyMatchingShapes,
+    logDirectCompare,
+    compareDocDecorator,
+    DEF_COMP_LOWER,
+    DEF_COMP_UPPER,
+    DEF_COMP_SIGMA,
+)
+
+METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 
 
 class DepPlotMixin(object):
 
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, materials=None,
-             ax=None, legend=True, logx=False, logy=False, loglog=False, 
-             labelFmt=None, xlabel=None, ylabel=None, **kwargs):
+    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None,
+             materials=None, ax=None, legend=True, logx=False, logy=False,
+             loglog=False, labelFmt=None, xlabel=None, ylabel=None, ncol=1,
+             **kwargs):
         """
         Plot properties for all materials in this file together.
 
@@ -28,25 +43,31 @@ class DepPlotMixin(object):
         xUnits: str
             name of x value to obtain, e.g. ``'days'``, ``'burnup'``
         yUnits: str
-            name of y value to return, e.g. ``'adens'``, ``'burnup'``
+            name of y value to return, e.g. ``'adens'``, ``'ingTox'``
         timePoints: list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
         names: str or list or None
-            If given, return y values corresponding to these isotope
-            names. Otherwise, return values for all isotopes.
+            If given, plot  values corresponding to these isotope
+            names. Otherwise, plot values for all isotopes.
+        zai: int or list or None
+            If given, plot values corresponding to these
+            isotope ``ZZAAAI`` values. Otherwise, plot for all isotopes
+
+            .. versionadded:: 0.5.1
+
         materials: None or list
             Selection of materials from ``self.materials`` to plot.
             If None, plot all materials, potentially including ``tot``
         {ax}
-        legend: bool
-            Automatically add the legend
+        {legend}
         {xlabel} Otherwise, use ``xUnits``
         {ylabel} Otherwise, use ``yUnits``
         {logx}
         {logy}
         {loglog}
         {matLabelFmt}
+        {ncol}
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
@@ -59,7 +80,7 @@ class DepPlotMixin(object):
         * :py:func:`matplotlib.pyplot.plot`
         * :py:meth:`str.format` - used for formatting labels
         * :py:func:`~serpentTools.objects.materials.DepletedMaterial.plot`
-        
+
         Raises
         ------
         KeyError
@@ -81,18 +102,20 @@ class DepPlotMixin(object):
             if mat not in self.materials:
                 missing.add(mat)
                 continue
-            ax = self.materials[mat].plot(xUnits, yUnits, timePoints, names, ax,
-                    legend=False, xlabel=xlabel, ylabel=ylabel, logx=False,
-                    logy=False, loglog=False, labelFmt=labelFmt, **kwargs)
+
+            ax = self.materials[mat].plot(
+                xUnits, yUnits, timePoints, names,
+                zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel,
+                logx=False, logy=False, loglog=False, labelFmt=labelFmt,
+                **kwargs)
         if missing:
             warning("The following materials were not found in materials "
                     "dictionary: {}".format(', '.join(missing)))
-        if legend:
-            ax.legend()
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        formatPlot(ax, legend=legend, ncol=ncol, logx=logx, logy=logy,
+                   loglog=loglog,
+                   xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
+                   ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits],
+                   )
 
         return ax
 
@@ -113,7 +136,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         names and values of the settings used to control operations
         of this reader
     """
-    docAttrs="""materials: dict
+    docAttrs = """materials: dict
         Dictionary with material names as keys and the corresponding
         :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
         for that material as values
@@ -135,6 +158,10 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         #  TOT_ADENS --> ('ADENS', )
         #  ING_TOX --> ('ING_TOX', )
         DepPlotMixin.__init__(self)
+
+    def __getitem__(self, name):
+        """Retrieve a material from :attr:`materials`."""
+        return self.materials[name]
 
     def _makeMaterialRegexs(self):
         """Return the patterns by which to find the requested materials."""
@@ -162,20 +189,22 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                 self.materials[mKey].days = self.metadata['days']
 
     def _addMetadata(self, chunk):
-        options = {'ZAI': 'zai', 'NAMES': 'names', 'DAYS': 'days',
-                   'BU': 'burnup'}
-        for varName, metadataKey in options.items():
-            if varName in chunk[0]:
-                if varName in ['ZAI', 'NAMES']:
-                    values = [line.strip() for line in chunk[1:]]
-                    if varName == 'NAMES':
-                        values = [item.split()[0][1:] for item in values]
+        for varName in METADATA_KEYS:
+            if varName not in chunk[0]:
+                continue
+            if varName in ['ZAI', 'NAMES']:
+                cleaned = [line.strip() for line in chunk[1:]]
+                if varName == 'NAMES':
+                    values = [item[1:item.find(" ")] for item in cleaned]
                 else:
-                    line = self._cleanSingleLine(chunk)
-                    values = array([float(item)
-                                   for item in line.split()])
-                self.metadata[metadataKey] = values
-                return
+                    values = str2vec(cleaned, int, list)
+            else:
+                line = self._cleanSingleLine(chunk)
+                values = str2vec(line)
+            self.metadata[convertVariableName(varName)] = values
+            return
+        warning("Unsure about how to process metadata chunk {}"
+                .format(chunk[0]))
 
     @staticmethod
     def _cleanSingleLine(chunk):
@@ -240,3 +269,111 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             )
         debug('  found {} materials'.format(len(self.materials)))
 
+        if 'bu' in self.metadata:
+            self.metadata['burnup'] = self.metadata.pop('bu')
+
+    def _compare(self, other, lower, upper, _sigma):
+
+        similar = self._compareMetadata(other, lower, upper, _sigma)
+        if not self._comparePrecheckMetadata(other):
+            return False
+        similar &= self._compareMaterials(other, lower, upper, _sigma)
+        return similar
+
+    def _comparePrecheckMetadata(self, other):
+        for key, myVec in iteritems(self.metadata):
+            otherVec = other.metadata[key]
+            if len(myVec) != len(otherVec):
+                error("Stopping comparison early due to mismatched {} vectors"
+                      "\n\t>{}\n\t<{}".format(key, myVec, otherVec))
+                return False
+        return True
+
+    @compareDocDecorator
+    def compareMaterials(self, other, lower=DEF_COMP_LOWER,
+                         upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Return the result of comparing all materials on two readers
+
+        Parameters
+        ----------
+        other: :class:`DepletionReader`
+            Reader to compare against
+        {compLimits}
+        {sigma}
+
+        Returns
+        -------
+        bool:
+            ``True`` if all materials agree to the given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+        self._checkCompareObj(other)
+        self._compareLogPreMsg(other, lower, upper, quantity='materials')
+
+        if not self._comparePrecheckMetadata(other):
+            return False
+
+        return self._compareMaterials(other, lower, upper, sigma)
+
+    def _compareMaterials(self, other, lower, upper, sigma):
+        """Private method for going directly into the comparison."""
+        commonMats = getKeyMatchingShapes(
+            self.materials, other.materials, 'materials')
+        similar = (
+            len(self.materials) == len(other.materials) == len(commonMats))
+
+        for matName in sorted(commonMats):
+            myMat = self[matName]
+            otherMat = other[matName]
+            similar &= myMat.compare(otherMat, lower, upper, sigma)
+        return similar
+
+    @compareDocDecorator
+    def compareMetadata(self, other, lower=DEF_COMP_LOWER,
+                        upper=DEF_COMP_UPPER, sigma=DEF_COMP_SIGMA):
+        """
+        Return the result of comparing metadata on two readers
+
+        Parameters
+        ----------
+        other: :class:`DepletionReader`
+            Object to compare against
+        {compLimits}
+        {header}
+
+        Returns
+        -------
+        bool
+            True if the metadata agree within the given tolerances
+
+        Raises
+        ------
+        {compTypeErr}
+        """
+
+        self._checkCompareObj(other)
+
+        self._compareLogPreMsg(other, lower, upper, quantity='metadata')
+
+        return self._compareMetadata(other, lower, upper, sigma)
+
+    def _compareMetadata(self, other, lower, upper, _sigma):
+        """Private method for comparing metadata"""
+
+        similar = logDirectCompare(
+            self.metadata['names'], other.metadata['names'],
+            0, 0, 'names')
+        similar &= logDirectCompare(
+            self.metadata['zai'], other.metadata['zai'],
+            0, 0, 'zai')
+        similar &= logDirectCompare(
+            self.metadata['days'], other.metadata['days'],
+            lower, upper, 'days')
+        similar &= logDirectCompare(
+            self.metadata['burnup'], other.metadata['burnup'],
+            lower, upper, 'burnup')
+        return similar

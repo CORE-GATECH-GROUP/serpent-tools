@@ -27,6 +27,7 @@ Detector Sampler
 This sampler extends the |sampler| class for reading detector files.
 
 .. autoclass:: serpentTools.samplers.detector.DetectorSampler
+    :special-members: __getitem__
 
 .. autoclass:: serpentTools.samplers.detector.SampledDetector
 
@@ -36,11 +37,12 @@ DepletionSampler
 This sampler extends the |sampler| class for reading depletion files.
 
 .. autoclass:: serpentTools.samplers.depletion.DepletionSampler
+    :special-members: __getitem__
 
 .. autoclass:: serpentTools.samplers.depletion.SampledDepletedMaterial
 
 
-.. _sampler::
+.. _sampler-base:
 
 Base Classes
 ------------

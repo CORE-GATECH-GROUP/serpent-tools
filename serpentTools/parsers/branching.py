@@ -5,32 +5,9 @@ from numpy import array
 
 from serpentTools.utils import splitValsUncs
 from serpentTools.objects.containers import BranchContainer
-from serpentTools.objects.readers import XSReader
-from serpentTools.messages import debug, info, error, warning, willChange
+from serpentTools.parsers.base import XSReader
+from serpentTools.messages import debug, error
 
-class BranchesWrapper(dict):
-    """Special dictionary that warns about the change in accessing branches."""
-
-    def __init__(self, *args, **kwargs):
-        dict.__init__(self, *args, **kwargs)
-        self.__warned = False
-
-    def __getitem__(self, key):
-        if key in self:
-            return dict.__getitem__(self, key)
-        if isinstance(key, tuple) and len(key) == 1 and key[0] in self:
-            if not self.__warned:
-                self.__warn(key)
-            return dict.__getitem__(self, key[0]) 
-        raise KeyError(key)
-
-    @willChange("In the future, access a single item branch name with only "
-                "the string, ['name'] vs. [('name', )]")
-    def __warn(self, key):
-        warning("Versions after 0.5.0 will not accept '{key}' but will accept "
-                "'{entry}'".format(key=key, entry=key[0]))
-        self.__warned = True
-        
 
 class BranchingReader(XSReader):
     """
@@ -52,7 +29,7 @@ class BranchingReader(XSReader):
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'branching')
         self.__fileObj = None
-        self.branches = BranchesWrapper() 
+        self.branches = {}
         self._whereAmI = {key: None for key in
                           {'runIndx', 'coefIndx', 'buIndx', 'universe'}}
         self._totalBranches = None
@@ -156,13 +133,13 @@ class BranchingReader(XSReader):
         with open(self.filePath) as fObj:
             try:
                 self._totalBranches = int(fObj.readline().split()[1])
-            except:
-                error("COE output at {} likely malformatted or misnamed".format(
-                    self.filePath))
+            except Exception as ee:
+                error("COE output at {} likely malformatted or misnamed\n{}"
+                      .format(self.filePath, str(ee)))
 
     def _postcheck(self):
         """Make sure Serpent finished printing output."""
 
         if self._totalBranches != self._whereAmI['runIndx']:
             error("Serpent appears to have stopped printing coefficient\n"
-                    "mode output early for file {}".format(self.filePath))
+                  "mode output early for file {}".format(self.filePath))

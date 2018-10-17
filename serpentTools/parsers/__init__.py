@@ -1,12 +1,11 @@
 """
 Package dedicated for reading ``SERPENT`` output files
 """
-from os import path
 import re
 
 import six
 
-from numpy import zeros, empty, empty_like, array, longfloat
+from numpy import array
 
 try:
     from scipy.sparse import csc_matrix
@@ -16,7 +15,7 @@ except ImportError:
     HAS_SCIPY = False
     csc_matrix = array
 
-from serpentTools.messages import warning, SerpentToolsException, info, debug
+from serpentTools.messages import SerpentToolsException, debug, deprecated
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.parsers.branching import BranchingReader
 from serpentTools.parsers.detector import DetectorReader
@@ -27,6 +26,7 @@ from serpentTools.parsers.history import HistoryReader
 from serpentTools.parsers.xsplot import XSPlotReader
 from serpentTools.parsers.sensitivity import SensitivityReader
 from serpentTools.parsers.microxs import MicroXSReader
+from serpentTools.parsers.depmatrix import DepmtxReader, readDepmtx
 
 READERS = {
     'dep': DepletionReader,
@@ -36,9 +36,10 @@ READERS = {
     'fission': FissionMatrixReader,
     'bumat': BumatReader,
     'history': HistoryReader,
-    'xsplot' : XSPlotReader,
+    'xsplot': XSPlotReader,
     'sensitivity': SensitivityReader,
-    'microxs': MicroXSReader
+    'microxs': MicroXSReader,
+    'depmtx': DepmtxReader,
 }
 
 REGEXES = {
@@ -49,14 +50,18 @@ REGEXES = {
     r'(.*_fmtx\d+\.m)': FissionMatrixReader,
     r'(.*\.bumat\d+)': BumatReader,
     r'(.*_his\d+\.m)': HistoryReader,
-    r'(.*_xs\d*\.m)' : XSPlotReader,
+    r'(.*_xs\d*\.m)': XSPlotReader,
     r'(.*_sens\d*.m)': SensitivityReader,
     r'(.*_mdx\d+\.m)': MicroXSReader,
+    r'(.*depmtx_.*\.m)': DepmtxReader,
 }
 
-__all__ = ['READERS', 'read', 'depmtx', 'inferReader', 'REGEXES',
+__all__ = ['read',
            'DepletionReader', 'BranchingReader', 'DetectorReader',
-           'BumatReader', 'ResultsReader', 'FissionMatrixReader', 'MicroXSReader']
+           'BumatReader', 'ResultsReader', 'FissionMatrixReader',
+           'MicroXSReader',
+           'DepmtxReader',
+           ]
 
 
 def inferReader(filePath):
@@ -89,13 +94,6 @@ def read(filePath, reader='infer'):
     """
     Simple entry point to read a file and obtain the processed reader.
 
-    .. note::
-
-        If you know the type of reader you will be using,
-        it is best to either pass in the string argument,
-        or directly use the appropriate reader class
-
-
     Parameters
     ----------
     filePath: str
@@ -121,7 +119,7 @@ def read(filePath, reader='infer'):
 
     Returns
     -------
-    serpentTools.objects.readers.BaseReader
+    serpentTools.objects.base.BaseReader
         Correct subclass corresponding to the file type
 
     Raises
@@ -149,16 +147,21 @@ def read(filePath, reader='infer'):
                 )
     else:
         assert callable(reader), (
-                'Reader {} is not callable'.format(str(reader)))
+            'Reader {} is not callable'.format(str(reader)))
         loader = reader
     returnedFromLoader = loader(filePath)
     returnedFromLoader.read()
     return returnedFromLoader
 
 
+@deprecated("readDepmtx or DepmtxReader")
 def depmtx(fileP):
     """
     Read the contents of the ``depmtx`` file and return contents
+
+    .. deprecated:: 0.6.0
+        Use either the :func:`~serpentTools.parsers.depmatrix.readDepmtx`
+        or :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
 
     .. note::
 
@@ -175,101 +178,17 @@ def depmtx(fileP):
     -------
     t: float
         Length of time
-    n0: numpy.ndarray
+    n0: :class:`numpy.ndarray`
         Initial isotopic vector
-    zai: numpy.array
+    zai: :class:`numpy.ndarray`
         String identifiers for each isotope in ``n0`` and ``n1``
-    a: numpy.array or scipy.sparse.csc_matrix
+    a: :class:`numpy.ndarray` or :class:`scipy.sparse.csc_matrix`
         Decay matrix. Will be sparse if scipy is installed
-    n1: numpy.array
+    n1: :class:`numpy.ndarray`
         Final isotopic vector
     """
-    if not path.exists(fileP):
-        raise IOError('Cannot find depeletion matrix file {}'.format(fileP))
-
-    tRegex = re.compile(r't\s+=\s+([\d\.E\+-]+)')
-    nDensRegex = re.compile(r'N\d\(\s*([\d]+).*=\s+([\d\.E\+-]+)')
-    # matches index and quantity for N0 and N1 vectors
-    zaiRegex = re.compile(r'ZAI\(\s*[\d]+\).*=\s+(-?\d+)')
-    # matches index and name for ZAI vector
-    matrixRegex = re.compile(r'A\(\s*(\d+),\s*(\d+)\)\s+=\s+([\dE\.\+-]+)')
-    # matrix row, column, and decay constant for A matrix
-    failMsg = 'File {} is ill-formed for depmtx reader\nLine: '.format(fileP)
-
-    if not HAS_SCIPY:
-        debug('Decay matrix will be returned as full matrix')
-
-    with open(fileP) as f:
-        line = f.readline()
-        tMatch = re.match(tRegex, line)
-        if not tMatch:
-            raise SerpentToolsException(failMsg + line)
-        t = float(tMatch.groups()[0])
-        line = f.readline()
-
-        nMatch = re.match(nDensRegex, line)
-        if not nMatch:
-            raise SerpentToolsException(failMsg + line)
-
-        n0Storage, line, numIso = _parseIsoBlock(f, {}, nMatch, line,
-                                                 nDensRegex)
-        debug('Found {} isotopes for file {}'.format(numIso, fileP))
-        n0 = empty((numIso, 1), dtype=longfloat)
-        for indx, v in six.iteritems(n0Storage):
-            n0[indx] = v
-
-        zai = []
-        zMatch = re.match(zaiRegex, line)
-        if not zMatch:
-            raise SerpentToolsException(failMsg + line)
-        while zMatch:
-            zai.append(zMatch.groups()[0])
-            line = f.readline()
-            zMatch = re.match(zaiRegex, line)
-
-        if len(zai) != n0.size:
-            debug('Stopping at line -' + line)
-            raise SerpentToolsException(
-                'Did not obtain equal isotopes in ZAI vector [{}] as in N0 '
-                'vector [{}]'.format(len(zai), n0.size)
-            )
-
-        line = f.readline()
-        aMatch = re.match(matrixRegex, line)
-        if not aMatch:
-            raise SerpentToolsException(failMsg + line)
-
-        a = zeros((numIso, numIso), dtype=longfloat)
-
-        while aMatch:
-            row, col, const = aMatch.groups()
-            a[int(row) - 1, int(col) - 1] = float(const)
-            line = f.readline()
-            aMatch = re.match(matrixRegex, line)
-
-        n1 = empty_like(n0)
-        nMatch = re.match(nDensRegex, line)
-        n1, line, items = _parseIsoBlock(f, n1, nMatch, line, nDensRegex)
-        if items != numIso:
-            debug('Stopping at line -' + line)
-            raise SerpentToolsException(
-                'Did not obtain equal isotopes in N1 vector [{}] as in N0 '
-                'vector [{}]'.format(items, numIso)
-            )
-
-        return t, n0, array(zai), csc_matrix(a) if HAS_SCIPY else a, n1
-
-
-def _parseIsoBlock(stream, storage, match, line, regex):
-    """Read through the N0, N1 block and add data to storage"""
-    items = 0
-    while match:
-        items += 1
-        vals = match.groups()
-        indx = int(vals[0])
-        ndens = float(vals[1])
-        storage[indx - 1] = ndens
-        line = stream.readline()
-        match = re.match(regex, line)
-    return storage, line, items
-
+    t, n0, zai, a, n1 = readDepmtx(fileP)
+    zai = zai.astype(str)
+    n0 = n0.reshape(n0.size, 1)
+    n1 = n1.reshape(n1.size, 1)
+    return t, n0, zai, a, n1

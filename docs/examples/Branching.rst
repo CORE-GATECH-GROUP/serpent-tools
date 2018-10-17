@@ -27,8 +27,12 @@ The output files are described in more detail on the
 Basic Operation
 ---------------
 
-The simplest way to read these files is using the 
-:py:func:`serpentTools.parsers.read` function
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
 
 .. note::
 
@@ -41,13 +45,12 @@ The simplest way to read these files is using the
 
 .. code:: 
     
-    >>> %matplotlib inline
     >>> import serpentTools
     >>> branchFile = 'demo.coe'
 
 .. code:: 
     
-    >>> r0 = serpentTools.read(branchFile)
+    >>> r0 = serpentTools.readDataFile(branchFile)
 
 The branches are stored in custom |branchContainer| objects in the
 :py:attr:`~serpentTools.parsers.branching.BranchingReader.branches`
@@ -403,7 +406,7 @@ objects. By default, all variables present in the coefficient file are stored.
     >>> rc['branching.intVariables'] = ['TFU']
     >>> rc['xs.getB1XS'] = False
     >>> rc['xs.variableExtras'] = ['INF_TOT', 'INF_SCATT0']
-    >>> r1 = serpentTools.read(branchFile)
+    >>> r1 = serpentTools.readDataFile(branchFile)
 
 .. code:: 
     

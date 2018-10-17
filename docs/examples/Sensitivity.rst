@@ -6,6 +6,8 @@
 
 .. |plot| replace::  :py:meth:`~serpentTools.parsers.sensitivity.SensitivityReader.plot`
 
+.. _ex-sensitivity:
+
 Sensitivity Reader
 ==================
 
@@ -26,20 +28,19 @@ plot method is also contained on the reader.
 
 .. code:: 
     
-    >>> %matplotlib inline
     >>> from matplotlib import pyplot
     >>> import serpentTools
 
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
+
 .. code:: 
     
-    >>> %time
-    >>> sens = serpentTools.read('flattop_sens.m')
-
-.. parsed-literal::
- 
-
-    CPU times: user 4 µs, sys: 0 ns, total: 4 µs
-    Wall time: 7.87 µs
+    >>> sens = serpentTools.readDataFile('flattop_sens.m')
 
 
 The arrays that are stored in |sens| and |eneSens| 

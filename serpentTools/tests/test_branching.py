@@ -8,7 +8,7 @@ from six import iteritems
 from numpy.testing import assert_allclose
 
 from serpentTools.settings import rc
-from serpentTools.tests import TEST_ROOT
+from serpentTools.data import getFile
 from serpentTools.parsers import BranchingReader
 from serpentTools.objects.containers import BranchContainer
 from serpentTools.messages import SerpentToolsException
@@ -19,7 +19,7 @@ class _BranchTesterHelper(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.file = os.path.join(TEST_ROOT, 'ref_branch.txt')
+        cls.file = getFile('ref_branch.coe')
         cls.expectedBranches = {('nom', 'nom', 'nom')}
         cls.expectedUniverses = {
             # universe id, burnup, step
@@ -53,7 +53,7 @@ class BranchTester(_BranchTesterHelper):
 
     def test_raiseError(self):
         """Verify that the reader raises an error for unexpected EOF"""
-        badFile = os.path.join(TEST_ROOT, 'bad_branching.txt')
+        badFile = 'bad_branching.coe'
         with open(self.file) as fObj, open(badFile, 'w') as badObj:
             for _line in range(5):
                 badObj.write(fObj.readline())
@@ -121,6 +121,7 @@ class BranchContainerTester(_BranchTesterHelper):
             containerWithBU.addUniverse(101, -10, 1)
         with self.assertRaises(SerpentToolsException):
             containerWithDays.addUniverse(101, 10, 1)
+
 
 if __name__ == '__main__':
     unittest.main()

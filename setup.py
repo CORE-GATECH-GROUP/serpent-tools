@@ -1,5 +1,6 @@
-from os.path import join, dirname
+from os.path import join
 from os import getenv
+from glob import glob
 try:
     from setuptools import setup
     HAS_SETUPTOOLS = True
@@ -10,6 +11,19 @@ except ImportError:
     HAS_SETUPTOOLS = False
 
 import versioneer
+
+
+DATA_EXTS = {'*.m', '*.coe'}
+
+
+def getDataFiles():
+    """Return all matlab files from ``serpentTools/data``"""
+
+    files = []
+    for ext in DATA_EXTS:
+        files.extend(glob(join('serpentTools', 'data', ext)))
+    return files
+
 
 with open('README.rst') as readme:
     longDesc = readme.read()
@@ -27,24 +41,23 @@ classifiers = [
 ]
 
 installRequires = [
-    'six',
-    'numpy>=1.11.1',
-    'matplotlib>=1.5.0',
+    'six>=1.11.0',
+    'numpy>=1.15.1',
+    'matplotlib>=2.0',
     'pyyaml>=3.08',
 ]
 
-if not getenv('ONTRAVIS', False):
+if not getenv('TRAVIS', None) == 'true':
     # hack to install scipy if not on cluster
     # PR 45/44
     installRequires.append('scipy')
-
-installVarYamlFrom = join('serpentTools', 'variables.yaml')
 
 pythonRequires = '>=2.7,!=3.0,!=3.1,!=3.2,!=3.3,!=3.4'
 
 setupArgs = {
     'name': 'serpentTools',
-    'packages': ['serpentTools', 'serpentTools.parsers',
+    'packages': ['serpentTools', 'serpentTools.parsers', 'serpentTools.utils',
+                 'serpentTools.data', 'serpentTools.tests',
                  'serpentTools.objects', 'serpentTools.samplers'],
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
@@ -57,8 +70,14 @@ setupArgs = {
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',
     'version': versioneer.get_version(),
+    'package_data': {
+        'serpentTools.data': ['data/{}'.format(ext) for ext in DATA_EXTS],
+    },
     'cmdclass': versioneer.get_cmdclass(),
-    'data_files': [(dirname(installVarYamlFrom), [installVarYamlFrom])]
+    'data_files': [
+        ('serpentTools', ['serpentTools/variables.yaml', ]),
+        ('serpentTools/data', getDataFiles()),
+    ],
 }
 if HAS_SETUPTOOLS:
     setupArgs.update({
@@ -71,7 +90,6 @@ setup(**setupArgs)
 
 if not HAS_SETUPTOOLS:
     warnings.warn(
-            'The following packages are required to use serpentTools version '
-            '{}:\n{}\nPlease ensure they are installed prior to use'
-            .format(versioneer.get_version(), '\n'.join(installRequires)))
-
+        'The following packages are required to use serpentTools version '
+        '{}:\n{}\nPlease ensure they are installed prior to use'
+        .format(versioneer.get_version(), '\n'.join(installRequires)))

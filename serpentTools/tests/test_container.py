@@ -4,12 +4,10 @@ import unittest
 from itertools import product
 
 from six import iteritems
-from numpy import array, arange, ndarray, float64
+from numpy import arange, ndarray, float64
 from numpy.testing import assert_array_equal
 
-from serpentTools.settings import rc
 from serpentTools.objects.containers import HomogUniv
-from serpentTools.parsers import DepletionReader
 from serpentTools.tests import compareDictOfArrays
 
 NUM_GROUPS = 5
@@ -17,15 +15,15 @@ NUM_GROUPS = 5
 
 class _HomogUnivTestHelper(unittest.TestCase):
     """Class that runs the tests for the two sub-classes
-    
+
     Subclasses will differ in how the ``mat`` data
-    is arranged. For one case, the ``mat`` will be a 
+    is arranged. For one case, the ``mat`` will be a
     2D matrix.
     """
 
     def setUp(self):
         self.univ, vec, mat = self.getParams()
-        groupStructure = arange(NUM_GROUPS  + 1)
+        groupStructure = arange(NUM_GROUPS + 1)
         testK = vec[0]
         # Data definition
         rawData = {'B1_1': vec, 'B1_AS_LIST': list(vec),
@@ -34,12 +32,14 @@ class _HomogUnivTestHelper(unittest.TestCase):
                    'INF_KINF': vec}
         attrs = {'MACRO_E': groupStructure}
         # Partial dictionaries
-        self.b1Unc = self.b1Exp = {'b11': vec, 'b1AsList': vec, 'b1Kinf': testK}
+        self.b1Unc = self.b1Exp = {
+            'b11': vec, 'b1AsList': vec, 'b1Kinf': testK,
+        }
         self.infUnc = self.infExp = {
-                'inf1': vec, 'infS0': mat, 'infKeff': testK, 'infKinf': testK,
-                }
+            'inf1': vec, 'infS0': mat, 'infKeff': testK, 'infKinf': testK,
+        }
         self.gcUnc = self.gc = {'cmmTranspX': vec, 'impKeff': testK}
-        self.expAttrs = {'groups': groupStructure, 'numGroups': NUM_GROUPS} 
+        self.expAttrs = {'groups': groupStructure, 'numGroups': NUM_GROUPS}
         # Use addData
         for key, value in iteritems(attrs):
             self.univ.addData(key, value)
@@ -53,8 +53,8 @@ class _HomogUnivTestHelper(unittest.TestCase):
         # Comparison
         for kk in self.univ.b1Exp:
             d[kk] = self.univ.get(kk, False)
-        compareDictOfArrays(self.b1Exp, d, 'b1 values')
-        
+        compareDictOfArrays(self.b1Exp, d, 'Error in b1 values at {key}')
+
     def test_getB1Unc(self):
         """ Get Expected vales and associated uncertainties from B1 dictionary
         """
@@ -62,7 +62,8 @@ class _HomogUnivTestHelper(unittest.TestCase):
         # Comparison
         for kk in self.univ.b1Exp:
             d[kk] = self.univ.get(kk, True)[1]
-        compareDictOfArrays(self.b1Unc, d, 'b1 uncertainties')
+        compareDictOfArrays(self.b1Unc, d,
+                            'Error in b1 uncertainties at {key}')
 
     def test_getInfExp(self):
         """ Get Expected vales from Inf dictionary"""
@@ -70,7 +71,8 @@ class _HomogUnivTestHelper(unittest.TestCase):
         # Comparison
         for kk in self.univ.infExp:
             d[kk] = self.univ.get(kk, False)
-        compareDictOfArrays(self.infExp, d, 'infinite values')
+        compareDictOfArrays(self.infExp, d,
+                            'Error in infinite values at {key}')
 
     def test_getInfUnc(self):
         """ Get Expected vales and associated uncertainties from Inf dictionary
@@ -79,7 +81,8 @@ class _HomogUnivTestHelper(unittest.TestCase):
         # Comparison
         for kk in self.univ.infUnc:
             d[kk] = self.univ.get(kk, True)[1]
-        compareDictOfArrays(self.infUnc, d, 'infinite uncertainties')
+        compareDictOfArrays(self.infUnc, d,
+                            'Error in infinite uncertainties at {key}')
 
     def test_attributes(self):
         """ Get metaData from corresponding dictionary"""
@@ -101,7 +104,7 @@ class _HomogUnivTestHelper(unittest.TestCase):
             expected[key] = value
             uncertainties[key] = unc
         compareDictOfArrays(self.infExp, expected, 'infinite values')
-        compareDictOfArrays(self.infUnc, uncertainties, 
+        compareDictOfArrays(self.infUnc, uncertainties,
                             'infinite uncertainties')
 
 
@@ -135,6 +138,7 @@ def getParams():
 
 
 del _HomogUnivTestHelper
+
 
 class UnivTruthTester(unittest.TestCase):
     """Class that tests the various boolean evaluations for HomogUniv"""
@@ -186,16 +190,17 @@ class HomogUnivIntGroupsTester(unittest.TestCase):
     def _tester(self):
         for attr in {'numGroups', 'numMicroGroups'}:
             actual = getattr(self.univ, attr)
-            msg ='Attribute: {}'.format(attr)
+            msg = 'Attribute: {}'.format(attr)
             self.assertIsInstance(actual, int, msg=msg)
             expected = getattr(self, attr)
             self.assertEqual(expected, actual, msg=msg)
-    
+
     def setAs(self, func):
         """Set the number of groups to be as specific type."""
         for attr in {'numGroups', 'numMicroGroups'}:
             expected = getattr(self, attr)
             setattr(self.univ, attr, func(expected))
+
 
 if __name__ == '__main__':
     unittest.main()

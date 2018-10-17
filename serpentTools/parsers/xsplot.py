@@ -1,25 +1,27 @@
 """Parser responsible for reading the ``*_xsplot.m`` files"""
-import numpy as np
+from numpy import array, float64
+
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, info, debug, error
-from serpentTools.objects.readers import BaseReader
+from serpentTools.parsers.base import BaseReader
 from serpentTools.objects.xsdata import XSData
+
 
 def _cleanChunk(string):
     """rstrip, but also removes = ["""
-    newstring= string.rstrip()
+    newstring = string.rstrip()
     if '=' in newstring:
         i = newstring.index('=')
-        return newstring[:i-1]
-    else:
-        return newstring
+        return newstring[:i - 1]
+    return newstring
+
 
 class XSPlotReader(BaseReader):
     """
     Parser responsible for reading and working with xsplot output files.
     These files can be generated using:
 
-    http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_xsplot
+    http://serpent.vtt.fi/mediawiki/index.php/It_syntax_manual#set_xsplot
 
     Parameters
     ----------
@@ -52,7 +54,7 @@ class XSPlotReader(BaseReader):
     def _read(self):
         """Read through the depletion file and store requested data."""
         info('Preparing to read {}'.format(self.filePath))
-        keys = ['E', 'i\d{4,5}', 'm\w']
+        keys = ['E', r'i\d{4,5}', r'm\w']
         separators = ['\n', '];', '\r\n']
 
         with KeywordParser(self.filePath, keys, separators) as parser:
@@ -60,12 +62,12 @@ class XSPlotReader(BaseReader):
 
                 if chunk[0][:5] == 'E = [':
                     # The energy grid
-                    self.metadata['egrid']= np.array(chunk[1:], dtype=np.float64)
+                    self.metadata['egrid'] = array(chunk[1:], dtype=float64)
 
                 elif chunk[0][:15] == 'majorant_xs = [':
                     # L-inf norm on all XS on all materials
-                    self.metadata['majorant_xs'] = np.array(chunk[1:],
-                                                             dtype=np.float64)
+                    self.metadata['majorant_xs'] = array(chunk[1:],
+                                                         dtype=float64)
 
                 elif chunk[0][-7:] == 'mt = [\n':
                     debug('found mt specification')
@@ -108,8 +110,8 @@ class XSPlotReader(BaseReader):
             line = next(fh)
             if line != 'E = [\n':
                 error("It looks like {} doesn't start with an energy bin "
-                      "structure. Are you sure it's an xsplot file?".format(
-                      self.filePath))
+                      "structure. Are you sure it's an xsplot file?"
+                      .format(self.filePath))
 
     def _postcheck(self):
         """ensure the parser grabbed expected stuff."""

@@ -1,15 +1,6 @@
 """ Fission Matrix Reader. Mono-dimensional case"""
 
-import re
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-from serpentTools.messages import warning, error
-from serpentTools.objects.readers import BaseReader
-from serpentTools.plot import cartMeshPlot, formatPlot
-from serpentTools.plot import plot as stPlot
-from serpentTools.utils import str2vec
+from serpentTools.parsers.base import BaseReader
 
 # Regular Expressions
 fMVal = r'fmtx_t\s+\(\s*(\d+),\s*(\d+)\)\s+=\s+([\d\+\.E-]+)\s;\s ' \

@@ -1,18 +1,15 @@
 """Tests for the settings loaders."""
-from os.path import join
 from os import remove
-import warnings
-import unittest
+from unittest import TestCase
 
 import yaml
 import six
 
 from serpentTools import settings
-from serpentTools.messages import deprecated, willChange
-from serpentTools.tests import TEST_ROOT
+from serpentTools.tests.utils import TestCaseWithLogCapture
 
 
-class DefaultSettingsTester(unittest.TestCase):
+class DefaultSettingsTester(TestCase):
     """Class to test the functionality of the master loader."""
 
     @classmethod
@@ -36,7 +33,7 @@ class DefaultSettingsTester(unittest.TestCase):
         return self.defaultLoader[setting].default
 
 
-class RCTester(unittest.TestCase):
+class RCTester(TestCase):
     """Class to test the functionality of the scriptable settings manager."""
 
     @classmethod
@@ -80,7 +77,8 @@ class RCTester(unittest.TestCase):
         self.assertTrue(reader.settings['metadataKeys'] == ['ZAI'])
 
     def test_expandExtras(self):
-        """Verify that a set of extras is given if that is the only argument."""
+        """Verify that a set of extras is given if that is the only argument.
+        """
         extras = ['hello', 'testing']
         with self.rc as tempRC:
             tempRC['xs.variableExtras'] = extras
@@ -95,7 +93,8 @@ class RCTester(unittest.TestCase):
         expected = {'CMM_TRANSPXS', 'CMM_TRANSPXS_X', 'CMM_TRANSPXS_Y',
                     'CMM_TRANSPXS_Z', 'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X',
                     'CMM_DIFFCOEF_Y', 'CMM_DIFFCOEF_Z', 'hello',
-                    'TOT_CPU_TIME', 'RUNNING_TIME', 'INIT_TIME', 'PROCESS_TIME',
+                    'TOT_CPU_TIME', 'RUNNING_TIME', 'INIT_TIME',
+                    'PROCESS_TIME',
                     'TRANSPORT_CYCLE_TIME', 'BURNUP_CYCLE_TIME',
                     'BATEMAN_SOLUTION_TIME', 'MPI_OVERHEAD_TIME',
                     'ESTIMATED_RUNNING_TIME', 'CPU_USAGE',
@@ -107,7 +106,7 @@ class RCTester(unittest.TestCase):
         self.assertSetEqual(expected, actual)
 
 
-class ConfigLoaderTester(unittest.TestCase):
+class ConfigLoaderTester(TestCaseWithLogCapture):
     """Class to test loading multiple setttings at once, i.e. config files"""
 
     @classmethod
@@ -133,9 +132,9 @@ class ConfigLoaderTester(unittest.TestCase):
             },
             'verbosity': cls.configSettings['verbosity']
         }
-        cls.files = {'singleLevel': join(TEST_ROOT, 'singleLevelConf.yaml'),
-                     'nested': join(TEST_ROOT, 'nestedConf.yaml'),
-                     'badNested': join(TEST_ROOT, 'badNestedConf.yaml')}
+        cls.files = {'singleLevel': 'singleLevelConf.yaml',
+                     'nested': 'nestedConf.yaml',
+                     'badNested': 'badNestedConf.yaml'}
         cls.rc = settings.UserSettingsLoader()
 
     def _writeTestRemoveConfFile(self, settings, filePath, expected, strict):
@@ -154,11 +153,12 @@ class ConfigLoaderTester(unittest.TestCase):
         """Test loading settings from a non-nested config file"""
         self._writeTestRemoveConfFile(self.configSettings,
                                       self.files['singleLevel'],
-self.configSettings, True)
+                                      self.configSettings, True)
 
     def test_loadNestedConfig(self):
         """Test loading settings from a nested config file"""
-        self._writeTestRemoveConfFile(self.nestedSettings, self.files['nested'],
+        self._writeTestRemoveConfFile(self.nestedSettings,
+                                      self.files['nested'],
                                       self.configSettings, True)
 
     def test_loadNestedNonStrict(self):
@@ -167,38 +167,9 @@ self.configSettings, True)
         badSettings.update(self.nestedSettings)
         self._writeTestRemoveConfFile(badSettings, self.files['nested'],
                                       self.configSettings, False)
-
-
-class MessagingTester(unittest.TestCase):
-    """Class to test the messaging framework."""
-
-    def test_futureDecorator(self):
-        """Verify that the future decorator doesn't break"""
-
-        @willChange('This function will be updated in the future, '
-                    'but will still exist')
-        def demoFuture(x, val=5):
-            return x + val
-
-        with warnings.catch_warnings(record=True) as record:
-            self.assertEqual(7, demoFuture(2))
-            self.assertEqual(7, demoFuture(2, 5))
-            self.assertEquals(len(record), 2,
-                              'Did not catch two warnings::willChange')
-
-    def test_depreciatedDecorator(self):
-        """Verify that the depreciated decorator doesn't break things"""
-
-        @deprecated('this nonexistent function')
-        def demoFunction(x, val=5):
-            return x + val
-
-        with warnings.catch_warnings(record=True) as record:
-            self.assertEqual(7, demoFunction(2))
-            self.assertEqual(7, demoFunction(2, 5))
-            self.assertEquals(len(record), 2,
-                              'Did not catch two warnings::deprecation')
+        self.assertMsgInLogs("ERROR", "bad setting", partial=True)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()

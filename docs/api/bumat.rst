@@ -6,6 +6,8 @@ Bumat Reader
 
 .. warning::
 
-    This reader is not implemented yet. This merely serves as a placeholder
+    The storage of materials on the
+    :attr:`serpentTools.parsers.bumat.BumatReader.materials`
+    dictionary will change once :issue:`12` is completed
 
 .. autoclass:: serpentTools.parsers.bumat.BumatReader

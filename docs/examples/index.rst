@@ -1,3 +1,6 @@
+.. _ex-toctree:
+
+
 Examples
 ========
 
@@ -14,3 +17,4 @@ Examples
    XSPlot.rst
    ResultsReader.rst
    MicroXSReader.rst
+   DepletionMatrix.rst

@@ -2,10 +2,10 @@
 import numpy as np
 from matplotlib import pyplot
 
-from serpentTools import messages
-from serpentTools.objects import NamedObject
-from serpentTools.utils import convertVariableName
-from serpentTools.plot import magicPlotDocDecorator, formatPlot 
+from serpentTools.messages import error
+from serpentTools.objects.base import NamedObject
+from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
+
 
 class XSData(NamedObject):
     docParams = """name: str
@@ -34,26 +34,27 @@ class XSData(NamedObject):
         file-wide metadata from the reader
     """.format(params=docParams)
 
-    MTdescriptions= {
-        -1  : "Macro total",
-        -2  : "Macro total capture",
-        -3  : "Macro total elastic scatter",
-        -4  : "Macro total heating",
-        -5  : "Macro total photon production",
-        -6  : "Macro total fission",
-        -7  : "Macro total fission neutron production",
-        -8  : "Total fission energy production",
-        -9  : "Majorant macro",
-        -10 : "Macro scattering recoil heating",
-        -11 : "Source rate",
-        -15 : "neutron density",
-        -16 : "Macro total scattering neutron production",
-        -53 : "Macro proton production",
-        -54 : "Macro deutron production",
-        -55 : "Macro triton production",
-        -56 : "Macro He-3 production",
-        -57 : "Macro He-4 production",
-        -100: "User response function" }
+    MTdescriptions = {
+        -1: "Macro total",
+        -2: "Macro total capture",
+        -3: "Macro total elastic scatter",
+        -4: "Macro total heating",
+        -5: "Macro total photon production",
+        -6: "Macro total fission",
+        -7: "Macro total fission neutron production",
+        -8: "Total fission energy production",
+        -9: "Majorant macro",
+        -10: "Macro scattering recoil heating",
+        -11: "Source rate",
+        -15: "neutron density",
+        -16: "Macro total scattering neutron production",
+        -53: "Macro proton production",
+        -54: "Macro deutron production",
+        -55: "Macro triton production",
+        -56: "Macro He-3 production",
+        -57: "Macro He-4 production",
+        -100: "User response function",
+    }
 
     def __init__(self, name, metadata, isIso=False):
         NamedObject.__init__(self, name)
@@ -100,14 +101,15 @@ class XSData(NamedObject):
         """ Parse data from chunk to np array."""
         self.xsdata = np.zeros([len(self.metadata['egrid']), len(self.MT)])
         for i, line in enumerate(chunk[1:]):
-            self.xsdata[i,:] = np.array(line.split(), dtype=np.float64)
+            self.xsdata[i, :] = np.array(line.split(), dtype=np.float64)
 
     def setNuData(self, chunk):
         """ Add fission neutrons per fission data """
         self.hasNuData = True
-        self.nuData = np.zeros([len(self.metadata['egrid']),2], dtype=np.float64)
+        self.nuData = np.zeros([len(self.metadata['egrid']), 2],
+                               dtype=np.float64)
         for i, cc in enumerate(chunk[1:]):
-            self.nuData[i,:] = np.array(cc.split(), dtype=np.float64)
+            self.nuData[i, :] = np.array(cc.split(), dtype=np.float64)
 
     def hasExpectedData(self):
         """ Check that the expected data (MT numbers, an energy grid, etc)
@@ -158,13 +160,14 @@ class XSData(NamedObject):
         elif isinstance(mts, int):
             # convert to list if it's just one MT
             mts = [mts]
-        elif isinstance(mts, list) and all([isinstance(ii, int) for ii in mts]):
+        elif isinstance(mts, list) and all(
+                [isinstance(ii, int) for ii in mts]):
             pass
         else:
             msg = ("mts argument must be a string saying 'all',"
                    "a list of integer MTs, or a single interger"
-                   "instead, {} of type {} was passed.".format(
-                   mts, type(mts)))
+                   "instead, {} of type {} was passed."
+                   .format(mts, type(mts)))
             raise TypeError(msg)
 
         for mt in mts:
@@ -179,7 +182,7 @@ class XSData(NamedObject):
                     cols2use.append(i)
                     mtnums.append(mt)
 
-        frame = pd.DataFrame(self.xsdata[:,cols2use])
+        frame = pd.DataFrame(self.xsdata[:, cols2use])
         unit = ' b' if self.isIso else ' cm$^{-1}$'
         frame.columns = colnames or ['MT ' + str(mt) + unit for mt in mtnums]
         frame.insert(0, 'Energy (MeV)', self.metadata['egrid'])
@@ -188,11 +191,11 @@ class XSData(NamedObject):
 
     @magicPlotDocDecorator
     def plot(self, mts='all', ax=None, loglog=False, xlabel=None, ylabel=None,
-             logx=True, logy=False, title=None, legend=True, ncol=1, 
+             logx=True, logy=False, title=None, legend=True, ncol=1,
              **kwargs):
         """
         Return a matplotlib figure for plotting XS.
-        
+
         mts should be a list of the desired MT numbers to plot for this
         XS. Units should automatically be fixed between micro and macro XS.
 
@@ -228,13 +231,14 @@ class XSData(NamedObject):
         elif isinstance(mts, int):
             # convert to list if it's just one MT
             mts = [mts]
-        elif isinstance(mts, list) and all([isinstance(ii, int) for ii in mts]):
+        elif isinstance(mts, list) and all(
+                [isinstance(ii, int) for ii in mts]):
             pass
         else:
             msg = ("mts argument must be a string saying 'all',"
                    "a list of integer MTs, or a single interger"
-                   "instead, {} of type {} was passed.".format(
-                   mts, type(mts)))
+                   "instead, {} of type {} was passed."
+                   .format(mts, type(mts)))
             raise TypeError(msg)
 
         for mt in mts:
@@ -243,21 +247,18 @@ class XSData(NamedObject):
 
         ax = ax or pyplot.axes()
 
-        # list of MT number descriptions
-        descriplist = []
-
         x = self.metadata['egrid']
         for mt in mts:
             for i, MT in enumerate(self.MT):
                 if mt == MT:
-                    y = self.xsdata[:,i]
+                    y = self.xsdata[:, i]
                     ax.plot(x, y, drawstyle='steps', label=self.MTdescrip[i])
 
         title = title or '{} cross section{}'.format(
-            self.name, 's' if len(mts)>1 else '')
+            self.name, 's' if len(mts) > 1 else '')
         xlabel = xlabel or "Energy [MeV]"
 
-        ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso 
+        ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso
                             else 'cm$^{-1}$'))
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
                         legend=legend, title=title, xlabel=xlabel,
@@ -268,7 +269,7 @@ class XSData(NamedObject):
     def showMT(self, retstring=False):
         """ Pretty prints MT values available for this XS and
         descriptions.
-        
+
         Parameters
         ----------
         retstring: bool
@@ -276,16 +277,15 @@ class XSData(NamedObject):
         """
         outstr = ""
         outstr += "MT numbers available for {}:\n".format(self.name)
-        outstr += "--------------------------"+len(self.name)*'-'+'\n'
+        outstr += "--------------------------" + len(self.name) * '-' + '\n'
         for i, mt in enumerate(self.MT):
             if self.isIso:
                 descr = self.MTdescrip[i]
             else:
                 descr = XSData.negativeMTDescription(mt)
-            spaces = (4-len(str(mt)))*' '
+            spaces = (4 - len(str(mt))) * ' '
             outstr += str(mt) + spaces + descr + '\n'
         if retstring:
             return outstr
         else:
             print(outstr)
-

@@ -27,15 +27,21 @@ Each such object has methods and attributes that should ease analysis.
 
 .. code:: 
     
-    >>> %matplotlib inline
-    >>> import six
     >>> import serpentTools
     >>> from serpentTools.settings import rc
+
+
+.. note::
+
+   The preferred way to read your own output files is with the
+   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.data.readDataFile` function is used here
+   to make it easier to reproduce the examples
 
 .. code:: 
     
     >>> depFile = 'demo_dep.m'
-    >>> dep = serpentTools.read(depFile)
+    >>> dep = serpentTools.readDataFile(depFile)
 
 The materials read in from the file are stored in the |materials| 
 dictionary, where the keys represent the name of specific materials, and
@@ -119,8 +125,6 @@ These objects share access to the metadata of the reader as well.
     
     >>> fuel = dep.materials['fuel0']
     >>> print(fuel.burnup)
-    >>> print(fuel.days is dep.metadata['days'])
-
 
 .. parsed-literal::
 
@@ -136,7 +140,18 @@ These objects share access to the metadata of the reader as well.
      0.404159   0.412113   0.419194   0.426587   0.43425    0.442316
      0.449562   0.456538   0.465128   0.472592   0.479882   0.487348
      0.494634   0.502167   0.508326   0.515086   0.522826   0.530643  ]
+
+ .. code::
+
+    >>> print(fuel.days is dep.metadata['days'])
     True
+
+Materials can also be obtained by indexing directly into the reader, with
+
+.. code::
+
+    >>> newF = dep['fuel0']
+    >>> assert newF is fuel
 
 All of the variables present in the depletion file for this material are
 present, stored in the |matData| dictionary. A few properties commonly
@@ -207,77 +222,78 @@ keyword. This will instruct the slicing tool to retrieve data that
 corresponds to values of ``days`` or ``burnup`` in the ``timePoints``
 list. By default the method returns data for every time point on the
 material unless ``timePoints`` is given. Similarly, one can pass a
-string or list of strings as the ``names`` argument and obtain data for
-those specific isotopes. Data for every isotope is given if ``names`` is
-not given.
+string or list of strings as the ``names`` or ``zai`` arguments and obtain data for
+those specific isotopes. Data for every isotope is given if ``names``
+or ``zai`` are not given.
 
 .. code:: 
     
     >>> dayPoints = [0, 5, 10, 30]
     >>> iso = ['Xe135', 'Sm149']
-    >>> vals = fuel.getValues('days', 'a', dayPoints, iso)
-    >>> print(vals.shape)
-    >>> print(vals)
-
+    >>> zai = [541350, 621490]
+    >>> isoVals = fuel.getValues('days', 'a', dayPoints, iso)
+    >>> print(isoVals.shape)
+    >>> zaiVals = fuel.getValues('days', 'a', dayPoints, zai=zai)
+    print(isoVals - zaiVals)
 
 .. parsed-literal::
 
     (2, 4)
     [[0.00000e+00 3.28067e+14 3.24606e+14 3.27144e+14]
      [0.00000e+00 0.00000e+00 0.00000e+00 0.00000e+00]]
+    [[ 0.  0.  0.  0.]
+     [ 0.  0.  0.  0.]]
 
 The |depMat| uses this slicing for the built-in |depMatPlot| method, 
 which takes similar slicing arguments to |getValues|.
 
-In addition, the ``labelFmt`` argument can be used to apply a consistent
+By default, the plot method will plot data for all isotopes present,
+leading to very busy plots. The plots can be cleaned up by passing
+isotope names or ``ZZAAAI`` identifiers to the ``names`` or ``zai``
+arguments, respectively.
+
+.. code:: 
+    
+    >>> fuel.plot('burnup', 'ingTox', names='Xe135');
+
+.. image:: DepletionReader_files/DepletionReader_23_0.png
+
+
+.. code:: 
+    
+    >>> fuel.plot('burnup', 'mdens', zai=[541350, 531350]);
+
+.. image:: DepletionReader_files/DepletionReader_24_0.png
+
+This type of plotting can also be applied to the |depMat|
+level, with similar options for formatting and retrieving data. The
+materials to be plotted can be filtered using the ``materials``
+argument. The ``labelFmt`` argument can be used to apply a consistent
 label to each unique plot. This argument supports `brace-delimited
 formatting <https://docs.python.org/3/library/stdtypes.html?#str.format>`__,
 and will automatically replace strings like ``{mat}`` with the name of
 the material. The table below contains the special strings and their
 replacements
 
-+-----------+--------------------------------------+
-| String    | Replacement                          |
-+===========+======================================+
-| ``'mat'`` | Name of the material                 |
-+-----------+--------------------------------------+
-| ``'iso'`` | Name of the isotope, e.g. ``'U235'`` |
-+-----------+--------------------------------------+
-| ``'zai'`` | ZZAAAI of the isotope, e.g. 922350   |
-+-----------+--------------------------------------+
++-------------+----------------------------------------+
+| String      | Replacement                            |
++=============+========================================+
+| ``{mat}``   | Name of the material                   |
++-------------+----------------------------------------+
+| ``{iso}``   | Name of the isotope, e.g. ``'U235'``   |
++-------------+----------------------------------------+
+| ``{zai}``   | ZZAAAI of the isotope, e.g. 922350     |
++-------------+----------------------------------------+
 
 .. code:: 
     
-    >>> fuel.plot('days', 'adens', dayPoints, iso, 
-    ...           ylabel='Atomic Density [#/cc]');
-
-
-
-
-.. image:: DepletionReader_files/DepletionReader_22_0.png
-
-.. code:: 
-    
-    >>> fuel.plot('burnup', 'ingTox', names='Xe135', logy=True,
-    ...                  labelFmt="{iso}");
-
-.. image:: DepletionReader_files/DepletionReader_23_0.png
-
-This type of plotting can also be applied to the |depReader| 
-:py:func:`~serpentTools.parsers.depletion.DepletionReader.plot` method
-, with similar options for formatting and retrieving data. The
-materials to be plotted can be filtered using the ``materials``
-argument
-
-.. code:: 
-
     >>> dep.plot('burnup', 'adens', names=iso, 
-    >>>          materials=['fuel0', 'total'],
-    >>>          labelFmt="{mat}: {iso}", loglog=True);
+    ...          materials=['fuel0', 'total'],
+    ...          labelFmt="{mat}: {iso} // {zai}", loglog=True);
 
 
 
-.. image:: DepletionReader_files/DepletionReader_25_0.png
+.. image:: DepletionReader_files/DepletionReader_26_0.png
 
 
 Limitations
@@ -306,20 +322,14 @@ Below is an example of configuring a |depReader| that only
 stores the burnup days, and atomic density for all materials that begin
 with ``bglass`` followed by at least one integer.
 
-.. note::
-
-    Creating the ``DepletionReader`` in this manner is functionally
-    equivalent to ``serpentTools.read(depFile)``
-
 .. code:: 
     
     >>> rc['depletion.processTotal'] = False
     >>> rc['depletion.metadataKeys'] = ['BU']
     >>> rc['depletion.materialVariables'] = ['ADENS']
     >>> rc['depletion.materials'] = [r'bglass\d+']
-    >>> 
-    >>> bgReader = serpentTools.parsers.DepletionReader(depFile)
-    >>> bgReader.read()
+
+    >>> bgReader = serpentTools.readDataFile(depFile)
 
 .. code:: 
     
