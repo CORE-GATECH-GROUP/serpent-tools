@@ -1,6 +1,14 @@
 """ Fission Matrix Reader. Mono-dimensional case"""
+import re
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+from serpentTools.messages import warning, error
 from serpentTools.parsers.base import BaseReader
+from serpentTools.plot import cartMeshPlot
+from serpentTools.plot import plot as stPlot
+from serpentTools.utils import str2vec, formatPlot
 
 # Regular Expressions
 fMVal = r'fmtx_t\s+\(\s*(\d+),\s*(\d+)\)\s+=\s+([\d\+\.E-]+)\s;\s ' \
@@ -143,7 +151,8 @@ class FissionMatrixReader(BaseReader):
                     metaList = str2vec(metaString.groups())
                     return metaList
 
-    def fMatPlot(self, ax=None, title=None, xlabel=None, ylabel=None, cmap=None,
+    def fMatPlot(self, ax=None, title=None, xlabel=None, ylabel=None,
+                 cmap=None,
                  logScale=False, cbarLabel=None):
         """
         Plots the fission matrix sparsity pattern
@@ -167,7 +176,8 @@ class FissionMatrixReader(BaseReader):
         self._matPlot(self.fMat, ax, title, xlabel, ylabel, cmap, logScale,
                       cbarLabel)
 
-    def fMatUPlot(self, ax=None, title=None, xlabel=None, ylabel=None, cmap=None,
+    def fMatUPlot(self, ax=None, title=None, xlabel=None, ylabel=None,
+                  cmap=None,
                   logScale=False, cbarLabel=None):
         """
         Plots sparsity pattern of the uncertainty matrix associated to
@@ -192,7 +202,8 @@ class FissionMatrixReader(BaseReader):
         self._matPlot(self.fMatU, ax, title, xlabel, ylabel, cmap, logScale,
                       cbarLabel)
 
-    def _matPlot(self, A, ax=None, title=None, xlabel=None, ylabel=None, cmap=None,
+    def _matPlot(self, A, ax=None, title=None, xlabel=None, ylabel=None,
+                 cmap=None,
                  logScale=False, cbarLabel=None):
         v = A.shape
         xticks = range(0, v[0])

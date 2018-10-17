@@ -166,7 +166,7 @@ class CSCStreamProcessor(object):
         the indices to something :term:`numpy` can properly
         understand
 
-    Paramters
+    Parameters
     ---------
     stream: IO stream from an opened file
         Object with a ``readline`` function that returns
