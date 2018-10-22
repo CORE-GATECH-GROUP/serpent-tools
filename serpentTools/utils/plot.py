@@ -45,10 +45,11 @@ DEPLETION_PLOT_LABELS = {
 
 DETECTOR_PLOT_LABELS = {
     'energy': 'Energy [MeV]',
-    'xmesh': 'X Position [cm]',
-    'ymesh': 'Y Position [cm]',
-    'zmesh': 'Z Position [cm]',
 }
+for dim in ['x', 'y', 'z']:
+    DETECTOR_PLOT_LABELS[dim] = "{} Position [cm]".format(dim.capitalize())
+    DETECTOR_PLOT_LABELS[dim + 'mesh'] = DETECTOR_PLOT_LABELS[dim]
+
 
 _DET_LABEL_INDEXES = {
     'reaction', 'material', 'cell', 'universe', 'lattice',
