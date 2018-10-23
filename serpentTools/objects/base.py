@@ -169,7 +169,6 @@ class DetectorBase(NamedObject):
         'scores': 'Tally scores',
     }
 
-
     baseParams = """name: str
         Name of this detector"""
     baseAttrs = """grids: dict
