@@ -163,6 +163,12 @@ class DetectorBase(NamedObject):
     {attrs:s}
     """
 
+    _CBAR_LABELS = {
+        'tallies': 'Tally data',
+        'errors': 'Relative Uncertainty',
+        'scores': 'Tally scores',
+    }
+
     baseParams = """name: str
         Name of this detector"""
     baseAttrs = """grids: dict
@@ -433,9 +439,10 @@ class DetectorBase(NamedObject):
         return ax
 
     @magicPlotDocDecorator
-    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
-                 cmap=None, logColor=False, xlabel=None, ylabel=None,
-                 logx=False, logy=False, loglog=False, title=None, **kwargs):
+    def meshPlot(self, xdim='x', ydim='y', what='tallies', fixed=None, ax=None,
+                 cmap=None, cbarLabel=None, logColor=False, xlabel=None,
+                 ylabel=None, logx=False, logy=False, loglog=False,
+                 title=None, **kwargs):
         """
         Plot tally data as a function of two bin types on a cartesian mesh.
 
@@ -460,6 +467,8 @@ class DetectorBase(NamedObject):
         {logy}
         {loglog}
         {title}
+        cbarLabel: str
+            Label to apply to colorbar. If not given, infer from ``what``
         {kwargs} :py:func:`~matplotlib.pyplot.pcolormesh`
 
         Returns
@@ -500,10 +509,17 @@ class DetectorBase(NamedObject):
         ygrid = self._getGrid(ydim)
         if data.shape != (ygrid.size - 1, xgrid.size - 1):
             data = data.T
-
-        ax = cartMeshPlot(data, xgrid, ygrid, ax, cmap, logColor, **kwargs)
+        if cbarLabel is None:
+            cbarLabel = self._CBAR_LABELS[what]
+        ax = cartMeshPlot(
+            data, xgrid, ygrid, ax, cmap, logColor,
+            cbarLabel=cbarLabel, **kwargs)
+        if xlabel is None:
+            xlabel = DETECTOR_PLOT_LABELS.get(xdim, xdim)
+        if ylabel is None:
+            ylabel = DETECTOR_PLOT_LABELS.get(ydim, ydim)
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
-                        xlabel=xlabel or xdim, ylabel=ylabel or ydim,
+                        xlabel=xlabel, ylabel=ylabel,
                         title=title)
         return ax
 
