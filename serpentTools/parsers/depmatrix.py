@@ -200,6 +200,7 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
             raise ValueError(
                 "Value of {} not understood. Please pass one of {}"
                 .format(what, ' '.join(DENS_PLOT_WHAT_VALS)))
+
         if isinstance(labels, str):
             labels = labels,
         elif labels is None:
@@ -215,7 +216,8 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
         if isinstance(markers, str):
             markers = markers,
         elif markers is None:
-            markers = ('o', 'x')
+            markers = ['x'] if len(plotAttrs) == 1 else ['o', 'x']
+
         if len(markers) != len(plotAttrs):
             raise ValueError(
                 "Number of markers {} not equal to number of quantities "
