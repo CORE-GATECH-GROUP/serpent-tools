@@ -7,7 +7,6 @@ from numpy.testing import assert_equal
 
 from six import iteritems
 
-from serpentTools.parsers import read
 from serpentTools.data import getFile
 from serpentTools.settings import rc
 from serpentTools.parsers.depletion import (
@@ -23,15 +22,17 @@ FILE_WITH_UNDERSCORES = 'underscores_dep.m'
 ORIG_FUEL = "fuel"
 NEW_FUEL_NAME = "fuel_0"
 
+
 def setUpModule():
     """
     Set up the module
 
     *. Create a new file with underscores
     """
-    with open(DEP_FILE_PATH) as incoming, open(FILE_WITH_UNDERSCORES, 'w') as out:
-        for line in incoming:
-            out.write(line.replace(ORIG_FUEL, NEW_FUEL_NAME))
+    with open(DEP_FILE_PATH) as incoming:
+        with open(FILE_WITH_UNDERSCORES, 'w') as out:
+            for line in incoming:
+                out.write(line.replace(ORIG_FUEL, NEW_FUEL_NAME))
 
 
 def tearDownModule():
@@ -253,7 +254,6 @@ class DepletionUtilTester(TestCase):
         with self.assertRaises(ValueError):
             getMaterialNameAndVariable(self.BAD_0)
             getMaterialNameAndVariable(self.BAD_1)
-
 
     def test_getMatlabVarName(self):
         self.assertEqual(self.BAD_0, getMatlabVarName(self.VAR_CHUNK))
