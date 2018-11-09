@@ -8,7 +8,7 @@ from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
     convertVariableName, str2vec,
 )
-
+from ._collections import DEPLETION_VARIABLES
 from serpentTools.engines import KeywordParser
 from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
@@ -147,29 +147,14 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
-        self._matPatterns = self._makeMaterialRegexs()
-        self._matchMatNVar = r'[A-Z]{3}_([0-9a-zA-Z]*)_([A-Z]*_?[A-Z]*)'
-        # Captures material name and variable from string
-        #  MAT_fuel1_ADENS --> ('fuel1', 'ADENS')
-        #  MAT_fUeL1g_ING_TOX --> ('fUeL1', 'ING_TOX')
-
-        self._matchTotNVar = r'[A-Z]{3}_([A-Z]*_?[A-Z]*)'
-        # Captures variables for total block from string::
-        #  TOT_ADENS --> ('ADENS', )
-        #  ING_TOX --> ('ING_TOX', )
+        patterns = self.settings['materials'] or ['.*']
+        # match all materials if nothing given
+        self._matPatterns = [re.compile(mat) for mat in patterns]
         DepPlotMixin.__init__(self)
 
     def __getitem__(self, name):
         """Retrieve a material from :attr:`materials`."""
         return self.materials[name]
-
-    def _makeMaterialRegexs(self):
-        """Return the patterns by which to find the requested materials."""
-        patterns = self.settings['materials'] or ['.*']
-        # match all materials if nothing given
-        if any(['_' in pat for pat in patterns]):
-            warning('Materials with underscores are not supported.')
-        return [re.compile(mat) for mat in patterns]
 
     def _read(self):
         """Read through the depletion file and store requested data."""
@@ -178,12 +163,12 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         separators = ['\n', '];', '\r\n']
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
-                if 'MAT' in chunk[0]:
-                    self._addMaterial(chunk)
-                elif 'TOT' in chunk[0]:
-                    self._addTotal(chunk)
-                else:
-                    self._addMetadata(chunk)
+                mvar = getMatlabVarName(chunk)
+                if mvar[:3] in ['MAT', 'TOT']:
+                    name, variable = getMaterialNameAndVariable(mvar)
+                    self._checkAddData(chunk, name, variable)
+                    continue
+                self._addMetadata(chunk)
         if 'days' in self.metadata:
             for mKey in self.materials:
                 self.materials[mKey].days = self.metadata['days']
@@ -210,23 +195,14 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     def _cleanSingleLine(chunk):
         return chunk[0][chunk[0].index('[') + 1:chunk[0].index(']')]
 
-    def _addMaterial(self, chunk):
-        """Add data from a MAT chunk."""
-        name, variable = self._getGroupsFromChunk(self._matchMatNVar, chunk)
-        if any([re.match(pat, name) for pat in self._matPatterns]):
-            self._processChunk(chunk, name, variable)
-
-    def _addTotal(self, chunk):
-        """Add data from a TOT chunk"""
-        variable = self._getGroupsFromChunk(self._matchTotNVar, chunk)[0]
-        self._processChunk(chunk, 'total', variable)
-
-    def _getGroupsFromChunk(self, regex, chunk):
-        match = re.match(regex, chunk[0])
-        if match:
-            return match.groups()
-        raise Exception('{} not determine match from the following chunk:\n'
-                        '{}'.format(self, ''.join(chunk)))
+    def _checkAddData(self, chunk, name, variable):
+        if name == 'total':
+            if not self.settings['processTotal']:
+                return
+            return self._processChunk(chunk, name, variable)
+        for pattern in self._matPatterns:
+            if pattern.match(name):
+                return self._processChunk(chunk, name, variable)
 
     def _processChunk(self, chunk, name, variable):
         if (self.settings['materialVariables']
@@ -377,3 +353,24 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             self.metadata['burnup'], other.metadata['burnup'],
             lower, upper, 'burnup')
         return similar
+
+
+def getMaterialNameAndVariable(mlabName):
+    for serpVar in DEPLETION_VARIABLES:
+        leng = len(serpVar)
+        if serpVar == mlabName[-len(serpVar):]:
+            matName = mlabName[4:-(leng + 1)]
+            if not matName:
+                if 'TOT' == mlabName[:3]:
+                    return 'total', serpVar
+                break
+            return matName, serpVar
+    raise ValueError(
+        "Could not find a match for {}. "
+        "Please alert developers".format(mlabName))
+
+
+def getMatlabVarName(chunk):
+    if isinstance(chunk, list):
+        return getMatlabVarName(chunk[0])
+    return chunk[:chunk.index(' ')]

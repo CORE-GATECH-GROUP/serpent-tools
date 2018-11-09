@@ -95,3 +95,20 @@ RES_DATA_NO_UNCS = {
 Set containing keys for objects stored in :attr:`ResultsReader.resdata`
 that do not contain uncertainties.
 """
+
+DEPLETION_VARIABLES = {
+    'ING_TOX',
+    'INH_TOX',
+    'VOLUME',
+    'BURNUP',
+    'ADENS',
+    'MDENS',
+    'H',
+    'A',
+    'SF',
+    'GSRC',
+    'MASS',
+}
+"""
+Set of all variables stored for material in depletion output
+"""

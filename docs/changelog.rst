@@ -32,7 +32,7 @@ Changelog
   |depmtxReader|
 * :pull:`252` - Better axis and colorbar labeling for |detector| mesh plots
 * :pull:`254` - Better plotting of single concentrations with |depmtxReader|
-
+* :pull:`255` - |depletionReader| can capture material with underscores now!
 
 Deprecations
 ------------
