@@ -1,5 +1,6 @@
 """Test the depletion file."""
-import unittest
+from unittest import TestCase
+from os import remove
 
 from numpy import array
 from numpy.testing import assert_equal
@@ -9,35 +10,61 @@ from six import iteritems
 from serpentTools.parsers import read
 from serpentTools.data import getFile
 from serpentTools.settings import rc
-from serpentTools.parsers.depletion import DepletionReader
+from serpentTools.parsers.depletion import (
+    DepletionReader, getMaterialNameAndVariable, getMatlabVarName,
+)
 
 
-class _DepletionTestHelper(unittest.TestCase):
+DEP_FILE = 'ref_dep.m'
+DEP_FILE_PATH = getFile(DEP_FILE)
+
+FILE_WITH_UNDERSCORES = 'underscores_dep.m'
+ORIG_FUEL = "fuel"
+NEW_FUEL_NAME = "fuel_0"
+
+def setUpModule():
+    """
+    Set up the module
+
+    *. Create a new file with underscores
+    """
+    with open(DEP_FILE_PATH) as incoming, open(FILE_WITH_UNDERSCORES, 'w') as out:
+        for line in incoming:
+            out.write(line.replace(ORIG_FUEL, NEW_FUEL_NAME))
+
+
+def tearDownModule():
+    """
+    Tear down the module
+
+    *. Remove new file with underscores
+    """
+    remove(FILE_WITH_UNDERSCORES)
+
+
+class _DepletionTestHelper(TestCase):
     """Base class to setup the depletion reader and material tests."""
+
+    PROCESS_TOTAL = True
+    MATERIAL = ORIG_FUEL
+    FILE = DEP_FILE_PATH
+    EXPECTED_VARIABLES = ['BURNUP', 'ADENS', 'ING_TOX']
 
     @classmethod
     def setUpClass(cls):
-        cls.filePath = getFile('ref_dep.m')
-        cls.processTotal = True
-        cls.materials = ['fuel']
-        cls.expectedMaterials = set(cls.materials)
-        cls.expectedVariables = {'BURNUP', 'ADENS', 'ING_TOX'}
-        if cls.processTotal:
+        cls.filePath = cls.FILE
+        cls.expectedMaterials = {cls.MATERIAL, }
+        if cls.PROCESS_TOTAL:
             cls.expectedMaterials.add('total')
         with rc as tempRC:
             tempRC['verbosity'] = 'debug'
-            tempRC['depletion.processTotal'] = True
-            tempRC['depletion.materials'] = ['fuel', ]
-            tempRC['depletion.materialVariables'] = [
-                'BURNUP', 'ADENS', 'ING_TOX']
-            tempRC['depletion.processTotal'] = cls.processTotal
-            tempRC['depletion.materials'] = cls.materials
+            tempRC['depletion.materials'] = [cls.MATERIAL, ]
+            tempRC['depletion.processTotal'] = cls.PROCESS_TOTAL
             tempRC['depletion.materialVariables'] = (
-                list(cls.expectedVariables)
+                cls.EXPECTED_VARIABLES
             )
-            cls.reader = DepletionReader(cls.filePath)
-        cls.reader.read()
-        read(cls.filePath, DepletionReader)
+            cls.reader = DepletionReader(cls.FILE)
+            cls.reader.read()
 
 
 class DepletionTester(_DepletionTestHelper):
@@ -82,16 +109,14 @@ class DepletionTester(_DepletionTestHelper):
 class DepletedMaterialTester(_DepletionTestHelper):
     """Class that tests the functionality of the DepletedMaterial class"""
 
-    @classmethod
-    def setUpClass(cls):
-        _DepletionTestHelper.setUpClass()
-        cls.material = cls.reader.materials['fuel']
-        cls.requestedDays = [0.0, 0.5, 1.0, 5.0, 10.0, 25.0, 50.0]
-        cls.fuelBU = cls.material.burnup
+    def setUp(self):
+        self.material = self.reader.materials[self.MATERIAL]
+        self.requestedDays = [0.0, 0.5, 1.0, 5.0, 10.0, 25.0, 50.0]
+        self.fuelBU = self.material.burnup
 
     def test_materials(self):
         """Verify the materials are read in properly."""
-        self.assertIn('fuel', self.reader.materials)
+        self.assertIn(self.MATERIAL, self.reader.materials)
         expectedAdens = array([
             [0.00000E+00, 2.44791E-10, 1.07741E-09, 7.54422E-09, 1.54518E-08,
              2.45253E-08, 3.05523E-08, 3.98843E-08, 4.28827E-08, 4.37783E-08,
@@ -191,5 +216,44 @@ class DepletedMaterialTester(_DepletionTestHelper):
                            names=['Xe135', 'U235'])
 
 
+class UnderscoreDepMaterialTester(DepletedMaterialTester):
+    """Class that reads from a file with underscored fuel names"""
+
+    MATERIAL = NEW_FUEL_NAME
+    FILE = FILE_WITH_UNDERSCORES
+
+
+class DepletionUtilTester(TestCase):
+    """
+    Test case that tests some utilities used by the DepletionReader
+    """
+
+    BAD_0 = "MAT_FUEL_DOES_NOT_EXIST"
+    BAD_1 = "BAD_FUEL_ADENS"
+
+    VAR_CHUNK = ['{} = [\n'.format(BAD_0), ]
+
+    def test_getMaterialAndVariable(self):
+        """Test the function for extracting names and variables"""
+        valid = {
+            'MAT_fuel_ADENS': ('fuel', 'ADENS'),
+            'TOT_ING_TOX': ('total', 'ING_TOX'),
+            'MAT_FUEL_2_H': ('FUEL_2', 'H'),
+        }
+        for matVar, (expName, expVar) in iteritems(valid):
+            actName, actVar = getMaterialNameAndVariable(matVar)
+            self.assertEqual(expName, actName, msg=matVar)
+            self.assertEqual(expVar, actVar, msg=matVar)
+        with self.assertRaises(ValueError):
+            getMaterialNameAndVariable(self.BAD_0)
+            getMaterialNameAndVariable(self.BAD_1)
+
+
+    def test_getMatlabVarName(self):
+        self.assertEqual(self.BAD_0, getMatlabVarName(self.VAR_CHUNK))
+        self.assertEqual(self.BAD_0, getMatlabVarName(self.VAR_CHUNK[0]))
+
+
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()
