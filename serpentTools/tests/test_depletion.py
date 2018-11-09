@@ -13,6 +13,7 @@ from serpentTools.settings import rc
 from serpentTools.parsers.depletion import (
     DepletionReader, getMaterialNameAndVariable, getMatlabVarName,
 )
+from serpentTools.tests.utils import LoggerMixin
 
 
 DEP_FILE = 'ref_dep.m'
@@ -52,10 +53,14 @@ class _DepletionTestHelper(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.filePath = cls.FILE
+        # Silence the debugger but we don't care about checking messages
+        logger = LoggerMixin()
+        logger.attach()
+
         cls.expectedMaterials = {cls.MATERIAL, }
         if cls.PROCESS_TOTAL:
             cls.expectedMaterials.add('total')
+        # Set some settings to control the output
         with rc as tempRC:
             tempRC['verbosity'] = 'debug'
             tempRC['depletion.materials'] = [cls.MATERIAL, ]
@@ -65,6 +70,7 @@ class _DepletionTestHelper(TestCase):
             )
             cls.reader = DepletionReader(cls.FILE)
             cls.reader.read()
+        logger.detach()
 
 
 class DepletionTester(_DepletionTestHelper):
