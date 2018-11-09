@@ -147,27 +147,14 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
-        self._matPatterns = self._makeMaterialRegexs()
-        self._matchMatNVar = r'[A-Z]{3}_([0-9a-zA-Z]*)_([A-Z]*_?[A-Z]*)'
-        # Captures material name and variable from string
-        #  MAT_fuel1_ADENS --> ('fuel1', 'ADENS')
-        #  MAT_fUeL1g_ING_TOX --> ('fUeL1', 'ING_TOX')
-
-        self._matchTotNVar = r'[A-Z]{3}_([A-Z]*_?[A-Z]*)'
-        # Captures variables for total block from string::
-        #  TOT_ADENS --> ('ADENS', )
-        #  ING_TOX --> ('ING_TOX', )
+        patterns = self.settings['materials'] or ['.*']
+        # match all materials if nothing given
+        self._matPatterns = [re.compile(mat) for mat in patterns]
         DepPlotMixin.__init__(self)
 
     def __getitem__(self, name):
         """Retrieve a material from :attr:`materials`."""
         return self.materials[name]
-
-    def _makeMaterialRegexs(self):
-        """Return the patterns by which to find the requested materials."""
-        patterns = self.settings['materials'] or ['.*']
-        # match all materials if nothing given
-        return [re.compile(mat) for mat in patterns]
 
     def _read(self):
         """Read through the depletion file and store requested data."""
