@@ -296,12 +296,6 @@ replacements
 .. image:: DepletionReader_files/DepletionReader_26_0.png
 
 
-Limitations
------------
-
-Currently, the |depReader| cannot catch materials with underscore in the name,
-due to variables like ``ING_TOX`` also containing an underscore.
-Issue `#58 <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues/58>`_
 
 .. _depletion-settings:
 

@@ -31,7 +31,7 @@ Changelog
 * :pull:`249` - Better sparse support for depletion matrix, ``depmtx`` files with a
   |depmtxReader|
 * :pull:`252` - Better axis and colorbar labeling for |detector| mesh plots
-
+* :pull:`255` - |depletionReader| can capture material with underscores now!
 
 Deprecations
 ------------
