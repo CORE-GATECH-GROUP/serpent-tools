@@ -44,7 +44,7 @@ installRequires = [
     'six>=1.11.0',
     'numpy>=1.15.1',
     'matplotlib>=2.0',
-    'pyyaml>=3.08',
+    'pyyaml==3.13',
 ]
 
 if not getenv('TRAVIS', None) == 'true':

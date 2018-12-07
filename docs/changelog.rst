@@ -11,6 +11,9 @@
 Changelog
 =========
 
+Next
+====
+* :meth:`serpentTools.settings.rc.loadYaml` uses ``safe_load``
 .. _v0.6.0:
 
 0.6.0
