@@ -2,7 +2,7 @@
 import os
 
 from six import iteritems
-import yaml
+from yaml import safe_load
 
 from serpentTools import messages, __path__
 
@@ -376,7 +376,7 @@ class UserSettingsLoader(dict):
             return variables
         varFile = os.path.join(ROOT_DIR, 'variables.yaml')
         with open(varFile) as fObj:
-            groups = yaml.load(fObj)
+            groups = safe_load(fObj)
         thisVersion = groups[serpentVersion]
         baseGroups = groups['base']
         for key in keywords:
@@ -411,7 +411,7 @@ class UserSettingsLoader(dict):
         """
         messages.debug('Attempting to read from {}'.format(filePath))
         with open(filePath) as yFile:
-            configSettings = yaml.safe_load(yFile)
+            configSettings = safe_load(yFile)
         messages.debug('Loading settings onto object with strict:{}'
                        .format(strict))
 
