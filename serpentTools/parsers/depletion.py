@@ -359,6 +359,14 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         """
         Write a binary MATLAB file from the contents of this reader
 
+
+        .. note::
+
+            Vectors will be stored as either column or row
+            matrices, e.g. ``1xN`` or ``Nx1``. This can be
+            controlled by passing ``oned_as`` to be either
+            ``'row'`` or ``'column'``
+
         Parameters
         ----------
         fileP: str or file-like object
@@ -378,7 +386,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         Raises
         ------
         ImportError:
-            If ``scipy`` is not installed
+            If :term:`scipy` is not installed
 
         See Also
         --------
