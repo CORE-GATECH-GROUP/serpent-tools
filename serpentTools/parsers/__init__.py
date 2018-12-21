@@ -34,7 +34,7 @@ READERS = {
 
 SUPPORTED_READER_MSG = "\n".join(
     ["{}: {}".format(key, READERS[key].__name__)
-    for key in sorted(READERS.keys())]
+     for key in sorted(READERS.keys())]
 )
 
 REGEXES = {
