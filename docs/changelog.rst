@@ -13,7 +13,11 @@ Changelog
 
 Next
 ====
-* :meth:`serpentTools.settings.rc.loadYaml` uses ``safe_load``
+* :pull:`256` :meth:`serpentTools.settings.rc.loadYaml` uses ``safe_load``
+* :pull:`257` |depletionReader| now can utilize 
+  :meth:`~serpentTools.parsers.depletion.DepletionReader.saveAsMatlab` for
+  exporting data to a binary ``.mat`` file
+
 .. _v0.6.0:
 
 0.6.0
