@@ -390,15 +390,14 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
         if reconvert:
             converter = deconvert
-            data = {
-                deconvertVariableName(k): v
-                for k, v in iteritems(self.metadata)
-            }
         else:
-            # don't want to throw material data into metadata
-            data = {}
-            data.update(self.metadata)
             converter = prepToMatlab
+
+        if metadata:
+            data = {k.upper() if reconvert else k: v
+                    for k, v in iteritems(self.metadata)}
+        else:
+            data = {}
 
         for matName, material in iteritems(self.materials):
             for varName, varData in iteritems(material.data):
