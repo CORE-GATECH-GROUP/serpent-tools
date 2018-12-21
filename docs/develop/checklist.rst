@@ -36,7 +36,7 @@ project with
 
 Individual test files can also be run with
 
-..code::
+.. code::
 
     $ python my_test_scipt.py
 
