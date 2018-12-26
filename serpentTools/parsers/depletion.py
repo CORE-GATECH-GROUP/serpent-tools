@@ -12,7 +12,7 @@ from ._collections import DEPLETION_VARIABLES
 from serpentTools.engines import KeywordParser
 from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
-
+from serpentTools.utils.core import deconvertVariableName
 from serpentTools.messages import (
     warning, debug, error, SerpentToolsException,
 )
@@ -354,6 +354,65 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             lower, upper, 'burnup')
         return similar
 
+    def saveAsMatlab(self, fileP, reconvert=True, metadata=True,
+                     **savematKwargs):
+        """
+        Write a binary MATLAB file from the contents of this reader
+
+
+        .. note::
+
+            Vectors will be stored as either column or row
+            matrices, e.g. ``1xN`` or ``Nx1``. This can be
+            controlled by passing ``oned_as`` to be either
+            ``'row'`` or ``'column'``
+
+        Parameters
+        ----------
+        fileP: str or file-like object
+            Name of the file to write
+        reconvert: bool
+            If this evaluates to true, convert values back into their
+            original form as they appear in the output file, e.g.
+            ``MAT_TOTAL_ING_TOX``. Otherwise, maintain the ``mixedCase``
+            style, ``total_ingTox``.
+        metadata: bool or str or list of strings
+            If this evaluates to true, then write all metadata to the
+            file as well.
+        savematKwargs:
+            Additional keyword arguments to pass to
+            :func:`scipy.io.savemat`
+
+        Raises
+        ------
+        ImportError:
+            If :term:`scipy` is not installed
+
+        See Also
+        --------
+        :func:`scipy.io.savemat`
+        """
+        from scipy.io import savemat
+
+        # set these here to reduce number of if/elses
+
+        if reconvert:
+            converter = deconvert
+        else:
+            converter = prepToMatlab
+
+        if metadata:
+            data = {k.upper() if reconvert else k: v
+                    for k, v in iteritems(self.metadata)}
+        else:
+            data = {}
+
+        for matName, material in iteritems(self.materials):
+            for varName, varData in iteritems(material.data):
+                data[converter(matName, varName)] = varData
+
+        savemat(fileP, data, **savematKwargs)
+
 
 def getMaterialNameAndVariable(mlabName):
     for serpVar in DEPLETION_VARIABLES:
@@ -374,3 +433,17 @@ def getMatlabVarName(chunk):
     if isinstance(chunk, list):
         return getMatlabVarName(chunk[0])
     return chunk[:chunk.index(' ')]
+
+
+_MAT_FMT_ORIG = "MAT_{}_{}"
+_MAT_FMT_CC = "{}_{}"
+
+
+def deconvert(material, variable):
+    """Restore the original name as present in the depletion file"""
+    return _MAT_FMT_ORIG.format(material, deconvertVariableName(variable))
+
+
+def prepToMatlab(material, variable):
+    """Create the name of a single variable for MATLAB"""
+    return _MAT_FMT_CC.format(material, variable)

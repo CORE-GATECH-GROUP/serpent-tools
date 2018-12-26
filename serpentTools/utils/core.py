@@ -153,6 +153,17 @@ def convertVariableName(variable):
                                      for item in lowerSplits[1:]])
 
 
+def deconvertVariableName(variable):
+    """Convert ``mixedCase`` to ``SERPENT_CASE``"""
+    out = ""
+    for char in variable:
+        if char.isupper():
+            out += '_' + char
+            continue
+        out += char.upper()
+    return out
+
+
 LEADER_TO_WIKI = "http://serpent.vtt.fi/mediawiki/index.php/"
 
 
