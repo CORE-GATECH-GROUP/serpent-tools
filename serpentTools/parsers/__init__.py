@@ -32,6 +32,11 @@ READERS = {
     'depmtx': DepmtxReader,
 }
 
+SUPPORTED_READER_MSG = "\n".join(
+    ["{}: {}".format(key, READERS[key].__name__)
+     for key in sorted(READERS.keys())]
+)
+
 REGEXES = {
     r'(.*_dep\.m)': DepletionReader,
     r'(.*\.coe)': BranchingReader,
@@ -78,7 +83,8 @@ def inferReader(filePath):
             return reader
     raise SerpentToolsException(
         'Failed to infer filetype and thus accurate reader from'
-        'file path {}'.format(filePath)
+        'file path {}. Pass one of the below options to ensure '
+        'a specific reader:\n{}'.format(filePath, SUPPORTED_READER_MSG)
     )
 
 
@@ -100,13 +106,16 @@ def read(filePath, reader='infer'):
         String argument Action
         =============== ==========================================
         infer           Infer the correct reader based on the file
-        dep             ``DepletionReader``
         branch          ``BranchingReader``
-        det             ``DetectorReader``
-        results         ``ResultsReader``
         bumat           ``BumatReader``
+        dep             ``DepletionReader``
+        det             ``DetectorReader``
         fission         ``FissionMatrixReader``
-        mdx             ``MdxReader``
+        history         ``HistoryReader``
+        microxs         ``MdxReader``
+        results         ``ResultsReader``
+        sensitivity     ``SensitivityReader``
+        xsplot          ``XSPlotReader``
         =============== ==========================================
 
     Returns
@@ -135,7 +144,8 @@ def read(filePath, reader='infer'):
                 loader = READERS[reader]
             else:
                 raise SerpentToolsException(
-                    'Reader type {} not supported'.format(reader)
+                    'Reader type {} not supported. Try one of the below:\n{}'
+                    .format(reader, SUPPORTED_READER_MSG)
                 )
     else:
         assert callable(reader), (
