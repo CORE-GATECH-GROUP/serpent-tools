@@ -72,7 +72,7 @@ project = 'serpentTools'
 devTeamLink = ('https://github.com/CORE-GATECH-GROUP/serpent-tools/graphs/'
                'contributors')
 copyright = (
-    u'2017-2018, <a href= "{}" >The serpentTools developer team</a>'
+    u'2017-2019, <a href= "{}" >The serpentTools developer team</a>'
     ', GTRC'.format(devTeamLink))
 author = 'The serpentTools developer team'
 
