@@ -11,17 +11,22 @@
 Changelog
 =========
 
-Next
-====
+.. _v0.6.1:
+
+:release-tag:`0.6.1`
+====================
+
 * :pull:`256` :meth:`serpentTools.settings.rc.loadYaml` uses ``safe_load``
 * :pull:`257` |depletionReader| now can utilize 
   :meth:`~serpentTools.parsers.depletion.DepletionReader.saveAsMatlab` for
   exporting data to a binary ``.mat`` file
+* :pull:`259` Little more clarity into supported readers through documentation
+  and ``serpentTools.read`` function
 
 .. _v0.6.0:
 
-0.6.0
-=====
+:release-tag:`0.6.0`
+====================
 
 * :pull:`174` - Added parent object ``BaseObject`` with basic comparison
   method from which all objects inherit. Comparison method contains
