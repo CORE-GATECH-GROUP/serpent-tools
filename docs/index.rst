@@ -16,6 +16,10 @@ Welcome to serpentTools's documentation!
         :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+    .. image:: https://badge.fury.io/py/serpentTools.svg
+       :target: https://badge.fury.io/py/serpentTools
+       :alt: PyPi badge
+
     .. image:: https://zenodo.org/badge/102786755.svg
        :target: https://zenodo.org/badge/latestdoi/102786755
        :alt: Zenodo DOI 10.5281/zenodo.1301036

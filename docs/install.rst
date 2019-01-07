@@ -17,21 +17,19 @@ a brief walk through at :ref:`install-python-dist`.
     terminal, or a modified prompt. See :ref:`install-python-dist`
     for more information if you are not sure.
 
-Currently, the only way to obtain the package is via Github. If you 
-only want a specific instance of the project, you can download
-and install a zipped version of the project by following the
-instructions in :ref:`install-release`.
+.. _install-pip:
 
-If you want the entire history of the project, or want a constant
-link to the most up-to-date development version of the project,
-you can clone and install the package via :term:`git`  by following
-the instructions in :ref:`install-git`.
+Installing from pip
+===================
 
-For installing via GitHub and our ``setup.py`` script, having
-`setuptools <https://pypi.org/project/setuptools/>`_ installed
-makes things go a tad more smoothly. This will automatically
-install some of the required packages for you when you
-run the setup script.
+:term:`pip` is the easiest way to install the latest version of 
+``serpentTools``. This can be done with::
+
+   $ python -m install --user --upgrade pip serpentTools
+
+This installs the latest ``serpentTools`` release and upgrades your version of ``pip``
+along the way. When a new release is issued, run the command again to install
+the updated version.
 
 .. _install-release:
 

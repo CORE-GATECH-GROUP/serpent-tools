@@ -10,6 +10,10 @@ serpent-tools
     :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://badge.fury.io/py/serpentTools.svg
+   :target: https://badge.fury.io/py/serpentTools
+   :alt: PyPi badge
+
 .. image:: https://zenodo.org/badge/102786755.svg
    :target: https://zenodo.org/badge/latestdoi/102786755
    :alt: Zenodo DOI 10.5281/zenodo.1301036
@@ -25,30 +29,15 @@ found at `<http://montecarlo.vtt.fi>`_
 Installation
 ============
 
-The ``serpentTools`` package can be downloaded either as a git repository or
-as a zipped file. Both can be obtained through the ``Clone or download`` option
-at the
-`serpent-tools GitHub <https://github.com/CORE-GATECH-GROUP/serpent-tools>`_.
+``serpentTools`` can be installed with ``pip`` using::
+
+   $ python -m pip install --user --upgrade pip serpentTools
+
 
 For more detailed instructions, including operating-system specific
-instructions, see
+instructions and building from source, see
 `Installation Guide <http://serpent-tools.readthedocs.io/en/latest/install.html>`_.
 
-Once the repository has been downloaded or extracted from zip, the package
-can be installed with::
-
-    cd serpentTools
-    python setup.py install
-    python setup.py test
-
-Installing with `setuptools <https://pypi.python.org/pypi/setuptools/38.2.4>`_
-is preferred over the standard ``distutils`` module. ``setuptools`` can be
-installed with ``pip`` as::
-
-    pip install -U setuptools
-
-Installing in this manner ensures that the supporting packages,
-like ``numpy`` are installed and up to date.
 
 Issues
 ======
