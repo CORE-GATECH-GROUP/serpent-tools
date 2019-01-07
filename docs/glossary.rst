@@ -64,6 +64,10 @@ Glossary
         Widely-used python package that allows multidimensional arrays
         and linear algebra routines. More information at
         `<https://www.numpy.org>`_
+    
+    pip
+        Recommended tool for installing Python packages. More at
+        `<https://pypi.org/project/pip/>`_
 
     scipy
          Widely-used python package that contains more mathematical support
