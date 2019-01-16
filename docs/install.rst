@@ -23,15 +23,23 @@ Installing from pip
 ===================
 
 :term:`pip` is the easiest way to install the latest version of 
-``serpentTools``. This can be done with::
+``serpentTools``. First, ensure that you have :term:`numpy` installed, 
+as this is one of the required packages that is tricky to install. You can
+check by opening up a your preferred terminal and executing
+
+.. code::
+
+   $ python -c "import numpy"
+
+If this fails, please consult :ref:`install-python-dist`.
+
+Next, installation with pip can be completed with::
 
    $ python -m pip install --user --upgrade pip serpentTools
 
-This installs the latest ``serpentTools`` release and upgrades your version of ``pip``
-along the way. When a new release is issued, run the command again to install
-the updated version.
-If you have issues installing :term:`numpy` on Windows, please consult 
-:ref:`install-python-dist`
+This installs the dependencies of the package, the latest ``serpentTools`` release,
+and upgrades your version of :term:`pip` along the way.
+When a new release is issued, run the command again to install the updated version.
 
 .. _install-release:
 
@@ -91,17 +99,16 @@ varies by operating system, with Windows requiring the most finesse.
 Linux/Mac/Unix-like Operating Systems
 -------------------------------------
 
-You're basically fine.
+If you don't have :term:`numpy` installed, you will have to obtain it from
+your package manager or from pip::
 
-If you can open you terminal and run the following commands with ease, carry on::
+    # ubuntu
+    $ sudo apt-get install python-numpy
+    # pip
+    $ sudo pip install --upgrade numpy
 
-    $ pip install -U pip setuptools numpy
-    $ python -c "import numpy"
-
-.. note::
-    
-    Installing :term:`numpy` this way may require super user privileges, or passing
-    ``--user`` as a flag
+If you already have :term:`numpy`, then the :term:`pip` installtion
+process will take care of our other dependencies.
 
 Windows
 -------
@@ -114,8 +121,8 @@ The former comes with a few hundred packages, included most of the ones
 needed for this project, bundled for you.
 The latter is a very small distribution and requires you to install the packages
 you want via :term:`conda`.
-Should you choose this route, then you need to launch this prompt and install
-with::
+Should you choose this route, then you need to launch the :term:`Anaconda Prompt`
+and install with::
 
     $ conda install setuptools numpy matplotlib
 
