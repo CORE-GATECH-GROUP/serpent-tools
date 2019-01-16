@@ -25,11 +25,13 @@ Installing from pip
 :term:`pip` is the easiest way to install the latest version of 
 ``serpentTools``. This can be done with::
 
-   $ python -m install --user --upgrade pip serpentTools
+   $ python -m pip install --user --upgrade pip serpentTools
 
 This installs the latest ``serpentTools`` release and upgrades your version of ``pip``
 along the way. When a new release is issued, run the command again to install
 the updated version.
+If you have issues installing :term:`numpy` on Windows, please consult 
+:ref:`install-python-dist`
 
 .. _install-release:
 
