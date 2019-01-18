@@ -79,7 +79,7 @@ class MatlabConverter(BaseConverter):
 
     def checkContainerReq(self, container):
         """Ensure that data from the container can be collected."""
-        if not hasattr(container, '_gather'):
+        if not hasattr(container, '_gather_mat'):
             raise NotImplementedError(
                 "Gathering method not implemented for {}."
                 .format(container.__class__.__name__))

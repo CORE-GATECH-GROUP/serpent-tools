@@ -111,12 +111,12 @@ class DetectorReader(BaseReader):
         return similar
 
 
-    def _gather(self, reconvert):
+    def _gather_matlab(self, reconvert):
         """Collect data from all detectors for exporting to matlab"""
         data = {}
 
         for detector in self.detectors.values():
-            data.update(detector._gather(reconvert))
+            data.update(detector._gather_matlab(reconvert))
 
         return data
 

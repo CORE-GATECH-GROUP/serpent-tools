@@ -133,8 +133,8 @@ class Detector(DetectorBase):
             return self._INDEX_MAP[indexPos]
         return DET_COLS[indexPos]
 
-    def _gather(self, reconvert):
-        """Gather bins and grids for exporting"""
+    def _gather_matlab(self, reconvert):
+        """Gather bins and grids for exporting to matlab"""
 
         converter = deconvert if reconvert else prepToMatlab
 

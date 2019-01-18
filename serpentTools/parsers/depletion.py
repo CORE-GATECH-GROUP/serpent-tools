@@ -403,14 +403,14 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             # need this path to perserve selecting not to write
             # metadata
             from scipy.io import savemat
-            data = self._gather(reconvert, metadata)
+            data = self._gather_matlab(reconvert, metadata)
             return savemat(fileP, data, append, format, longNames,
                            compress, oned)
         converter = MatlabConverter(self, fileP)
         return converter.convert(reconvert, append, format, longNames,
                                  compress, oned)
 
-    def _gather(self, reconvert, metadata=None):
+    def _gather_matlab(self, reconvert, metadata=None):
         """
         Return a dictionary with all data
 
