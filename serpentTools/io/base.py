@@ -8,7 +8,6 @@ from serpentTools.utils import checkScipy
 
 __all__ = [
     'MatlabConverter',
-    'converterRegistry',
 ]
 
 
@@ -63,17 +62,30 @@ class BaseConverter(object):
 @registerConverter('mat')
 class MatlabConverter(BaseConverter):
     """
-    Take a container and write its contents to a ``.mat`` file
+    Class for assisting in writing container data to MATLAB
+
+    Parameters
+    ----------
+    obj: ``serpentTools`` container
+        Parser or container to be written to file
+    fileP: str or file-like object
+        Name of the file to write
+
+    See Also
+    --------
+    * :func:`serpentTools.io.toMatlab` - high level function for
+      writing to MATLAB that uses this class
     """
 
     def checkContainerReq(self, container):
+        """Ensure that data from the container can be collected."""
         if not hasattr(container, '_gather'):
             raise NotImplementedError(
                 "Gathering method not implemented for {}."
                 .format(container.__class__.__name__))
 
     def checkImports(self):
-        """Ensure we have scipy"""
+        """Ensure that :term:`scipy` >= 1.0 is installed."""
         if not checkScipy('1.0'):
             raise ImportError("scipy >= 1.0 required")
 
