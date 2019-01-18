@@ -133,6 +133,20 @@ class Detector(DetectorBase):
             return self._INDEX_MAP[indexPos]
         return DET_COLS[indexPos]
 
+    def _gather(self, reconvert):
+        """Gather bins and grids for exporting"""
+
+        converter = deconvert if reconvert else prepToMatlab
+
+        data = {
+            converter(self.name, 'bins'): self.bins,
+        }
+
+        for key, value in iteritems(self.grids):
+            data[converter(self.name, key)] = value
+
+        return data
+
 
 class CartesianDetector(Detector):
     __doc__ = """
@@ -522,3 +536,21 @@ def checkClearKwargs(key, fName, **kwargs):
     if key in kwargs and kwargs[key] is not None:
         warning("{} will be set by {}. Worry not.".format(key, fName))
         kwargs[key] = None
+
+
+# Functions for converting varible names for matlab
+
+_DET_FMT_ORIG = "DET{}{}"
+_DET_FMT_CC = "{}_{}"
+
+
+def deconvert(detectorName, quantity):
+    """Restore the original name of the detector data"""
+    if quantity == 'bins':
+        return _DET_FMT_ORIG.format(detectorName, '')
+    return _DET_FMT_ORIG.format(detectorName, quantity)
+
+
+def prepToMatlab(detectorName, quantity):
+    """Create a name of a variable for MATLAB"""
+    return _DET_FMT_CC.format(detectorName, quantity)

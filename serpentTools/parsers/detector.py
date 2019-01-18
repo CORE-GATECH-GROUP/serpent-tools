@@ -111,6 +111,16 @@ class DetectorReader(BaseReader):
         return similar
 
 
+    def _gather(self, reconvert):
+        """Collect data from all detectors for exporting to matlab"""
+        data = {}
+
+        for detector in self.detectors.values():
+            data.update(detector._gather(reconvert))
+
+        return data
+
+
 def cleanDetChunk(chunk):
     """
     Return the name of the detector [grid] and the array of data.
