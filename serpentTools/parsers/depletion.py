@@ -394,6 +394,18 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         """
         from scipy.io import savemat
 
+        data = self._gather(reconvert, metadata)
+
+        savemat(fileP, data, **savematKwargs)
+
+    def _gather(self, reconvert, metadata):
+        """
+        Return a dictionary with all data
+
+        Should only be used by developers for converting to new
+        output file types
+        """
+
         # set these here to reduce number of if/elses
 
         if reconvert:
@@ -411,7 +423,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             for varName, varData in iteritems(material.data):
                 data[converter(matName, varName)] = varData
 
-        savemat(fileP, data, **savematKwargs)
+        return data
 
 
 def getMaterialNameAndVariable(mlabName):
