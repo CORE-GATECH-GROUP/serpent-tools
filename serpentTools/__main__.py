@@ -15,7 +15,8 @@ import six
 import serpentTools
 from serpentTools import settings
 from serpentTools.messages import info, debug, error
-from serpentTools.io import toMatlab
+from serpentTools.parsers import inferReader
+from serpentTools.io import MatlabConverter
 
 _VERB_MAP = {'v': {1: 'info', 2: 'debug'},
              'q': {1: 'error', 2: 'critical'}}
@@ -121,11 +122,11 @@ def _toMatlab(args):
         herald = info
     else:
         herald = debug
-    reader = serpentTools.read(inFile)
+
+    # inferReader returns the class, but we need an instance
+    reader = inferReader(inFile)(inFile)
     try:
-        toMatlab(reader, outFile, True, append=args.append,
-                 format=args.format, longNames=args.longNames,
-                 compress=not args.large, oned=args.oned)
+        converter = MatlabConverter(reader, outFile)
     except ImportError:
         error("scipy >= 1.0 required to convert to matlab")
         return 1
@@ -134,6 +135,10 @@ def _toMatlab(args):
               "Please alert the developers of your need."
               .format(reader.__class__.__name__))
         return 3
+    reader.read()
+    converter.convert(True, append=args.append,
+         format=args.format, longNames=args.longNames,
+         compress=not args.large, oned=args.oned)
     herald("Wrote contents from {} to {}".format(inFile, outFile))
     return 0
 
