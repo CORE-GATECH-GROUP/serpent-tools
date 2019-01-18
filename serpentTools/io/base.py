@@ -103,9 +103,6 @@ class MatlabConverter(BaseConverter):
             original form as they appear in the output file, e.g.
             ``MAT_TOTAL_ING_TOX``. Otherwise, maintain the ``mixedCase``
             style, ``total_ingTox``.
-        metadata: bool or str or list of strings
-            If this evaluates to true, then write all metadata to the
-            file as well.
         append: bool
             If true and a file exists under ``output``, append to that file.
             Otherwise the file will be overwritten
