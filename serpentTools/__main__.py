@@ -131,9 +131,9 @@ def _toMatlab(args):
         error("scipy >= 1.0 required to convert to matlab")
         return 1
     except NotImplementedError:
-        error("conversion not supported for {} reader at this time. "
-              "Please alert the developers of your need."
+        error("Conversion not supported for {} reader at this time. "
               .format(reader.__class__.__name__))
+        error("Please alert the developers of your need.")
         return 3
     reader.read()
     converter.convert(True, append=args.append,
@@ -146,8 +146,8 @@ def _toMatlab(args):
 def _seedInterface(args):
     """Interface to launch the uniquely-seeded file generation"""
     from serpentTools.seed import seedFiles
-    seedFiles(args.file, args.N, seed=args.seed, outputDir=args.output_dir,
-              link=args.link, length=args.length)
+    return seedFiles(args.file, args.N, seed=args.seed, outputDir=args.output_dir,
+                     link=args.link, length=args.length)
 
 
 def _listDefaults(args):
@@ -183,8 +183,9 @@ def main():
     args = parser.parse_args()
     __process(args)
     if 'func' in args:
-        args.func(args)
+        return args.func(args)
 
 
 if __name__ == '__main__':
-    main()
+    from sys import exit
+    exit(main())
