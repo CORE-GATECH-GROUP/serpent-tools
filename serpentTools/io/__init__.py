@@ -1,5 +1,17 @@
 """
-Add an io module for writing (and maybe reading) from other data types
+.. versionadded:: 0.6.2
+
+Module for converting/creating ``serpentTools`` objects to/from other sources
+
+High-level functions implemented here, such as :func:`toMatlab`, help the
+:ref:`cli` in quickly converting files without launching a Python interpreter.
+For example,
+
+.. code::
+
+    $ python -m serpentTools -v to-matlab my/depletion_dep.m
+    INFO  : serpentTools: Wrote contents of my/depletion_dep.m to my/depletion_dep.mat
+
 """
 
 from serpentTools.io.base import *  # noqa
@@ -47,6 +59,21 @@ def toMatlab(obj, fileP, reconvert=True, append=True,
         --------
         * :func:`scipy.io.savemat`
         * :class:`serpentTools.io.base.MatlabConverter`
+
+        Example
+        -------
+
+        >>> import serpentTools
+        >>> from serpentTools.io import toMatlab
+        >>> det = serpentTools.read('my_det0.m')
+        # Write all detectors and grids from file
+        # with their original names
+        >>> toMatlab(det, 'output.mat',
+                     reconvert=True)
+        # Write a single detector to the same file
+        # but under shorter names
+        >>> toMatlab(det['demo'], 'output.mat',
+                     reconvert=False, append=True)
         """
         converter = MatlabConverter(obj, fileP)
         return converter.convert(
