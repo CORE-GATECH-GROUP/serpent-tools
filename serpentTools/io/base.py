@@ -11,21 +11,6 @@ __all__ = [
 ]
 
 
-converterRegistry = {}
-
-def registerConverter(key):
-    """Decorator for registering a converter for a file type"""
-    def inner(convClass):
-        """register this under key"""
-        if key in converterRegistry:
-            raise ValueError(
-                "File type {} supported with {}. Please differentiate"
-                .format(key, converterRegister[key].__name__))
-        converterRegistry[key] = convClass
-        return convClass
-    return inner
-
-
 @add_metaclass(ABCMeta)
 class BaseConverter(object):
     """
@@ -59,7 +44,6 @@ class BaseConverter(object):
         raise NotImplementedError
 
 
-@registerConverter('mat')
 class MatlabConverter(BaseConverter):
     """
     Class for assisting in writing container data to MATLAB
