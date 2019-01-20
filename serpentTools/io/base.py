@@ -79,7 +79,7 @@ class MatlabConverter(BaseConverter):
 
     def checkContainerReq(self, container):
         """Ensure that data from the container can be collected."""
-        if not hasattr(container, '_gather_mat'):
+        if not hasattr(container, '_gather_matlab'):
             raise NotImplementedError(
                 "Gathering method not implemented for {}."
                 .format(container.__class__.__name__))
@@ -124,6 +124,6 @@ class MatlabConverter(BaseConverter):
         :func:`scipy.io.savemat`
         """
         from scipy.io import savemat
-        data = self.container._gather(reconvert)
+        data = self.container._gather_matlab(reconvert)
         return savemat(self.output, data, append, format, longNames,
                        compress, oned)
