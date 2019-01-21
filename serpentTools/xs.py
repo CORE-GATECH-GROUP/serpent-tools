@@ -7,7 +7,7 @@ from collections import Iterable
 from itertools import product
 from warnings import warn
 from six import iteritems
-from numpy import empty, nan, array
+from numpy import empty, nan, array, ndarray
 
 __all__ = [
     'BranchCollector',
@@ -162,17 +162,36 @@ class BranchedUniv(object):
     def states(self):
         return self.collector.states
 
+    @states.setter
+    def states(self, value):
+        self.collector.states = value
+
     @property
     def axis(self):
+        """Tuple describing vector of this universe's data"""
         return self.collector.axis[1:]
+
+    @axis.setter
+    def axis(self, value):
+        if not isinstance(value, tuple):
+            value = tuple(value)
+        self.collector.axis = ("Universe", ) + value
 
     @property
     def burnups(self):
         return self.collector.burnups
 
+    @burnups.setter
+    def burnups(self, value):
+        self.collector.burnups = value
+
     @property
     def perturbations(self):
         return self.collector.perturbations
+
+    @perturbations.setter
+    def perturbations(self, value):
+        self.collector.perturbations = value
 
 
 class BranchCollector(object):
@@ -189,11 +208,6 @@ class BranchCollector(object):
 
     Attributes
     ----------
-    axis: tuple
-        Description of each dimension of arrays in ``xsTable``.
-        Will be structured as
-        ``('Universe', <perturbed parameters>, 'Burnup', 'Data')``,
-        where ``'Data'`` is the actual cross section data.
     burnups: :class:`numpy.ndarray`
         Ordered vector of burnups as they appear in the
         second to last dimension of arrays in :attr:`xsTables`
@@ -229,8 +243,8 @@ class BranchCollector(object):
     """
 
     __slots__ = (
-        'filePath', '_branches', 'xsTable', 'universes', 'axis',
-        '_perturbations', 'univIndex', 'burnups', '_states', '_shapes',
+        'filePath', '_branches', 'xsTable', 'universes', '_axis',
+        '_perturbations', 'univIndex', '_burnups', '_states', '_shapes',
     )
 
     def __init__(self, reader):
@@ -242,13 +256,19 @@ class BranchCollector(object):
         self.universes = {}
         self._perturbations = None
         self._states = None
+        self._axis = None
+        self._burnups = None
 
     @property
     def perturbations(self):
+        """Iterable indicating the specific perturbation types"""
         return self._perturbations
 
     @perturbations.setter
     def perturbations(self, value):
+        if self._perturbations is None:
+            raise AttributeError(
+                "Collect first to ensure correct data structure.")
         if isinstance(value, str) or not isinstance(value, Iterable):
             value = value,
         if len(value) != len(self._perturbations):
@@ -269,6 +289,9 @@ class BranchCollector(object):
 
     @states.setter
     def states(self, value):
+        if self._states is None:
+            raise AttributeError(
+                "Collect first to ensure correct data structure.")
         if len(value) != len(self._states):
             raise ValueError(
                 "Current number of perturbations is {}, not {}"
@@ -284,6 +307,50 @@ class BranchCollector(object):
                     .format(self._perturbations[index], len(pertVec),
                             len(value[index])))
         self._states = value
+
+    @property
+    def axis(self):
+        """Tuple describing axis of underlying data"""
+        if self._axis is None:
+            raise AttributeError("Axis not set. Collect first.")
+        return self._axis
+
+    @axis.setter
+    def axis(self, value):
+        if self._axis is None:
+            raise AttributeError(
+                "Collect first to ensure correct data structure.")
+
+        # coerce into tuple to enforce some immutability
+        if not isinstance(value, tuple):
+            value = tuple(value)
+
+        if len(value) != len(self._axis):
+            raise ValueError(
+                "Current axis has {} dimensions, not {}"
+                .format(len(self._axis), len(value)))
+
+        self._axis = value
+
+    @property
+    def burnups(self):
+        """Vector of burnups from coefficient file"""
+        if self._burnups is None:
+            raise AttributeError("Burnups not set. Collect first.")
+        return self._burnups
+
+    @burnups.setter
+    def burnups(self, value):
+        if self._burnups is None:
+            raise AttributeError(
+                "Collect first to ensure correct data structure.")
+        if not isinstance(value, ndarray):
+            value = array(value)
+        if value.size != self._burnups.size:
+            raise ValueError(
+                "Current burnup vector has {} items, not {}"
+                .format(self._burnups.size, value.size))
+        self._burnups = value
 
     def collect(self, perturbations, xsType):
         """
@@ -313,7 +380,7 @@ class BranchCollector(object):
         # Create empty arrays for each xs type
         # Will send off views of this to each universe container
         numUniv = len(self.univIndex)
-        numBurnup = len(self.burnups)
+        numBurnup = len(self._burnups)
         for key, size in iteritems(xsSizes):
             shape = self._shapes + [numUniv, numBurnup, size]
             self.xsTable[key] = empty(shape)
@@ -326,7 +393,7 @@ class BranchCollector(object):
                    "unaccounted for:\n{}".format("\n".join(items)))
             warn(msg, RuntimeWarning)
 
-        self.burnups = array(self.burnups)
+        self._burnups = array(self._burnups)
         self._populateUniverses()
         del self._branches, self._shapes
 
@@ -342,11 +409,11 @@ class BranchCollector(object):
     def _getUnivsBurnups(self, branchKey):
         branch = self._branches[branchKey]
         univs = set()
-        burnups = set()
+        _burnups = set()
         for unID, bu, ix in branch.universes:
             univs.add(unID)
-            burnups.add(bu)
-        self.burnups = tuple(sorted(burnups))
+            _burnups.add(bu)
+        self._burnups = tuple(sorted(_burnups))
         self.univIndex = tuple(sorted(univs))
         return branch.universes[unID, bu, ix]
 
@@ -378,7 +445,7 @@ class BranchCollector(object):
                 for submat in self.xsTable.values():
                     submat[stateIndex].fill(nan)
                 continue
-            univIterator = map(enumerate, (self.univIndex, self.burnups))
+            univIterator = map(enumerate, (self.univIndex, self._burnups))
             for (uIndex, univID), (bIndex, burnup) in product(*univIterator):
                 universe = branch.getUniv(univID, burnup)
                 thisSlice = stateIndex + (uIndex, bIndex)
@@ -388,7 +455,7 @@ class BranchCollector(object):
         return missing
 
     def _populateUniverses(self):
-        self.axis = ("Universe", ) + self.perturbations + ("Burnup", "Group")
+        self._axis = ("Universe", ) + self.perturbations + ("Burnup", "Group")
         pertLocs = range(len(self.perturbations))
         newAxis = (
             pertLocs.stop, *pertLocs, pertLocs.stop + 1, pertLocs.stop + 2)
@@ -396,10 +463,19 @@ class BranchCollector(object):
         for key in origKeys:
             self.xsTable[key] = self.xsTable[key].transpose(*newAxis)
 
-        univAxis = self.axis[1:]
+        univAxis = self._axis[1:]
         # Create all the univIndex
         for univIndex, univID in enumerate(self.univIndex):
             self.universes[univID] = BranchedUniv(univID, self, univAxis)
         for xsKey, xsMat in iteritems(self.xsTable):
             for univIndex, univID in enumerate(self.univIndex):
                 self.universes[univID][xsKey] = xsMat[univIndex]
+
+
+# shortcut some docstrings
+for prop in ('burnups', 'perturbations', 'states'):
+    coldoc = getattr(BranchCollector, prop).__doc__
+    getattr(BranchedUniv, prop).__doc__ = coldoc
+    getattr(BranchedDataTable, prop).__doc__ = coldoc
+
+del prop, coldoc
