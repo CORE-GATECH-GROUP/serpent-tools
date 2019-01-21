@@ -110,7 +110,6 @@ class DetectorReader(BaseReader):
             similar &= myDetector.compare(otherDetector, lower, upper, sigma)
         return similar
 
-
     def _gather_matlab(self, reconvert):
         """Collect data from all detectors for exporting to matlab"""
         data = {}

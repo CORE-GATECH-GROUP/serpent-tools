@@ -8,6 +8,7 @@ from serpentTools.utils.docstrings import *  # noqa
 from serpentTools.utils.compare import *  # noqa
 from serpentTools.utils.plot import *  # noqa
 
+
 def checkScipy(version=None):
     """Return ``True`` if the given version of :term:`scipy` is installed"""
     try:

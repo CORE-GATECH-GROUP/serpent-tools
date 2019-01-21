@@ -137,8 +137,8 @@ def _toMatlab(args):
         return 3
     reader.read()
     converter.convert(True, append=args.append,
-         format=args.format, longNames=args.longNames,
-         compress=not args.large, oned=args.oned)
+                      format=args.format, longNames=args.longNames,
+                      compress=not args.large, oned=args.oned)
     herald("Wrote contents from {} to {}".format(inFile, outFile))
     return 0
 
@@ -146,7 +146,8 @@ def _toMatlab(args):
 def _seedInterface(args):
     """Interface to launch the uniquely-seeded file generation"""
     from serpentTools.seed import seedFiles
-    return seedFiles(args.file, args.N, seed=args.seed, outputDir=args.output_dir,
+    return seedFiles(args.file, args.N, seed=args.seed,
+                     outputDir=args.output_dir,
                      link=args.link, length=args.length)
 
 

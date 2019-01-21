@@ -10,7 +10,8 @@ For example,
 .. code::
 
     $ python -m serpentTools -v to-matlab my/depletion_dep.m
-    INFO  : serpentTools: Wrote contents of my/depletion_dep.m to my/depletion_dep.mat
+    INFO  : serpentTools: Wrote contents of my/depletion_dep.m to
+    my/depletion_dep.mat
 
 """
 
@@ -75,7 +76,6 @@ def toMatlab(obj, fileP, reconvert=True, append=True,
         >>> toMatlab(det['demo'], 'output.mat',
                      reconvert=False, append=True)
         """
-        converter = MatlabConverter(obj, fileP)
+        converter = MatlabConverter(obj, fileP)  # noqa imported from *
         return converter.convert(
             reconvert, append, format, longNames, compress, oned)
-
