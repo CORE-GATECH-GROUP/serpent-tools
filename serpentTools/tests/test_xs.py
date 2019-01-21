@@ -20,24 +20,24 @@ class BranchCollectorTester(TestCase):
         self.collector.collect(('BOR', 'TFU'), 'inf')
 
     def test_setPert(self):
-        """Test the ability to change perts attribute"""
-        lenCur = len(self.collector.perts)
+        """Test the ability to change perturbations attribute"""
+        lenCur = len(self.collector.perturbations)
         goodVals = [True, ] * lenCur
-        self.collector.perts = goodVals
+        self.collector.perturbations = goodVals
         badVals0 = [True, ] * (lenCur - 1)
         badVals1 = [True, ] * (lenCur + 1)
         with self.assertRaises(ValueError):
-            self.collector.perts = badVals0
+            self.collector.perturbations = badVals0
         with self.assertRaises(ValueError):
-            self.collector.perts = badVals1
+            self.collector.perturbations = badVals1
 
     def test_setPertStates(self):
-        """Test the ability to change pertStates attribute"""
-        asNpArray = array(self.collector.pertStates)
-        self.collector.pertStates = asNpArray
+        """Test the ability to change states attribute"""
+        asNpArray = array(self.collector.states)
+        self.collector.states = asNpArray
         badShapes = [ones(dim + 1) for dim in asNpArray.shape]
         with self.assertRaises(ValueError):
-            self.collector.pertStates = badShapes
+            self.collector.states = badShapes
 
 
 if __name__ == '__main__':

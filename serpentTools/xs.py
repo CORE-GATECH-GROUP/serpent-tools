@@ -29,10 +29,6 @@ class BranchedDataTable(object):
     universe: :class:`BranchedUniv`
         Parent universe.
     """
-    # Basically just a wrapper over a numpy array for now.
-    # Could be used in the future to house interpolation/extrapolation
-    # routines.
-    # This would require numeric data on the pertStates.
     __slots__ = (
         'name', 'data', 'universe',
     )
@@ -53,15 +49,15 @@ class BranchedDataTable(object):
         return self.data.size
 
     @property
-    def pertStates(self):
+    def states(self):
         """
         Tuple of tuples describing perturbation states
 
         See Also
         --------
-        :attr:`BranchCollector.pertStates`
+        :attr:`BranchCollector.states`
         """
-        return self.universe.pertStates
+        return self.universe.states
 
     @property
     def axis(self):
@@ -80,15 +76,15 @@ class BranchedDataTable(object):
         return self.universe.burnups
 
     @property
-    def perts(self):
+    def perturbations(self):
         """
         Names of specific perturbations
 
         See Also
         --------
-        :attr:`BranchCollector.perts`
+        :attr:`BranchCollector.perturbations`
         """
-        return self.universe.perts
+        return self.universe.perturbations
 
 
 class BranchedUniv(object):
@@ -152,7 +148,7 @@ class BranchedUniv(object):
     def __setitem__(self, key, data):
         shape = data.shape
         assert len(shape) == self._ndims
-        for pertIndex, pertState in enumerate(self.pertStates):
+        for pertIndex, pertState in enumerate(self.states):
             assert len(pertState) == shape[pertIndex], (
                 "{} {}".format(shape[pertIndex], pertState))
         self.xsTables[key] = BranchedDataTable(key, data, self)
@@ -163,8 +159,8 @@ class BranchedUniv(object):
             yield name, obj
 
     @property
-    def pertStates(self):
-        return self.collector.pertStates
+    def states(self):
+        return self.collector.states
 
     @property
     def axis(self):
@@ -175,8 +171,8 @@ class BranchedUniv(object):
         return self.collector.burnups
 
     @property
-    def perts(self):
-        return self.collector.perts
+    def perturbations(self):
+        return self.collector.perturbations
 
 
 class BranchCollector(object):
@@ -201,21 +197,21 @@ class BranchCollector(object):
     burnups: :class:`numpy.ndarray`
         Ordered vector of burnups as they appear in the
         second to last dimension of arrays in :attr:`xsTables`
-    perts: tuple
+    perturbations: tuple
         Perturbed states given to :meth:`collect` method
-    pertStates: tuple
+    states: tuple
         tuple of tuples where each entry is a tuple containing the
         order of perturbation values for a specific branch. These
-        are ordered as they appear in ``self.perts``. For example::
+        are ordered as they appear in ``self.perturbations``. For example::
 
-            >>> c.perts
+            >>> c.perturbations
             ('BOR', 'TFU')
-            >>> c.pertStates
+            >>> c.states
             (('B1000', 'B750', 'nom'),
              ('FT1200', 'FT600', 'nom'))
 
-        reveals that the first entry in :attr:`pertStates` corresponds to
-        perturbations of the first quantity in :attr:`perts`.
+        reveals that the first entry in :attr:`states` corresponds to
+        perturbations of the first quantity in :attr:`perturbations`.
     filePath: str
         Location of the read file
     univIndex: tuple
@@ -233,68 +229,69 @@ class BranchCollector(object):
     """
 
     __slots__ = (
-        'filePath', '_branches', 'xsTable', 'universes', 'axis', '_perts',
-        'univIndex', 'burnups', '_pertStates', '_shapes',
+        'filePath', '_branches', 'xsTable', 'universes', 'axis',
+        '_perturbations', 'univIndex', 'burnups', '_states', '_shapes',
     )
-    # TODO Make pertStates and perts private w/ checked setters
 
     def __init__(self, reader):
-        warn("This is an experimental feature, subject to change.", UserWarning)
+        warn("This is an experimental feature, subject to change.",
+             UserWarning)
         self.filePath = reader.filePath
         self._branches = reader.branches
         self.xsTable = {}
         self.universes = {}
-        self._perts = None
-        self._pertStates = None
+        self._perturbations = None
+        self._states = None
 
     @property
-    def perts(self):
-        return self._perts
+    def perturbations(self):
+        return self._perturbations
 
-    @perts.setter
-    def perts(self, value):
+    @perturbations.setter
+    def perturbations(self, value):
         if isinstance(value, str) or not isinstance(value, Iterable):
             value = value,
-        if len(value) != len(self._perts):
+        if len(value) != len(self._perturbations):
             raise ValueError(
                 "Current number of perturbations is {}, not {}"
-                .format(len(self._perts), len(value)))
-        self._perts = value
+                .format(len(self._perturbations), len(value)))
+        self._perturbations = value
 
     @property
-    def pertStates(self):
+    def states(self):
         """
         Iterable describing the names or values of each perturbation
-        branch. Length is equal to that of :attr:`perts`, and
-        the ``i``-th index of ``pertStates`` indicates the values
-        perturbation ``perts[i]`` experiences.
+        branch. Length is equal to that of :attr:`perturbations`, and
+        the ``i``-th index of ``states`` indicates the values
+        perturbation ``perturbations[i]`` experiences.
         """
-        return self._pertStates
+        return self._states
 
-    @pertStates.setter
-    def pertStates(self, value):
-        if len(value) != len(self._pertStates):
+    @states.setter
+    def states(self, value):
+        if len(value) != len(self._states):
             raise ValueError(
                 "Current number of perturbations is {}, not {}"
-                .format(len(self._pertStates), len(value)))
+                .format(len(self._states), len(value)))
 
         # check to make sure all perturbation vectors in the
         # requested value are of the same length
-        for index, pertVec in enumerate(self._pertStates):
+        for index, pertVec in enumerate(self._states):
             if len(value[index]) != len(pertVec):
                 raise ValueError(
                     "Current number of perturbations for state {} is {}, "
                     "not {}"
-                    .format(self._perts[index], len(pertVec), len(value[index])))
-        self._pertStates = value
+                    .format(self._perturbations[index], len(pertVec),
+                            len(value[index])))
+        self._states = value
 
-    def collect(self, perts, xsType):
+    def collect(self, perturbations, xsType):
         """
         Parse the contents of the file and collect cross sections
 
         Parameters
         ----------
-        perts: tuple
+        perturbations: tuple
             Tuple where each entry is a state that is perturbed across
             the analysis, e.g. ``("Tfuel", "RhoCool", "CR")``. These
             must appear in the same order as they are ordered in the
@@ -303,10 +300,11 @@ class BranchCollector(object):
             What cross section type to extract from the file. Currently
             only supports a single type, but more to come later
         """
-        if isinstance(perts, str) or not isinstance(perts, Iterable):
-            self._perts = perts,
+        if (isinstance(perturbations, str)
+           or not isinstance(perturbations, Iterable)):
+            self._perturbations = perturbations,
         else:
-            self._perts = tuple(perts)
+            self._perturbations = tuple(perturbations)
         xsLookFor = "{}Exp".format(xsType)
         sampleBranchKey = self._getBranchStates()
         sampleUniv = self._getUnivsBurnups(sampleBranchKey)
@@ -333,12 +331,12 @@ class BranchCollector(object):
         del self._branches, self._shapes
 
     def _getBranchStates(self):
-        branchSets = tuple([set() for _tpl in self.perts])
+        branchSets = tuple([set() for _tpl in self.perturbations])
         for branchKey in self._branches:
             for stateIndex, state in enumerate(branchKey):
                 branchSets[stateIndex].add(state)
-        self._pertStates = tuple([tuple(sorted(s)) for s in branchSets])
-        self._shapes = [len(s) for s in self._pertStates]
+        self._states = tuple([tuple(sorted(s)) for s in branchSets])
+        self._shapes = [len(s) for s in self._states]
         return branchKey
 
     def _getUnivsBurnups(self, branchKey):
@@ -365,9 +363,9 @@ class BranchCollector(object):
     def _populateXsTable(self, xsLookFor):
         missing = {}
         # Create a map of enumerated tuples
-        branchMap = map(enumerate, self._pertStates)
+        branchMap = map(enumerate, self._states)
         branchIndexer = empty(
-            (len(self._pertStates), 2), order='F', dtype=object)
+            (len(self._states), 2), order='F', dtype=object)
 
         xsTables = self.xsTable
         for branchMapItem in product(*branchMap):
@@ -390,8 +388,8 @@ class BranchCollector(object):
         return missing
 
     def _populateUniverses(self):
-        self.axis = ("Universe", ) + self.perts + ("Burnup", "Group")
-        pertLocs = range(len(self.perts))
+        self.axis = ("Universe", ) + self.perturbations + ("Burnup", "Group")
+        pertLocs = range(len(self.perturbations))
         newAxis = (
             pertLocs.stop, *pertLocs, pertLocs.stop + 1, pertLocs.stop + 2)
         origKeys = self.xsTable.keys()
