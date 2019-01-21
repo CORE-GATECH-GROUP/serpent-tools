@@ -4,6 +4,8 @@
 .. |detectorReader| replace:: :class:`~serpentTools.parsers.detector.DetectorReader`
 .. |depletionReader| replace:: :class:`~serpentTools.parsers.depletion.DepletionReader`
 .. |depmtxReader| replace:: :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
+.. |toMatlab-short| replace:: :func:`~serpentTools.io.toMatlab`
+.. |toMatlab-full| replace:: :func:`serpentTools.io.toMatlab`
 
 .. _changelog:
 
@@ -11,6 +13,26 @@
 Changelog
 =========
 
+Next
+====
+
+* CLI interface for converting some output files to matlab files - 
+  :ref:`cli-to-matlab`
+* Add :mod:`serpentTools.io` module for converting objects to
+  other data types. Currently a general function for converting
+  |toMatlab-short|
+* |detectorReader| and |detector| objects can be writen to 
+  MATLAB files using |toMatlab-full|
+
+Pending Deprecations
+--------------------
+
+* :meth:`~serpentTools.parsers.depletion.DepletionReader.saveAsMatlab` 
+  in favor of |toMatlab-full| with::
+
+      >>> from serpentTools.io import toMatlab
+      >>> toMatlab(depR)
+ 
 .. _v0.6.1:
 
 :release-tag:`0.6.1`

@@ -15,7 +15,7 @@ from numpy import array
 from serpentTools.messages import info
 from serpentTools.settings import rc
 from serpentTools.objects.base import BaseObject
-from serpentTools.utils import hasScipy
+from serpentTools.utils import checkScipy
 
 
 @add_metaclass(ABCMeta)
@@ -138,7 +138,7 @@ class SparseReaderMixin(object):
     """
 
     def __init__(self, sparse):
-        HAS_SCIPY = hasScipy()
+        HAS_SCIPY = checkScipy()
         if sparse is None:
             self.__sparse = HAS_SCIPY
         elif sparse is True and not HAS_SCIPY:
