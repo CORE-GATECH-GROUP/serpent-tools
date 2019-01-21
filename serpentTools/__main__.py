@@ -8,11 +8,15 @@ Called with::
 """
 import re
 import argparse
+from os.path import splitext
 
 import six
 
 import serpentTools
 from serpentTools import settings
+from serpentTools.messages import info, debug, error
+from serpentTools.parsers import inferReader
+from serpentTools.io import MatlabConverter
 
 _VERB_MAP = {'v': {1: 'info', 2: 'debug'},
              'q': {1: 'error', 2: 'critical'}}
@@ -69,14 +73,82 @@ def __buildParser():
                                help='show settings that match this pattern')
     listSettingsP.set_defaults(func=_listDefaults)
 
+    # convert input file to matlab
+    matlabParser = subParsers.add_parser(
+        'to-matlab', help="convert output file to .mat file")
+    matlabParser.add_argument('file', type=str,
+                              help="output file to read and convert")
+    matlabParser.add_argument(
+        '-o', '--output', type=str, default=None,
+        help='Name of output file to write. '
+             'If not given, replace extension with .mat')
+    matlabParser.add_argument(
+        '-a', '--append', default=False, action='store_true',
+        help="Append to existing file if found. Otherwise overwrite. "
+             "Default: False")
+    matlabParser.add_argument(
+        '--format', type=str, choices={'5', '4'}, default='5',
+        help="Format of file to write. 4 for MATLAB 4, 5 for MATLAB 5+. "
+             "Default: 5")
+    matlabParser.add_argument(
+        '-l', '--longNames', default=False, action='store_true',
+        help="Allow variable names up to 63 characters. "
+        "Otherwise, enforce 31 character names. Default: False")
+    matlabParser.add_argument(
+        '--large', help="Don't compress arrays when writing.",
+        action='store_true', default=False)
+    matlabParser.add_argument(
+        '--oned', type=str, choices={'row', 'col'}, default='row',
+        help="Write 1D arrays are row or column vectors")
+    matlabParser.set_defaults(func=_toMatlab)
+
     return mainParser
+
+
+def _toMatlab(args):
+    """
+    Write contents of a file to matlab.
+
+    Return codes:
+        0: all good
+        1: need scipy
+        3: conversion for file type not supported yet
+    """
+    inFile = args.file
+    outFile = args.output
+    if not outFile:
+        base = splitext(inFile)[0]
+        outFile = base + '.mat'
+        herald = info
+    else:
+        herald = debug
+
+    # inferReader returns the class, but we need an instance
+    reader = inferReader(inFile)(inFile)
+    try:
+        converter = MatlabConverter(reader, outFile)
+    except ImportError:
+        error("scipy >= 1.0 required to convert to matlab")
+        return 1
+    except NotImplementedError:
+        error("Conversion not supported for {} reader at this time. "
+              .format(reader.__class__.__name__))
+        error("Please alert the developers of your need.")
+        return 3
+    reader.read()
+    converter.convert(True, append=args.append,
+                      format=args.format, longNames=args.longNames,
+                      compress=not args.large, oned=args.oned)
+    herald("Wrote contents from {} to {}".format(inFile, outFile))
+    return 0
 
 
 def _seedInterface(args):
     """Interface to launch the uniquely-seeded file generation"""
     from serpentTools.seed import seedFiles
-    seedFiles(args.file, args.N, seed=args.seed, outputDir=args.output_dir,
-              link=args.link, length=args.length)
+    return seedFiles(args.file, args.N, seed=args.seed,
+                     outputDir=args.output_dir,
+                     link=args.link, length=args.length)
 
 
 def _listDefaults(args):
@@ -112,8 +184,9 @@ def main():
     args = parser.parse_args()
     __process(args)
     if 'func' in args:
-        args.func(args)
+        return args.func(args)
 
 
 if __name__ == '__main__':
-    main()
+    from sys import exit
+    exit(main())

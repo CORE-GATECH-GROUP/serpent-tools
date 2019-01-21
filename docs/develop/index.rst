@@ -19,6 +19,7 @@ without any loss of comprehension.
     plotting.rst
     utils.rst
     plot-routines.rst
+    converter.rst
     engines.rst
     documentation.rst
     checklist.rst

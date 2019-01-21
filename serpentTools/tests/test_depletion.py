@@ -13,7 +13,7 @@ from serpentTools.parsers.depletion import (
     DepletionReader, getMaterialNameAndVariable, getMatlabVarName,
     prepToMatlab, deconvert,
 )
-from serpentTools.utils import hasScipy
+from serpentTools.utils import checkScipy
 from serpentTools.tests.utils import LoggerMixin
 
 
@@ -280,7 +280,7 @@ class DepMatlabExportHelper(TestCase):
             1 if self.SAVE_METADATA else 0,
         )
 
-    @skipIf(not hasScipy(), "scipy not installed")
+    @skipIf(not checkScipy(), "scipy not installed")
     def test_saveMatlab(self):
         """
         Verify that the reader can write data to a .mat file

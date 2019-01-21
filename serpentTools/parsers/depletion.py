@@ -1,5 +1,6 @@
 """Parser responsible for reading the ``*dep.m`` files"""
 import re
+from warnings import warn
 
 from matplotlib import pyplot
 from six import iteritems
@@ -24,6 +25,7 @@ from serpentTools.utils import (
     DEF_COMP_UPPER,
     DEF_COMP_SIGMA,
 )
+from serpentTools.io import MatlabConverter
 
 METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 
@@ -354,18 +356,11 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             lower, upper, 'burnup')
         return similar
 
-    def saveAsMatlab(self, fileP, reconvert=True, metadata=True,
-                     **savematKwargs):
+    def saveAsMatlab(self, fileP, reconvert=True, metadata=None,
+                     append=True, format='5', longNames=True,
+                     compress=True, oned='row'):
         """
         Write a binary MATLAB file from the contents of this reader
-
-
-        .. note::
-
-            Vectors will be stored as either column or row
-            matrices, e.g. ``1xN`` or ``Nx1``. This can be
-            controlled by passing ``oned_as`` to be either
-            ``'row'`` or ``'column'``
 
         Parameters
         ----------
@@ -379,9 +374,21 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         metadata: bool or str or list of strings
             If this evaluates to true, then write all metadata to the
             file as well.
-        savematKwargs:
-            Additional keyword arguments to pass to
-            :func:`scipy.io.savemat`
+        append: bool
+            If true and a file exists under ``output``, append to that file.
+            Otherwise the file will be overwritten
+        format: {'5', '4'}
+            Format of file to write. ``'5'`` for MATLAB 5 to 7.2, ``'4'`` for
+            MATLAB 4
+        longNames: bool
+            If true, allow variable names to reach 63 characters,
+            which works with MATLAB 7.6+. Otherwise, maximum length is
+            31 characters
+        compress: bool
+            If true, compress matrices on write
+        oned: {'row', 'col'}:
+            Write one-dimensional arrays as row vectors if
+            ``oned=='row'`` (default), or column vectors
 
         Raises
         ------
@@ -392,8 +399,28 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         --------
         :func:`scipy.io.savemat`
         """
-        from scipy.io import savemat
+        if metadata is not None:
+            # need this path to perserve selecting not to write
+            # metadata
+            from scipy.io import savemat
+            data = self._gather_matlab(reconvert, metadata)
+            return savemat(fileP, data, append, format, longNames,
+                           compress, oned)
+        converter = MatlabConverter(self, fileP)
+        return converter.convert(reconvert, append, format, longNames,
+                                 compress, oned)
 
+    def _gather_matlab(self, reconvert, metadata=None):
+        """
+        Return a dictionary with all data
+
+        Should only be used by developers for converting to new
+        output file types
+        """
+
+        if metadata is not None:
+            warn("version 0.7.0+ will not use metadata argument and write "
+                 "all by default.", FutureWarning)
         # set these here to reduce number of if/elses
 
         if reconvert:
@@ -401,7 +428,8 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         else:
             converter = prepToMatlab
 
-        if metadata:
+        # remove for v0.7.0
+        if metadata and self.metadata:
             data = {k.upper() if reconvert else k: v
                     for k, v in iteritems(self.metadata)}
         else:
@@ -411,7 +439,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             for varName, varData in iteritems(material.data):
                 data[converter(matName, varName)] = varData
 
-        savemat(fileP, data, **savematKwargs)
+        return data
 
 
 def getMaterialNameAndVariable(mlabName):

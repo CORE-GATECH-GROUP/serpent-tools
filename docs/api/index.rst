@@ -28,3 +28,4 @@ API
    exceptions.rst
    seed.rst
    xs.rst
+   io.rst

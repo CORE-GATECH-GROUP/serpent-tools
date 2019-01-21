@@ -110,6 +110,15 @@ class DetectorReader(BaseReader):
             similar &= myDetector.compare(otherDetector, lower, upper, sigma)
         return similar
 
+    def _gather_matlab(self, reconvert):
+        """Collect data from all detectors for exporting to matlab"""
+        data = {}
+
+        for detector in self.detectors.values():
+            data.update(detector._gather_matlab(reconvert))
+
+        return data
+
 
 def cleanDetChunk(chunk):
     """
