@@ -38,6 +38,13 @@ class BranchedDataTable(object):
         self.name = name
         self.data = data
 
+    def __getitem__(self, indexer):
+        """Slice into underlying data"""
+        return self.data[indexer]
+
+    def __setitem__(self, indexer, value):
+        self.data[indexer] = value
+
     @property
     def shape(self):
         """Tuple reflecting shape of underlying data"""
