@@ -67,7 +67,7 @@ scattering matrix is represented as a four-element vector. The four
 
 """
 
-from io import StringIO
+from six import StringIO
 
 
 class Writer(object):
