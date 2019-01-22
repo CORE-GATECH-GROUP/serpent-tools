@@ -230,12 +230,12 @@ class BranchCollector(object):
         Location of the read file
     univIndex: tuple
         Ordered tuple of universe as they appear in the first dimension
-        of all arrays in :attr:`xsTable`
+        of all arrays in :attr:`xsTables`
     universes: dict
         Dictionary of universe-specific cross sections. Each entry
         is a :clas:`BranchedUniv` object that stores cross sections
         for a single universe.
-    xsTable: dict
+    xsTables: dict
         Dictionary of ``{k: x}`` pairs where ``k`` corresponds to
         all cross sections processed and ``x`` are large multidimensional
         cross sections. The structure is described with :attr:`axis`
@@ -243,7 +243,7 @@ class BranchCollector(object):
     """
 
     __slots__ = (
-        'filePath', '_branches', 'xsTable', 'universes', '_axis',
+        'filePath', '_branches', 'xsTables', 'universes', '_axis',
         '_perturbations', 'univIndex', '_burnups', '_states', '_shapes',
     )
 
@@ -252,7 +252,7 @@ class BranchCollector(object):
              UserWarning)
         self.filePath = reader.filePath
         self._branches = reader.branches
-        self.xsTable = {}
+        self.xsTables = {}
         self.universes = {}
         self._perturbations = None
         self._states = None
@@ -383,7 +383,7 @@ class BranchCollector(object):
         numBurnup = len(self._burnups)
         for key, size in iteritems(xsSizes):
             shape = self._shapes + [numUniv, numBurnup, size]
-            self.xsTable[key] = empty(shape)
+            self.xsTables[key] = empty(shape)
 
         missing = self._populateXsTable(xsLookFor)
         if missing:
@@ -434,7 +434,7 @@ class BranchCollector(object):
         branchIndexer = empty(
             (len(self._states), 2), order='F', dtype=object)
 
-        xsTables = self.xsTable
+        xsTables = self.xsTables
         for branchMapItem in product(*branchMap):
             branchIndexer[:, :] = branchMapItem
             stateIndex = tuple(branchIndexer[:, 0].astype(int).tolist())
@@ -442,7 +442,7 @@ class BranchCollector(object):
             branch = self._branches.get(branchKey)
             if branch is None:
                 missing[branchKey] = stateIndex
-                for submat in self.xsTable.values():
+                for submat in self.xsTables.values():
                     submat[stateIndex].fill(nan)
                 continue
             univIterator = map(enumerate, (self.univIndex, self._burnups))
@@ -460,15 +460,15 @@ class BranchCollector(object):
         newAxis = (
             (pertLocs.stop,) + tuple(pertLocs)
             + (pertLocs.stop + 1, pertLocs.stop + 2))
-        origKeys = self.xsTable.keys()
+        origKeys = self.xsTables.keys()
         for key in origKeys:
-            self.xsTable[key] = self.xsTable[key].transpose(*newAxis)
+            self.xsTables[key] = self.xsTables[key].transpose(*newAxis)
 
         univAxis = self._axis[1:]
         # Create all the univIndex
         for univIndex, univID in enumerate(self.univIndex):
             self.universes[univID] = BranchedUniv(univID, self, univAxis)
-        for xsKey, xsMat in iteritems(self.xsTable):
+        for xsKey, xsMat in iteritems(self.xsTables):
             for univIndex, univID in enumerate(self.univIndex):
                 self.universes[univID][xsKey] = xsMat[univIndex]
 
