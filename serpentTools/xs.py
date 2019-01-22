@@ -18,6 +18,14 @@ class BranchedDataTable(object):
     """
     Class for storing multi-dimensional tables for cross sections
 
+    .. versionadded:: 0.6.2
+
+    .. warning::
+
+        This is experimental, and the structure of
+        the underlying data may change. This will
+        be stable in version 0.7.0
+
     Parameters
     ----------
     name: str
@@ -58,7 +66,10 @@ class BranchedDataTable(object):
     @property
     def states(self):
         """
-        Tuple of tuples describing perturbation states
+        Iterable describing the names or values of each perturbation
+        branch. Length is equal to that of :attr:`perturbations`, and
+        the ``i``-th index of ``states`` indicates the values
+        perturbation ``perturbations[i]`` experiences.
 
         See Also
         --------
@@ -69,23 +80,33 @@ class BranchedDataTable(object):
     @property
     def axis(self):
         """
-        Tuple mapping dimensions of :attr:`data` corresponds to perturbations
+        Tuple describing axis of underlying data
 
         See Also
         --------
-        :class:`BranchCollector.axis`
+        :attr:`BranchCollector.axis`
         """
         return self.universe.axis
 
     @property
     def burnups(self):
-        """Vector of burnups"""
+        """
+        Vector of burnups from coefficient file
+
+        See Also
+        --------
+        :attr:`BranchCollector.burnups`
+        """
         return self.universe.burnups
+
+    @burnups.setter
+    def burnups(self, value):
+        self.universe.burnups = value
 
     @property
     def perturbations(self):
         """
-        Names of specific perturbations
+        Iterable indicating the specific perturbation types
 
         See Also
         --------
@@ -97,6 +118,15 @@ class BranchedDataTable(object):
 class BranchedUniv(object):
     """
     Class for storing cross sections for a single universe across branches
+
+    .. versionadded:: 0.6.2
+
+    .. warning::
+
+        This is experimental, and the structure of
+        the underlying data may change. This will
+        be stable in version 0.7.0
+
 
     Parameters
     ----------
@@ -150,6 +180,7 @@ class BranchedUniv(object):
         self.xsTables = {}
 
     def __getitem__(self, key):
+        """Access the xsTables dictionary"""
         return self.xsTables[key]
 
     def __setitem__(self, key, data):
@@ -167,6 +198,16 @@ class BranchedUniv(object):
 
     @property
     def states(self):
+        """
+        Iterable describing the names or values of each perturbation
+        branch. Length is equal to that of :attr:`perturbations`, and
+        the ``i``-th index of ``states`` indicates the values
+        perturbation ``perturbations[i]`` experiences.
+
+        See Also
+        --------
+        :attr:`BranchCollector.states`
+        """
         return self.collector.states
 
     @states.setter
@@ -175,7 +216,34 @@ class BranchedUniv(object):
 
     @property
     def axis(self):
-        """Tuple describing vector of this universe's data"""
+        """
+        Tuple describing axis of underlying data
+
+        .. note::
+
+            When setting, the universe index of the
+            axis should not be changed. The changes
+            are passed on to :attr:`BranchCollector.axis`
+            with an indicator for universe placed in the
+            correct spot
+
+        Examples
+        --------
+        >>> col.axis
+        ('Universe', 'BOR', 'TFU', 'Burnup', 'Group')
+        >>> u0 = col.universes[0]
+        >>> u0.axis == col.axis[1:]
+        True
+        >>> u0.axis = ['boron conc', 'fuel temp', 'burnup', 'group']
+        >>> u0.axis
+        ('boron conc', 'fuel temp', 'burnup', 'group')
+        >>> col.axis
+        ('Universe', 'boron conc', 'fuel temp', 'burnup', 'group')
+
+        See Also
+        --------
+        :class:`BranchCollector.axis`
+        """
         return self.collector.axis[1:]
 
     @axis.setter
@@ -186,6 +254,12 @@ class BranchedUniv(object):
 
     @property
     def burnups(self):
+        """
+        Vector of burnups from coefficient file
+
+        See Also
+        --------
+        :attr:`BranchCollector.burnups`"""
         return self.collector.burnups
 
     @burnups.setter
@@ -194,6 +268,13 @@ class BranchedUniv(object):
 
     @property
     def perturbations(self):
+        """
+        Iterable indicating the specific perturbation types
+
+        See Also
+        --------
+        :attr:`BranchCollector.perturbations`
+        """
         return self.collector.perturbations
 
     @perturbations.setter
@@ -205,34 +286,21 @@ class BranchCollector(object):
     """
     Main class that collects and arranges branched data
 
+    .. versionadded:: 0.6.2
+
+    .. warning::
+
+        This is experimental, and the structure of
+        the underlying data may change. This will
+        be stable in version 0.7.0
+
     Parameters
     ----------
-    source: str or :class:`serpentTools.parsers.branching.BranchingReader`
-        If string, read the file at this location as a branching
-        coefficient file to create a
-        :class:`~serpentTools.parsers.branching.BranchingReader`.
-        Otherwise, read data from the passed reader
+    reader: :class:`serpentTools.parsers.branching.BranchingReader`
+        Read data from the passed reader
 
     Attributes
     ----------
-    burnups: :class:`numpy.ndarray`
-        Ordered vector of burnups as they appear in the
-        second to last dimension of arrays in :attr:`xsTables`
-    perturbations: tuple
-        Perturbed states given to :meth:`collect` method
-    states: tuple
-        tuple of tuples where each entry is a tuple containing the
-        order of perturbation values for a specific branch. These
-        are ordered as they appear in ``self.perturbations``. For example::
-
-            >>> c.perturbations
-            ('BOR', 'TFU')
-            >>> c.states
-            (('B1000', 'B750', 'nom'),
-             ('FT1200', 'FT600', 'nom'))
-
-        reveals that the first entry in :attr:`states` corresponds to
-        perturbations of the first quantity in :attr:`perturbations`.
     filePath: str
         Location of the read file
     univIndex: tuple
@@ -240,7 +308,7 @@ class BranchCollector(object):
         of all arrays in :attr:`xsTables`
     universes: dict
         Dictionary of universe-specific cross sections. Each entry
-        is a :clas:`BranchedUniv` object that stores cross sections
+        is a :class:`BranchedUniv` object that stores cross sections
         for a single universe.
     xsTables: dict
         Dictionary of ``{k: x}`` pairs where ``k`` corresponds to
@@ -268,7 +336,24 @@ class BranchCollector(object):
 
     @property
     def perturbations(self):
-        """Iterable indicating the specific perturbation types"""
+        """
+        Iterable indicating the specific perturbation types
+
+        Can be set to any iterable, so long as the number of
+        perturbations is preserved. Ordering is important,
+        as changing this does not change the structure
+        of any group constants stored
+
+        Example
+        -------
+        >>> print(col.perturbations)
+        ('BOR', 'TFU')
+        >>> col.perturbations = ['B', 'T']  # allowed
+        >>> col.perturbations = [
+        >>>    'boron conc', 'fuel temp', 'ctrl pos',  # not allowed
+        >>> ]
+        ValueError("Current number of perturbations is 2, not 3")
+        """
         return self._perturbations
 
     @perturbations.setter
@@ -287,10 +372,43 @@ class BranchCollector(object):
     @property
     def states(self):
         """
-        Iterable describing the names or values of each perturbation
-        branch. Length is equal to that of :attr:`perturbations`, and
+        Iterable describing each perturbation branch.
+
+        Length is equal to that of :attr:`perturbations`, and
         the ``i``-th index of ``states`` indicates the values
         perturbation ``perturbations[i]`` experiences.
+
+        Can be set to any iterable such that the total number
+        of perturbations is preserved
+
+        Examples
+        --------
+        >>> col.states
+        (('B1000', 'B750', 'nom'), ('FT1200', 'FT600', 'nom'))
+        # set as numpy array
+        >>> states = numpy.array([
+            [1000., 750., 0.],
+            [1200., 600., 900.]
+        ])
+        >>> col.states = states
+        >>> col.states
+        array([[1000.,  750.,    0],
+               [1200.,  600.,  900]])
+        # set as individual numpy vectors
+        >>> col.states = (states[0], states[1])
+        >>> col.states
+        (array([1000., 750., 0.,]), array([1200., 600., 900.,]))
+        # pass incorrect shape
+        >>> col.states = (
+        >>>    (1000, 750, 0), (1200, 600, 900), (0, 1)
+        >>> )
+        ValueError("Current number of perturbations is 2, not 3")
+        # pass incorrect states for one perturbations
+        >>> cols.states = (
+        >>>     (1000, 750, 500, 0), (1200, 600, 900)
+        >>> )
+        ValueError("Current number of perturbations for state BOR "
+                   "is 3, not 4")
         """
         return self._states
 
@@ -317,7 +435,41 @@ class BranchCollector(object):
 
     @property
     def axis(self):
-        """Tuple describing axis of underlying data"""
+        """
+        Tuple describing axis of underlying data
+
+        Each index contains a description of the changes in
+        group constant data along that axis.
+        Can be set to any iterable, but is converted to a
+        tuple to prevent in-place changes, such as appending
+        to a list or removing one item.
+        Passing an ordered object, :class:`list`,
+        :class:`tuple`, or :class:`numpy.array` is preferred,
+        as the conversion to :class:`tuple` can sort values
+        in un-ordered objects like :class:`set` or :class:`dict`
+        strangely.
+
+        Examples
+        --------
+        >>> col.axis
+        ("Universe", "BOR", "TFU", "Burnup", "Group")
+        >>> infTot = col.xsTables['infTot']
+        >>> infTot.shape
+        (5, 3, 3, 3, 2)
+        # five universes, three BOR perturbations
+        # three TFU perturbations, three burnups,
+        # two energy groups
+        >>> col.axis = ['u', 'b', 't', 'bu', 'g']
+        >>> col.axis
+        ('u', 'b', 't', 'bu', 'g')
+        # pass an unordered set
+        >>> col.axis = {'u', 'b', 't', 'bu', 'g'}
+        >>> col.axis
+        ('bu', 'u', 't', 'g', 'b')
+        # incorrectly set axis
+        >>> col.axis = [1, 2, 3, 4]
+        ValueError("Current axis has 5 dimensions, not 4")
+        """
         if self._axis is None:
             raise AttributeError("Axis not set. Collect first.")
         return self._axis
@@ -341,7 +493,28 @@ class BranchCollector(object):
 
     @property
     def burnups(self):
-        """Vector of burnups from coefficient file"""
+        """
+        Vector of burnups from coefficient file
+
+        Can be set to any iterable that has same number
+        of entries as existing burnup. Automatically
+        converts to :class:`numpy.array`
+
+        Examples
+        --------
+
+        >>> col.burnups
+        array([0., 1., 10.])
+        >>> col.burnups = array([0., 5.6, 56.])
+        >>> col.burnups
+        array([0., 5.6, 56.])
+        >>> col.burnups = [0, 1, 10]
+        # converted to array of integers
+        >>> col.burnups
+        array([0, 1, 10])
+        >>> col.burnups = [0, 1, 2, 3]  # not allowed
+        ValueError("Current burnup vector has 3 items, not 3")
+        """
         if self._burnups is None:
             raise AttributeError("Burnups not set. Collect first.")
         return self._burnups
@@ -478,12 +651,3 @@ class BranchCollector(object):
         for xsKey, xsMat in iteritems(self.xsTables):
             for univIndex, univID in enumerate(self.univIndex):
                 self.universes[univID][xsKey] = xsMat[univIndex]
-
-
-# shortcut some docstrings
-for prop in ('burnups', 'perturbations', 'states'):
-    coldoc = getattr(BranchCollector, prop).__doc__
-    getattr(BranchedUniv, prop).__doc__ = coldoc
-    getattr(BranchedDataTable, prop).__doc__ = coldoc
-
-del prop, coldoc
