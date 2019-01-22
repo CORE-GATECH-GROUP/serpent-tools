@@ -7,6 +7,7 @@ from collections import Iterable
 from itertools import product
 from warnings import warn
 from six import iteritems
+from six.moves import range
 from numpy import empty, nan, array, ndarray
 
 __all__ = [
@@ -635,11 +636,11 @@ class BranchCollector(object):
         return missing
 
     def _populateUniverses(self):
-        self._axis = ("Universe", ) + self.perturbations + ("Burnup", "Group")
-        pertLocs = range(len(self.perturbations))
+        self._axis = ("Universe", ) + self._perturbations + ("Burnup", "Group")
+        nPerts = len(self._perturbations)
         newAxis = (
-            (pertLocs.stop,) + tuple(pertLocs)
-            + (pertLocs.stop + 1, pertLocs.stop + 2))
+            (nPerts,) + tuple(range(nPerts))
+            + (nPerts + 1, nPerts + 2))
         origKeys = self.xsTables.keys()
         for key in origKeys:
             self.xsTables[key] = self.xsTables[key].transpose(*newAxis)
