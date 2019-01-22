@@ -458,7 +458,7 @@ class BranchCollector(object):
         self._axis = ("Universe", ) + self.perturbations + ("Burnup", "Group")
         pertLocs = range(len(self.perturbations))
         newAxis = (
-            pertLocs.stop, *pertLocs, pertLocs.stop + 1, pertLocs.stop + 2)
+            (pertLocs.stop,) + tuple(pertLocs) + (pertLocs.stop + 1, pertLocs.stop + 2))
         origKeys = self.xsTable.keys()
         for key in origKeys:
             self.xsTable[key] = self.xsTable[key].transpose(*newAxis)
