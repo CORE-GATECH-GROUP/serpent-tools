@@ -35,6 +35,12 @@ class CollectedHelper(_BranchTestHelper):
                     20: array([2.08083E-01, 0.00000E+00]),
                 },
             },
+            'b1Diffcoef': {
+                0: {
+                    0: array([1.80449E+00, 1.97809E+00]),
+                    20: array([1.80519E+00, 0.00000E+00]),
+                },
+            },
         },
         ('B750', 'FT1200'): {
             'infTot': {
@@ -45,6 +51,12 @@ class CollectedHelper(_BranchTestHelper):
                 1: {
                     0: array([3.11335E-01, 6.09197E-01]),
                     20: array([3.11729E-01, 8.37580E-01]),
+                },
+            },
+            'b1Diffcoef': {
+                0: {
+                    0: array([1.75127E+00, 8.63097E-01]),
+                    20: array([1.75206E+00, 8.62754E-01]),
                 },
             },
         },
@@ -59,7 +71,7 @@ Burnup: {b}""".strip()
     def collect(self):
         """Return the collector after collecting group constants"""
         collector = BranchCollector(self.reader)
-        collector.collect(("BOR", "TFU"), 'inf')
+        collector.collect(("BOR", "TFU"))
         return collector
 
     def getGroupConstant(self, pertVals, univID, gcKey, burnup, msg):

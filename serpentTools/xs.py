@@ -533,7 +533,7 @@ class BranchCollector(object):
                 .format(self._burnups.size, value.size))
         self._burnups = value
 
-    def collect(self, perturbations, xsType):
+    def collect(self, perturbations):
         """
         Parse the contents of the file and collect cross sections
 
@@ -544,19 +544,15 @@ class BranchCollector(object):
             the analysis, e.g. ``("Tfuel", "RhoCool", "CR")``. These
             must appear in the same order as they are ordered in the
             coefficient file.
-        xsType: {'inf', 'b1'}
-            What cross section type to extract from the file. Currently
-            only supports a single type, but more to come later
         """
         if (isinstance(perturbations, str)
            or not isinstance(perturbations, Iterable)):
             self._perturbations = perturbations,
         else:
             self._perturbations = tuple(perturbations)
-        xsLookFor = "{}Exp".format(xsType)
         sampleBranchKey = self._getBranchStates()
         sampleUniv = self._getUnivsBurnups(sampleBranchKey)
-        xsSizes = self._getXsSizes(sampleUniv, xsLookFor)
+        xsSizes = self._getXsSizes(sampleUniv)
 
         # Create empty arrays for each xs type
         # Will send off views of this to each universe container
@@ -566,7 +562,7 @@ class BranchCollector(object):
             shape = self._shapes + [numUniv, numBurnup, size]
             self.xsTables[key] = empty(shape)
 
-        missing = self._populateXsTable(xsLookFor)
+        missing = self._populateXsTable()
         if missing:
             items = ["{}: {}".format(str(k), str(v))
                      for k, v in iteritems(missing)]
@@ -599,16 +595,15 @@ class BranchCollector(object):
         return branch.universes[unID, bu, ix]
 
     @staticmethod
-    def _getXsSizes(sampleUniv, xsAttrName):
-        assert hasattr(sampleUniv, xsAttrName), xsAttrName
-        # TODO Reshaped scatter matrices?
+    def _getXsSizes(sampleUniv):
         sizes = {}
-        attr = getattr(sampleUniv, xsAttrName)
-        for key, value in iteritems(attr):
-            sizes[key] = value.size
+        for gcAttr in ('infExp', 'b1Exp', 'gc'):
+            attr = getattr(sampleUniv, gcAttr)
+            for key, value in iteritems(attr):
+                sizes[key] = value.size
         return sizes
 
-    def _populateXsTable(self, xsLookFor):
+    def _populateXsTable(self):
         missing = {}
         # Create a map of enumerated tuples
         branchMap = map(enumerate, self._states)
@@ -616,6 +611,7 @@ class BranchCollector(object):
             (len(self._states), 2), order='F', dtype=object)
 
         xsTables = self.xsTables
+        keys = set(xsTables.keys())
         for branchMapItem in product(*branchMap):
             branchIndexer[:, :] = branchMapItem
             stateIndex = tuple(branchIndexer[:, 0].astype(int).tolist())
@@ -630,9 +626,8 @@ class BranchCollector(object):
             for (uIndex, univID), (bIndex, burnup) in product(*univIterator):
                 universe = branch.getUniv(univID, burnup)
                 thisSlice = stateIndex + (uIndex, bIndex)
-                xsDict = getattr(universe, xsLookFor)
-                for xsKey, xsValue in iteritems(xsDict):
-                    xsTables[xsKey][thisSlice] = xsValue
+                for xsKey in keys:
+                    xsTables[xsKey][thisSlice] = universe.get(xsKey)
         return missing
 
     def _populateUniverses(self):
