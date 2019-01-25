@@ -15,107 +15,6 @@ __all__ = [
 ]
 
 
-class BranchedDataTable(object):
-    """
-    Class for storing multi-dimensional tables for cross sections
-
-    .. versionadded:: 0.6.2
-
-    .. warning::
-
-        This is experimental, and the structure of
-        the underlying data may change. This will
-        be stable in version 0.7.0
-
-    Parameters
-    ----------
-    name: str
-        Name of the value that this data table represents, e.g.
-        ``'infTot'``,
-    data: :class:`numpy.ndarray`
-        (Potentially) multi-dimensional data spanning perturbations
-        and burnup
-    universe: :class:`BranchedUniv`
-        Parent universe.
-    """
-    __slots__ = (
-        'name', 'data', 'universe',
-    )
-
-    def __init__(self, name, data, universe):
-        self.universe = universe
-        self.name = name
-        self.data = data
-
-    def __getitem__(self, indexer):
-        """Slice into underlying data"""
-        return self.data[indexer]
-
-    def __setitem__(self, indexer, value):
-        self.data[indexer] = value
-
-    @property
-    def shape(self):
-        """Tuple reflecting shape of underlying data"""
-        return self.data.shape
-
-    @property
-    def size(self):
-        """Integer of number of values in underlying data"""
-        return self.data.size
-
-    @property
-    def states(self):
-        """
-        Iterable describing the names or values of each perturbation
-        branch. Length is equal to that of :attr:`perturbations`, and
-        the ``i``-th index of ``states`` indicates the values
-        perturbation ``perturbations[i]`` experiences.
-
-        See Also
-        --------
-        :attr:`BranchCollector.states`
-        """
-        return self.universe.states
-
-    @property
-    def axis(self):
-        """
-        Tuple describing axis of underlying data
-
-        See Also
-        --------
-        :attr:`BranchCollector.axis`
-        """
-        return self.universe.axis
-
-    @property
-    def burnups(self):
-        """
-        Vector of burnups from coefficient file
-
-        See Also
-        --------
-        :attr:`BranchCollector.burnups`
-        """
-        return self.universe.burnups
-
-    @burnups.setter
-    def burnups(self, value):
-        self.universe.burnups = value
-
-    @property
-    def perturbations(self):
-        """
-        Iterable indicating the specific perturbation types
-
-        See Also
-        --------
-        :attr:`BranchCollector.perturbations`
-        """
-        return self.universe.perturbations
-
-
 class BranchedUniv(object):
     """
     Class for storing cross sections for a single universe across branches
@@ -154,8 +53,8 @@ class BranchedUniv(object):
 
     """
 
-    # Acts largely as a dictionary storing :class:`BranchedDataTable`
-    # objects under their cross section names from SERPENT
+    # Acts largely as a dictionary storing group constants
+    # under their cross section names from SERPENT
     # Subclass of dictionary?
     __slots__ = (
         'filePath', 'univID', 'collector',
@@ -190,7 +89,7 @@ class BranchedUniv(object):
         for pertIndex, pertState in enumerate(self.states):
             assert len(pertState) == shape[pertIndex], (
                 "{} {}".format(shape[pertIndex], pertState))
-        self.xsTables[key] = BranchedDataTable(key, data, self)
+        self.xsTables[key] = data
 
     def items(self):
         """Iterate over names of cross sections and associated objects"""

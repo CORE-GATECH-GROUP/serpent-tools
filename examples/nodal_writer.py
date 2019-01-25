@@ -147,7 +147,7 @@ class Writer(object):
 
         for xsName, xsTable in universe.xsTables.items():
             name = self.xsRemap.get(xsName, xsName)
-            xsData = xsTable.data.transpose(transpAx)
+            xsData = xsTable.transpose(transpAx)
 
             self._writeUnivXs(stream, xsData, name)
         return stream
