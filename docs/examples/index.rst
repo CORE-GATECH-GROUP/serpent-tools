@@ -17,3 +17,4 @@ Examples
    ResultsReader.rst
    MicroXSReader.rst
    DepletionMatrix.rst
+   BranchToNodalDiffusion.rst
