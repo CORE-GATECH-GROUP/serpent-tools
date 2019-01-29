@@ -16,6 +16,7 @@ __all__ = [
     'setAx_xlims',
     'setAx_ylims',
     'normalizerFactory',
+    'placeLegend',
 ]
 
 LEGEND_KWARGS = {
