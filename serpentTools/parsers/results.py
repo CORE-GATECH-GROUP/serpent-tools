@@ -677,4 +677,3 @@ class ResultsReader(XSReader):
             return OrderedDict([[item, '{}{}'.format(item, tail)]
                                 for item in y])
         return y
-
