@@ -3,6 +3,8 @@ from collections import OrderedDict
 from six import iteritems
 
 from numpy import array, vstack
+from cycler import cycler
+from matplotlib import rcParams
 from matplotlib.pyplot import gca
 
 from serpentTools.settings import rc
@@ -519,9 +521,9 @@ class ResultsReader(XSReader):
                     origKeys.remove(key)
 
     @magicPlotDocDecorator
-    def plot(self, x, y=None, sigma=3, ax=None, legend=True, ncol=None,
-             xlabel=True, ylabel=None, logx=False, logy=False,
-             loglog=False):
+    def plot(self, x, y=None, right=None, sigma=3, ax=None, legend=True,
+             ncol=None, xlabel=True, ylabel=None, logx=False, logy=False,
+             loglog=False, rightlabel=None):
         """
         Plot quantities over time
 
@@ -541,7 +543,11 @@ class ResultsReader(XSReader):
             be labeled by the values of that dictionary, e.g.
             ``{'anaKeff': $k_{eff}$}`` would plot the first column of
             ``anaKeff`` with a ``LaTeX``-ready :math:`k_{eff}`
-
+        right: str or iterable of strings
+            Quantites to plot on the same plot, but with a different
+            y axis and common x axis. Same rules apply as for arguments
+            to ``y``. Each label will modified to have a unique identifier
+            indicating the plot uses the right y-axis
         {ax}
         {sigma}
         {legend}
@@ -549,12 +555,20 @@ class ResultsReader(XSReader):
         {xlabel}
         {ylabel}
         {logx}
-        {logy}
+        {logy} If passing values to ``right``, this can be a two item list
+        or tuple, corresponding to log-scaling the left and right axis,
+        respectively.
         {loglog}
+        rlabel: str or None
+            If given and passing values to ``right``, use this to label
+            the y-axis.
 
         Returns
         -------
-        {rax}
+        :class:`matplotlib.axes.Axes` or tuple of axes
+            If right is not given, then only the primary axes object
+            is returned. Otherwise, the primary and the "right"
+            axes object are returned
 
         """
 
@@ -566,10 +580,11 @@ class ResultsReader(XSReader):
             x = 'burnDays'
 
         sigma = max(int(sigma), 0)
-        if isinstance(y, str):
-            y = {y: y}
-        elif not isinstance(y, (dict, OrderedDict)):
-            y = OrderedDict([[item, item] for item in y])
+
+        y = self._expandPlotIterables(y)
+
+        if right is not None:
+            right = self._expandPlotIterables(right, ' [right]')
 
         if xlabel is True:
             xlabel = {
@@ -586,6 +601,54 @@ class ResultsReader(XSReader):
 
         ax = ax or gca()
 
+        self._plot(x, y, ax, sigma)
+
+        if right is None:
+            formatPlot(ax, logx=logx, logy=logy, loglog=loglog,
+                       xlabel=xlabel, ylabel=ylabel, legend=legend,
+                       ncol=ncol)
+            return ax
+
+        # plot some other quantity on the same x axis
+        other = ax.twinx()
+
+        # update color cycle to not repeat
+        colors = rcParams['axes.prop_cycle'].by_key()['color']
+        colors = colors[len(y):] + colors[:len(y)]
+        other.set_prop_cycle(cycler('color', colors))
+
+        self._plot(x, right, other, sigma)
+
+        # formatting
+        if logy is None or isinstance(logy, bool):
+            logy = [logy, ] * 2
+
+        if loglog is None or isinstance(loglog, bool):
+            loglog = [loglog, None]
+
+        if legend:
+            leftHandles, leftLabels = ax.get_legend_handles_labels()
+            rightHandles, rightLabels = other.get_legend_handles_labels()
+
+            placeLegend(ax, legend, ncol,
+                        (leftHandles + rightHandles,
+                         leftLabels + rightLabels))
+
+        if len(right) == 1 and rightlabel is None:
+            for rightlabel in right.values():
+                break  # just need the first one
+            if sigma:
+                rightlabel += r'$ \pm {}\sigma$'.format(sigma)
+
+        formatPlot(ax, logx=logx, logy=logy[0], loglog=loglog[0],
+                   legend=False, xlabel=xlabel, ylabel=ylabel)
+        formatPlot(other, logx=False, loglog=False, logy=logy[1],
+                   legend=False, ylabel=rightlabel.replace(' [right]', ''))
+
+        return ax, other
+
+    def _plot(self, x, y, ax, sigma):
+        """Simple, unformatted plot with dictionary of keys"""
         # get plot data
         xvals = self.resdata[x][:, 0]
         for resKey, label in iteritems(y):
@@ -604,7 +667,12 @@ class ResultsReader(XSReader):
                 ax.errorbar(xvals, ydata[:, 0], label=label,
                             )
 
-        formatPlot(ax, logx=logx, logy=logy, loglog=loglog,
-                   xlabel=xlabel, ylabel=ylabel, legend=legend,
-                   ncol=ncol)
-        return ax
+    @staticmethod
+    def _expandPlotIterables(y, tail=''):
+        if isinstance(y, str):
+            return {y: "{}{}".format(y, tail)}
+        elif not isinstance(y, (dict, OrderedDict)):
+            return OrderedDict([[item, '{}{}'.format(item, tail)]
+                                for item in y])
+        return y
+
