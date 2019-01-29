@@ -555,9 +555,11 @@ class ResultsReader(XSReader):
         {xlabel}
         {ylabel}
         {logx}
-        {logy} If passing values to ``right``, this can be a two item list
-        or tuple, corresponding to log-scaling the left and right axis,
-        respectively.
+        logy: bool or list or tuple
+            Apply a log scale to the y-axis. If passing values to
+            ``right``, this can be a two item list or tuple,
+            corresponding to log-scaling the left and right axis,
+            respectively.
         {loglog}
         rlabel: str or None
             If given and passing values to ``right``, use this to label
