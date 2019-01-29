@@ -187,7 +187,7 @@ def normalizerFactory(data, norm, logScale, xticks, yticks):
 
 
 @magicPlotDocDecorator
-def placeLegend(ax, legend, ncol=1):
+def placeLegend(ax, legend, ncol=1, handles_labels=None):
     """
     Add a legend to the figure outside the plot.
 
@@ -206,15 +206,18 @@ def placeLegend(ax, legend, ncol=1):
     KeyError
         If ``key`` is not in :py:attr:`~serpentTools.plot.LEGEND_KWARGS`
     """
-    handles, labels = ax.get_legend_handles_labels()
+    if handles_labels is None:
+        handles, labels = ax.get_legend_handles_labels()
+    else:
+        handles, labels = handles_labels
     if not (handles and labels):
         return ax
     ncol = max(1, int(ncol)) if ncol else 1
     if not isinstance(legend, str):
-        ax.legend(ncol=ncol)
+        ax.legend(handles, labels, ncol=ncol)
         return ax
     kwargs = LEGEND_KWARGS[legend]
-    ax.legend(borderaxespad=0., ncol=ncol, **kwargs)
+    ax.legend(handles, labels, borderaxespad=0., ncol=ncol, **kwargs)
 
     return ax
 
