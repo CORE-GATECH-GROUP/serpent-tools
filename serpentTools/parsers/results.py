@@ -1,7 +1,9 @@
 """Parser responsible for reading the ``*res.m`` files"""
+from collections import OrderedDict
 from six import iteritems
 
 from numpy import array, vstack
+from matplotlib.pyplot import gca
 
 from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
@@ -22,6 +24,9 @@ from serpentTools.utils import (
     VEC_REGEX,
     SCALAR_REGEX,
     FIRST_WORD_REGEX,
+    formatPlot,
+    placeLegend,
+    magicPlotDocDecorator,
 )
 from serpentTools.messages import (
     warning, debug, SerpentToolsException,
@@ -512,3 +517,94 @@ class ResultsReader(XSReader):
                 if key in origKeys:
                     mdata[key] = converter(mdata[key])
                     origKeys.remove(key)
+
+    @magicPlotDocDecorator
+    def plot(self, x, y=None, sigma=3, ax=None, legend=True, ncol=None,
+             xlabel=True, ylabel=None, logx=False, logy=False,
+             loglog=False):
+        """
+        Plot quantities over time
+
+        Parameters
+        ----------
+        x: str or iterable of strings
+            ``y`` is not given, then plot these quantites against
+            burnup in days. Otherwise, plot this quantity as the x
+            axis with same rules as if called by ``plot('burndays', x)``.
+            Burnup options are ``{'burnup', 'days', 'burnDays', 'burnStep'}``
+        y: str or iterable of strings
+            Quantity or quantities to plot. For all entries, only
+            the first column, with respect to time, will be plotted.
+            If the second column exists, and sigma is > 0, that column
+            will be treated as the relative uncertainty for an
+            errorbar plot. If a dictionary is passed, then plots will
+            be labeled by the values of that dictionary, e.g.
+            ``{'anaKeff': $k_{eff}$}`` would plot the first column of
+            ``anaKeff`` with a ``LaTeX``-ready :math:`k_{eff}`
+
+        {ax}
+        {sigma}
+        {legend}
+        {ncol}
+        {xlabel}
+        {ylabel}
+        {logx}
+        {logy}
+        {loglog}
+
+        Returns
+        -------
+        {rax}
+
+        """
+
+        # cleanup some inputs
+        if y is None:
+            y = x
+            x = "burnDays"
+        if x == 'days':
+            x = 'burnDays'
+
+        sigma = max(int(sigma), 0)
+        if isinstance(y, str):
+            y = {y: y}
+        elif not isinstance(y, (dict, OrderedDict)):
+            y = OrderedDict([[item, item] for item in y])
+
+        if xlabel is True:
+            xlabel = {
+                'burnup': 'Burnup [MWd/kgU]',
+                'burnDays': 'Burnup [d]',
+                'burnStep': 'Burnup step',
+            }[x]
+
+        if len(y) == 1 and ylabel is None:
+            for ylabel in y.values():
+                break  # just need the first one
+            if sigma:
+                ylabel += r'$ \pm {}\sigma$'.format(sigma)
+
+        ax = ax or gca()
+
+        # get plot data
+        xvals = self.resdata[x][:, 0]
+        for resKey, label in iteritems(y):
+            ydata = self.resdata[resKey]
+            if ydata.shape[0] != xvals.size and ydata.size != xvals.size:
+                raise ValueError(
+                    "Quantity for {} has {} time points, not {} like {}"
+                    .format(resKey, ydata.shape[0], xvals.size, x))
+
+            # grab second column for uncertainty
+            if sigma and ydata.shape[1] > 1:
+                ax.errorbar(xvals, ydata[:, 0], label=label,
+                            yerr=ydata[:, 0] * sigma * ydata[:, 1],
+                            )
+            else:
+                ax.errorbar(xvals, ydata[:, 0], label=label,
+                            )
+
+        formatPlot(ax, logx=logx, logy=logy, loglog=loglog,
+                   xlabel=xlabel, ylabel=ylabel, legend=legend,
+                   ncol=ncol)
+        return ax
