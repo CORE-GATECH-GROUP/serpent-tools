@@ -41,6 +41,19 @@ This installs the dependencies of the package, the latest ``serpentTools`` relea
 and upgrades your version of :term:`pip` along the way.
 When a new release is issued, run the command again to install the updated version.
 
+If you wish to install the development branch to get the latest updates as they
+happen, use the following command::
+
+   $ python -m pip install -e git+https://www.github.com/CORE-GATECH-GROUP/serpent-tools.git@develop#egg=serpentTools
+
+.. note::
+
+   Changes to the development branch may not always be back-compatible
+   and may cause non-ideal outcomes. Be sure to check the
+   :ref:`changelog` before/after updating from the develop branch
+
+See also `pip install from git <https://pip.pypa.io/en/stable/reference/pip_install/#git>`_
+
 .. _install-release:
 
 Installing from a Release
@@ -124,7 +137,7 @@ you want via :term:`conda`.
 Should you choose this route, then you need to launch the :term:`Anaconda Prompt`
 and install with::
 
-    $ conda install setuptools numpy matplotlib
+    $ conda install setuptools numpy matplotlib pyyaml
 
 This prompt is what you should use when following the instructions in
 in :ref:`install`.
