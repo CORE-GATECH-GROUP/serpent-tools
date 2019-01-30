@@ -230,19 +230,56 @@ values (e.g. CPU resources).
 Plotting Results Data (|resdata|)
 -----------------------------------
 
-Basic 1-D plotting capabilities are not yet avaialble in the parser.
+The |resReader| has a versatile
+:meth:`~serpentTools.parsers.results.ResultsReader.plot` method,
+used to plot primary time-dependent data from the result file.
+One can plot data from one or more quantities against various
+metrics of time. Control over axis formatting, legend placement,
+and label formatting is easily yielded to the user.
+
+.. code::
+
+   >>> res.plot('absKeff')
+
+.. image:: ResultsReader_files/f1.png
+
+
+.. code::
+
+   >>> res.plot('burnup', ['absKeff', 'colKeff'])
+
+.. image:: ResultsReader_files/f2.png
+
+Pass a dictionary of ``variable: label`` pairs to set plot labels.
+
 
 .. code:: 
 
-    >>> import matplotlib.pyplot as plt
-    >>> xdata = res.resdata['burnDays'][:] # obtain the time in (days)
-    >>> ydata = res.resdata['absKeff'][:,0] # obtain the k-eff (values only)
-    >>> plt.plot(xdata, ydata)
-    >>> plt.xlabel('Time, days')
-    >>> plt.ylabel('k-eff');
+   >>> res.plot(
+   >>>   'burnup', {
+   >>>       'absKeff': '$k_{eff}^{abs}$',
+   >>>       'colKeff': '$k_{eff}^{col}$',},
+   >>>   ylabel=r'Criticality $\pm 3\sigma$',
+   >>>   legend='above', ncol=2,
+   >>>   )
 
-.. image:: ResultsReader_files/ResultsReader_24_1.png
+.. image:: ResultsReader_files/f3.png
 
+Using the ``right`` argument, quantities can be plotted using the 
+left and right y-axis. Similar formatting options are available.
+
+.. code::
+
+   >>> res.plot(
+   >>>   'burnStep',
+   >>>   {'actinideIngTox': 'Actinide Ing. Tox'},
+   >>>   right={'totCpuTime': 'CPU Time [right]'},
+   >>>   sigma=0, rightlabel="CPU Time",
+   >>>   # set the yscale to log only of right axis
+   >>>   logy=[False, True],
+   >>>   )
+
+.. image:: ResultsReader_files/f4.png
 
 Universe Data (|universes|)
 =============================

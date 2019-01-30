@@ -23,6 +23,8 @@ Next
   |toMatlab-short|
 * |detectorReader| and |detector| objects can be writen to 
   MATLAB files using |toMatlab-full|
+* |resultReader| can plot data using
+  :meth:`~serpentTools.parsers.results.ResultsReader.plot`
 
 Pending Deprecations
 --------------------
