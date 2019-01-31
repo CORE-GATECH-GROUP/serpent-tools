@@ -27,4 +27,5 @@ API
    DepletionMatrix.rst
    exceptions.rst
    seed.rst
+   xs.rst
    io.rst

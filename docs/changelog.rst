@@ -6,7 +6,7 @@
 .. |depmtxReader| replace:: :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
 .. |toMatlab-short| replace:: :func:`~serpentTools.io.toMatlab`
 .. |toMatlab-full| replace:: :func:`serpentTools.io.toMatlab`
-
+.. |branchCollector| replace:: :class:`~serpentTools.xs.BranchCollector` 
 .. _changelog:
 
 =========
@@ -25,6 +25,15 @@ Next
   MATLAB files using |toMatlab-full|
 * |resultReader| can plot data using
   :meth:`~serpentTools.parsers.results.ResultsReader.plot`
+* Experimental |branchCollector| for
+  collecting group constants from coefficient files. Collects
+  group constants in in multi-dimensional matrices according
+  to perturbations, universes, and burnup.
+
+.. warning::
+
+   The API for the |branchCollector| may be subject to change
+   through revisions until ``0.7.0``
 
 Pending Deprecations
 --------------------
