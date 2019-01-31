@@ -1,5 +1,4 @@
 from os.path import join
-from os import getenv
 from glob import glob
 try:
     from setuptools import setup
@@ -40,17 +39,8 @@ classifiers = [
     'Programming Language :: Python :: 3.6'
 ]
 
-installRequires = [
-    'six>=1.11.0',
-    'numpy>=1.15.1',
-    'matplotlib>=2.0',
-    'pyyaml==3.13',
-]
-
-if not getenv('TRAVIS', None) == 'true':
-    # hack to install scipy if not on cluster
-    # PR 45/44
-    installRequires.append('scipy')
+with open('./requirements.txt') as req:
+    installRequires = req.read()
 
 pythonRequires = '>=2.7,!=3.0,!=3.1,!=3.2,!=3.3,!=3.4'
 
