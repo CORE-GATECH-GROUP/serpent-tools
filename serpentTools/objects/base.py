@@ -251,13 +251,13 @@ class DetectorBase(NamedObject):
         """
         fixed = fixed if fixed is not None else {}
         keys = set(fixed.keys())
-        slices = []
+        slices = tuple()
         for key in self.indexes:
             if key in keys:
-                slices.append(fixed[key])
+                slices += fixed[key],
                 keys.remove(key)
             else:
-                slices.append(slice(0, len(self.indexes[key])))
+                slices += slice(0, len(self.indexes[key])),
         if any(keys):
             warning(
                 'Could not find arguments in index that match the following'
