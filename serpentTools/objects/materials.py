@@ -358,7 +358,7 @@ class DepletedMaterial(DepletedMaterialBase):
             if isinstance(zai, str):
                 zai = [zai, ]
         yVals = self.getValues(xUnits, yUnits, xVals, names, zai)
-        ax = ax or pyplot.axes()
+        ax = ax or pyplot.gca()
         labels = self._formatLabel(labelFmt, names, zai)
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)

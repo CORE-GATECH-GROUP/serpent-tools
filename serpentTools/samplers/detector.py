@@ -247,7 +247,7 @@ class SampledDetector(SampledContainer, DetectorBase):
                     samplerData.shape))
         xdata, autoX = self._getPlotXData(xdim, samplerData)
         xlabel = xlabel or autoX
-        ax = ax or pyplot.axes()
+        ax = ax or pyplot.gca()
         N = self._index
         allTallies = self.allTallies.copy(order='F')
         for n in range(N):

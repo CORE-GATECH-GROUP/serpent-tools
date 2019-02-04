@@ -6,7 +6,7 @@ from itertools import product
 
 from six import iteritems
 from numpy import transpose, hstack
-from matplotlib.pyplot import axes
+from matplotlib.pyplot import gca
 
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
@@ -309,7 +309,7 @@ class SensitivityReader(BaseReader):
         perts = self._getCleanedPertOpt('perts', pert)
         mats = self._getCleanedPertOpt('materials', mat)
 
-        ax = ax or axes()
+        ax = ax or gca()
 
         sigma = max(int(sigma), 0)
         resMat = self.sensitivities[resp]

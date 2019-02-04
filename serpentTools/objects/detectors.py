@@ -29,7 +29,7 @@ from numpy import unique, array, empty, inf
 from matplotlib.figure import Figure
 from matplotlib.patches import RegularPolygon
 from matplotlib.collections import PatchCollection
-from matplotlib.pyplot import axes
+from matplotlib.pyplot import gca
 
 from serpentTools.messages import warning, debug, SerpentToolsException
 from serpentTools.objects.base import DetectorBase
@@ -321,7 +321,7 @@ class HexagonalDetector(Detector):
             if ax and fig.axes and ax not in fig.axes:
                 raise IndexError("Passed argument for 'figure' and 'ax', "
                                  "but ax is not attached to figure.")
-            ax = ax or (fig.axes[0] if fig.axes else axes())
+            ax = ax or (fig.axes[0] if fig.axes else gca())
         alpha = kwargs.get('alpha', None)
 
         ny = len(self.indexes['ycoord'])
@@ -337,7 +337,7 @@ class HexagonalDetector(Detector):
         values = empty(nItems)
         coords = self.grids['COORD']
 
-        ax = ax or axes()
+        ax = ax or gca()
         pos = 0
         xmax, ymax = [-inf, ] * 2
         xmin, ymin = [inf, ] * 2

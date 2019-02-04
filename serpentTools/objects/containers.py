@@ -358,7 +358,7 @@ class HomogUniv(NamedObject):
 
         """
         qtys = [qtys, ] if isinstance(qtys, str) else qtys
-        ax = ax or pyplot.axes()
+        ax = ax or pyplot.gca()
         onlyXS = True
         sigma = max(0, int(sigma))
         drawstyle = 'steps-post' if steps else None
