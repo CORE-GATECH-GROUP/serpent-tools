@@ -151,6 +151,16 @@ class CartesianDetectorTester(DetectorHelper):
     },
     }
 
+    def test_sharedPlot(self):
+        """Verify that the same axes object is returned on subsequent plots
+        """
+        det = self.detectors[self.DET_NAME]
+        # plot along two reactions with no axes call
+        # ensure that returned objects are equal
+        ax0 = det.plot(fixed={'reaction': 0, 'ymesh': 0})
+        ax1 = det.plot(fixed={'reaction': 1, 'ymesh': 0})
+        self.assertTrue(ax0 is ax1)
+
 
 class HexagonalDetectorTester(DetectorHelper):
     """

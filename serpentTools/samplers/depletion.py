@@ -271,7 +271,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
                                          colIndices))
         else:
             xUncs = zeros_like(xVals)
-        ax = ax or pyplot.axes()
+        ax = ax or pyplot.gca()
         labels = self._formatLabel(labelFmt, names)
         yVals = yVals.copy(order='F')
         yUncs = yUncs.copy(order='F') * sigma
@@ -330,7 +330,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         if not self.allData:
             raise SamplerError("Data from all sampled files has been freed "
                                "and cannot be used in this plot method")
-        ax = ax or pyplot.axes()
+        ax = ax or pyplot.gca()
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))

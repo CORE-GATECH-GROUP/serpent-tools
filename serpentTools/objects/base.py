@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 from six import add_metaclass
 
 from numpy import arange, hstack, log, divide
-from matplotlib.pyplot import axes
+from matplotlib.pyplot import gca
 
 from serpentTools.messages import (
     debug, warning, SerpentToolsException, info,
@@ -424,7 +424,7 @@ class DetectorBase(NamedObject):
         xdata, autoX = self._getPlotXData(xdim, data)
         xlabel = xlabel or autoX
         ylabel = ylabel or "Tally data"
-        ax = ax or axes()
+        ax = ax or gca()
 
         if steps:
             if 'drawstyle' in kwargs:

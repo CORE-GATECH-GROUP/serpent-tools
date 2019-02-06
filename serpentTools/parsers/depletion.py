@@ -97,7 +97,7 @@ class DepPlotMixin(object):
             raise KeyError("Plot method only uses x-axis data from <days> and "
                            "<burnup>, not {}".format(xUnits))
         missing = set()
-        ax = ax or pyplot.axes()
+        ax = ax or pyplot.gca()
         materials = materials or self.materials.keys()
         labelFmt = labelFmt or '{mat} {iso}'
         for mat in materials:

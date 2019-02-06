@@ -245,7 +245,7 @@ class XSData(NamedObject):
             if mt not in self.MT:
                 error("{} not in collected MT numbers, {}".format(mt, self.MT))
 
-        ax = ax or pyplot.axes()
+        ax = ax or pyplot.gca()
 
         x = self.metadata['egrid']
         for mt in mts:

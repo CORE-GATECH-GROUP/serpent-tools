@@ -29,6 +29,8 @@ Next
   collecting group constants from coefficient files. Collects
   group constants in in multi-dimensional matrices according
   to perturbations, universes, and burnup.
+* Plotting routines now use attach to the active plot or generate
+  a new plot figure if ``ax`` argument not given - :issue:`267`
 
 .. warning::
 

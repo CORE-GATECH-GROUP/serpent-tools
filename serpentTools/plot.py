@@ -113,7 +113,7 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     norm = normalizerFactory(data, normalizer, logColor, xticks, yticks)
 
     # make the plot
-    ax = ax or pyplot.axes()
+    ax = ax or pyplot.gca()
     if xticks is None:
         mappable = ax.imshow(data, cmap=cmap, norm=norm)
     else:
@@ -157,7 +157,7 @@ def plot(xdata, plotData, ax=None, labels=None, yerr=None, **kwargs):
         of ``plotData``
 
     """
-    ax = ax or pyplot.axes()
+    ax = ax or pyplot.gca()
 
     if yerr is not None:
         if not yerr.shape == plotData.shape:
