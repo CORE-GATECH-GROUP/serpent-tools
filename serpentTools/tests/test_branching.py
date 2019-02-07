@@ -50,12 +50,13 @@ class BranchTester(_BranchTesterHelper):
                     'CMM_TRANSPXS_Z', 'CMM_DIFFCOEF', 'CMM_DIFFCOEF_X',
                     'CMM_DIFFCOEF_Y', 'CMM_DIFFCOEF_Z'}
         self.assertSetEqual(expected, self.reader.settings['variables'])
+        self.assertFalse(self.reader.hasUncs)
 
     def test_raiseError(self):
         """Verify that the reader raises an error for unexpected EOF"""
         badFile = 'bad_branching.coe'
         with open(self.file) as fObj, open(badFile, 'w') as badObj:
-            for _line in range(5):
+            for _line in range(10):
                 badObj.write(fObj.readline())
         badReader = BranchingReader(badFile)
         with self.assertRaises(EOFError):
@@ -121,6 +122,54 @@ class BranchContainerTester(_BranchTesterHelper):
             containerWithBU.addUniverse(101, -10, 1)
         with self.assertRaises(SerpentToolsException):
             containerWithDays.addUniverse(101, 10, 1)
+
+
+class BranchWithUncsTester(unittest.TestCase):
+    """Tester that just tests a small file with uncertainties"""
+
+    BRANCH_DATA = {
+        'nom': {
+            'infTot': [
+                [4.92499E-01, 1.01767E+00],  # value
+                [0.00074, 0.00072],  # uncertainty
+            ],
+            'infS0': [
+                [0.466391, 0.0155562, 0.00128821, 0.921487],
+                [0.00072, 0.00148, 0.01793, 0.00091],
+            ],
+        },
+        'hot': {
+            'infTot': [
+                [4.92806E-1, 1.0168E00],  # value
+                [0.00063, 0.00104],  # uncertainty
+            ],
+            'infS0': [
+                [4.66639E-1, 1.53978E-02, 1.38727E-03, 9.20270E-01],
+                [0.00062, 0.00214, 0.03073, 0.00112],
+            ],
+        },
+    }
+    BRANCH_UNIVKEY = (0, 0, 0)
+
+    def setUp(self):
+        fp = getFile('demo_uncs.coe')
+        self.reader = BranchingReader(fp)
+        self.reader.read()
+
+    def test_valsWithUncs(self):
+        """Test that the branches and the uncertainties are present"""
+        self.assertTrue(self.reader.hasUncs)
+        for expKey, expSubData in iteritems(self.BRANCH_DATA):
+            self.assertTrue(expKey in self.reader.branches, msg=expKey)
+            actBranch = self.reader.branches[expKey]
+            self.assertTrue(self.BRANCH_UNIVKEY in actBranch.universes,
+                            msg=self.BRANCH_UNIVKEY)
+            univ = actBranch.universes[self.BRANCH_UNIVKEY]
+            for gcKey, gcVals in iteritems(expSubData):
+                actData = univ.get(gcKey, True)
+                for act, exp, what in zip(actData, gcVals, ['val', 'unc']):
+                    assert_allclose(act, exp, err_msg='{} {} {}'.format(
+                        expKey, gcKey, what))
 
 
 if __name__ == '__main__':

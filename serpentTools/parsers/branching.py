@@ -33,6 +33,12 @@ class BranchingReader(XSReader):
         self._whereAmI = {key: None for key in
                           {'runIndx', 'coefIndx', 'buIndx', 'universe'}}
         self._totalBranches = None
+        self._hasUncs = None
+
+    @property
+    def hasUncs(self):
+        """boolean if uncertainties are present in the file"""
+        return self._hasUncs
 
     def _read(self):
         """Read the branching file and store the coefficients."""
@@ -116,10 +122,10 @@ class BranchingReader(XSReader):
                       .format(varName))
                 continue
             if self._checkAddVariable(varName):
-                if self.settings['areUncsPresent']:
+                if self._hasUncs:
                     vals, uncs = splitValsUncs(varValues)
-                    univ.addData(varName, array(vals), uncertaity=False)
-                    univ.addData(varName, array(uncs), unertainty=True)
+                    univ.addData(varName, array(vals), uncertainty=False)
+                    univ.addData(varName, array(uncs), uncertainty=True)
                 else:
                     univ.addData(varName, array(varValues), uncertainty=False)
 
@@ -129,13 +135,19 @@ class BranchingReader(XSReader):
             yield bID, b
 
     def _precheck(self):
-        """Currently, just grabs total number of coeff calcs."""
+        """Total number of branches and check for uncertainties"""
         with open(self.filePath) as fObj:
             try:
                 self._totalBranches = int(fObj.readline().split()[1])
             except Exception as ee:
                 error("COE output at {} likely malformatted or misnamed\n{}"
                       .format(self.filePath, str(ee)))
+            # skip first few lines with integer until first named value
+            for _x in range(4):
+                fObj.readline()
+            lsplt = fObj.readline().split()
+            nvals = int(lsplt[1])
+            self._hasUncs = not nvals == len(lsplt) - 2
 
     def _postcheck(self):
         """Make sure Serpent finished printing output."""
