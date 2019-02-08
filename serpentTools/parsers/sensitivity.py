@@ -19,25 +19,41 @@ class SensitivityReader(BaseReader):
     """
     Class for reading sensitivity files
 
-    The arrays that are stored in ``sensitivities`` and
-    ``energyIntegratedSens`` are stored under converted names.
+    The arrays that are stored in :attr:`sensitivities` and
+    :attr:`energyIntegratedSens` are stored under converted names.
     The original names from SERPENT are of the form
     ``ADJ_PERT_KEFF_SENS`` or ``ADJ_PERT_KEFF_SENS_E_INT``,
     respectively. Since this reader stores the resulting arrays
     in unique locations, the names are converted to a succint form.
     The two arrays listed above would be stored both as ``keff``
-    in ``sensitivities`` and ``energyIntegratedSens``.
+    in :attr:`sensitivities` and :attr:`energyIntegratedSens`.
     All names are converted to ``mixedCaseNames`` to fit the
     style of the project.
 
-    Ordered dictionaries ``materials``, ``zais``, and
-    ``perts`` contain keys of the names of their respective
+    Ordered dictionaries :attr:`materials`, :attr:`zais` and
+    :attr:`perts` contain keys of the names of their respective
     data, and the corresponding index, ``iSENS_ZAI_zzaaai``,
     in the sensitivity arrays. These arrays are zero-indexed,
     so the first item will have an index of zero. The data stored
-    in the ``sensitivities`` and ``energyIntegratedSens`` dictionaries
+    in the :attr:`sensitivities` and :attr:`energyIntegratedSens` dictionaries
     has the exact same structure as if the arrays were loaded into
     ``MATLAB``/``Octave``, but with zero-indexing.
+
+    The matrices in :attr:`sensitivities` are ordered as they
+    would be in MATLAB. The five dimensions correspond to:
+
+        1. :attr:`materials` that were contained perturbed isotopes
+        2. :attr:`zais` that were perturbed
+        3. :attr:`perts` - reactions that were perturbed, e.g.
+           ``'total xs'``
+        4: :attr:`energies` - which energy group contained the
+           perturbation. Will have one fewer dimensions than
+           the number of values in :attr:`energies`, corresponding
+           to the number of energy groups.
+        5: [value, relative uncertainty] pairs
+
+    The matrices in :attr:`energyIntegratedSens` will have the same
+    structure, but with the :attr:`energies` dimension removed.
 
     Parameters
     ----------
