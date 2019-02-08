@@ -81,6 +81,26 @@ class SensitivityReader(BaseReader):
         against energy, and their corresponding arrays
     """
 
+    _RECONVERT_ATTR_MAP = {
+        'nMat': ('sensNumMat', 'SENS_N_MAT'),
+        'nZai': ('sensNumZai', 'SENS_N_ZAI'),
+        'nPert': ('sensNumPert', 'SENS_N_PERT'),
+        'nEne': ('sensNumEne', 'SENS_N_ENE'),
+        'nMu': ('sensNumMu', 'SENS_N_MU'),
+        'latGen': ('sensLatGen', 'SENS_N_LATGEN'),
+        'energies': ('sensEne', 'SENS_E'),
+        'lethargyWidths': ('sensLethWidth', 'SENS_LETHARGY_WIDTHS'),
+    }
+    _RECONVERT_LIST_MAP = {
+        'materials': ('sensMats', 'SENS_MAT_LIST'),
+        'zais': ('sensZais', 'SENS_ZAI_LIST'),
+        'perts': ('sensPerts', 'SENS_PERT_LIST'),
+    }
+    _RECONVERT_SENS_FMT = [
+        ['sens{}', 'sens{}_eneInt'],
+        ['ADJ_PERT_{}_SENS', 'ADJ_PERT_{}_SENS_E_INT'],
+    ]
+
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'sens')
         self.nMat = None
@@ -340,6 +360,22 @@ class SensitivityReader(BaseReader):
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
                         legend=legend, xlabel=xlabel, ylabel=ylabel.strip())
         return ax
+
+    def _gather_matlab(self, reconvert):
+        """Gather data for matlab conversion"""
+        out = {}
+        reconvNameIx = 1 if reconvert else 0
+        # get basic indexing
+        for attr, reconvNameTpl in iteritems(self._RECONVERT_ATTR_MAP):
+            out[reconvNameTpl[reconvNameIx]] = getattr(self, attr)
+        # ordered dictionary -> vectors
+        for attr, reconvNameTpl in iteritems(self._RECONVERT_LIST_MAP):
+            out[reconvNameTpl[reconvNameIx]] = list(getattr(self, attr).keys())
+        sensFmt, eneSensFmt = self._RECONVERT_SENS_FMT[reconvNameIx]
+        for key, sensMat in iteritems(self.sensitivities):
+            out[sensFmt.format(key)] = sensMat
+            out[eneSensFmt.format(key)] = self.energyIntegratedSens[key]
+        return out
 
     def _getCleanedPertOpt(self, key, value):
         """Return a set of all or some of the requested perturbations."""
