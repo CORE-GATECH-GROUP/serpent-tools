@@ -63,6 +63,7 @@ setupArgs = {
     'package_data': {
         'serpentTools.data': ['data/{}'.format(ext) for ext in DATA_EXTS],
     },
+    'include_package_data': True,
     'cmdclass': versioneer.get_cmdclass(),
     'data_files': [
         ('serpentTools', ['serpentTools/variables.yaml', ]),
