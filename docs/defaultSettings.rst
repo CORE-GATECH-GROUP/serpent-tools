@@ -1,16 +1,3 @@
-.. _branching-areUncsPresent:
-
-----------------------------
-``branching.areUncsPresent``
-----------------------------
-
-True if the values in the .coe file contain uncertainties
-::
-
-  Default: False
-  Type: bool
-  
-
 .. _branching-floatVariables:
 
 ----------------------------

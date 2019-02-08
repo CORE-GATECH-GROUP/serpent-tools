@@ -112,7 +112,6 @@ class ConfigLoaderTester(TestCaseWithLogCapture):
     @classmethod
     def setUpClass(cls):
         cls.configSettings = {
-            'branching.areUncsPresent': True,
             'branching.floatVariables': ['Bhi', 'Tlo'],
             'verbosity': 'warning',
             'depletion.materials': ['fuel*'],
@@ -120,8 +119,6 @@ class ConfigLoaderTester(TestCaseWithLogCapture):
         }
         cls.nestedSettings = {
             'branching': {
-                'areUncsPresent':
-                    cls.configSettings['branching.areUncsPresent'],
                 'floatVariables':
                     cls.configSettings['branching.floatVariables']
             },

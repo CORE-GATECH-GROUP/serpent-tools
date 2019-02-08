@@ -28,12 +28,6 @@ SETTING_DOC_FMTR = """.. _{tag}:
 
 SETTING_OPTIONS_FMTR = "Options: [{}]"
 defaultSettings = {
-    'branching.areUncsPresent': {
-        'default': False,
-        'type': bool,
-        'description': "True if the values in the .coe file contain "
-                       "uncertainties"
-    },
     'branching.intVariables': {
         'default': [],
         'description': 'Name of state data variables to convert to integers '

@@ -31,6 +31,8 @@ Next
   to perturbations, universes, and burnup.
 * Plotting routines now use attach to the active plot or generate
   a new plot figure if ``ax`` argument not given - :issue:`267`
+* :class:`~serpentTools.parsers.branching.BranchingReader` can
+  read coefficient files with uncertainties - :issue:`270`
 
 .. warning::
 

@@ -2,7 +2,6 @@ xs.getInfXS: False
 xs.getB1XS: True
 xs.variableGroups: [gc-meta, kinetics, xs]
 branching:
-  areUncsPresent: False
   floatVariables: [Fhi, Blo]
 depletion:
   materials: [fuel*]
