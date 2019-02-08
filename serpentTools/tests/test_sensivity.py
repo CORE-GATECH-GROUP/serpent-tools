@@ -336,6 +336,25 @@ class Sens2MatlabHelper(SensitivityTestHelper):
         gathered = self.reader._gather_matlab(self.RECONVERT)
         self._testGathered(gathered)
 
+    @skipUnless(HAS_SCIPY, "SCIPY needed for this test")
+    def test_toMatlab(self):
+        """Verify the contents of the reader can be written to matlab"""
+        from scipy.io import loadmat
+        fp = "sens2matlab_r{}.mat".format(int(self.RECONVERT))
+        toMatlab(self.reader, fp)
+        gathered = loadmat(fp)
+        # some vectors will be written as 2D row/column vectors
+        # need to reshape them to 1D arrays
+        keys = gathered.keys()
+        for key in keys:
+            if key[:2] == '__':  # special stuff from savemat
+                continue
+            value = gathered[key]
+            if value.size > 1 and 1 in value.shape:
+                gathered[key] = value.flatten()
+
+        remove(fp)
+
 
 class ReconvertedSens2MatlabTester(Sens2MatlabHelper):
     """Class for testing the sens - matlab conversion with original names"""
