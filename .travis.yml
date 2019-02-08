@@ -3,11 +3,19 @@ python:
   - "3.6"
   - "3.5"
   - "2.7"
+env:
+  - ST_INSTALL=setup
+  - ST_INSTALL=sdist
+  - ST_INSTALL=bdist_wheel
+  - ST_INSTALL=bdist_egg
 
-# install
-install:
+before_install:
   - pip install -r requirements.txt -r requirements-test.txt
-  - python setup.py install
+  - rm -rf dist
+# install matrix
+# build some distributions (source and wheel) and install from those
+install:
+  - bash scripts/travis/install.sh
 
 # use xvfb to give the plot functions something to use
 # PR 70
