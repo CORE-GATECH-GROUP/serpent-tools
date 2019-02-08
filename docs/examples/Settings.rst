@@ -35,7 +35,7 @@ with the ``.keys`` method.
  
 
     dict_keys(['depletion.processTotal', 'verbosity', 'xs.getInfXS',
-    'branching.intVariables', 'branching.areUncsPresent', 'serpentVersion',
+    'branching.intVariables', 'serpentVersion',
     'sampler.raiseErrors', 'xs.getB1XS', 'xs.variableGroups', 'xs.variableExtras',
     'depletion.materialVariables', 'depletion.metadataKeys', 'sampler.freeAll',
     'sampler.allExist', 'depletion.materials', 'sampler.skipPrecheck',
@@ -206,7 +206,6 @@ However, the loader can also expand a nested dictionary structure, as
 ::
 
     branching:
-      areUncsPresent: False
       floatVariables: [Fhi, Blo]
     depletion:
       materials: [fuel*]
@@ -226,7 +225,6 @@ However, the loader can also expand a nested dictionary structure, as
     xs.variableGroups: [gc-meta, kinetics,
     xs]
     branching:
-      areUncsPresent: False
       floatVariables: [Fhi, Blo]
     depletion:
       materials: [fuel*]
@@ -240,7 +238,7 @@ However, the loader can also expand a nested dictionary structure, as
     
     >>> myConf = 'myConfig.yaml'
     >>> rc.loadYaml(myConf)
-    >>> rc['branching.areUncsPresent']
+    >>> rc['xs.getInfXS']
 
 .. parsed-literal::
  
