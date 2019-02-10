@@ -19,25 +19,41 @@ class SensitivityReader(BaseReader):
     """
     Class for reading sensitivity files
 
-    The arrays that are stored in ``sensitivities`` and
-    ``energyIntegratedSens`` are stored under converted names.
+    The arrays that are stored in :attr:`sensitivities` and
+    :attr:`energyIntegratedSens` are stored under converted names.
     The original names from SERPENT are of the form
     ``ADJ_PERT_KEFF_SENS`` or ``ADJ_PERT_KEFF_SENS_E_INT``,
     respectively. Since this reader stores the resulting arrays
     in unique locations, the names are converted to a succint form.
     The two arrays listed above would be stored both as ``keff``
-    in ``sensitivities`` and ``energyIntegratedSens``.
+    in :attr:`sensitivities` and :attr:`energyIntegratedSens`.
     All names are converted to ``mixedCaseNames`` to fit the
     style of the project.
 
-    Ordered dictionaries ``materials``, ``zais``, and
-    ``perts`` contain keys of the names of their respective
+    Ordered dictionaries :attr:`materials`, :attr:`zais` and
+    :attr:`perts` contain keys of the names of their respective
     data, and the corresponding index, ``iSENS_ZAI_zzaaai``,
     in the sensitivity arrays. These arrays are zero-indexed,
     so the first item will have an index of zero. The data stored
-    in the ``sensitivities`` and ``energyIntegratedSens`` dictionaries
+    in the :attr:`sensitivities` and :attr:`energyIntegratedSens` dictionaries
     has the exact same structure as if the arrays were loaded into
     ``MATLAB``/``Octave``, but with zero-indexing.
+
+    The matrices in :attr:`sensitivities` are ordered as they
+    would be in MATLAB. The five dimensions correspond to:
+
+        1. :attr:`materials` that were contained perturbed isotopes
+        2. :attr:`zais` that were perturbed
+        3. :attr:`perts` - reactions that were perturbed, e.g.
+           ``'total xs'``
+        4: :attr:`energies` - which energy group contained the
+           perturbation. Will have one fewer dimensions than
+           the number of values in :attr:`energies`, corresponding
+           to the number of energy groups.
+        5: [value, relative uncertainty] pairs
+
+    The matrices in :attr:`energyIntegratedSens` will have the same
+    structure, but with the :attr:`energies` dimension removed.
 
     Parameters
     ----------
@@ -80,6 +96,26 @@ class SensitivityReader(BaseReader):
         Dictionary of names of the sensitivities that have been integrated
         against energy, and their corresponding arrays
     """
+
+    _RECONVERT_ATTR_MAP = {
+        'nMat': ('sensNumMat', 'SENS_N_MAT'),
+        'nZai': ('sensNumZai', 'SENS_N_ZAI'),
+        'nPert': ('sensNumPert', 'SENS_N_PERT'),
+        'nEne': ('sensNumEne', 'SENS_N_ENE'),
+        'nMu': ('sensNumMu', 'SENS_N_MU'),
+        'latGen': ('sensLatGen', 'SENS_N_LATGEN'),
+        'energies': ('sensEne', 'SENS_E'),
+        'lethargyWidths': ('sensLethWidth', 'SENS_LETHARGY_WIDTHS'),
+    }
+    _RECONVERT_LIST_MAP = {
+        'materials': ('sensMats', 'SENS_MAT_LIST'),
+        'zais': ('sensZais', 'SENS_ZAI_LIST'),
+        'perts': ('sensPerts', 'SENS_PERT_LIST'),
+    }
+    _RECONVERT_SENS_FMT = [
+        ['sens{}', 'sens{}_eneInt'],
+        ['ADJ_PERT_{}_SENS', 'ADJ_PERT_{}_SENS_E_INT'],
+    ]
 
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'sens')
@@ -340,6 +376,22 @@ class SensitivityReader(BaseReader):
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
                         legend=legend, xlabel=xlabel, ylabel=ylabel.strip())
         return ax
+
+    def _gather_matlab(self, reconvert):
+        """Gather data for matlab conversion"""
+        out = {}
+        reconvNameIx = 1 if reconvert else 0
+        # get basic indexing
+        for attr, reconvNameTpl in iteritems(self._RECONVERT_ATTR_MAP):
+            out[reconvNameTpl[reconvNameIx]] = getattr(self, attr)
+        # ordered dictionary -> vectors
+        for attr, reconvNameTpl in iteritems(self._RECONVERT_LIST_MAP):
+            out[reconvNameTpl[reconvNameIx]] = list(getattr(self, attr).keys())
+        sensFmt, eneSensFmt = self._RECONVERT_SENS_FMT[reconvNameIx]
+        for key, sensMat in iteritems(self.sensitivities):
+            out[sensFmt.format(key)] = sensMat
+            out[eneSensFmt.format(key)] = self.energyIntegratedSens[key]
+        return out
 
     def _getCleanedPertOpt(self, key, value):
         """Return a set of all or some of the requested perturbations."""

@@ -1,26 +1,32 @@
 """
 Test the sensitivity reader
 """
-from unittest import TestCase
+from os import remove
+from unittest import TestCase, skipUnless
 from collections import OrderedDict
 from itertools import product
 
 from six import iteritems
 from numpy import array, inf
-from numpy.testing import assert_allclose
+from numpy.testing import assert_allclose, assert_array_equal
 
 from serpentTools.data import getFile
 from serpentTools.parsers.sensitivity import SensitivityReader
+from serpentTools.io import toMatlab
+from serpentTools.utils import checkScipy
 from serpentTools.tests import compareDictOfArrays
 from serpentTools.tests.utils import (plotTest, getLegendTexts)
 
 TEST_FILE = getFile('bwr_sens0.m')
 
+HAS_SCIPY = checkScipy()
+
 
 class SensitivityTestHelper(TestCase):
-    def setUp(self):
-        self.reader = SensitivityReader(TEST_FILE)
-        self.reader.read()
+    @classmethod
+    def setUpClass(cls):
+        cls.reader = SensitivityReader(TEST_FILE)
+        cls.reader.read()
 
 
 class SensitivityTester(SensitivityTestHelper):
@@ -280,6 +286,87 @@ class SensitivityPlotTester(SensitivityTestHelper):
         """Verify that an error is raised if a bad response is passed."""
         with self.assertRaises(KeyError):
             self.reader.plot("THIS SHOULD FAIL")
+
+
+class Sens2MatlabHelper(SensitivityTestHelper):
+    """Base class for comparing sensitivity reader to matlab"""
+
+    def setUp(self):
+        convertIx = int(self.RECONVERT)
+        self.attrMap = {
+            key: value[convertIx] for key, value in iteritems(
+                SensitivityReader._RECONVERT_ATTR_MAP)}
+        self.listMap = {
+            key: value[convertIx] for key, value in iteritems(
+                SensitivityReader._RECONVERT_LIST_MAP)}
+        self.sensFmts = SensitivityReader._RECONVERT_SENS_FMT[convertIx]
+
+    def _testGathered(self, gathered):
+        """Test the contents of the gathered data"""
+        # attributes
+        for attr, expKey in iteritems(self.attrMap):
+            self.assertTrue(expKey in gathered, msg=expKey)
+            expVal = getattr(self.reader, attr)
+            actVal = gathered[expKey]
+            assert_array_equal(actVal, expVal, err_msg=expKey)
+
+        # lists -> compare against ordered dictionaries
+        for attr, expKey in iteritems(self.listMap):
+            self.assertTrue(expKey in gathered, msg=expKey)
+            expVal = list(getattr(self.reader, attr).keys())
+            actVal = gathered[expKey]
+            assert_array_equal(actVal, expVal, err_msg=expKey)
+
+        for sensKey, expSens in iteritems(self.reader.sensitivities):
+            expEneSens = self.reader.energyIntegratedSens[sensKey]
+            sensName, eneName = [fmt.format(sensKey) for fmt in self.sensFmts]
+            self.assertTrue(sensName in gathered,
+                            msg="{}//{}".format(sensKey, sensName))
+            self.assertTrue(eneName in gathered,
+                            msg="{}//{}".format(sensKey, eneName))
+            actSens = gathered[sensName]
+            actEneSens = gathered[eneName]
+            assert_array_equal(actSens, expSens,
+                               err_msg="{}//{}".format(sensKey, sensName))
+            assert_array_equal(actEneSens, expEneSens,
+                               err_msg="{}//{}".format(sensKey, eneName))
+
+    def test_gatherMatlab(self):
+        """Test the readers ability to gather for matlab"""
+        gathered = self.reader._gather_matlab(self.RECONVERT)
+        self._testGathered(gathered)
+
+    @skipUnless(HAS_SCIPY, "SCIPY needed for this test")
+    def test_toMatlab(self):
+        """Verify the contents of the reader can be written to matlab"""
+        from scipy.io import loadmat
+        fp = "sens2matlab_r{}.mat".format(int(self.RECONVERT))
+        toMatlab(self.reader, fp)
+        gathered = loadmat(fp)
+        # some vectors will be written as 2D row/column vectors
+        # need to reshape them to 1D arrays
+        keys = gathered.keys()
+        for key in keys:
+            if key[:2] == '__':  # special stuff from savemat
+                continue
+            value = gathered[key]
+            if value.size > 1 and 1 in value.shape:
+                gathered[key] = value.flatten()
+
+        remove(fp)
+
+
+class ReconvertedSens2MatlabTester(Sens2MatlabHelper):
+    """Class for testing the sens - matlab conversion with original names"""
+    RECONVERT = True
+
+
+class UnconvertedSens2MatlabTester(Sens2MatlabHelper):
+    """Class for testing the sens - matlab conversion with unconverted names"""
+    RECONVERT = False
+
+
+del Sens2MatlabHelper
 
 
 if __name__ == '__main__':
