@@ -10,6 +10,8 @@ from six import iteritems
 from six.moves import range
 from numpy import empty, nan, array, ndarray
 
+from serpentTools import BranchingReader
+
 __all__ = [
     'BranchCollector',
 ]
@@ -196,8 +198,10 @@ class BranchCollector(object):
 
     Parameters
     ----------
-    reader: :class:`serpentTools.parsers.branching.BranchingReader`
-        Read data from the passed reader
+    source: str or :class:`~serpentTools.parsers.branching.BranchingReader`
+        Coefficient file to be read, or a
+        :class:`~serpentTools.parsers.branching.BranchingReader`
+        that has read the file of interest
 
     Attributes
     ----------
@@ -222,9 +226,15 @@ class BranchCollector(object):
         '_perturbations', 'univIndex', '_burnups', '_states', '_shapes',
     )
 
-    def __init__(self, reader):
+    def __init__(self, source):
         warn("This is an experimental feature, subject to change.",
              UserWarning)
+        if isinstance(source, BranchingReader):
+            reader = source
+        else:
+            # assume file path or readable
+            reader = BranchingReader(source)
+            reader.read()
         self.filePath = reader.filePath
         self._branches = reader.branches
         self.xsTables = {}
@@ -589,10 +599,6 @@ class BranchCollector(object):
         :class:`BranchCollector` object that has processed the contents
         of the file.
         """
-        from serpentTools import BranchingReader
-        reader = BranchingReader(filePath)
-        reader.read()
-
-        collector = BranchCollector(reader)
+        collector = BranchCollector(filePath)
         collector.collect(perturbations)
         return collector
