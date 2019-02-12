@@ -68,10 +68,12 @@ Group constant: {g}
 Universe: {u}
 Burnup: {b}""".strip()
 
+    ORIG_PERTS = ("BOR", "TFU")
+
     def collect(self):
         """Return the collector after collecting group constants"""
         collector = BranchCollector(self.reader)
-        collector.collect(("BOR", "TFU"))
+        collector.collect(self.ORIG_PERTS)
         return collector
 
     def getGroupConstant(self, pertVals, univID, gcKey, burnup, msg):
@@ -196,6 +198,22 @@ class BranchUnivTester(CollectedHelper):
         # data is stored as
         # <perturbations>, burnup
         return xsTable[pertIndex + (burnupIndex, )]
+
+
+class UnknownPertCollectorTester(BranchCollectorTester):
+    """Helper for creating BranchCollectors without perturbations"""
+
+    def collect(self):
+        collector = BranchCollector(self.reader)
+        collector.collect()
+        return collector
+
+    def setUp(self):
+        BranchCollectorTester.setUp(self)
+        self.assertTrue(
+            len(self.collector.perturbations) == len(self.ORIG_PERTS),
+            msg="Failed to infer correct perturbations"
+        )
 
 
 del CollectedHelper

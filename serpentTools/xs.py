@@ -432,23 +432,43 @@ class BranchCollector(object):
                 .format(self._burnups.size, value.size))
         self._burnups = value
 
-    def collect(self, perturbations):
+    def collect(self, perturbations=None):
         """
         Parse the contents of the file and collect cross sections
 
         Parameters
         ----------
-        perturbations: tuple
+        perturbations: tuple or None
             Tuple where each entry is a state that is perturbed across
             the analysis, e.g. ``("Tfuel", "RhoCool", "CR")``. These
             must appear in the same order as they are ordered in the
-            coefficient file.
+            coefficient file. If ``None``, then the number of
+            perturbations will be determined from the coefficient
+            file. This is used to set :attr:`pertubations` and
+            can be adjusted later
         """
-        if (isinstance(perturbations, str)
-           or not isinstance(perturbations, Iterable)):
-            self._perturbations = perturbations,
+        # get number of perturbations from number of
+        # items in keys of reader branches
+        for key in self._branches:
+            break
+        if isinstance(key, str):
+            nReaderPerts = 1
         else:
-            self._perturbations = tuple(perturbations)
+            nReaderPerts = len(key)
+
+        if perturbations is None:
+            perturbations = tuple(
+                ['p' + str(ii) for ii in range(nReaderPerts)])
+        elif (isinstance(perturbations, str)
+                or not isinstance(perturbations, Iterable)):
+            perturbations = perturbations,
+        else:
+            perturbations = tuple(perturbations)
+
+        assert len(perturbations) == nReaderPerts, "{} vs {}".format(
+            len(perturbations), nReaderPerts)
+
+        self._perturbations = perturbations
         sampleBranchKey = self._getBranchStates()
         sampleUniv = self._getUnivsBurnups(sampleBranchKey)
         xsSizes = self._getXsSizes(sampleUniv)
