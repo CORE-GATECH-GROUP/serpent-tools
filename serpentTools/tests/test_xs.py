@@ -216,6 +216,15 @@ class UnknownPertCollectorTester(BranchCollectorTester):
         )
 
 
+class CollectorFromFileTester(UnknownPertCollectorTester):
+    """Test the collection of the data using the fromFile method"""
+
+    def collect(self):
+        """Overwrite to use the fromFile method"""
+        collector = BranchCollector.fromFile(self.reader.filePath)
+        return collector
+
+
 del CollectedHelper
 
 

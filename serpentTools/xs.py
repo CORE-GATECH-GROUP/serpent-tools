@@ -566,3 +566,33 @@ class BranchCollector(object):
         for xsKey, xsMat in iteritems(self.xsTables):
             for univIndex, univID in enumerate(self.univIndex):
                 self.universes[univID][xsKey] = xsMat[univIndex]
+
+    @classmethod
+    def fromFile(cls, filePath, perturbations=None):
+        """
+        Create a :class:`BranchCollector` from the contents of the file
+
+        Parameters
+        ----------
+        filePath: str
+            Location of coefficient file to be read
+        perturbations: None or iterable
+            Ordering of perturbation types in coefficient file.
+            If ``None``, the number of perturbations will be inferred
+            from file. Otherwise, the number of perturbations must
+            match those in the file. This value can be changed
+            after the fact using :attr:`perturbations`,
+            with insight gained from :attr:`states`
+
+        Returns
+        -------
+        :class:`BranchCollector` object that has processed the contents
+        of the file.
+        """
+        from serpentTools import BranchingReader
+        reader = BranchingReader(filePath)
+        reader.read()
+
+        collector = BranchCollector(reader)
+        collector.collect(perturbations)
+        return collector
