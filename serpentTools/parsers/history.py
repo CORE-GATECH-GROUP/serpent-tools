@@ -141,6 +141,23 @@ class HistoryReader(BaseReader):
             out[converter(key)] = value
         return out
 
+    def __contains__(self, key):
+        """Return ``True`` if key is in :attr:`arrays`, otherwise ``False``"""
+        return key in self.arrays
+
+    def __len__(self):
+        """Return number of entries in :attr:`arrays`."""
+        return len(self.arrays)
+
+    def items(self):
+        """Iterate over ``(key, value)`` pairs from :attr:`arrays`"""
+        for key, value in iteritems(self.arrays):
+            yield key, value
+
+    def __iter__(self):
+        """Iterate over keys in :attr:`arrays`"""
+        return self.arrays.__iter__()
+
     @staticmethod
     def ioConvertName(name):
         """Convert a variable name to ``camelCase`` for exporting."""

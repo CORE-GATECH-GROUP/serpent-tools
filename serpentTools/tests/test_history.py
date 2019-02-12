@@ -283,6 +283,29 @@ class HistoryTester(HistoryHelper):
             actual = self.arrays[key][-numRows:]
             assert_array_equal(expectedArray, actual, err_msg=key)
 
+    def test_specialMethods(self):
+        """Test special methods on the reader"""
+        # test len
+        self.assertEqual(len(self.reader), len(self.reader.arrays))
+        # test contains
+        badKey = 'this_shouldNotBe_present'
+        self.assertFalse(badKey in self.reader)
+        # test iter
+        for nFound, key in enumerate(self.reader, start=1):
+            self.assertTrue(key in self.reader.arrays, msg=key)
+            self.assertTrue(key in self.reader, msg=key)
+        self.assertEqual(nFound, len(self.reader.arrays))
+
+    def test_iterItems(self):
+        """Test the items method for yielding key, value pairs"""
+        for nFound, (key, value) in enumerate(self.reader.items(), start=1):
+            self.assertTrue(key in self.reader.arrays, msg=key)
+            self.assertTrue(key in self.reader, msg=key)
+            assert_array_equal(value, self.reader.arrays[key], err_msg=key)
+            self.assertTrue(value is self.reader[key], msg=key)
+
+        self.assertEqual(nFound, len(self.reader.arrays))
+
 
 class HistoryMatlabBase(HistoryHelper):
     """Base class for performing tests on the history -> matlab conversion"""
@@ -315,7 +338,6 @@ class HistoryMatlabBase(HistoryHelper):
             self.assertEqual(expKey, convFun(origKey), msg=msg)
 
 
-
 class HistMatlabConvertTester(HistoryMatlabBase):
     """Test the ability to retain camelCase names through matlab exporting"""
 
@@ -326,6 +348,7 @@ class HistMatlabConvertTester(HistoryMatlabBase):
         'impKeff': 'hisImpKeff',
         'meanPopSize': 'hisMeanPopSize',
     }
+
 
 class HistMatlabReconvertTester(HistoryMatlabBase):
     """Test the ability to reconvert names through matlab exporting"""

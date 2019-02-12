@@ -39,4 +39,4 @@ From this wiki
         >>> activeTime = timeR[nSkip:]
 
 .. autoclass:: serpentTools.parsers.history.HistoryReader
-
+   :special-members: __len__, __contains__, __iter__
