@@ -10,6 +10,8 @@ from six import iteritems
 from six.moves import range
 from numpy import empty, nan, array, ndarray
 
+from serpentTools import BranchingReader
+
 __all__ = [
     'BranchCollector',
 ]
@@ -196,8 +198,10 @@ class BranchCollector(object):
 
     Parameters
     ----------
-    reader: :class:`serpentTools.parsers.branching.BranchingReader`
-        Read data from the passed reader
+    source: str or :class:`~serpentTools.parsers.branching.BranchingReader`
+        Coefficient file to be read, or a
+        :class:`~serpentTools.parsers.branching.BranchingReader`
+        that has read the file of interest
 
     Attributes
     ----------
@@ -222,9 +226,15 @@ class BranchCollector(object):
         '_perturbations', 'univIndex', '_burnups', '_states', '_shapes',
     )
 
-    def __init__(self, reader):
+    def __init__(self, source):
         warn("This is an experimental feature, subject to change.",
              UserWarning)
+        if isinstance(source, BranchingReader):
+            reader = source
+        else:
+            # assume file path or readable
+            reader = BranchingReader(source)
+            reader.read()
         self.filePath = reader.filePath
         self._branches = reader.branches
         self.xsTables = {}
@@ -432,23 +442,43 @@ class BranchCollector(object):
                 .format(self._burnups.size, value.size))
         self._burnups = value
 
-    def collect(self, perturbations):
+    def collect(self, perturbations=None):
         """
         Parse the contents of the file and collect cross sections
 
         Parameters
         ----------
-        perturbations: tuple
+        perturbations: tuple or None
             Tuple where each entry is a state that is perturbed across
             the analysis, e.g. ``("Tfuel", "RhoCool", "CR")``. These
             must appear in the same order as they are ordered in the
-            coefficient file.
+            coefficient file. If ``None``, then the number of
+            perturbations will be determined from the coefficient
+            file. This is used to set :attr:`pertubations` and
+            can be adjusted later
         """
-        if (isinstance(perturbations, str)
-           or not isinstance(perturbations, Iterable)):
-            self._perturbations = perturbations,
+        # get number of perturbations from number of
+        # items in keys of reader branches
+        for key in self._branches:
+            break
+        if isinstance(key, str):
+            nReaderPerts = 1
         else:
-            self._perturbations = tuple(perturbations)
+            nReaderPerts = len(key)
+
+        if perturbations is None:
+            perturbations = tuple(
+                ['p' + str(ii) for ii in range(nReaderPerts)])
+        elif (isinstance(perturbations, str)
+                or not isinstance(perturbations, Iterable)):
+            perturbations = perturbations,
+        else:
+            perturbations = tuple(perturbations)
+
+        assert len(perturbations) == nReaderPerts, "{} vs {}".format(
+            len(perturbations), nReaderPerts)
+
+        self._perturbations = perturbations
         sampleBranchKey = self._getBranchStates()
         sampleUniv = self._getUnivsBurnups(sampleBranchKey)
         xsSizes = self._getXsSizes(sampleUniv)
@@ -546,3 +576,29 @@ class BranchCollector(object):
         for xsKey, xsMat in iteritems(self.xsTables):
             for univIndex, univID in enumerate(self.univIndex):
                 self.universes[univID][xsKey] = xsMat[univIndex]
+
+    @classmethod
+    def fromFile(cls, filePath, perturbations=None):
+        """
+        Create a :class:`BranchCollector` from the contents of the file
+
+        Parameters
+        ----------
+        filePath: str
+            Location of coefficient file to be read
+        perturbations: None or iterable
+            Ordering of perturbation types in coefficient file.
+            If ``None``, the number of perturbations will be inferred
+            from file. Otherwise, the number of perturbations must
+            match those in the file. This value can be changed
+            after the fact using :attr:`perturbations`,
+            with insight gained from :attr:`states`
+
+        Returns
+        -------
+        :class:`BranchCollector` object that has processed the contents
+        of the file.
+        """
+        collector = BranchCollector(filePath)
+        collector.collect(perturbations)
+        return collector
