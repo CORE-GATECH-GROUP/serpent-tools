@@ -191,7 +191,7 @@ class XSData(NamedObject):
 
     @magicPlotDocDecorator
     def plot(self, mts='all', ax=None, loglog=False, xlabel=None, ylabel=None,
-             logx=True, logy=False, title=None, legend=True, ncol=1,
+             logx=True, logy=False, title=None, legend=None, ncol=1,
              **kwargs):
         """
         Return a matplotlib figure for plotting XS.

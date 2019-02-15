@@ -68,8 +68,9 @@ UNIV_FMT_DOC = """labelFmt: str or None
     +---------+----------------------------+
 """
 
-LEGEND = """legend: bool or str
-    Automatically label the plot. Pass one of the following values
+LEGEND = """legend: bool or str or None
+    Automatically label the plot. No legend will be made if a
+    single item is plotted. Pass one of the following values
     to place the legend outside the plot: {}""".format(
     "above, right")
 

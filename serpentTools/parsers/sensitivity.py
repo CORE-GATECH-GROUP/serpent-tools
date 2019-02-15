@@ -273,7 +273,7 @@ class SensitivityReader(BaseReader):
     def plot(self, resp, zai=None, pert=None, mat=None, sigma=3,
              normalize=True, ax=None, labelFmt=None,
              title=None, logx=True, logy=False, loglog=False, xlabel=None,
-             ylabel=None, legend=True, ncol=1):
+             ylabel=None, legend=None, ncol=1):
         """
         Plot sensitivities due to some or all perturbations.
 
