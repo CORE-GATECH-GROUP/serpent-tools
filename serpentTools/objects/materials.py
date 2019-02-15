@@ -15,6 +15,14 @@ from serpentTools.utils.compare import (
 from serpentTools.objects.base import NamedObject
 
 
+def deprecateTimepointsWarning():
+    """Warning that the use of timepoints in plots is going away"""
+    from serpentTools.messages import _updateFilterAlert
+    msg = ("Passing timepoints will no longer work after 0.7.0. "
+           "Plots will be against all time")
+    _updateFilterAlert(msg, PendingDeprecationWarning)
+
+
 class DepletedMaterialBase(NamedObject):
     docParams = """name: str
         Name of this material
@@ -307,6 +315,10 @@ class DepletedMaterial(DepletedMaterialBase):
         timePoints: list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
+
+            .. deprecated:: 0.7.0
+               Will plot against all time points
+
         names: str or list or None
             If given, plot  values corresponding to these isotope
             names. Otherwise, plot values for all isotopes.
@@ -353,8 +365,13 @@ class DepletedMaterial(DepletedMaterialBase):
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))
-        xVals = timePoints if timePoints is not None else (
-            self.days if xUnits == 'days' else self.burnup)
+
+        if timePoints is not None:
+            deprecateTimepointsWarning()
+            xVals = timePoints
+        else:
+            xVals = self.days if xUnits == 'days' else self.burnup
+
         if names is None and zai is None:
             names = self.names
             zai = self.zai if names is None else None

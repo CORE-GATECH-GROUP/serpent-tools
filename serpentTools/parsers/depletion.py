@@ -51,6 +51,10 @@ class DepPlotMixin(object):
         timePoints: list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
+
+            .. deprecated:: 0.7.0
+               Will plot against all time points
+
         names: str or list or None
             If given, plot  values corresponding to these isotope
             names. Otherwise, plot values for all isotopes.
