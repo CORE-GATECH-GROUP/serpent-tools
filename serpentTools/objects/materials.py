@@ -283,7 +283,7 @@ class DepletedMaterial(DepletedMaterialBase):
         self.data[newName] = numpy.array(scratch)
 
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None,
+    def plot(self, xUnits, yUnits=None, timePoints=None, names=None, zai=None,
              ax=None, legend=True, xlabel=None, ylabel=None, logx=False,
              logy=False, loglog=False, labelFmt=None, ncol=1, title=None,
              **kwargs):
@@ -300,6 +300,8 @@ class DepletedMaterial(DepletedMaterialBase):
         ----------
         xUnits: str
             name of x value to obtain, e.g. ``'days'``, ``'burnup'``
+            If ``xUnits`` is given and ``yUnits`` is ``None``, then
+            the plotted data will be ``xUnits`` against ``'days'``
         yUnits: str
             name of y value to return, e.g. ``'adens'``, ``'burnup'``
         timePoints: list or None
@@ -344,6 +346,10 @@ class DepletedMaterial(DepletedMaterialBase):
         TypeError
             If both ``names`` and ``zai`` are given
         """
+        if yUnits is None:
+            yUnits = xUnits
+            xUnits = 'days'
+
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))

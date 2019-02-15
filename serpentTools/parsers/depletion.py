@@ -33,7 +33,7 @@ METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
 class DepPlotMixin(object):
 
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None,
+    def plot(self, xUnits, yUnits=None, timePoints=None, names=None, zai=None,
              materials=None, ax=None, legend=True, logx=False, logy=False,
              loglog=False, labelFmt=None, xlabel=None, ylabel=None, ncol=1,
              **kwargs):
@@ -43,6 +43,8 @@ class DepPlotMixin(object):
         Parameters
         ----------
         xUnits: str
+            If ``xUnits`` is given and ``yUnits`` is ``None``, then
+            the plotted data will be ``xUnits`` against ``'days'``
             name of x value to obtain, e.g. ``'days'``, ``'burnup'``
         yUnits: str
             name of y value to return, e.g. ``'adens'``, ``'ingTox'``
@@ -90,6 +92,10 @@ class DepPlotMixin(object):
         SerpentToolsException
             If the materials dictionary does not contain any items
         """
+        if yUnits is None:
+            yUnits = xUnits
+            xUnits = 'days'
+
         if not self.materials:
             raise SerpentToolsException("Material dictionary is empty")
 
