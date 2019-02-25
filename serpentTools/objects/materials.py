@@ -15,6 +15,14 @@ from serpentTools.utils.compare import (
 from serpentTools.objects.base import NamedObject
 
 
+def deprecateTimepointsWarning():
+    """Warning that the use of timepoints in plots is going away"""
+    from serpentTools.messages import _updateFilterAlert
+    msg = ("Passing timepoints will no longer work after 0.7.0. "
+           "Plots will be against all time")
+    _updateFilterAlert(msg, PendingDeprecationWarning)
+
+
 class DepletedMaterialBase(NamedObject):
     docParams = """name: str
         Name of this material
@@ -283,7 +291,7 @@ class DepletedMaterial(DepletedMaterialBase):
         self.data[newName] = numpy.array(scratch)
 
     @magicPlotDocDecorator
-    def plot(self, xUnits, yUnits, timePoints=None, names=None, zai=None,
+    def plot(self, xUnits, yUnits=None, timePoints=None, names=None, zai=None,
              ax=None, legend=None, xlabel=None, ylabel=None, logx=False,
              logy=False, loglog=False, labelFmt=None, ncol=1, title=None,
              **kwargs):
@@ -300,11 +308,17 @@ class DepletedMaterial(DepletedMaterialBase):
         ----------
         xUnits: str
             name of x value to obtain, e.g. ``'days'``, ``'burnup'``
+            If ``xUnits`` is given and ``yUnits`` is ``None``, then
+            the plotted data will be ``xUnits`` against ``'days'``
         yUnits: str
             name of y value to return, e.g. ``'adens'``, ``'burnup'``
         timePoints: list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
+
+            .. deprecated:: 0.7.0
+               Will plot against all time points
+
         names: str or list or None
             If given, plot  values corresponding to these isotope
             names. Otherwise, plot values for all isotopes.
@@ -344,11 +358,20 @@ class DepletedMaterial(DepletedMaterialBase):
         TypeError
             If both ``names`` and ``zai`` are given
         """
+        if yUnits is None:
+            yUnits = xUnits
+            xUnits = 'days'
+
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))
-        xVals = timePoints if timePoints is not None else (
-            self.days if xUnits == 'days' else self.burnup)
+
+        if timePoints is not None:
+            deprecateTimepointsWarning()
+            xVals = timePoints
+        else:
+            xVals = self.days if xUnits == 'days' else self.burnup
+
         if names is None and zai is None:
             names = self.names
             zai = self.zai if names is None else None

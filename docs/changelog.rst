@@ -47,6 +47,9 @@ Pending Deprecations
 
       >>> from serpentTools.io import toMatlab
       >>> toMatlab(depR)
+
+* Depletion plot routines will no longer accept ``timePoints`` arguments,
+  instead plotting against all points in time
  
 .. _v0.6.1:
 
