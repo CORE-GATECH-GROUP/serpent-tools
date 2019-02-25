@@ -1,7 +1,6 @@
 """
 Utilities for modifying docstrings
 """
-from functools import wraps
 from textwrap import dedent
 
 from six import iteritems
@@ -69,8 +68,9 @@ UNIV_FMT_DOC = """labelFmt: str or None
     +---------+----------------------------+
 """
 
-LEGEND = """legend: bool or str
-    Automatically label the plot. Pass one of the following values
+LEGEND = """legend: bool or str or None
+    Automatically label the plot. No legend will be made if a
+    single item is plotted. Pass one of the following values
     to place the legend outside the plot: {}""".format(
     "above, right")
 
@@ -96,16 +96,13 @@ def magicPlotDocDecorator(f):
     Keywords must be wrapped in single brackets, i.e. ``{x}``
     """
 
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        return f(*args, **kwargs)
     doc = dedent(f.__doc__)
     for magic, replace in PLOT_MAGIC_STRINGS.items():
         lookF = '{' + magic + '}'
         if lookF in doc:
             doc = doc.replace(lookF, replace)
-    decorated.__doc__ = doc
-    return decorated
+    f.__doc__ = doc
+    return f
 
 
 COMPARE_DOC_DESC = """
@@ -171,8 +168,5 @@ def compareDocDecorator(f):
     but for comparison functions
     """
 
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        return f(*args, **kwargs)
-    decorated.__doc__ = compareDocReplacer(f.__doc__)
-    return decorated
+    f.__doc__ = compareDocReplacer(f.__doc__)
+    return f

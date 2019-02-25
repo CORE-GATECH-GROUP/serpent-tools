@@ -521,7 +521,7 @@ class ResultsReader(XSReader):
                     origKeys.remove(key)
 
     @magicPlotDocDecorator
-    def plot(self, x, y=None, right=None, sigma=3, ax=None, legend=True,
+    def plot(self, x, y=None, right=None, sigma=3, ax=None, legend=None,
              ncol=None, xlabel=True, ylabel=None, logx=False, logy=False,
              loglog=False, rightlabel=None):
         """
@@ -628,7 +628,7 @@ class ResultsReader(XSReader):
         if loglog is None or isinstance(loglog, bool):
             loglog = [loglog, None]
 
-        if legend:
+        if legend or legend is None:
             leftHandles, leftLabels = ax.get_legend_handles_labels()
             rightHandles, rightLabels = other.get_legend_handles_labels()
 

@@ -206,7 +206,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits, timePoints=None, names=None, ax=None,
              sigma=3, xlabel=None, ylabel=None, logx=False,
-             logy=False, loglog=False, legend=False, ncol=1, labelFmt=None,
+             logy=False, loglog=False, legend=None, ncol=1, labelFmt=None,
              **kwargs):
         """
         Plot the average of some data vs. time for some or all isotopes.
