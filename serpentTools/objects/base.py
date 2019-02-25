@@ -267,7 +267,7 @@ class DetectorBase(NamedObject):
     @magicPlotDocDecorator
     def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
                      ylabel=None, steps=True, logx=True, logy=False,
-                     loglog=False, sigma=3, labels=None, legend=False, ncol=1,
+                     loglog=False, sigma=3, labels=None, legend=None, ncol=1,
                      title=None, **kwargs):
         """
         Quick plot of the detector value as a function of energy.
@@ -344,6 +344,8 @@ class DetectorBase(NamedObject):
             ylabel += ' normalized per unit lethargy' if normalize else ''
             ylabel += r' $\pm{}\sigma$'.format(sigma) if sigma else ''
 
+        if legend is None and labels:
+            legend = True
         ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
                         xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
                         legend=legend, title=title)
@@ -352,7 +354,7 @@ class DetectorBase(NamedObject):
     @magicPlotDocDecorator
     def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
              xlabel=None, ylabel=None, steps=False, labels=None, logx=False,
-             logy=False, loglog=False, legend=False, ncol=1, title=None,
+             logy=False, loglog=False, legend=None, ncol=1, title=None,
              **kwargs):
         """
         Simple plot routine for 1- or 2-D data
@@ -433,6 +435,10 @@ class DetectorBase(NamedObject):
             else:
                 kwargs['drawstyle'] = 'steps-post'
         ax = plot(xdata, data, ax, labels, yerr, **kwargs)
+
+        if legend is None and labels:
+            legend = True
+
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
                         xlabel=xlabel, ylabel=ylabel, legend=legend,
                         title=title)

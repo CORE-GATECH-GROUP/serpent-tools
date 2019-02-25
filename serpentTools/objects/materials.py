@@ -292,7 +292,7 @@ class DepletedMaterial(DepletedMaterialBase):
 
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits=None, timePoints=None, names=None, zai=None,
-             ax=None, legend=True, xlabel=None, ylabel=None, logx=False,
+             ax=None, legend=None, xlabel=None, ylabel=None, logx=False,
              logy=False, loglog=False, labelFmt=None, ncol=1, title=None,
              **kwargs):
         """

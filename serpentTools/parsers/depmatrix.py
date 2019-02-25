@@ -223,9 +223,6 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
                 "Number of markers {} not equal to number of quantities "
                 "to plot {}".format(len(markers), len(plotAttrs)))
 
-        if legend is None:
-            legend = any(labels)
-
         for qty, label, marker in zip(plotAttrs, labels, markers):
             ax.plot(self.zai, qty, 'o', marker=marker, label=label)
 

@@ -235,14 +235,18 @@ for key in EXPECTED_ARRAYS_SHAPE:
             'Missing {} from history {}'.format(key, arrayT))
 
 
-class HistoryTester(unittest.TestCase):
-    """Class that is responsible for testing the history reader."""
+class HistoryHelper(unittest.TestCase):
+    """Helper class for setting up tests"""
 
     @classmethod
     def setUpClass(cls):
         cls.reader = HistoryReader(TEST_FILE)
         cls.reader.read()
         cls.arrays = cls.reader.arrays
+
+
+class HistoryTester(HistoryHelper):
+    """Class that is responsible for testing the history reader."""
 
     def test_keysArePresent(self):
         """Verify that all the correct keys are present."""
@@ -278,6 +282,86 @@ class HistoryTester(unittest.TestCase):
             numRows = expectedArray.shape[0]
             actual = self.arrays[key][-numRows:]
             assert_array_equal(expectedArray, actual, err_msg=key)
+
+    def test_specialMethods(self):
+        """Test special methods on the reader"""
+        # test len
+        self.assertEqual(len(self.reader), len(self.reader.arrays))
+        # test contains
+        badKey = 'this_shouldNotBe_present'
+        self.assertFalse(badKey in self.reader)
+        # test iter
+        for nFound, key in enumerate(self.reader, start=1):
+            self.assertTrue(key in self.reader.arrays, msg=key)
+            self.assertTrue(key in self.reader, msg=key)
+        self.assertEqual(nFound, len(self.reader.arrays))
+
+    def test_iterItems(self):
+        """Test the items method for yielding key, value pairs"""
+        for nFound, (key, value) in enumerate(self.reader.items(), start=1):
+            self.assertTrue(key in self.reader.arrays, msg=key)
+            self.assertTrue(key in self.reader, msg=key)
+            assert_array_equal(value, self.reader.arrays[key], err_msg=key)
+            self.assertTrue(value is self.reader[key], msg=key)
+
+        self.assertEqual(nFound, len(self.reader.arrays))
+
+
+class HistoryMatlabBase(HistoryHelper):
+    """Base class for performing tests on the history -> matlab conversion"""
+
+    def gather(self):
+        return self.reader._gather_matlab(self.RECONVERT)
+
+    def test_gather(self):
+        """Test the ability to place data into a dictionary for exporting"""
+        gathered = self.gather()
+        if self.RECONVERT:
+            varFunc = self.reader.ioReconvertName
+        else:
+            varFunc = self.reader.ioConvertName
+        for origKey, actValue in iteritems(self.arrays):
+            expKey = varFunc(origKey)
+            msg = "{} -> {}".format(origKey, expKey)
+            self.assertTrue(expKey in gathered, msg=msg)
+            assert_array_equal(gathered[expKey], actValue, err_msg=msg)
+
+    def test_conversion(self):
+        """Test the method used in name conversion for accuracy and consistency.
+        """
+        if self.RECONVERT:
+            convFun = self.reader.ioReconvertName
+        else:
+            convFun = self.reader.ioConvertName
+        for origKey, expKey in iteritems(self.CONV_KEYS):
+            msg = '{} -> {}'.format(origKey, expKey)
+            self.assertEqual(expKey, convFun(origKey), msg=msg)
+
+
+class HistMatlabConvertTester(HistoryMatlabBase):
+    """Test the ability to retain camelCase names through matlab exporting"""
+
+    RECONVERT = False
+
+    CONV_KEYS = {
+        'time': 'hisTime',
+        'impKeff': 'hisImpKeff',
+        'meanPopSize': 'hisMeanPopSize',
+    }
+
+
+class HistMatlabReconvertTester(HistoryMatlabBase):
+    """Test the ability to reconvert names through matlab exporting"""
+
+    RECONVERT = True
+    CONV_KEYS = {
+        'time': 'HIS_TIME',
+        'impKeff': 'HIS_IMP_KEFF',
+        'meanPopSize': 'HIS_MEAN_POP_SIZE',
+    }
+
+
+del HistoryMatlabBase
 
 
 if __name__ == '__main__':

@@ -34,7 +34,7 @@ class DepPlotMixin(object):
 
     @magicPlotDocDecorator
     def plot(self, xUnits, yUnits=None, timePoints=None, names=None, zai=None,
-             materials=None, ax=None, legend=True, logx=False, logy=False,
+             materials=None, ax=None, legend=None, logx=False, logy=False,
              loglog=False, labelFmt=None, xlabel=None, ylabel=None, ncol=1,
              **kwargs):
         """

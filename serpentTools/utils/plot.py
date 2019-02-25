@@ -122,7 +122,7 @@ def formatPlot(ax, **kwargs):
         ax.set_xlabel(xlabel)
     if ylabel:
         ax.set_ylabel(ylabel)
-    if legend:
+    if legend or legend is None:
         ax = placeLegend(ax, legend, ncol)
     if title:
         ax.set_title(title)
@@ -212,6 +212,10 @@ def placeLegend(ax, legend, ncol=1, handles_labels=None):
         handles, labels = handles_labels
     if not (handles and labels):
         return ax
+    # if no legend explicitely requested and only one
+    # item plotted, do not add a legend
+    if legend is None and len(handles) == len(labels) == 1:
+        return
     ncol = max(1, int(ncol)) if ncol else 1
     if not isinstance(legend, str):
         ax.legend(handles, labels, ncol=ncol)
