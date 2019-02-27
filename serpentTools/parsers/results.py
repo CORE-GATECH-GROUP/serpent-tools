@@ -29,6 +29,7 @@ from serpentTools.utils import (
     formatPlot,
     placeLegend,
     magicPlotDocDecorator,
+    deconvertVariableName,
 )
 from serpentTools.messages import (
     warning, SerpentToolsException,
@@ -678,3 +679,33 @@ class ResultsReader(XSReader):
             return OrderedDict([[item, '{}{}'.format(item, tail)]
                                 for item in y])
         return y
+
+    @staticmethod
+    def ioConvertName(name):
+        """
+        Return the name of the variable used for exporting - camelCase
+        """
+        return name
+
+    @staticmethod
+    def ioReconvertName(name):
+        """
+        Return the name of the variable used for exporting - SERPENT_CASE
+        """
+        return deconvertVariableName(name)
+
+    def _gather_matlab(self, reconvert):
+        if reconvert:
+            varFunc = self.ioReconvertName
+            out = {
+                varFunc(key): value for key, value in iteritems(self.metadata)
+            }
+            out.update({
+                varFunc(key): value for key, value in iteritems(self.resdata)
+            })
+        else:
+            out = {}
+            varFunc = self.ioConvertName
+            out.update(self.metadata)
+            out.update(self.resdata)
+        return out
