@@ -37,6 +37,7 @@ from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, setAx_xlims, setAx_ylims,
     addColorbar, normalizerFactory, linkToWiki,
 )
+from serpentTools.io.hooks import matlabHook
 
 __all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
            'CylindricalDetector', 'SphericalDetector']
@@ -151,6 +152,9 @@ class Detector(DetectorBase):
             data[converter(self.name, key)] = value
 
         return data
+
+
+Detector.toMatlab = matlabHook
 
 
 class CartesianDetector(Detector):
