@@ -1,6 +1,6 @@
-.. |Branching| replace:: :py:class:`~serpentTools.parsers.branching.BranchingReader`
+.. |Branching| replace:: :class:`~serpentTools.BranchingReader`
 
-.. |Results| replace:: :py:class:`~serpentTools.parsers.results.ResultsReader`
+.. |Results| replace:: :class:`~serpentTools.ResultsReader`
 
 .. |Serpent| replace:: ``SERPENT``
 
@@ -12,7 +12,7 @@ Variable Groups
 
 The |Branching| and |Results| can also be used to store cross sections 
 and other group constant data on
-:py:class:`~serpentTools.objects.containers.HomogUniv` objects.
+:class:`~serpentTools.objects.HomogUniv` objects.
 The group constants to be stored are controlled by two distinct settings:
 :ref:`xs-variableExtras` and :ref:`xs-variableGroups`.
 The former includes the names of |Serpent| variables **exactly** how they
