@@ -51,6 +51,7 @@ using :term:`SERPENT`.
    install
    changelog
    examples/index
+   readers/index
    settingsTop
    variableGroupsTop
    api/index

@@ -8,25 +8,12 @@ API
    :caption: Contents:
 
    settings.rst
-   parsers.rst
    data.rst
    containers.rst
    materials
    universes
    detectors
-   branching.rst
-   bumat.rst
-   depletion.rst
-   detector.rst
-   fissionMatrix.rst
-   history.rst
-   results.rst
    sampler.rst
-   sensitivity.rst
-   xsplot.rst
-   microxs.rst
-   DepletionMatrix.rst
    exceptions.rst
    seed.rst
-   xs.rst
    io.rst
