@@ -1,7 +1,8 @@
-.. _api:
+.. _utilities:
 
-API
-===
+Utilities
+=========
+
 
 .. toctree::
    :maxdepth: 2
@@ -9,11 +10,6 @@ API
 
    settings.rst
    data.rst
-   containers.rst
-   materials
-   universes
-   detectors
-   sampler.rst
    exceptions.rst
    seed.rst
    io.rst

@@ -52,9 +52,11 @@ using :term:`SERPENT`.
    changelog
    examples/index
    readers/index
+   containers/index
+   utilities/index
+   samplers/index
    settingsTop
    variableGroupsTop
-   api/index
    command-line
    develop/index
    license
