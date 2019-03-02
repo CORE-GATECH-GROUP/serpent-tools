@@ -4,6 +4,6 @@
 Depletion Reader
 ================
 
-.. autoclass:: serpentTools.parsers.depletion.DepletionReader
+.. autoclass:: serpentTools.DepletionReader
     :special-members: __getitem__
 

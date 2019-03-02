@@ -4,5 +4,5 @@
 Micro XS Reader
 ===============
 
-.. autoclass:: serpentTools.parsers.microxs.MicroXSReader
+.. autoclass:: serpentTools.MicroXSReader
 

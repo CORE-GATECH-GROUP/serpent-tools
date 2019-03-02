@@ -4,7 +4,7 @@
 
 .. |sampler| replace:: :py:class:`~serpentTools.samplers.Sampler`
 
-.. |detector-container| replace:: :py:class:`~serpentTools.objects.containers.Detector`
+.. |detector-container| replace:: :py:class:`~serpentTools.Detector`
 
 .. _samplerAPI:
 
@@ -26,20 +26,20 @@ Detector Sampler
 
 This sampler extends the |sampler| class for reading detector files.
 
-.. autoclass:: serpentTools.samplers.detector.DetectorSampler
+.. autoclass:: serpentTools.samplers.DetectorSampler
     :special-members: __getitem__
 
-.. autoclass:: serpentTools.samplers.detector.SampledDetector
+.. autoclass:: serpentTools.samplers.SampledDetector
 
 DepletionSampler
 ----------------
 
 This sampler extends the |sampler| class for reading depletion files.
 
-.. autoclass:: serpentTools.samplers.depletion.DepletionSampler
+.. autoclass:: serpentTools.samplers.DepletionSampler
     :special-members: __getitem__
 
-.. autoclass:: serpentTools.samplers.depletion.SampledDepletedMaterial
+.. autoclass:: serpentTools.samplers.SampledDepletedMaterial
 
 
 .. _sampler-base:

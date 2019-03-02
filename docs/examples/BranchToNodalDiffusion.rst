@@ -1,24 +1,24 @@
-.. |BranchReader| replace:: :class:`~serpentTools.parsers.branching.BranchingReader`
+.. |BranchReader| replace:: :class:`~serpentTools.BranchingReader`
 
-.. |BranchCollector| replace:: :class:`~serpentTools.xs.BranchCollector`
+.. |BranchCollector| replace:: :class:`~serpentTools.BranchCollector`
 
-.. |BranchCol-tables| replace:: :attr:`~serpentTools.xs.BranchCollector.xsTables`
+.. |BranchCol-tables| replace:: :attr:`~serpentTools.BranchCollector.xsTables`
 
-.. |BranchCol-states| replace:: :attr:`~serpentTools.xs.BranchCollector.states`
+.. |BranchCol-states| replace:: :attr:`~serpentTools.BranchCollector.states`
 
-.. |BranchCol-perturbations| replace:: :attr:`~serpentTools.xs.BranchCollector.perturbations`
+.. |BranchCol-perturbations| replace:: :attr:`~serpentTools.BranchCollector.perturbations`
 
-.. |BranchCol-burnups| replace:: :attr:`~serpentTools.xs.BranchCollector.burnups`
+.. |BranchCol-burnups| replace:: :attr:`~serpentTools.BranchCollector.burnups`
 
-.. |BranchCol-axis| replace:: :attr:`~serpentTools.xs.BranchCollector.axis`
+.. |BranchCol-axis| replace:: :attr:`~serpentTools.BranchCollector.axis`
 
-.. |BranchCol-universes| replace:: :attr:`~serpentTools.xs.BranchCollector.universes`
+.. |BranchCol-universes| replace:: :attr:`~serpentTools.BranchCollector.universes`
 
-.. |BranchCol-univIndex| replace:: :attr:`~serpentTools.xs.BranchCollector.univIndex`
+.. |BranchCol-univIndex| replace:: :attr:`~serpentTools.BranchCollector.univIndex`
 
 .. |BranchedUniv| replace:: :class:`~serpentTools.xs.BranchedUniv`
 
-.. |BranchedUniv-tables| replace:: :class:`~serpentTools.xs.BranchedUniv.xsTables`
+.. |BranchedUniv-tables| replace:: :attr:`~serpentTools.xs.BranchedUniv.xsTables`
 
 .. |BranchedUniv-states| replace:: :attr:`~serpentTools.xs.BranchedUniv.states`
 
@@ -49,9 +49,6 @@ across these perturbations, and this notebook will demonstrate using the
     >>> import numpy
     >>> import serpentTools
     >>> from serpentTools.xs import BranchCollector
-
-.. code:: 
-    
     >>> # use serpentTools.read for everything except following along with examples
     >>> coe = serpentTools.readDataFile('demo.coe')
 
@@ -61,7 +58,7 @@ branches: ``nom`` with no boron, then ``B1000`` and ``B750``, with 1000
 and 750 ppm boron in coolant. Fuel temperature had a nominal branch at
 900 K, with 1200 and 600 K perturbations as well. These can be confirmed
 by observing the
-:attr:`~serpentTools.parsers.branching.BrancingReader.branches`
+:attr:`~serpentTools.BranchingReader.branches`
 dictionary on the |BranchReader|.
 
 .. code:: 
@@ -172,15 +169,15 @@ constants for specific universes with the |BranchCol-universes| dictionary.
 .. code:: 
     
     >>> collector.universes
-    {0: <serpentTools.xs.BranchedUniv at 0x7fb62f749a98>,
+    {0: <serpentTools.BranchedUniv at 0x7fb62f749a98>,
      10:
-    <serpentTools.xs.BranchedUniv at 0x7fb62f731b88>,
+    <serpentTools.BranchedUniv at 0x7fb62f731b88>,
      20:
-    <serpentTools.xs.BranchedUniv at 0x7fb62f749e08>,
+    <serpentTools.BranchedUniv at 0x7fb62f749e08>,
      30:
-    <serpentTools.xs.BranchedUniv at 0x7fb62f749e58>,
+    <serpentTools.BranchedUniv at 0x7fb62f749e58>,
      40:
-    <serpentTools.xs.BranchedUniv at 0x7fb62f749ea8>}
+    <serpentTools.BranchedUniv at 0x7fb62f749ea8>}
     >>> u0 = collector.universes[0]
 
 These |BranchedUniv| objects store views into the underlying
@@ -278,9 +275,8 @@ similar error checking.
     ...     print(str(ve))
     Current number of perturbations is 2, not 3
 
-
 Example nodal diffusion writer
-==============================
+------------------------------
 
 As each nodal diffusion code has it’s own required data structure,
 creating a general writer is a difficult task. The intent with the
@@ -302,7 +298,7 @@ The full file is available for download:
     
     Parameters
     ----------
-    collector: xs.Collector
+    collector: Collector
             Object that read the branching file and stored
     the cross sections
             along the perturbation vector

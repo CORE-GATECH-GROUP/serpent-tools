@@ -14,17 +14,6 @@ data in a logical and accessible format. These containers are detailed here.
     stored as ``infTot``
 
 
-.. autoclass:: serpentTools.objects.containers.BranchContainer
+.. autoclass:: serpentTools.objects.BranchContainer
 
 .. autoclass:: serpentTools.objects.xsdata.XSData
-
-Materials
----------
-
-.. autoclass:: serpentTools.objects.materials.DepletedMaterial
-
-Homogenized Universes
----------------------
-
-.. autoclass:: serpentTools.objects.containers.HomogUniv
-

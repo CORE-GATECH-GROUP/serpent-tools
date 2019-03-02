@@ -1,14 +1,14 @@
-.. |depReader| replace:: :py:class:`~serpentTools.parsers.depletion.DepletionReader`
+.. |depReader| replace:: :class:`~serpentTools.DepletionReader`
 
-.. |depMat| replace:: :py:class:`~serpentTools.objects.materials.DepletedMaterial`
+.. |depMat| replace:: :class:`~serpentTools.objects.materials.DepletedMaterial`
 
-.. |materials| replace:: :py:attr:`~serpentTools.parsers.depletion.DepletionReader.materials`
+.. |materials| replace:: :attr:`~serpentTools.DepletionReader.materials`
 
-.. |matData| replace:: :py:attr:`~serpentTools.objects.materials.DepletedMaterial.data`
+.. |matData| replace:: :attr:`~serpentTools.objects.materials.DepletedMaterial.data`
 
-.. |getValues| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues`
+.. |getValues| replace:: :meth:`~serpentTools.objects.materials.DepletedMaterial.getValues`
 
-.. |depMatPlot| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot` 
+.. |depMatPlot| replace:: :meth:`~serpentTools.objects.materials.DepletedMaterial.plot` 
 
 .. _depletion-reader-ex:
 
@@ -30,11 +30,10 @@ Each such object has methods and attributes that should ease analysis.
     >>> import serpentTools
     >>> from serpentTools.settings import rc
 
-
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.read` function. The
    :func:`~serpentTools.data.readDataFile` function is used here
    to make it easier to reproduce the examples
 
@@ -50,12 +49,6 @@ the corresponding values are the depleted material.
 .. code:: 
     
     >>> dep.materials
-
-
-
-
-.. parsed-literal::
-
     {'fuel0': <serpentTools.objects.materials.DepletedMaterial at 0x7f8f8dccde80>,
      'bglass0': <serpentTools.objects.materials.DepletedMaterial at 0x7f8f8f42f518>,
      'total': <serpentTools.objects.materials.DepletedMaterial at 0x7f8f8dce7940>}
@@ -63,29 +56,11 @@ the corresponding values are the depleted material.
 Metadata, such as the isotopic vector and depletion schedule are also
 present inside the reader
 
-
 .. code:: 
     
     >>> dep.metadata.keys()
-
-
-
-
-.. parsed-literal::
-
     dict_keys(['zai', 'names', 'burnup', 'days'])
-
-
-
-.. code:: 
-    
     >>> dep.metadata['burnup']
-
-
-
-
-.. parsed-literal::
-
     array([0.  , 0.02, 0.04, 0.06, 0.08, 0.1 , 0.12, 0.14, 0.16, 0.18, 0.2 ,
            0.22, 0.24, 0.26, 0.28, 0.3 , 0.32, 0.34, 0.36, 0.38, 0.4 , 0.42,
            0.44, 0.46, 0.48, 0.5 , 0.52, 0.54, 0.56, 0.58, 0.6 , 0.62, 0.64,
@@ -93,18 +68,7 @@ present inside the reader
            0.88, 0.9 , 0.92, 0.94, 0.96, 0.98, 1.  , 1.02, 1.04, 1.06, 1.08,
            1.1 , 1.12, 1.14, 1.16, 1.18, 1.2 , 1.22, 1.24, 1.26, 1.28, 1.3 ,
            1.32, 1.34, 1.36, 1.38, 1.4 , 1.42])
-
-
-
-.. code:: 
-    
     >>> dep.metadata['names']
-
-
-
-
-.. parsed-literal::
-
     ['Xe135', 'I135', 'U234', 'U235', 'U236', 'U238',
      'Pu238', 'Pu239', 'Pu240', 'Pu241', 'Pu242', 'Np237',
      'Am241', 'Am243', 'Cm243', 'Cm244', 'Cm245', 'Cs133',
@@ -112,10 +76,8 @@ present inside the reader
      'Eu153', 'Gd155', 'Mo95', 'Tc99', 'Ru101', 'Rh103',
      'Ag109', 'Cd113', 'lost', 'total']
 
-
-
-DepletedMaterial
-----------------
+Depleted Material Objects
+-------------------------
 
 As mentioned before, all the material data is stored inside these
 |depMat| objects.
@@ -125,9 +87,6 @@ These objects share access to the metadata of the reader as well.
     
     >>> fuel = dep.materials['fuel0']
     >>> print(fuel.burnup)
-
-.. parsed-literal::
-
     [0.         0.00702676 0.0144405  0.0218803  0.0297245  0.0370823
      0.0447201  0.0513465  0.0590267  0.0671439  0.073392   0.0802637
      0.0887954  0.0974604  0.104807   0.111528   0.119688   0.128006
@@ -140,9 +99,6 @@ These objects share access to the metadata of the reader as well.
      0.404159   0.412113   0.419194   0.426587   0.43425    0.442316
      0.449562   0.456538   0.465128   0.472592   0.479882   0.487348
      0.494634   0.502167   0.508326   0.515086   0.522826   0.530643  ]
-
- .. code::
-
     >>> print(fuel.days is dep.metadata['days'])
     True
 
@@ -160,24 +116,8 @@ used are accessible as attributes as well.
 .. code:: 
     
     >>> fuel.data.keys()
-
-
-
-
-.. parsed-literal::
-
     dict_keys(['volume', 'burnup', 'adens', 'mdens', 'a', 'h', 'sf', 'gsrc', 'ingTox', 'inhTox'])
-
-
-
-.. code:: 
-    
     >>> print(fuel.adens)
-    >>> print(fuel.adens is fuel.data['adens'])
-
-
-.. parsed-literal::
-
     [[0.00000e+00 2.43591e-09 4.03796e-09 ... 4.70133e-09 4.70023e-09
       4.88855e-09]
      [0.00000e+00 6.06880e-09 8.11783e-09 ... 8.05991e-09 8.96359e-09
@@ -191,8 +131,8 @@ used are accessible as attributes as well.
       8.86782e-13]
      [6.88332e-02 6.88334e-02 6.88336e-02 ... 6.88455e-02 6.88457e-02
       6.88459e-02]]
+    >>> print(fuel.adens is fuel.data['adens'])
     True
-
 
 Similar to the original file, the rows of the matrix correspond to
 positions in the isotopic vector, and the columns correspond to
@@ -235,9 +175,6 @@ or ``zai`` are not given.
     >>> print(isoVals.shape)
     >>> zaiVals = fuel.getValues('days', 'a', dayPoints, zai=zai)
     print(isoVals - zaiVals)
-
-.. parsed-literal::
-
     (2, 4)
     [[0.00000e+00 3.28067e+14 3.24606e+14 3.27144e+14]
      [0.00000e+00 0.00000e+00 0.00000e+00 0.00000e+00]]
@@ -291,11 +228,7 @@ replacements
     ...          materials=['fuel0', 'total'],
     ...          labelFmt="{mat}: {iso} // {zai}", loglog=True);
 
-
-
 .. image:: DepletionReader_files/DepletionReader_26_0.png
-
-
 
 .. _depletion-settings:
 
@@ -322,35 +255,12 @@ with ``bglass`` followed by at least one integer.
     >>> rc['depletion.metadataKeys'] = ['BU']
     >>> rc['depletion.materialVariables'] = ['ADENS']
     >>> rc['depletion.materials'] = [r'bglass\d+']
-
     >>> bgReader = serpentTools.readDataFile(depFile)
-
-.. code:: 
-    
     >>> bgReader.materials.keys()
-
-
-
-
-.. parsed-literal::
-
     dict_keys(['bglass0'])
-
-
-
-.. code:: 
-    
     >>> bglass = bgReader.materials['bglass0']
     >>> bglass.data.keys()
-
-
-
-
-.. parsed-literal::
-
     dict_keys(['adens'])
-
-
 
 Conclusion
 ----------

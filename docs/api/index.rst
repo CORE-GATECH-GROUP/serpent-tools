@@ -10,8 +10,9 @@ API
    settings.rst
    parsers.rst
    data.rst
-   plot.rst
    containers.rst
+   materials
+   universes
    detectors
    branching.rst
    bumat.rst

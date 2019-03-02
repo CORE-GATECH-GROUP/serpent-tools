@@ -4,6 +4,6 @@
 Detector Reader
 ===============
     
-.. autoclass:: serpentTools.parsers.detector.DetectorReader
+.. autoclass:: serpentTools.DetectorReader
      :members: iterDets, read, detectors, filePath
      :special-members: __getitem__

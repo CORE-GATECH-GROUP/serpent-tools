@@ -4,5 +4,5 @@
 Sensitivity Reader
 ==================
 
-.. autoclass:: serpentTools.parsers.sensitivity.SensitivityReader
+.. autoclass:: serpentTools.SensitivityReader
 

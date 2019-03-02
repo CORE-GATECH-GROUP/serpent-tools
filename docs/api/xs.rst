@@ -1,11 +1,11 @@
-.. _api-xs:
+.. _api:
 
 =================================
 Branching Cross Section Collector
 =================================
 
-.. autoclass:: serpentTools.xs.BranchCollector
+.. autoclass:: serpentTools.BranchCollector
 
-.. autoclass:: serpentTools.xs.BranchedUniv
+.. autoclass:: serpentTools.BranchedUniv
 
-.. autoclass:: serpentTools.xs.BranchedDataTable
+.. autoclass:: serpentTools.BranchedDataTable

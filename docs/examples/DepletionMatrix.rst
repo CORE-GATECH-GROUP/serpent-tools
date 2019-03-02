@@ -1,4 +1,4 @@
-.. |depmtxReader| replace:: :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
+.. |depmtxReader| replace:: :class:`~serpentTools.DepmtxReader`
 
 .. _depmtx-reader-ex:
 
@@ -37,7 +37,7 @@ Basic Operation
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.read` function. The
    :func:`~serpentTools.data.readDataFile` function is used here
    to make it easier to reproduce the examples
 
@@ -96,7 +96,7 @@ Number densities and entries in the depletion matrix are stored using the
            922400, 922410])
 
 One can easily check if the depletion matrix is stored in a sparse or dense structure using the 
-:attr:`~serpentTools.parsers.depmatrix.DepmtxReader.sparse` attribute::
+:attr:`~serpentTools.DepmtxReader.sparse` attribute::
 
    >>> reader.sparse
    True
