@@ -2,7 +2,6 @@
 Tests for testing the MATLAB conversion functions
 """
 
-from os import remove
 from unittest import TestCase, SkipTest
 from six import BytesIO, iteritems
 from numpy import arange
