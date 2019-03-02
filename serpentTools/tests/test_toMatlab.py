@@ -4,16 +4,29 @@ Tests for testing the MATLAB conversion functions
 
 from os import remove
 from unittest import TestCase, SkipTest
+from six import BytesIO, iteritems
 from numpy import arange
 from numpy.testing import assert_array_equal
 from serpentTools.objects import Detector
 from serpentTools.utils import checkScipy
 from serpentTools.io import toMatlab
+from serpentTools.data import getFile
+from serpentTools.parsers import DepmtxReader
 
 HAS_SCIPY = checkScipy('1.0')
 
 
-class Det2MatlabHelper(TestCase):
+class MatlabTesterHelper(TestCase):
+    """Helper class for matlab conversion"""
+
+    def setUp(self):
+        """Call this from subclasses to skip if scipy is unavailable"""
+        # skip tests if scipy not installed
+        if not HAS_SCIPY:
+            raise SkipTest("scipy needed to test matlab conversion")
+
+
+class Det2MatlabHelper(MatlabTesterHelper):
     """Helper class for testing detector to matlab conversion"""
 
     NBINS = 10
@@ -32,9 +45,7 @@ class Det2MatlabHelper(TestCase):
         cls.detector.grids[cls.GRID_KEY] = cls.GRID
 
     def setUp(self):
-        # skip tests if scipy not installed
-        if not HAS_SCIPY:
-            raise SkipTest("scipy needed to test matlab conversion")
+        MatlabTesterHelper.setUp(self)
 
         from serpentTools.objects.detectors import deconvert, prepToMatlab
         # instance methods and/or rename them
@@ -75,7 +86,63 @@ class UnconvertedDet2MatlabTester(Det2MatlabHelper):
     CONVERT = False
 
 
-del Det2MatlabHelper
+class DepmtxMatlabHelper(MatlabTesterHelper):
+    """Class for setting up and testing"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.depFile = getFile('depmtx_ref.m')
+
+    def setUp(self):
+        MatlabTesterHelper.setUp(self)
+        self.outFile = BytesIO()
+        self.reader = DepmtxReader(self.depFile, self.SPARSE)
+        self.reader.read()
+        if self.SPARSE:
+            self.expected = {'A': self.reader.depmtx.toarray()}
+        else:
+            self.expected = {'A': self.reader.depmtx}
+
+        n0 = self.reader.n0.reshape(1, self.reader.n0.size)
+        n1 = self.reader.n1.reshape(1, self.reader.n1.size)
+        zai = self.reader.zai.reshape(1, self.reader.zai.size)
+
+        if self.RECONVERT:
+            self.expected['ZAI'] = zai
+            self.expected['N0'] = n0
+            self.expected['N1'] = n1
+        else:
+            self.expected['zai'] = zai
+            self.expected['n0'] = n0
+            self.expected['n1'] = n1
+
+    def test_depmtxToMatlab(self):
+        """Verify the depmtx reader can be written to matlab file"""
+        from scipy.io import loadmat
+        toMatlab(self.reader, self.outFile, self.RECONVERT)
+        written = loadmat(self.outFile)
+        self.assertEqual(self.reader.deltaT, written['t'])
+        for expKey, expValue in iteritems(self.expected):
+            self.assertTrue(expKey in written, msg=expKey)
+            assert_array_equal(expValue, written[expKey], err_msg=expKey)
+
+
+class ConvertedDepmtxMatlabTester(DepmtxMatlabHelper):
+    RECONVERT = True
+    SPARSE = True
+
+
+class UnconvertedDepmtxMatlabTester(DepmtxMatlabHelper):
+    RECONVERT = False
+    SPARSE = True
+
+
+class ConvertedFullDepmtxMatlabTester(DepmtxMatlabHelper):
+    RECONVERT = True
+    SPARSE = False
+
+
+del Det2MatlabHelper, DepmtxMatlabHelper
 
 if __name__ == '__main__':
     from unittest import main
