@@ -14,6 +14,9 @@ from serpentTools.utils.compare import (
 )
 from serpentTools.objects.base import NamedObject
 
+__all__ = [
+    'DepletedMaterial',
+]
 
 def deprecateTimepointsWarning():
     """Warning that the use of timepoints in plots is going away"""

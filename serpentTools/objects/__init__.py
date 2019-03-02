@@ -1,4 +1,6 @@
 """Objects used to support the parsing."""
 # flake8: noqa
-from serpentTools.objects.containers import HomogUniv, BranchContainer
-from serpentTools.objects.detectors import Detector
+from serpentTools.objects.materials import *
+from serpentTools.objects.containers import *
+from serpentTools.objects.detectors import *
+from serpentTools.objects.xsdata import *

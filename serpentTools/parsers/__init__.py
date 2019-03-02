@@ -55,10 +55,9 @@ REGEXES = {
 __all__ = ['read',
            'DepletionReader', 'BranchingReader', 'DetectorReader',
            'BumatReader', 'ResultsReader', 'FissionMatrixReader',
-           'MicroXSReader',
-           'DepmtxReader',
-           'depmtx',
-           'readDepmtx',
+           'MicroXSReader', 'SensitivityReader', 'XSPlotReader',
+           'HistoryReader', 'DepmtxReader',
+           'depmtx', 'readDepmtx',
            ]
 
 
