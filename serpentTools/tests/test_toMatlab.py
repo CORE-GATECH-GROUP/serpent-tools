@@ -57,10 +57,9 @@ class Det2MatlabHelper(MatlabTesterHelper):
     def test_det2Matlab(self):
         """Test the conversion to matlab files"""
         from scipy.io import loadmat
-        filePath = 'detector_{}.mat'.format(
-            'conv' if self.CONVERT else 'unconv')
-        toMatlab(self.detector, filePath, self.CONVERT, append=False)
-        fromMatlab = loadmat(filePath)
+        writer = BytesIO()
+        toMatlab(self.detector, writer, self.CONVERT, append=False)
+        fromMatlab = loadmat(writer)
 
         binsKey = self.converterFunc(self.detector.name, 'bins')
         self.assertTrue(binsKey in fromMatlab)
@@ -70,8 +69,6 @@ class Det2MatlabHelper(MatlabTesterHelper):
         self.assertTrue(gridKey in fromMatlab)
         assert_array_equal(fromMatlab[gridKey],
                            self.detector.grids[self.GRID_KEY])
-
-        remove(filePath)
 
 
 class ConvertedDet2MatlabTester(Det2MatlabHelper):
