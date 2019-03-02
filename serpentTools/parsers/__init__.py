@@ -162,12 +162,12 @@ def depmtx(fileP):
     Read the contents of the ``depmtx`` file and return contents
 
     .. deprecated:: 0.6.0
-        Use either the :func:`~serpentTools.parsers.depmatrix.readDepmtx`
-        or :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
+        Use either the :func:`~serpentTools.parsers.readDepmtx`
+        or :class:`~serpentTools.DepmtxReader`
 
     .. note::
 
-        If ``scipy`` is not installed, matrix ``A`` will be full.
+        If :term:`scipy` is not installed, matrix ``A`` will be full.
         This can cause some warnings or errors if sparse or
         non-sparse solvers are used.
 
