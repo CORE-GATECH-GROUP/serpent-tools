@@ -1,12 +1,12 @@
-.. |homogUniv| replace:: :py:class:`~serpentTools.objects.containers.HomogUniv`
-.. |resultReader| replace:: :class:`~serpentTools.parsers.results.ResultsReader` 
-.. |detector| replace:: :class:`~serpentTools.objects.detectors.Detector`
-.. |detectorReader| replace:: :class:`~serpentTools.parsers.detector.DetectorReader`
-.. |depletionReader| replace:: :class:`~serpentTools.parsers.depletion.DepletionReader`
-.. |depmtxReader| replace:: :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
+.. |homogUniv| replace:: class:`~serpentTools.objects.containers.HomogUniv`
+.. |resultReader| replace:: :class:`~serpentTools.ResultsReader` 
+.. |detector| replace:: :class:`~serpentTools.objects.Detector`
+.. |detectorReader| replace:: :class:`~serpentTools.DetectorReader`
+.. |depletionReader| replace:: :class:`~serpentTools.DepletionReader`
+.. |depmtxReader| replace:: :class:`~serpentTools.DepmtxReader`
 .. |toMatlab-short| replace:: :func:`~serpentTools.io.toMatlab`
 .. |toMatlab-full| replace:: :func:`serpentTools.io.toMatlab`
-.. |branchCollector| replace:: :class:`~serpentTools.xs.BranchCollector` 
+.. |branchCollector| replace:: :class:`~serpentTools.BranchCollector` 
 .. _changelog:
 
 =========
@@ -38,14 +38,14 @@ Next
 * |detectorReader| and |detector| objects can be writen to 
   MATLAB files using |toMatlab-full|
 * |resultReader| can plot data using
-  :meth:`~serpentTools.parsers.results.ResultsReader.plot`
+  :meth:`~serpentTools.ResultsReader.plot`
 * Experimental |branchCollector| for
   collecting group constants from coefficient files. Collects
   group constants in in multi-dimensional matrices according
   to perturbations, universes, and burnup.
 * Plotting routines now use attach to the active plot or generate
   a new plot figure if ``ax`` argument not given - :issue:`267`
-* :class:`~serpentTools.parsers.branching.BranchingReader` can
+* :class:`~serpentTools.BranchingReader` can
   read coefficient files with uncertainties - :issue:`270`
 
 .. warning::
@@ -68,7 +68,7 @@ Incompatible API Changes
 Pending Deprecations
 --------------------
 
-* :meth:`~serpentTools.parsers.depletion.DepletionReader.saveAsMatlab` 
+* :meth:`~serpentTools.DepletionReader.saveAsMatlab` 
   in favor of |toMatlab-full| with::
 
       >>> from serpentTools.io import toMatlab
@@ -84,7 +84,7 @@ Pending Deprecations
 
 * :pull:`256` :meth:`serpentTools.settings.rc.loadYaml` uses ``safe_load``
 * :pull:`257` |depletionReader| now can utilize 
-  :meth:`~serpentTools.parsers.depletion.DepletionReader.saveAsMatlab` for
+  :meth:`~serpentTools.DepletionReader.saveAsMatlab` for
   exporting data to a binary ``.mat`` file
 * :pull:`259` Little more clarity into supported readers through documentation
   and ``serpentTools.read`` function
@@ -102,7 +102,7 @@ Pending Deprecations
 * :pull:`228` - Add comparison methods for |detectorReader| and
   |detector| objects
 * :pull:`236` - Add comparison methods for |depletionReader| and
-  :class:`~serpentTools.objects.materials.DepletedMaterial` objects
+  :class:`~serpentTools.objects.DepletedMaterial` objects
 * :pull:`241` - Fix a bug in the CLI that rendered the ability to generate files with
   unique random seeds. ``python -m serpentTools seed <input> <N>`` can now be properly
   used.  
@@ -136,7 +136,7 @@ Deprecations
 * :pull:`227` - Better documentation of our :ref:`cli`.
   Better documentation and testing of functions for generating input
   files with unique random seeds - :mod:`serpentTools.seed`
-* :pull:`229` - :meth:`serpentTools.parsers.sensitivity.SensitivityReader.plot`
+* :pull:`229` - :meth:`serpentTools.SensitivityReader.plot`
   now respects the option to not set x nor y labels.
 * :pull:`231` - |resultReader| objects
   can now read files that do not contain group constant data. The setting
@@ -154,12 +154,12 @@ Deprecations
 * :pull:`199` - Support for structured or unstructured matrix plotting with
   :func:`serpentTools.plot.cartMeshPlot`
 * :pull:`201` - Support for plotting hexagonal meshes with
-  :meth:`serpentTools.objects.detectors.HexagonalDetector.hexPlot`
+  :meth:`serpentTools.objects.HexagonalDetector.hexPlot`
 * :pull:`204` - Access |detector|
   objects directly from |detectorReader|
   with ``reader[detName]``
 * :pull:`205` - Access materials from |depletionReader|
-  and :class:`serpentTools.samplers.depletion.DepletionSampler` using key-like
+  and :class:`serpentTools.samplers.DepletionSampler` using key-like
   indexing, e.g. ``reader[matName] == reader.material[matName]``
 * :pull:`213` - Better default x-axis labels for simple detector plots
 
@@ -167,7 +167,7 @@ Deprecations
 
 API Changes
 -----------
-* :pull:`194` - Some settings in :attr:`serpentTools.parsers.results.ResultsReader.metadata`
+* :pull:`194` - Some settings in :attr:`serpentTools.ResultsReader.metadata`
   are now stored as :class:`int` or :class:`float`, depending upon their nature.
   Many of these settings refer to flags of settings used by ``SERPENT``
 
@@ -177,7 +177,7 @@ API Changes
 ====================
 
 * :pull:`180` - Add capability to pass isotope ``zzaaai`` for 
-  :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues` 
+  :meth:`~serpentTools.objects.materials.DepletedMaterial.getValues` 
   and associated plot routines
 * :pull:`187` - Import all readers and samplers from the main package::
 
@@ -207,18 +207,18 @@ API Changes
 * :pull:`141` - Setting :ref:`xs-reshapeScatter` can be used to reshape scatter
   matrices on |homogUniv|
   objects to square matrices
-* :pull:`145` - :py:meth:`~serpentTools.objects.containers.HomogUniv.hasData` 
+* :pull:`145` - :meth:`~serpentTools.objects.containers.HomogUniv.hasData` 
   added to check if |homogUniv| 
   objects have any data stored on them
 * :pull:`146` - |homogUniv| object
   stores group structure on the object. New dictionaries for storing group constant
   data that is not ``INF`` nor ``B1`` - 
-  :py:attr:`~serpentTools.objects.containers.HomogUniv.gc` and 
-  :py:attr:`~serpentTools.objects.containers.HomogUniv.gcUnc` 
+  :attr:`~serpentTools.objects.containers.HomogUniv.gc` and 
+  :attr:`~serpentTools.objects.containers.HomogUniv.gcUnc` 
 * :pull:`130` Added the ability to read results file
 * :pull:`149` - Add the ability to read sensitivity files
-* :pull:`161` - Add the :py:mod:`~serpentTools.utils` module
-* :pull:`165` - Add the :py:meth:`serpentTools.objects.containers.HomogUniv.plot` 
+* :pull:`161` - Add the :mod:`~serpentTools.utils` module
+* :pull:`165` - Add the :meth:`serpentTools.objects.containers.HomogUniv.plot` 
   method
    
 .. _v0.5.0API-changes:
@@ -280,6 +280,6 @@ Deprecation
 * :pull:`93` - Detector and Depletion Samplers
 * :pull:`96` - Better mesh plotting for detector
 * :issue:`99` - Negative universe burnup with branching reader - :pull:`100`
-* :py:attr:`serpentTools.objects.containers.Detector.indexes` are now zero-indexed
+* :attr:`serpentTools.objects.containers.Detector.indexes` are now zero-indexed
 * The PDF manual is no longer tracked in this repository
 
