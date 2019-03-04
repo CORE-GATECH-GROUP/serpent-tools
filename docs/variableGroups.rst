@@ -115,7 +115,7 @@
   * ``DF_SURFACE`` →  ``dfSurface``
   * ``DF_SURF_AREA`` →  ``dfSurfArea``
   * ``DF_SURF_DF`` →  ``dfSurfDf``
-  * ``DF_SURF_INF_CURR`` →  ``dfSurfInfCurr``
+  * ``DF_SURF_IN_CURR`` →  ``dfSurfInCurr``
   * ``DF_SURF_NET_CURR`` →  ``dfSurfNetCurr``
   * ``DF_SURF_OUT_CURR`` →  ``dfSurfOutCurr``
   * ``DF_SYM`` →  ``dfSym``
