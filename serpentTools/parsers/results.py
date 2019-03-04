@@ -2,7 +2,7 @@
 from collections import OrderedDict
 from six import iteritems
 
-from numpy import array, vstack
+from numpy import array, vstack, empty
 from cycler import cycler
 from matplotlib import rcParams
 from matplotlib.pyplot import gca
@@ -35,6 +35,7 @@ from serpentTools.messages import (
     warning, SerpentToolsException,
     info,
 )
+from serpentTools.io import toMatlab
 
 
 MapStrVersions = {
@@ -694,6 +695,80 @@ class ResultsReader(XSReader):
         """
         return deconvertVariableName(name)
 
+    def toMatlab(self, fileP, reconvert=True, append=True,
+                 format='5', longNames=True, compress=True,
+                 oned='row'):
+        """
+        Write a binary MATLAB file from the contents of this reader
+
+        The group constant data will be presented as a multi-dimensional
+        array, rather than a stacked 2D matrix. The axis are ordered
+        ``burnup, universeIndex, group, value/uncertainty``
+
+        Parameters
+        ----------
+        obj: ``serpentTools`` container
+            Parser or container to be written to file
+        fileP: str or file-like object
+            Name of the file to write
+        reconvert: bool
+            If this evaluates to true, convert values back into their
+            original form as they appear in the output file.
+        append: bool
+            If true and a file exists under ``output``, append to that file.
+            Otherwise the file will be overwritten
+        format: {'5', '4'}
+            Format of file to write. ``'5'`` for MATLAB 5 to 7.2, ``'4'`` for
+            MATLAB 4
+        longNames: bool
+            If true, allow variable names to reach 63 characters,
+            which works with MATLAB 7.6+. Otherwise, maximum length is
+            31 characters
+        compress: bool
+            If true, compress matrices on write
+        oned: {'row', 'col'}:
+            Write one-dimensional arrays as row vectors if
+            ``oned=='row'`` (default), or column vectors
+
+        Examples
+        --------
+
+        >>> import serpentTools
+        >>> from scipy.io import loadmat
+        >>> r = serpentTools.readDataFile('pwr_res.m')
+        # convert to original variable names
+        >>> r.toMatlab('pwr_res.mat', True)
+        >>> loaded = loadmat('pwr_res.mat')
+        >>> loaded['ABS_KEFF']
+        array([[0.991938, 0.00145 ],
+               [0.181729, 0.0024  ]])
+        >>> kinf = loaded['INF_KINF']
+        >>> kinf.shape
+        (2, 1, 1, 2)
+        >>> kinf[:, 0, 0, 0]
+        array([0.993385, 0.181451])
+        >>> tot = loaded['INF_TOT']
+        >>> tot.shape
+        (2, 1, 2, 2)
+        >>> tot[:, 0, :, 0]
+        array([[0.496553, 1.21388 ],
+               [0.481875, 1.30993 ]])
+        # use the universes key to identify ordering of universes
+        >>> loaded['UNIVERSES']
+        array([0])
+
+        Raises
+        ------
+        ImportError:
+            If :term:`scipy` is not installed
+
+        See Also
+        --------
+        * :func:`scipy.io.savemat`
+        """
+        return toMatlab(self, fileP, reconvert, append, format, longNames,
+                        compress, oned)
+
     def _gather_matlab(self, reconvert):
         if reconvert:
             varFunc = self.ioReconvertName
@@ -708,4 +783,59 @@ class ResultsReader(XSReader):
             varFunc = self.ioConvertName
             out.update(self.metadata)
             out.update(self.resdata)
+        out.update(self._gather_univdata(varFunc))
         return out
+
+    def _gather_univdata(self, func):
+        numAppearances = {}
+
+        for key in self.universes:
+            if key[0] not in numAppearances:
+                numAppearances[key[0]] = 1
+                continue
+            numAppearances[key[0]] += 1
+        # check to make sure all universes appear an identical
+        # number of times
+        burnupVals = set(numAppearances.values())
+        if len(burnupVals) != 1:
+            raise SerpentToolsException(
+                "Universes appear a different number of times:\n{}"
+                .format(numAppearances))
+
+        shapeStart = burnupVals.pop(), len(numAppearances)
+        univOrder = tuple(sorted(numAppearances))
+
+        univData = {func('universes'): univOrder}
+
+        for univKey, univ in iteritems(self.universes):
+
+            # position in matrix
+            uIndex = univOrder.index(univKey[0])
+            bIndex = univKey[2] - 1
+
+            for expName, uncName in zip(
+                    ('infExp', 'b1Exp', 'gc'), ('infUnc', 'b1Unc', 'gcUnc')):
+                expD = getattr(univ, expName)
+                uncD = getattr(univ, uncName)
+                gatherPairedUnivData(univ, uIndex, bIndex, shapeStart, func,
+                                     expD, uncD, univData)
+
+        return univData
+
+
+def gatherPairedUnivData(universe, uIndex, bIndex, shapeStart, convFunc,
+                         expD, uncD, univData):
+    """Helper function to update universe dictionary for exporting"""
+    for xsKey, xsVal in iteritems(expD):
+        outKey = convFunc(xsKey)
+        xsUnc = uncD[xsKey]
+        if outKey not in univData:
+            shape = xsVal.shape
+            if not shape:  # single value like infKinf
+                shape = 1,
+            data = empty((shapeStart + shape + (2, )))
+            univData[outKey] = data
+        else:
+            data = univData[outKey]
+        data[bIndex, uIndex, ..., 0] = xsVal
+        data[bIndex, uIndex, ..., 1] = xsUnc
