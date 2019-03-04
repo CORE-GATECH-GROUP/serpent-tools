@@ -4,22 +4,6 @@
 ``2.1.30``
 ----------
 
-.. _diffusion-2-1-30:
-
-
-``diffusion``
--------------
-
-
-  * ``CMM_DIFFCOEF`` →  ``cmmDiffcoef``
-  * ``CMM_DIFFCOEF_X`` →  ``cmmDiffcoefX``
-  * ``CMM_DIFFCOEF_Y`` →  ``cmmDiffcoefY``
-  * ``CMM_DIFFCOEF_Z`` →  ``cmmDiffcoefZ``
-  * ``CMM_TRANSPXS`` →  ``cmmTranspxs``
-  * ``CMM_TRANSPXS_X`` →  ``cmmTranspxsX``
-  * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
-  * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
-
 .. _n-balance-2-1-30:
 
 
@@ -98,93 +82,59 @@
   * ``SIX_FF_LT`` →  ``sixFfLt``
   * ``SIX_FF_P`` →  ``sixFfP``
 
-.. _vars-2-1-29:
-
-----------
-``2.1.29``
-----------
-
-.. _diffusion-2-1-29:
-
-
-``diffusion``
--------------
-
-
-  * ``CMM_DIFFCOEF`` →  ``cmmDiffcoef``
-  * ``CMM_DIFFCOEF_X`` →  ``cmmDiffcoefX``
-  * ``CMM_DIFFCOEF_Y`` →  ``cmmDiffcoefY``
-  * ``CMM_DIFFCOEF_Z`` →  ``cmmDiffcoefZ``
-  * ``CMM_TRANSPXS`` →  ``cmmTranspxs``
-  * ``CMM_TRANSPXS_X`` →  ``cmmTranspxsX``
-  * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
-  * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
-
-.. _n-balance-2-1-29:
-
-
-``n-balance``
--------------
-
-
-  * ``BALA_LOSS_NEUTRON_CAPT`` →  ``balaLossNeutronCapt``
-  * ``BALA_LOSS_NEUTRON_CUT`` →  ``balaLossNeutronCut``
-  * ``BALA_LOSS_NEUTRON_FISS`` →  ``balaLossNeutronFiss``
-  * ``BALA_LOSS_NEUTRON_LEAK`` →  ``balaLossNeutronLeak``
-  * ``BALA_LOSS_NEUTRON_TOT`` →  ``balaLossNeutronTot``
-  * ``BALA_NEUTRON_DIFF`` →  ``balaNeutronDiff``
-  * ``BALA_SRC_NEUTRON_FISS`` →  ``balaSrcNeutronFiss``
-  * ``BALA_SRC_NEUTRON_NXN`` →  ``balaSrcNeutronNxn``
-  * ``BALA_SRC_NEUTRON_SRC`` →  ``balaSrcNeutronSrc``
-  * ``BALA_SRC_NEUTRON_TOT`` →  ``balaSrcNeutronTot``
-  * ``BALA_SRC_NEUTRON_VR`` →  ``balaSrcNeutronVr``
-
-.. _optimization-2-1-29:
-
-
-``optimization``
-----------------
-
-
-  * ``MG_MAJORANT_MODE`` →  ``mgMajorantMode``
-  * ``OPTIMIZATION_MODE`` →  ``optimizationMode``
-  * ``RECONSTRUCT_MACROXS`` →  ``reconstructMacroxs``
-  * ``RECONSTRUCT_MICROXS`` →  ``reconstructMicroxs``
-  * ``SPECTRUM_COLLAPSE`` →  ``spectrumCollapse``
-
-.. _rad-data-2-1-29:
-
-
-``rad-data``
-------------
-
-
-  * ``ACTINIDE_ACTIVITY`` →  ``actinideActivity``
-  * ``ACTINIDE_DECAY_HEAT`` →  ``actinideDecayHeat``
-  * ``ACTINIDE_ING_TOX`` →  ``actinideIngTox``
-  * ``ACTINIDE_INH_TOX`` →  ``actinideInhTox``
-  * ``ALPHA_DECAY_SOURCE`` →  ``alphaDecaySource``
-  * ``BETA_DECAY_SOURCE`` →  ``betaDecaySource``
-  * ``CS134_ACTIVITY`` →  ``cs134Activity``
-  * ``FISSION_PRODUCT_ACTIVITY`` →  ``fissionProductActivity``
-  * ``FISSION_PRODUCT_DECAY_HEAT`` →  ``fissionProductDecayHeat``
-  * ``FISSION_PRODUCT_ING_TOX`` →  ``fissionProductIngTox``
-  * ``FISSION_PRODUCT_INH_TOX`` →  ``fissionProductInhTox``
-  * ``INGENSTION_TOXICITY`` →  ``ingenstionToxicity``
-  * ``INHALATION_TOXICITY`` →  ``inhalationToxicity``
-  * ``NEUTRON_DECAY_SOURCE`` →  ``neutronDecaySource``
-  * ``PHOTON_DECAY_SOURCE`` →  ``photonDecaySource``
-  * ``SR90_ACTIVITY`` →  ``sr90Activity``
-  * ``TE132_ACTIVITY`` →  ``te132Activity``
-  * ``TOT_ACTIVITY`` →  ``totActivity``
-  * ``TOT_DECAY_HEAT`` →  ``totDecayHeat``
-  * ``TOT_SF_RATE`` →  ``totSfRate``
-
 .. _vars-base:
 
 --------
 ``base``
 --------
+
+.. _adf-base:
+
+
+``adf``
+-------
+
+
+  * ``DF_CORN_AREA`` →  ``dfCornArea``
+  * ``DF_CORN_DF`` →  ``dfCornDf``
+  * ``DF_CORN_IN_CURR`` →  ``dfCornInCurr``
+  * ``DF_CORN_NET_CURR`` →  ``dfCornNetCurr``
+  * ``DF_CORN_OUT_CURR`` →  ``dfCornOutCurr``
+  * ``DF_HET_CORN_FLUX`` →  ``dfHetCornFlux``
+  * ``DF_HET_SURF_FLUX`` →  ``dfHetSurfFlux``
+  * ``DF_HET_VOL_FLUX`` →  ``dfHetVolFlux``
+  * ``DF_HOM_CORN_FLUX`` →  ``dfHomCornFlux``
+  * ``DF_HOM_SURF_FLUX`` →  ``dfHomSurfFlux``
+  * ``DF_HOM_VOL_FLUX`` →  ``dfHomVolFlux``
+  * ``DF_MID_AREA`` →  ``dfMidArea``
+  * ``DF_MID_IN_CURR`` →  ``dfMidInCurr``
+  * ``DF_MID_NET_CURR`` →  ``dfMidNetCurr``
+  * ``DF_MID_OUT_CURR`` →  ``dfMidOutCurr``
+  * ``DF_N_CORN`` →  ``dfNCorn``
+  * ``DF_N_SURF`` →  ``dfNSurf``
+  * ``DF_SURFACE`` →  ``dfSurface``
+  * ``DF_SURF_AREA`` →  ``dfSurfArea``
+  * ``DF_SURF_DF`` →  ``dfSurfDf``
+  * ``DF_SURF_INF_CURR`` →  ``dfSurfInfCurr``
+  * ``DF_SURF_NET_CURR`` →  ``dfSurfNetCurr``
+  * ``DF_SURF_OUT_CURR`` →  ``dfSurfOutCurr``
+  * ``DF_SYM`` →  ``dfSym``
+  * ``DF_VOLUME`` →  ``dfVolume``
+
+.. _albedos-base:
+
+
+``albedos``
+-----------
+
+
+  * ``ALB_FLIP_DIR`` →  ``albFlipDir``
+  * ``ALB_IN_CURR`` →  ``albInCurr``
+  * ``ALB_N_SURF`` →  ``albNSurf``
+  * ``ALB_OUT_CURR`` →  ``albOutCurr``
+  * ``ALB_PART_ALB`` →  ``albPartAlb``
+  * ``ALB_SURFACE`` →  ``albSurface``
+  * ``ALB_TOT_ALB`` →  ``albTotAlb``
 
 .. _arr-estimators-base:
 
@@ -222,6 +172,22 @@
   * ``COEF_BRANCH`` →  ``coefBranch``
   * ``COEF_BU_STEP`` →  ``coefBuStep``
   * ``COEF_IDX`` →  ``coefIdx``
+
+.. _diffusion-base:
+
+
+``diffusion``
+-------------
+
+
+  * ``CMM_DIFFCOEF`` →  ``cmmDiffcoef``
+  * ``CMM_DIFFCOEF_X`` →  ``cmmDiffcoefX``
+  * ``CMM_DIFFCOEF_Y`` →  ``cmmDiffcoefY``
+  * ``CMM_DIFFCOEF_Z`` →  ``cmmDiffcoefZ``
+  * ``CMM_TRANSPXS`` →  ``cmmTranspxs``
+  * ``CMM_TRANSPXS_X`` →  ``cmmTranspxsX``
+  * ``CMM_TRANSPXS_Y`` →  ``cmmTranspxsY``
+  * ``CMM_TRANSPXS_Z`` →  ``cmmTranspxsZ``
 
 .. _eig-base:
 
@@ -343,6 +309,25 @@
   * ``IMP_EALF`` →  ``impEalf``
   * ``NUBAR`` →  ``nubar``
 
+.. _n-balance-base:
+
+
+``n-balance``
+-------------
+
+
+  * ``BALA_LOSS_NEUTRON_CAPT`` →  ``balaLossNeutronCapt``
+  * ``BALA_LOSS_NEUTRON_CUT`` →  ``balaLossNeutronCut``
+  * ``BALA_LOSS_NEUTRON_FISS`` →  ``balaLossNeutronFiss``
+  * ``BALA_LOSS_NEUTRON_LEAK`` →  ``balaLossNeutronLeak``
+  * ``BALA_LOSS_NEUTRON_TOT`` →  ``balaLossNeutronTot``
+  * ``BALA_NEUTRON_DIFF`` →  ``balaNeutronDiff``
+  * ``BALA_SRC_NEUTRON_FISS`` →  ``balaSrcNeutronFiss``
+  * ``BALA_SRC_NEUTRON_NXN`` →  ``balaSrcNeutronNxn``
+  * ``BALA_SRC_NEUTRON_SRC`` →  ``balaSrcNeutronSrc``
+  * ``BALA_SRC_NEUTRON_TOT`` →  ``balaSrcNeutronTot``
+  * ``BALA_SRC_NEUTRON_VR`` →  ``balaSrcNeutronVr``
+
 .. _neutron-physics-base:
 
 
@@ -381,6 +366,19 @@
   * ``TOT_TRANSMU_REA`` →  ``totTransmuRea``
   * ``TOT_TRANSPORT_NUCLIDES`` →  ``totTransportNuclides``
 
+.. _optimization-base:
+
+
+``optimization``
+----------------
+
+
+  * ``MG_MAJORANT_MODE`` →  ``mgMajorantMode``
+  * ``OPTIMIZATION_MODE`` →  ``optimizationMode``
+  * ``RECONSTRUCT_MACROXS`` →  ``reconstructMacroxs``
+  * ``RECONSTRUCT_MICROXS`` →  ``reconstructMicroxs``
+  * ``SPECTRUM_COLLAPSE`` →  ``spectrumCollapse``
+
 .. _parallel-base:
 
 
@@ -418,6 +416,20 @@
   * ``UFS_MODE`` →  ``ufsMode``
   * ``UFS_ORDER`` →  ``ufsOrder``
 
+.. _pin-power-base:
+
+
+``pin-power``
+-------------
+
+
+  * ``PPW_FF`` →  ``ppwFf``
+  * ``PPW_HOM_FLUX`` →  ``ppwHomFlux``
+  * ``PPW_LATTICE`` →  ``ppwLattice``
+  * ``PPW_LATTICE_TYPE`` →  ``ppwLatticeType``
+  * ``PPW_PINS`` →  ``ppwPins``
+  * ``PPW_POW`` →  ``ppwPow``
+
 .. _poisons-base:
 
 
@@ -441,6 +453,34 @@
   * ``XE135_MACRO_ABS`` →  ``xe135MacroAbs``
   * ``XE135_MICRO_ABS`` →  ``xe135MicroAbs``
   * ``XE135_YIELD`` →  ``xe135Yield``
+
+.. _rad-data-base:
+
+
+``rad-data``
+------------
+
+
+  * ``ACTINIDE_ACTIVITY`` →  ``actinideActivity``
+  * ``ACTINIDE_DECAY_HEAT`` →  ``actinideDecayHeat``
+  * ``ACTINIDE_ING_TOX`` →  ``actinideIngTox``
+  * ``ACTINIDE_INH_TOX`` →  ``actinideInhTox``
+  * ``ALPHA_DECAY_SOURCE`` →  ``alphaDecaySource``
+  * ``BETA_DECAY_SOURCE`` →  ``betaDecaySource``
+  * ``CS134_ACTIVITY`` →  ``cs134Activity``
+  * ``FISSION_PRODUCT_ACTIVITY`` →  ``fissionProductActivity``
+  * ``FISSION_PRODUCT_DECAY_HEAT`` →  ``fissionProductDecayHeat``
+  * ``FISSION_PRODUCT_ING_TOX`` →  ``fissionProductIngTox``
+  * ``FISSION_PRODUCT_INH_TOX`` →  ``fissionProductInhTox``
+  * ``INGENSTION_TOXICITY`` →  ``ingenstionToxicity``
+  * ``INHALATION_TOXICITY`` →  ``inhalationToxicity``
+  * ``NEUTRON_DECAY_SOURCE`` →  ``neutronDecaySource``
+  * ``PHOTON_DECAY_SOURCE`` →  ``photonDecaySource``
+  * ``SR90_ACTIVITY`` →  ``sr90Activity``
+  * ``TE132_ACTIVITY`` →  ``te132Activity``
+  * ``TOT_ACTIVITY`` →  ``totActivity``
+  * ``TOT_DECAY_HEAT`` →  ``totDecayHeat``
+  * ``TOT_SF_RATE`` →  ``totSfRate``
 
 .. _sampling-base:
 
