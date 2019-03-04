@@ -16,6 +16,12 @@ from collections import Callable
 
 from numpy import ndarray
 
+__all__ = [
+    'SerpentToolsException',
+    'SamplerError',
+    'MismatchedContainersError',
+]
+
 
 class SerpentToolsException(Exception):
     """Base-class for all exceptions in this project"""

@@ -218,7 +218,7 @@ class DetectorBase(NamedObject):
 
         Raises
         ------
-        SerpentToolsException
+        :class:`~serpentTools.SerpentToolsException`
             If the data has not been reshaped or is None [e.g. scores]
         KeyError
             If the data set to slice not in the allowed selection
@@ -300,7 +300,7 @@ class DetectorBase(NamedObject):
 
         Raises
         ------
-        SerpentToolsException
+        :class:`~serpentTools.SerpentToolsException`
             if number of rows in data not equal to
             number of energy groups
 
@@ -393,7 +393,7 @@ class DetectorBase(NamedObject):
 
         Raises
         ------
-        SerpentToolsException
+        :class:`~serpentTools.SerpentToolsException`
             If data contains more than 2 dimensions
 
         See Also
@@ -483,7 +483,7 @@ class DetectorBase(NamedObject):
 
         Raises
         ------
-        SerpentToolsException
+        :class:`~serpentTools.SerpentToolsException`
             If data to be plotted, with or without constraints, is not 1D
         KeyError
             If the data set by ``what`` not in the allowed selection

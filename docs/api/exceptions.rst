@@ -4,9 +4,9 @@
 Exceptions
 ==========
 
-.. autoclass:: serpentTools.messages.SerpentToolsException
+.. autoclass:: serpentTools.SerpentToolsException
 
-.. autoclass:: serpentTools.messages.SamplerError
+.. autoclass:: serpentTools.SamplerError
 
-.. autoclass:: serpentTools.messages.MismatchedContainersError
+.. autoclass:: serpentTools.MismatchedContainersError
 

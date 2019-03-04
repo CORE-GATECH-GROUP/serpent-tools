@@ -228,10 +228,10 @@ class SampledDetector(SampledContainer, DetectorBase):
 
         Raises
         ------
-        SamplerError
+        :class:`~serpentTools.SamplerError`
             If ``allTallies`` is None, indicating this object has been
             instructed to free up data from all sampled files
-        SerpentToolsException
+        :class:`~serpentTools.SerpentToolsException`
             If data to be plotted, after applying ``fixed``, is not
             one dimensional
 
