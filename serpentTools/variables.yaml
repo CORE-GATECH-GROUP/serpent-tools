@@ -106,6 +106,9 @@ base:
     DF_HOM_CORN_FLUX, DF_SURF_DF, DF_CORN_DF},
   pin-power: !!set
     {PPW_LATTICE, PPW_LATTICE_TYPE, PPW_PINS, PPW_POW, PPW_HOM_FLUX, PPW_FF}
+  albedos: !!set
+    {ALB_SURFACE, ALB_FLIP_DIR, ALB_N_SURF, ALB_IN_CURR, ALB_OUT_CURR, 
+    ALB_TOT_ALB, ALB_PART_ALB}
 
 2.1.30:
   n-balance: !!set 
