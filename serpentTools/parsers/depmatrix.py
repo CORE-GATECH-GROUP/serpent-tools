@@ -238,6 +238,22 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
                    )
         return ax
 
+    def _gather_matlab(self, reconvert):
+        out = {'t': self.deltaT}
+        if reconvert:
+            out['N0'] = self.n0
+            out['N1'] = self.n1
+            out['ZAI'] = self.zai
+        else:
+            out['n0'] = self.n0
+            out['n1'] = self.n1
+            out['zai'] = self.zai
+        if self.sparse:
+            out['A'] = self.depmtx.toarray()
+        else:
+            out['A'] = self.depmtx
+        return out
+
 
 def _parseIsoBlock(stream, storage, match, line, regex):
     """Read through the N0, N1 block and add data to storage"""
