@@ -691,10 +691,13 @@ class ResultsReader(XSReader):
         array, rather than a stacked 2D matrix. The axis are ordered
         ``burnup, universeIndex, group, value/uncertainty``
 
+        The ordering of the universes can be found in the ``'UNIVERSES'``
+        vector if ``reconvert==True``, otherwise ``'universes'``. Each
+        universe ID is present in this vector, ordered to their
+        position along the second axis in the matrix.
+
         Parameters
         ----------
-        obj: ``serpentTools`` container
-            Parser or container to be written to file
         fileP: str or file-like object
             Name of the file to write
         reconvert: bool
