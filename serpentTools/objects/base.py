@@ -173,11 +173,11 @@ class DetectorBase(NamedObject):
         Name of this detector"""
     baseAttrs = """grids: dict
         Dictionary with additional data describing energy grids or mesh points
-    tallies: None or {np}
+    tallies: None, float, or {np}
         Reshaped tally data to correspond to the bins used
-    errors: None or {np}
+    errors: None, float, or {np}
         Reshaped relative error data corresponding to bins used
-    scores: None or {np}
+    scores: None, float, or {np}
         Reshaped array of tally scores. SERPENT 1 only
     indexes: None or :class:`collections.OrderedDict`
         Collection of unique indexes for each requested bin

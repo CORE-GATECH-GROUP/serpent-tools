@@ -31,7 +31,7 @@ from matplotlib.patches import RegularPolygon
 from matplotlib.collections import PatchCollection
 from matplotlib.pyplot import gca
 
-from serpentTools.messages import warning, debug, SerpentToolsException
+from serpentTools.messages import warning, SerpentToolsException
 from serpentTools.objects.base import DetectorBase
 from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, setAx_xlims, setAx_ylims,
@@ -108,22 +108,27 @@ class Detector(DetectorBase):
         if self.__reshaped:
             warning('Data has already been reshaped')
             return
-        debug('Starting to sort tally data...')
         shape = []
         self.indexes = OrderedDict()
-        for index in range(1, 10):
-            uniqueVals = unique(self.bins[:, index])
-            if len(uniqueVals) > 1:
-                indexName = self._indexName(index)
-                self.indexes[indexName] = array(uniqueVals, dtype=int) - 1
-                shape.append(len(uniqueVals))
-        self.tallies = self.bins[:, 10].reshape(shape)
-        self.errors = self.bins[:, 11].reshape(shape)
-        if self.bins.shape[1] == 13:
-            self.scores = self.bins[:, 12].reshape(shape)
+        hasScores = self.bins.shape[1] == 13
+        if self.bins.shape[0] == 1:
+            self.tallies = self.bins[0, 10]
+            self.errors = self.bins[0, 11]
+            if hasScores:
+                self.scores = self.bins[0, 12]
+        else:
+            for index in range(1, 10):
+                uniqueVals = unique(self.bins[:, index])
+                if len(uniqueVals) > 1:
+                    indexName = self._indexName(index)
+                    self.indexes[indexName] = array(uniqueVals, dtype=int) - 1
+                    shape.append(len(uniqueVals))
+            self.tallies = self.bins[:, 10].reshape(shape)
+            self.errors = self.bins[:, 11].reshape(shape)
+            if hasScores:
+                self.scores = self.bins[:, 12].reshape(shape)
         self._map = {'tallies': self.tallies, 'errors': self.errors,
                      'scores': self.scores}
-        debug('Done')
         self.__reshaped = True
         return shape
 
