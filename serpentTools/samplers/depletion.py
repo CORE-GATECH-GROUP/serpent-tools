@@ -318,13 +318,13 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         Raises
         ------
-        SamplerError
+        :class:`~serpentTools.SamplerError`
             If ``self.allData`` is empty. Sampler was instructed to
             free all materials and does not retain data from all containers
 
         See Also
         --------
-        :py:meth:`~serpentTools.samplers.depletion.SampledDepletedMaterial.plot`
+        :meth:`~serpentTools.samplers.depletion.SampledDepletedMaterial.plot`
 
         """
         if not self.allData:

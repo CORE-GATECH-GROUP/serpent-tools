@@ -115,7 +115,7 @@ class HomogUniv(NamedObject):
 
     Raises
     ------
-    SerpentToolsException:
+    :class:`~serpentTools.SerpentToolsException`
         If a negative value of burnup, step, or burnup days is passed
 
     """
@@ -666,6 +666,12 @@ class BranchContainer(BaseObject):
         univID: int or str
             Identifier for this universe
         burnup: float or int
+
+        Raises
+        ------
+        :class:`~serpentTools.SerpentToolsException`
+            If passed a value of ``burnDays`` and set up to work with burnup,
+            or vice versa
         """
         if self.__hasDays is None and burnup:
             self.__hasDays = burnup < 0
@@ -713,7 +719,7 @@ class BranchContainer(BaseObject):
         ------
         KeyError:
             If the requested universe could not be found
-        SerpentToolsException:
+        :class:`~serpentTools.SerpentToolsException`
             If neither burnup nor index are given
         """
         if burnup is None and index is None:

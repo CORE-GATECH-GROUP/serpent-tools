@@ -120,10 +120,12 @@ class ResultsReader(XSReader):
 
     Raises
     ------
-    SerpentToolsException:  Serpent version is not supported
-                            No universes are found in the file
-                            No results are collected
-                            Corrupted results
+    :class:`~serpentTools.SerpentToolsException`:
+        Serpent version is not supported,
+        No universes are found in the file,
+        No results are collected,
+        Corrupted results
+
     IOError: file is unexpectedly closes while reading
     """
 
@@ -300,7 +302,7 @@ class ResultsReader(XSReader):
         ------
         KeyError:
             If the requested universe could not be found
-        SerpentToolsException:
+        :class:`~serpentTools.SerpentToolsException`
             If burnup, days and index are not given
         """
         if index is None and burnup is None and timeDays is None:
