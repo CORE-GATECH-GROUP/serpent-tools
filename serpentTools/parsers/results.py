@@ -31,7 +31,7 @@ from serpentTools.utils import (
     magicPlotDocDecorator,
 )
 from serpentTools.messages import (
-    warning, debug, SerpentToolsException,
+    warning, SerpentToolsException,
     info,
 )
 
