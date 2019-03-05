@@ -221,7 +221,7 @@ class DepletedMaterialTester(_DepletionTestHelper):
 
     def test_plotter(self):
         """Verify the plotting functionality is operational."""
-        self.material.plot('days', 'adens', timePoints=self.requestedDays,
+        self.material.plot('days', 'adens',
                            names=['Xe135', 'U235'])
 
 
