@@ -122,11 +122,6 @@ class TestGetUniv(unittest.TestCase):
         with self.assertRaises(SerpentToolsException):
             self.reader.getUniv('0', burnup=None, index=None, timeDays=None)
 
-    def test_nonPostiveIndex(self):
-        """Verify that the reader raises error when the time index is not positive""" # noqa
-        with self.assertRaises(KeyError):
-            self.reader.getUniv('0', burnup=None, index=0, timeDays=None)
-
     def test_noUnivState(self):
         """Verify that the reader raises error when the state tuple does not exist""" # noqa
         with self.assertRaises(KeyError):
@@ -134,7 +129,7 @@ class TestGetUniv(unittest.TestCase):
 
     def test_validUniv(self):
         """Verify that getUniv returns the correct universe"""
-        xsDict = self.reader.getUniv('0', burnup=0.0, index=1, timeDays=0.0)
+        xsDict = self.reader.getUniv('0', burnup=0.0, index=0, timeDays=0.0)
         assert_equal(xsDict.infExp['infAbs'], self.expectedinfValAbs)
 
 
@@ -337,7 +332,7 @@ class TestFilterResults(TesterCommonResultsReader):
     expectedInfVals = array([2.46724E+18, 2.98999E+17])
     expectedInfUnc = array([0.00115, 0.00311])
 
-    expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
+    expectedStates = (('0', 0.0, 0, 0.0), ('0', 500, 1, 5.0))
 
     def setUp(self):
         self.file = getFile('pwr_res.m')
@@ -447,7 +442,7 @@ class TestReadAllResults(TesterCommonResultsReader):
         [1.00000E+37, 6.25000E-07, 0.00000E+00])
     expectedInfVals = array([2.46724E+18, 2.98999E+17])
     expectedInfUnc = array([0.00115, 0.00311])
-    expectedStates = (('0', 0.0, 1, 0.0), ('0', 500, 2, 5.0))
+    expectedStates = (('0', 0.0, 0, 0.0), ('0', 500, 1, 5.0))
 
     def setUp(self):
         self.file = getFile('pwr_filter_res.m')
@@ -564,7 +559,7 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
         [1.00000E+37, 6.25000E-07, 0.00000E+00])
     expectedInfVals = array([8.71807E+14, 4.80974E+13])
     expectedInfUnc = array([0.00097, 0.00121])
-    expectedStates = (('0', 1, 1, 1), ('0', 1, 1, 1))
+    expectedStates = (('0', 0, 0, 0), ('0', 0, 0, 0))
 
     def setUp(self):
         self.file = getFile('pwr_noBU_res.m')
@@ -605,7 +600,7 @@ class RestrictedResultsReader(unittest.TestCase):
     dataFile = "pwr_res.m"
 
     def _testUnivFlux(self, reader):
-        univ = reader.getUniv('0', index=1)
+        univ = reader.getUniv('0', index=0)
         assert_equal(self.expectedInfFlux_bu0, univ.get("infFlx"))
 
     def test_justFlux(self):
