@@ -7,7 +7,7 @@ from numpy import arange
 from numpy.testing import assert_array_equal
 from serpentTools.objects import Detector
 from serpentTools.tests.utils import MatlabTesterHelper
-from serpentTools.data import getFile
+from serpentTools.data import getFile, readDataFile
 from serpentTools.parsers import DepmtxReader
 
 
@@ -124,7 +124,103 @@ class ConvertedFullDepmtxMatlabTester(DepmtxMatlabHelper):
     SPARSE = False
 
 
-del Det2MatlabHelper, DepmtxMatlabHelper
+class ResultToMatlabHelper(MatlabTesterHelper):
+    """Class for testing the result reader matlab export"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.reader = readDataFile("pwr_res.m")
+
+    def setUp(self):
+        MatlabTesterHelper.setUp(self)
+        from scipy.io import loadmat
+        self.stream = BytesIO()
+        if self.CONVERT:
+            from serpentTools.parsers.results import getSerpentCaseName
+            self.convertFunc = getSerpentCaseName
+        else:
+            from serpentTools.parsers.results import getMixedCaseName
+            self.convertFunc = getMixedCaseName
+        self.reader.toMatlab(self.stream, self.CONVERT, oned='column')
+        self.gathered = loadmat(self.stream)
+
+    def checkMaybe1DArrays(self, expValue, loaded, origKey):
+        """Check arrays when the gathered value is likely a 2D row vector"""
+        if loaded.shape != expValue.shape:
+            self.assertEqual(expValue.shape[0], loaded.shape[0],
+                             msg=origKey)
+            loaded = loaded[:, 0]
+        assert_array_equal(expValue, loaded, err_msg=origKey)
+
+    def test_gatheredMetadata(self):
+        """Test the writing of metadata to matlab"""
+        for origKey, expValue in iteritems(self.reader.metadata):
+            expKey = self.convertFunc(origKey)
+            self.assertTrue(expKey in self.gathered, msg=origKey)
+            actual = self.gathered[expKey]
+            if isinstance(expValue, str):
+                actValue = actual[0]
+                self.assertEqual(expValue, actValue, msg=origKey)
+            elif isinstance(expValue, (int, float)):
+                # stored as (1, 1) matrix
+                actValue = actual.flatten()[0]
+                self.assertEqual(expValue, actValue, msg=origKey)
+            else:  # try numpy array
+                self.checkMaybe1DArrays(expValue, actual, origKey)
+
+    def test_dumpedResdata(self):
+        """Test the writing of results data to matlab"""
+        for origKey, expValue in iteritems(self.reader.resdata):
+            expKey = self.convertFunc(origKey)
+            self.assertTrue(expKey in self.gathered, msg=origKey)
+            self.checkMaybe1DArrays(expValue, self.gathered[expKey], origKey)
+
+    def test_dumpedUnivData(self):
+        """Test the writing of universe data to matlab"""
+        univIxKey = self.convertFunc("universes")
+        burnIxKey = self.convertFunc("burnStep")
+        self.assertTrue(univIxKey in self.gathered)
+        self.assertTrue(burnIxKey in self.gathered)
+        univOrder = tuple(self.gathered[univIxKey])
+        burnOrder = tuple(self.gathered[burnIxKey].flatten())
+        for univKey, universe in iteritems(self.reader.universes):
+            self.assertTrue(univKey[0] in univOrder,
+                            msg="{} // {}".format(univKey, univOrder))
+            uIndex = univOrder.index(univKey[0])
+            actBurnIx = univKey[2] - 1
+            self.assertTrue(actBurnIx in burnOrder,
+                            msg="{} // {}".format(univKey, burnOrder))
+            burnIndex = burnOrder.index(actBurnIx)
+            self.checkUnivContents(universe, uIndex, burnIndex,
+                                   universe.infExp, universe.infUnc)
+            self.checkUnivContents(universe, uIndex, burnIndex,
+                                   universe.b1Exp, universe.b1Unc)
+            self.checkUnivContents(universe, uIndex, burnIndex,
+                                   universe.gc, universe.gcUnc)
+
+    def checkUnivContents(self, universe, univIndex, burnIndex,
+                          expGcD, uncGcD):
+        """
+        Check the contents of a specific subset of group constant dictionaries
+        """
+        for origKey, expValue in iteritems(expGcD):
+            uncValue = uncGcD[origKey]
+            expKey = self.convertFunc(origKey)
+            self.assertTrue(expKey in self.gathered, msg=origKey)
+            actData = self.gathered[expKey][burnIndex, univIndex, ..., :]
+            assert_array_equal(expValue, actData[..., 0], err_msg=origKey)
+            assert_array_equal(uncValue, actData[..., 1], err_msg=origKey)
+
+
+class SerpentCaseResults2MatlabTester(ResultToMatlabHelper):
+    CONVERT = True
+
+
+class MixedCaseResults2MatlabTester(ResultToMatlabHelper):
+    CONVERT = False
+
+
+del Det2MatlabHelper, DepmtxMatlabHelper, ResultToMatlabHelper
 
 if __name__ == '__main__':
     from unittest import main
