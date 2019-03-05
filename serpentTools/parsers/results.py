@@ -681,20 +681,6 @@ class ResultsReader(XSReader):
                                 for item in y])
         return y
 
-    @staticmethod
-    def ioConvertName(name):
-        """
-        Return the name of the variable used for exporting - camelCase
-        """
-        return name
-
-    @staticmethod
-    def ioReconvertName(name):
-        """
-        Return the name of the variable used for exporting - SERPENT_CASE
-        """
-        return deconvertVariableName(name)
-
     def toMatlab(self, fileP, reconvert=True, append=True,
                  format='5', longNames=True, compress=True,
                  oned='row'):
@@ -771,7 +757,7 @@ class ResultsReader(XSReader):
 
     def _gather_matlab(self, reconvert):
         if reconvert:
-            varFunc = self.ioReconvertName
+            varFunc = getSerpentCaseName
             out = {
                 varFunc(key): value for key, value in iteritems(self.metadata)
             }
@@ -780,7 +766,7 @@ class ResultsReader(XSReader):
             })
         else:
             out = {}
-            varFunc = self.ioConvertName
+            varFunc = getMixedCaseName
             out.update(self.metadata)
             out.update(self.resdata)
         out.update(self._gather_univdata(varFunc))
@@ -821,6 +807,20 @@ class ResultsReader(XSReader):
                                      expD, uncD, univData)
 
         return univData
+
+
+def getMixedCaseName(name):
+    """
+    Return the name of the variable used for exporting - camelCase
+    """
+    return name
+
+
+def getSerpentCaseName(name):
+    """
+    Return the name of the variable used for exporting - SERPENT_CASE
+    """
+    return deconvertVariableName(name)
 
 
 def gatherPairedUnivData(universe, uIndex, bIndex, shapeStart, convFunc,
