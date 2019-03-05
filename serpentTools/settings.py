@@ -371,7 +371,7 @@ class UserSettingsLoader(dict):
         varFile = os.path.join(ROOT_DIR, 'variables.yaml')
         with open(varFile) as fObj:
             groups = safe_load(fObj)
-        thisVersion = groups[serpentVersion]
+        thisVersion = groups.get(serpentVersion, {})
         baseGroups = groups['base']
         for key in keywords:
             if key in thisVersion:
