@@ -800,7 +800,7 @@ class ResultsReader(XSReader):
 
             # position in matrix
             uIndex = univOrder.index(univKey[0])
-            bIndex = univKey[2] - 1
+            bIndex = univKey[2]
 
             for expName, uncName in zip(
                     ('infExp', 'b1Exp', 'gc'), ('infUnc', 'b1Unc', 'gcUnc')):

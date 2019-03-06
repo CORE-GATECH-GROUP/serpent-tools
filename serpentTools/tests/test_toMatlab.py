@@ -187,7 +187,7 @@ class ResultToMatlabHelper(MatlabTesterHelper):
             self.assertTrue(univKey[0] in univOrder,
                             msg="{} // {}".format(univKey, univOrder))
             uIndex = univOrder.index(univKey[0])
-            actBurnIx = univKey[2] - 1
+            actBurnIx = univKey[2]
             self.assertTrue(actBurnIx in burnOrder,
                             msg="{} // {}".format(univKey, burnOrder))
             burnIndex = burnOrder.index(actBurnIx)
