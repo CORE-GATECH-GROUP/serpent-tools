@@ -31,7 +31,7 @@ from serpentTools.utils import (
     magicPlotDocDecorator,
 )
 from serpentTools.messages import (
-    warning, debug, SerpentToolsException,
+    warning, SerpentToolsException,
     info,
 )
 
@@ -111,7 +111,9 @@ class ResultsReader(XSReader):
         :py:class:`~serpentTools.objects.containers.HomogUniv`
         objects. The keys describe a unique state:
         'universe', burnup (MWd/kg), burnup index, time (days)
-        ('0', 0.0, 1, 0.0)
+        ('0', 0.0, 0, 0.0).
+        Burnup indexes are zero-indexed, meaning the first
+        step is index 0.
 
     Parameters
     ----------
@@ -209,9 +211,10 @@ class ResultsReader(XSReader):
         vals = str2vec(varVals)  # convert the string to float numbers
         if varNamePy in self.resdata.keys():  # extend existing matrix
             currVar = self.resdata[varNamePy]
-            ndim = 1
             if len(currVar.shape) == 2:
                 ndim = currVar.shape[0]
+            else:
+                ndim = 1
             if ndim < self._counter['rslt']:
                 # append this data only once!
                 try:
@@ -234,21 +237,23 @@ class ResultsReader(XSReader):
 
     def _getBUstate(self):
         """Define unique branch state"""
-        days = self._counter['meta']
-        burnup = self._counter['meta']
-        burnIdx = self._counter['rslt']  # assign indices
+        burnIdx = self._counter['rslt'] - 1
         varPyDays = convertVariableName(self._keysVersion['days'])  # Py style
         varPyBU = convertVariableName(self._keysVersion['burn'])
         if varPyDays in self.resdata.keys():
-            if burnIdx > 1:
+            if burnIdx > 0:
                 days = self.resdata[varPyDays][-1, 0]
             else:
                 days = self.resdata[varPyDays][-1]
+        else:
+            days = self._counter['meta'] - 1
         if varPyBU in self.resdata.keys():
-            if burnIdx > 1:
+            if burnIdx > 0:
                 burnup = self.resdata[varPyBU][-1, 0]
             else:
                 burnup = self.resdata[varPyBU][-1]
+        else:
+            burnup = self._counter['meta'] - 1
         return self._univlist[-1], burnup, burnIdx, days
 
     def _getVarName(self, tline):
@@ -312,14 +317,8 @@ class ResultsReader(XSReader):
                        else 3)
         searchValue = (index if index is not None
                        else burnup if burnup is not None else timeDays)
-        if searchIndex == 2 and searchValue < 1:  # index must be non-zero
-            raise KeyError(
-                'Index read is {}, however only integers above zero are '
-                'allowed'.format(searchValue))
         for key, dictUniv in iteritems(self.universes):
             if key[0] == univ and key[searchIndex] == searchValue:
-                debug('Found universe that matches with keys {}'
-                      .format(key))
                 return self.universes[key]
         searchName = ('index ' if index else 'burnup ' if burnup
                       else 'timeDays ')

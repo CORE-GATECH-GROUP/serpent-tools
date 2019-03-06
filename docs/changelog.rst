@@ -39,6 +39,15 @@ Next
    The API for the |branchCollector| may be subject to change
    through revisions until ``0.7.0``
 
+Incompatible API Changes
+------------------------
+
+* |homogUniv| objects are now stored on |resultReader| with 
+  zero-based indexing for burnup. The previous first value of 
+  burnup step was one. All burnup indices are now decreased by
+  one. Similarly, if no burnup was present in the file, the
+  values of burnup and days for all universes is zero.
+
 Pending Deprecations
 --------------------
 

@@ -301,27 +301,27 @@ Universe data is stored for each state point, i.e.
 
 .. parsed-literal::
  
-    dict_keys([('3101', 0.0, 1, 0.0), ('3102', 0.0, 1, 0.0), ('0', 0.0, 1, 0.0),
-    ('3101', 0.10000000000000001, 2, 1.20048), ('3102', 0.10000000000000001, 2,
-    1.20048), ('0', 0.10000000000000001, 2, 1.20048), ('3101', 1.0, 3,
-    12.004799999999999), ('3102', 1.0, 3, 12.004799999999999), ('0', 1.0, 3,
-    12.004799999999999), ('3101', 2.0, 4, 24.009599999999999), ('3102', 2.0, 4,
-    24.009599999999999), ('0', 2.0, 4, 24.009599999999999), ('3101', 3.0, 5,
-    36.014400000000002), ('3102', 3.0, 5, 36.014400000000002), ('0', 3.0, 5,
-    36.014400000000002), ('3101', 4.0, 6, 48.019199999999998), ('3102', 4.0, 6,
-    48.019199999999998), ('0', 4.0, 6, 48.019199999999998)])
+    dict_keys([('3101', 0.0, 0,  0.0), ('3102', 0.0, 0,  0.0), ('0', 0.0, 0,  0.0),
+    ('3101', 0.10000000000000001, 1, 1.20048), ('3102', 0.10000000000000001, 1,
+    1.20048), ('0', 0.10000000000000001, 1, 1.20048), ('3101', 1.0, 2,
+    12.004799999999999), ('3102', 1.0, 2, 12.004799999999999), ('0', 1.0, 2,
+    12.004799999999999), ('3101', 2.0, 3, 24.009599999999999), ('3102', 2.0, 3,
+    24.009599999999999), ('0', 2.0, 3, 24.009599999999999), ('3101', 3.0, 4,
+    36.014400000000002), ('3102', 3.0, 4, 36.014400000000002), ('0', 3.0, 4,
+    36.014400000000002), ('3101', 4.0, 5, 48.019199999999998), ('3102', 4.0, 5,
+    48.019199999999998), ('0', 4.0, 5, 48.019199999999998)])
 
 
 
 .. code:: 
 
     >>> # Let's use the following unique state
-    >>> print(res.universes[('3102', 0.0, 1, 0.0)])
+    >>> print(res.universes[('3102', 0.0, 2, 0.0)])
 
 
 .. parsed-literal::
 
-    <HomogUniv 3102: burnup: 0.000 MWd/kgu, step: 1, 0.000 days>
+    <HomogUniv 3102: burnup: 0.000 MWd/kgu, step: 0, 0.000 days>
     
 
 Each state contains the same data fields, which can be obtained by using
@@ -355,7 +355,7 @@ interest. In order to obtain the data, the user needs to pass the
 
 ``univ`` must be a string ``burnup`` is a float or int with the units
 MWd/kgU ``time`` is a float or int with the units Days ``index`` is a
-positive integer (i.e. 1, 2, ...)
+non-negative integer (i.e. 0, 1, 2, ...)
 
 The method requires to insert the universe and burnup or time or index
 (only one of these is actually used to retrieve the data). If more than
@@ -365,7 +365,7 @@ priority), burnup, time (lowest priority)
 .. code:: 
     
     >>> # Examples to use various time entries
-    >>> univ3101 = res.getUniv('3101', index=4) # obtain the results for universe=3101 and index=4 
+    >>> univ3101 = res.getUniv('3101', index=3) # obtain the results for universe=3101 and index=3 
     >>> univ3102 = res.getUniv('3102', burnup=0.1) # obtain the results for universe=3102 and index=0.1 MWd/kgU
     >>> univ0 = res.getUniv('0', timeDays=24.0096) # obtain the results for universe=0 and index=24.0096 days
 
@@ -379,22 +379,22 @@ priority), burnup, time (lowest priority)
 
 .. parsed-literal::
  
-    <HomogUniv 3101: burnup: 2.000 MWd/kgu, step: 4, 24.010 days>
+    <HomogUniv 3101: burnup: 2.000 MWd/kgu, step: 3, 24.010 days>
     <HomogUniv 3102:
-    burnup: 0.100 MWd/kgu, step: 2, 1.200 days>
+    burnup: 0.100 MWd/kgu, step: 1, 1.200 days>
     <HomogUniv 0: burnup: 2.000
-    MWd/kgu, step: 4, 24.010 days>
+    MWd/kgu, step: 3, 24.010 days>
 
 .. code:: 
     
-    >>> # obtain the results for universe=0 and index=1 (burnup and timeDays are inserted but not used)
-    >>> univ0 = res.getUniv('0', burnup=0.0, index=1, timeDays=0.0)  
+    >>> # obtain the results for universe=0 and index=0 (burnup and timeDays are inserted but not used)
+    >>> univ0 = res.getUniv('0', burnup=0.0, index=0, timeDays=0.0)  
     >>> print(univ0)
 
 
 .. parsed-literal::
  
-    <HomogUniv 0: burnup: 0.000 MWd/kgu, step: 1, 0.000 days>
+    <HomogUniv 0: burnup: 0.000 MWd/kgu, step: 0, 0.000 days>
 
 .. code:: 
     
@@ -422,7 +422,7 @@ priority), burnup, time (lowest priority)
 .. code:: 
     
     >>> # The values are all energy dependent 
-    >>> univ0.infExp['infAbs'] # obtain the infinite macroscopic xs for ('0', 0.0, 1, 0.0)
+    >>> univ0.infExp['infAbs'] # obtain the infinite macroscopic xs for ('0', 0.0, 0, 0.0)
 
 
 .. parsed-literal::
@@ -435,7 +435,7 @@ priority), burnup, time (lowest priority)
 
 .. code:: 
     
-    >>> # Obtain the infinite flux for ('0', 0.0, 1, 0.0)
+    >>> # Obtain the infinite flux for ('0', 0.0, 0, 0.0)
     >>> univ0.infExp['infFlx']
 
 .. parsed-literal::
@@ -516,7 +516,7 @@ be zeros.
 
 .. code:: 
     
-    >>> # Obtain the b1 fluxes for ('3101', 0.0, 1, 0.0)
+    >>> # Obtain the b1 fluxes for ('3101', 0.0, 0, 0.0)
     >>> univ3101.b1Exp['b1Flx']
 
 .. parsed-literal::
@@ -532,7 +532,7 @@ be zeros.
 
 .. code:: 
     
-    >>> # Obtain the b1 fluxes for ('3101', 0.0, 1, 0.0)
+    >>> # Obtain the b1 absorption cross section for ('3101', 0.0, 0, 0.0)
     >>> univ3101.b1Exp['b1Abs']
 
 .. parsed-literal::
