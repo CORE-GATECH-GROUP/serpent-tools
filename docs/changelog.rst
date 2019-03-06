@@ -13,9 +13,12 @@
 Changelog
 =========
 
-Next
-====
+.. _v0.6.2:
 
+:release-tag:`0.6.2`
+====================
+
+* Data files are bundled in source distribution
 * CLI interface for converting some output files to matlab files - 
   :ref:`cli-to-matlab`
 * Add :mod:`serpentTools.io` module for converting objects to
