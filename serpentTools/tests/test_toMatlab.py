@@ -2,26 +2,13 @@
 Tests for testing the MATLAB conversion functions
 """
 
-from unittest import TestCase, SkipTest
 from six import BytesIO, iteritems
 from numpy import arange
 from numpy.testing import assert_array_equal
 from serpentTools.objects import Detector
-from serpentTools.utils import checkScipy
+from serpentTools.tests.utils import MatlabTesterHelper
 from serpentTools.data import getFile
 from serpentTools.parsers import DepmtxReader
-
-HAS_SCIPY = checkScipy('1.0')
-
-
-class MatlabTesterHelper(TestCase):
-    """Helper class for matlab conversion"""
-
-    def setUp(self):
-        """Call this from subclasses to skip if scipy is unavailable"""
-        # skip tests if scipy not installed
-        if not HAS_SCIPY:
-            raise SkipTest("scipy needed to test matlab conversion")
 
 
 class Det2MatlabHelper(MatlabTesterHelper):
