@@ -8,7 +8,6 @@ from numpy import arange
 from numpy.testing import assert_array_equal
 from serpentTools.objects import Detector
 from serpentTools.utils import checkScipy
-from serpentTools.io import toMatlab
 from serpentTools.data import getFile
 from serpentTools.parsers import DepmtxReader
 
@@ -57,7 +56,7 @@ class Det2MatlabHelper(MatlabTesterHelper):
         """Test the conversion to matlab files"""
         from scipy.io import loadmat
         writer = BytesIO()
-        toMatlab(self.detector, writer, self.CONVERT, append=False)
+        self.detector.toMatlab(writer, self.CONVERT, append=False)
         fromMatlab = loadmat(writer)
 
         binsKey = self.converterFunc(self.detector.name, 'bins')
@@ -115,7 +114,7 @@ class DepmtxMatlabHelper(MatlabTesterHelper):
     def test_depmtxToMatlab(self):
         """Verify the depmtx reader can be written to matlab file"""
         from scipy.io import loadmat
-        toMatlab(self.reader, self.outFile, self.RECONVERT)
+        self.reader.toMatlab(self.outFile, self.RECONVERT)
         written = loadmat(self.outFile)
         self.assertEqual(self.reader.deltaT, written['t'])
         for expKey, expValue in iteritems(self.expected):
