@@ -205,3 +205,4 @@ DepletionReader.toMatlab = matlabHook
 DetectorReader.toMatlab = matlabHook
 SensitivityReader.toMatlab = matlabHook
 HistoryReader.toMatlab = matlabHook
+DepmtxReader.toMatlab = matlabHook
