@@ -47,6 +47,9 @@ Incompatible API Changes
   burnup step was one. All burnup indices are now decreased by
   one. Similarly, if no burnup was present in the file, the
   values of burnup and days for all universes is zero.
+* When reading detectors with a single tally, the value of ``tallies``,
+  ``errors``, and ``scores`` are stored as floats, rather than 
+  :term:`numpy` arrays.
 
 Pending Deprecations
 --------------------

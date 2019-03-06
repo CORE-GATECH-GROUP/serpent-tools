@@ -9,17 +9,11 @@ from six import iteritems
 from numpy import arange, array
 from numpy.testing import assert_equal
 
-from serpentTools.parsers import DetectorReader
+from serpentTools.parsers import read
 from serpentTools.data import getFile
 from serpentTools.objects.detectors import (
     CartesianDetector, HexagonalDetector, CylindricalDetector)
 from serpentTools.tests import compareDictOfArrays
-
-
-def read(fileP):
-    reader = DetectorReader(fileP)
-    reader.read()
-    return reader
 
 
 class DetectorHelper(TestCase):
@@ -27,7 +21,7 @@ class DetectorHelper(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.reader = read(cls.FILE_PATH)
+        cls.reader = read(cls.FILE_PATH, 'det')
         cls.detectors = cls.reader.detectors
 
     def test_loadedDetectors(self):
@@ -278,6 +272,7 @@ TEST_SUB_CLASSES = {CartesianDetectorTester, HexagonalDetectorTester,
 
 
 COMBINED_OUTPUT_FILE = 'combinedDets_det0.m'
+SINGLE_TALLY_FILE = "single_det0.m"
 
 
 def setUpModule():
@@ -292,11 +287,17 @@ def setUpModule():
         for subCls in TEST_SUB_CLASSES:
             with open(subCls.FILE_PATH) as subFile:
                 out.write(subFile.read())
+    with open(SINGLE_TALLY_FILE, 'w') as out:
+        out.write("""
+DETone = [
+    1    1    1    1    1    1    1    1    1    1  8.19312E+17 0.05187
+];""")
 
 
 def tearDownModule():
-    """Remove any test fixtures created for this module."""
+    """Remove any test files created for this module."""
     remove(COMBINED_OUTPUT_FILE)
+    remove(SINGLE_TALLY_FILE)
 
 
 class CombinedDetTester(DetectorHelper):
@@ -317,6 +318,21 @@ class CombinedDetTester(DetectorHelper):
 
 
 del DetectorHelper
+
+
+class SingleTallyTester(TestCase):
+    """Test storing detector data with a single tally"""
+
+    def setUp(self):
+        self.detector = read(SINGLE_TALLY_FILE, 'det').detectors['one']
+
+    def test_singleTally(self):
+        """Test the conversion of a single tally to floats, not arrays"""
+        self.assertTrue(isinstance(self.detector.tallies, float))
+        self.assertTrue(isinstance(self.detector.errors, float))
+        self.assertEqual(self.detector.tallies, 8.19312E17)
+        self.assertEqual(self.detector.errors, 0.05187)
+
 
 if __name__ == '__main__':
     from unittest import main
