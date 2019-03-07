@@ -1,5 +1,3 @@
-.. |rc| replace:: :py:class:`~serpentTools.settings.rc`
-
 .. _settings-ex:
 
 ============
@@ -9,11 +7,9 @@ User Control
 The ``serpentTools`` package is designed to, without intervention, be able to store all the
 data contained in each of the various output files. However, the
 :mod:`serpentTools.settings` module grants great flexibility to the user
-over what data is obtained through the
-`rc <https://unix.stackexchange.com/questions/3467/what-does-rc-in-bashrc-stand-for>`_
-class. 
+over what data is obtained through the |rc| class. 
 
-All the settings are given in :ref:`default-settings` 
+All the settings are given in :ref:`default-settings`,
 showing their default values and possible options.
 
 Basic Usage
@@ -36,10 +32,8 @@ with the ``.keys`` method::
     'xs.reshapeScatter', 'branching.floatVariables', 'detector.names'])
 
 Settings such as :ref:`depletion-materials` are specific for the
-:class:`~serpentTools.DepletionReader`, 
-while settings that are led with ``xs`` are sent to
-the :class:`~serpentTools.ResultsReader` and 
-:class:`~serpentTools.BranchingReader` as well as their specific settings.
+|DepletionReader| while settings that are led with ``xs`` are sent to
+the |ResultsReader| and |BranchingReader| as well as their specific settings.
 Updating a setting is similar to setting a value in a dictionary
 
 .. code:: 
@@ -47,7 +41,7 @@ Updating a setting is similar to setting a value in a dictionary
     >>> rc['verbosity'] = 'debug'
     DEBUG   : serpentTools: Updated setting verbosity to debug
 
-The ``rc`` object automatically checks to make sure the value is of the
+The |rc| object automatically checks to make sure the value is of the
 correct type, and is an allowable option, if given.
 
 .. code:: 
@@ -65,19 +59,16 @@ correct type, and is an allowable option, if given.
     'Setting serpentVersion is 1.2.3 and not one of the allowed options: 2.1.29,
     2.1.30'
 
-The ``rc`` object can also be used inside a context manager to revert
-changes.
+The |rc| object can also be used inside a context manager to revert changes.
 
 .. code:: 
     
     >>> with rc:
     ...     rc['depletion.metadataKeys'] = ['ZAI', 'BU']
     ...     
-    >>> rc['depletion.metadataKeys']
-    >>> rc['verbosity'] = 'info'
     DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI', 'BU']
-    DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI',
-    'NAMES', 'DAYS', 'BU']
+    DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI', 'NAMES', 'DAYS', 'BU']
+    >>> rc['verbosity'] = 'info'
 
 .. _group-const-variables:
 
@@ -125,8 +116,7 @@ not present in this set
     >>> assert 'INF_SCATT3' not in varSet
 
 This is because two additional settings instruct the
-:class:`~serpentTools.BranchingReader`
-and :class:`~serpentTools.ResultsReader` to obtain
+|BranchingReader| and |ResultsReader| to obtain
 infinite medium and leakage-corrected
 cross sections: :ref:`xs-getInfXS` and :ref:`xs-getB1XS`, respectively. 
 By default, :ref:`xs-getInfXS` and :ref:`xs-getB1XS` default to True. This, in

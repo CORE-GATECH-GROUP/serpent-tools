@@ -1,13 +1,6 @@
-.. |resReader| replace:: :class:`~serpentTools.ResultsReader`
-
-.. |homogUniv| replace:: :class:`~serpentTools.objects.HomogUniv`
-
 .. |getUniv| replace:: :meth:`~serpentTools.ResultsReader.getUniv`
-
 .. |resdata| replace:: :attr:`~serpentTools.ResultsReader.resdata`
-
 .. |metadata| replace:: :attr:`~serpentTools.ResultsReader.metadata`
-
 .. |universes| replace:: :attr:`~serpentTools.ResultsReader.universes`
 
 .. _ex-results:
@@ -20,19 +13,18 @@ Basic operations
 ----------------
 
 This notebook demonstrates the capabilities of the serpentTools to read
-Serpent results files. SERPENT [1] produces a result file (i.e.
+Serpent results files. SERPENT [serpent]_ produces a result file (i.e.
 ``_res.m``), containing general results (e.g. ``k-eff``), metadata (e.g.
 ``title``) and homogenized cross-sections. The homogenized cross-section
 sets are printed in the results file for all the requested universes.
-The |resReader| is capable of reading this file, and storing the data
-inside |homogUniv| objects. Each such object has methods and attributes that
+The |ResultsReader| is capable of reading this file, and storing the data
+inside |HomogUniv| objects. Each such object has methods and attributes that
 should ease the analyses.
 
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
+   |read-full| function. The |readData| function is used here
    to make it easier to reproduce the examples
 
 
@@ -46,8 +38,8 @@ should ease the analyses.
     >>> resFile = 'InnerAssembly_res.m'
     >>> res = serpentTools.readDataFile(resFile)
 
-Metadata (``metadata``)
-=======================
+Metadata
+========
 
 |metadata| is a collective data that describes the problem. The
 following data is included: titles, data paths, and other descriptive
@@ -56,10 +48,10 @@ data exist on the reader
 .. code:: 
 
     >>> print(res.metadata['version'])  # Serpent version used for the execution
-    >>> print(res.metadata['decayDataFilePath'])  # Directory path for data libraries
-    >>> print(res.metadata['inputFileName'])  # Directory path for data libraries
     Serpent 2.1.30
+    >>> print(res.metadata['decayDataFilePath'])  # Directory path for data libraries
     /nv/hp22/dkotlyar6/data/Codes/DATA/endfb7/sss_endfb7.dec
+    >>> print(res.metadata['inputFileName'])  # Directory path for data libraries
     InnerAssembly
     
 Obtain all the variables in the metadata via ``.keys()``
@@ -89,65 +81,26 @@ Obtain all the variables in the metadata via ``.keys()``
     5000 10 50
     >>> # Obtain the version defined in the settings
     >>> print('User defined version: {}'.format(rc['serpentVersion']))
+    User defined version: 2.1.30
     >>> # Obtain the version actually used in the execution
     >>> print('Used version: {}'.format(res.metadata['version']))
-    User defined version: 2.1.30
     Used version: Serpent 2.1.30
 
-Results Data (``resdata``)
-==========================
+Results Data
+============
 
 Results are stored as a function of time/burnup/index and include
 integral parameters of the system. Results, such as ``k-eff``, total
 ``flux``, execution times are included in |resdata|. Some results
-include values and uncertainities (e.g. criticality) and some just the
+include values and uncertainties (e.g. criticality) and some just the
 values (e.g. CPU resources).
 
 .. code:: 
-    
-    >>> # All the variables can be obtained by using 'resdata.keys()'
-    >>> AllVariables = res.resdata.keys() # contains all the variable as a dict_keys
 
-    >>> # The example below shows only the first five variables in the resdata dictionary
-    >>> list(AllVariables)[0:5]
+    >>> list(res.resdata.keys())[0:5]
     ['minMacroxs', 'dtThresh', 'stFrac', 'dtFrac', 'dtEff']
 
-    >>> # Time-dependent variables, such as k-eff, are stored in 'resdata'
-    >>> print(res.resdata['absKeff'])  # Values (1st col.) + std (2nd col.) 
-    [[  1.29160000e+00   9.00000000e-04]
-     [  1.29500000e+00   9.30000000e-04]
-     [  1.29172000e+00   9.10000000e-04]
-     [  1.29172000e+00   7.80000000e-04]
-     [  1.29312000e+00   6.80000000e-04]
-     [  1.29140000e+00   7.80000000e-04]]
-
-    >>> # Obtain only the values for 'absKeff'
-    >>> res.resdata['absKeff'][:,0]
-    array([ 1.2916 ,  1.295  ,  1.29172,  1.29172,  1.29312,  1.2914 ])
-
-    >>> # Obtain only the uncertainties for 'absKeff'
-    >>> res.resdata['absKeff'][:,1]
-    array([ 0.0009 ,  0.00093,  0.00091,  0.00078,  0.00068,  0.00078])
-    
-    >>> # Burnup data is not written by default, a burnup mode is defined within the input file
-    >>> # Extract burnup related quantities
-    >>> print(res.resdata['burnup']) # burnup intervals (MWd/kg) 
-    >>> print(res.resdata['burnDays']) # time points (days)
-    [[ 0.        0.      ]
-     [ 0.1       0.100001]
-     [ 1.        1.00001 ]
-     [ 2.        2.00001 ]
-     [ 3.        3.00003 ]
-     [ 4.        4.00004 ]]
-    [[  0.     ]
-     [  1.20048]
-     [ 12.0048 ]
-     [ 24.0096 ]
-     [ 36.0144 ]
-     [ 48.0192 ]]
-    
-    >>> # Some variables are stored with no uncertainties
-    >>> print(res.resdata['totCpuTime']) # total CPU time,  
+    >>> print(res.resdata['totCpuTime'])
     [[ 10.814 ]
      [ 20.3573]
      [ 30.0783]
@@ -155,10 +108,41 @@ values (e.g. CPU resources).
      [ 48.919 ]
      [ 58.6448]]
     
-Plotting Results Data (|resdata|)
------------------------------------
+For values with associated uncertainties, e.g. ``absKeff``, the first column is 
+the estimated value, with the second column containing the relative uncertainty::
 
-The |resReader| has a versatile
+    >>> print(res.resdata['absKeff'])
+    [[  1.29160000e+00   9.00000000e-04]
+     [  1.29500000e+00   9.30000000e-04]
+     [  1.29172000e+00   9.10000000e-04]
+     [  1.29172000e+00   7.80000000e-04]
+     [  1.29312000e+00   6.80000000e-04]
+     [  1.29140000e+00   7.80000000e-04]]
+
+    >>> res.resdata['absKeff'][:,0]
+    array([ 1.2916 ,  1.295  ,  1.29172,  1.29172,  1.29312,  1.2914 ])
+
+ Burnup data is not written by default, unless a burnup mode is defined within the input file::
+
+    >>> print(res.resdata['burnup']) # burnup intervals (MWd/kg) 
+    [[ 0.        0.      ]
+     [ 0.1       0.100001]
+     [ 1.        1.00001 ]
+     [ 2.        2.00001 ]
+     [ 3.        3.00003 ]
+     [ 4.        4.00004 ]]
+    >>> print(res.resdata['burnDays']) # time points (days)
+    [[  0.     ]
+     [  1.20048]
+     [ 12.0048 ]
+     [ 24.0096 ]
+     [ 36.0144 ]
+     [ 48.0192 ]]
+    
+Plotting Results Data
+---------------------
+
+The |ResultsReader| has a versatile
 :meth:`~serpentTools.ResultsReader.plot` method,
 used to plot primary time-dependent data from the result file.
 One can plot data from one or more quantities against various
@@ -207,8 +191,8 @@ left and right y-axis. Similar formatting options are available.
 
 .. image:: ResultsReader_files/f4.png
 
-Universe Data (|universes|)
-=============================
+Universe Data
+=============
 
 Universe data is stored for each state point, i.e.
 ``('univ',burnup, burnupIdx, time)``
@@ -223,30 +207,38 @@ All the results include values and uncertainties.
 
 .. code:: 
 
-    >>> # The different states are obtained by:
     >>> res.universes.keys()
     >>> # The next cell presents the various unique states ('univ',burnup, burnupIdx, time)
-    dict_keys([('3101', 0.0, 0,  0.0), ('3102', 0.0, 0,  0.0), ('0', 0.0, 0,  0.0),
-    ('3101', 0.10000000000000001, 1, 1.20048), ('3102', 0.10000000000000001, 1,
-    1.20048), ('0', 0.10000000000000001, 1, 1.20048), ('3101', 1.0, 2,
-    12.004799999999999), ('3102', 1.0, 2, 12.004799999999999), ('0', 1.0, 2,
-    12.004799999999999), ('3101', 2.0, 3, 24.009599999999999), ('3102', 2.0, 3,
-    24.009599999999999), ('0', 2.0, 3, 24.009599999999999), ('3101', 3.0, 4,
-    36.014400000000002), ('3102', 3.0, 4, 36.014400000000002), ('0', 3.0, 4,
-    36.014400000000002), ('3101', 4.0, 5, 48.019199999999998), ('3102', 4.0, 5,
-    48.019199999999998), ('0', 4.0, 5, 48.019199999999998)])
+    dict_keys([
+    ('3101', 0.0, 0,  0.0),
+    ('3102', 0.0, 0,  0.0), ('0', 0.0, 0,  0.0),
+    ('3101', 0.10000000000000001, 1, 1.20048),
+    ('3102', 0.10000000000000001, 1, 1.20048),
+    ('0', 0.10000000000000001, 1, 1.20048),
+    ('3101', 1.0, 2, 12.004799999999999),
+    ('3102', 1.0, 2, 12.004799999999999),
+    ('0', 1.0, 2, 12.004799999999999),
+    ('3101', 2.0, 3, 24.009599999999999),
+    ('3102', 2.0, 3, 24.009599999999999),
+    ('0', 2.0, 3, 24.009599999999999),
+    ('3101', 3.0, 4, 36.014400000000002),
+    ('3102', 3.0, 4, 36.014400000000002),
+    ('0', 3.0, 4, 36.014400000000002),
+    ('3101', 4.0, 5, 48.019199999999998),
+    ('3102', 4.0, 5, 48.019199999999998),
+    ('0', 4.0, 5, 48.019199999999998)])
     >>> print(res.universes[('3102', 0.0, 2, 0.0)])
     <HomogUniv 3102: burnup: 0.000 MWd/kgu, step: 0, 0.000 days>
     
 Each state contains the same data fields, which can be obtained by using
-the following attributes on the |homogUniv| object:
+the following attributes on the |HomogUniv| object:
 
-- :attr:`~serpentTools.objects.HomogUniv.infExp`: infinite values, e.g. ``INF_ABS``
-- :attr:`~serpentTools.objects.HomogUniv.infUnc`: infinite uncertainties
-- :attr:`~serpentTools.objects.HomogUniv.b1Exp`: b1 (leakage corrected) values, e.g. ``B1_ABS``
-- :attr:`~serpentTools.objects.HomogUniv.b1Unc`: b1 (leakage corrected) uncertainties
-- :attr:`~serpentTools.objects.HomogUniv.gc`: variables that are not included in ``inf`` or ``b1``, e.g. ``BETA``
-- :attr:`~serpentTools.objects.HomogUniv.gcUnc`: group uncertainties
+- |HomogUniv-infExp|: infinite values, e.g. ``INF_ABS``
+- |HomogUniv-infUnc|: infinite uncertainties
+- |HomogUniv-b1Exp|: b1 (leakage corrected) values, e.g. ``B1_ABS``
+- |HomogUniv-b1Unc|: b1 (leakage corrected) uncertainties
+- |HomogUniv-gc|: variables that are not included in ``inf`` or ``b1``, e.g. ``BETA``
+- |HomogUniv-gcUnc|: uncertainties for quantities in |HomogUniv-gc|
 - :attr:`~serpentTools.objects.HomogUniv.groups`: macro energy group structure, MeV
 - :attr:`~serpentTools.objects.HomogUniv.microGroups`: micro energy group structure, MeV
 
@@ -303,30 +295,25 @@ Each field is a dictionary, with variables as keys and corresponding values::
 
 The values are all energy dependent in the order they would appear in the results file::
 
-    >>> univ0.infExp['infAbs'] # obtain the infinite macroscopic xs for ('0', 0.0, 1, 0.0)
+    >>> univ0.infExp['infAbs'] # obtain the infinite macroscopic xs
     array([ 0.0170306 ,  0.0124957 ,  0.00777066,  0.00773255,  0.00699608,
             0.00410746,  0.00334604,  0.00296948,  0.0030725 ,  0.00335412,
             0.00403133,  0.00506587,  0.00651475,  0.00737292,  0.00907442,
             0.0113446 ,  0.0125896 ,  0.0164987 ,  0.0181642 ,  0.0266464 ,
             0.0292439 ,  0.0315338 ,  0.0463069 ,  0.0807952 ])
 
-    >>> # Obtain the infinite flux for ('0', 0.0, 0, 0.0)
     >>> univ0.infExp['infFlx']
     array([  1.10460000e+15,   1.72386000e+16,   7.78465000e+16,
-    1.70307000e+17,   2.85783000e+17,   4.61226000e+17,
-             8.04999000e+17,
-    1.17536000e+18,   1.17488000e+18,
-             1.26626000e+18,   1.03476000e+18,
-    7.58885000e+17,
+             1.70307000e+17,   2.85783000e+17,   4.61226000e+17,
+             8.04999000e+17,   1.17536000e+18,   1.17488000e+18,
+             1.26626000e+18,   1.03476000e+18,   7.58885000e+17,
              4.95687000e+17,   5.85369000e+17,   2.81921000e+17,
-    1.16665000e+17,   8.06833000e+16,   2.26450000e+16,
-             6.51541000e+16,
-    2.79929000e+16,   8.87468000e+15,
-             1.70822000e+15,   8.87055000e+14,
-    6.22266000e+13])
+             1.16665000e+17,   8.06833000e+16,   2.26450000e+16,
+             6.51541000e+16,   2.79929000e+16,   8.87468000e+15,
+             1.70822000e+15,   8.87055000e+14,   6.22266000e+13])
 
-Uncertainties can be obtained in a similar was by using the ``infUnc`` field. 
-The variables will be identical to those defined in ``infExp``::
+Uncertainties can be obtained in a similar was by using the |HomogUniv-infUnc| field. 
+The variables will be identical to those defined in |HomogUniv-infExp|::
 
     >>> univ0.infUnc['infFlx'] # obtain the relative uncertainty
     array([  1.10460000e+15,   1.72386000e+16,   7.78465000e+16,
@@ -374,17 +361,16 @@ be zeros.
              7.96971000e+14,   3.54233000e+14,   2.11013000e+13])
 
 Data that does not contain the prefix ``INF_`` or ``B1_`` is stored
-under the ``gc`` and ``gcUnc`` fields.
-
+under the |HomogUniv-gc| and |HomogUniv-gcUnc| fields.
 Criticality, kinetic, and other variables are stored under this field.
 
 .. code:: 
     
-    >>> univ3101.gc.keys() # obtain all the variables stored in 'gc' field
+    >>> univ3101.gc.keys()
     dict_keys(['cmmTranspxs', 'cmmTranspxsX', 'cmmTranspxsY', 'cmmTranspxsZ',
     'cmmDiffcoef', 'cmmDiffcoefX', 'cmmDiffcoefY', 'cmmDiffcoefZ', 'betaEff',
     'lambda'])
-    >>> univ3101.gc['betaEff'] # obtain beta-effective
+    >>> univ3101.gc['betaEff']
     array([  3.04272000e-03,   8.93131000e-05,   6.59324000e-04,
              5.62858000e-04,   1.04108000e-03,   5.67326000e-04,
              1.22822000e-04])
@@ -402,7 +388,7 @@ the universe. Energy values are stored in MeV::
              2.03470000e-03,   1.23410000e-03,   7.48520000e-04,
              4.54000000e-04,   3.12030000e-04,   1.48940000e-04,
              0.00000000e+00])
-    >>> univ3101.microGroups[:5:] # print only the five first values
+    >>> univ3101.microGroups[:5:]
     array([  1.00000000e-10,   1.48940000e-04,   1.65250000e-04,
              1.81560000e-04,   1.97870000e-04])
 
@@ -411,7 +397,7 @@ the universe. Energy values are stored in MeV::
 Plotting universes
 ------------------
 
-|homogUniv|  objects can plot group constants using their 
+|HomogUniv|  objects can plot group constants using their 
 :meth:`~serpentTools.objects.HomogUniv.plot`
 method. This method has a range of formatting options, with defaults
 corresponding to plotting macroscopic cross sections. This is manifested
@@ -477,7 +463,7 @@ User Defined Settings
 ---------------------
 
 The user is able to filter the required information by using the
-settings option.
+|rc| settings object.
 A detailed description on how to use the settings can be found on:
 :ref:`defaultSettings`.
 
@@ -486,9 +472,6 @@ A detailed description on how to use the settings can be found on:
     >>> # Setting are all defined in 'rc'
     >>> from serpentTools.settings import rc
     >>> rc.keys()
-
-.. parsed-literal::
- 
     dict_keys(['branching.areUncsPresent', 'branching.intVariables',
     'branching.floatVariables', 'depletion.metadataKeys',
     'depletion.materialVariables', 'depletion.materials', 'depletion.processTotal',
@@ -496,9 +479,9 @@ A detailed description on how to use the settings can be found on:
     'sampler.raiseErrors', 'sampler.skipPrecheck', 'serpentVersion', 'xs.getInfXS',
     'xs.getB1XS', 'xs.reshapeScatter', 'xs.variableGroups', 'xs.variableExtras'])
 
-The user can modify the settings and then use |resReader|. 
+The user can modify the settings and then use |ResultsReader|. 
 Explicitly state which groups of variables should be stored.
-The variables for these groups are defined according to the ``.yaml`` file::
+The variables for these groups are defined in :ref:`variable-groups`::
 
     >>> rc['xs.variableGroups'] = ['versions', 'xs', 'eig', 'burnup-coeff']
     >>> rc['xs.getInfXS'] = True # Obtain the infinite xs
@@ -506,18 +489,14 @@ The variables for these groups are defined according to the ``.yaml`` file::
     >>> # Read the file again with the updated settings
     >>> resFilt = serpentTools.readDataFile(resFile)
 
-.. code:: 
-    
-    >>> # Print all the stored variables in metadata
     >>> resFilt.metadata.keys()
     dict_keys(['version', 'compileDate', 'debug', 'title', 'confidentialData',
     'inputFileName', 'workingDirectory', 'hostname', 'cpuType', 'cpuMhz',
     'startDate', 'completeDate'])
-    >>> resFilt.resdata.keys() # contains all the variable as a dict_keys
+    >>> resFilt.resdata.keys()
     dict_keys(['burnMaterials', 'burnMode', 'burnStep', 'burnup', 'burnDays',
     'nubar', 'anaKeff', 'impKeff', 'colKeff', 'absKeff', 'absKinf', 'geomAlbedo'])
-    >>> # obtain the results for universe=0 and index=1 (burnup and timeDays are inserted but not used)
-    >>> univ0Filt = resFilt.getUniv('0', burnup=0.0, index=1, timeDays=0.0)  
+    >>> univ0Filt = resFilt.getUniv('0', burnup=0.0, index=0, timeDays=0.0)  
     >>> univ0Filt.infExp.keys() 
     dict_keys(['infCapt', 'infAbs', 'infFiss', 'infNsf', 'infNubar', 'infKappa',
     'infInvv', 'infScatt0', 'infScatt1', 'infScatt2', 'infScatt3', 'infScatt4',
@@ -531,14 +510,13 @@ The variables for these groups are defined according to the ``.yaml`` file::
 Conclusion
 ----------
 
-The |resReader| is capable of reading and storing all the data
+The |ResultsReader| is capable of reading and storing all the data
 from the SERPENT ``_res.m`` file. Upon reading, the reader creates
-custom |homogUniv| objects that are responsible for storing the universe 
+custom |HomogUniv| objects that are responsible for storing the universe 
 related data. In addition, |metadata| and |resdata| are stored on the reader. 
 These objects also have a handy |getUniv| method for
 quick analysis of results corresponding to a specific universe and time point. 
-Use of the 
-:class:`~serpentTool.settings.rc` settings control object allows
+Use of the |rc| settings control object allows
 increased control over the data selected from the output file.
 
 References

@@ -1,7 +1,4 @@
-.. |reader| replace:: :class:`~serpentTools.XSPlotReader`
-
 .. |xsections| replace:: :attr:`~serpentTools.XSPlotReader.xsections`
-
 .. |xsdata| replace:: :class:`~serpentTools.objects.xsdata.XSData`
 
 .. _ex-xsplot:
@@ -16,14 +13,13 @@ Firstly, to get started plotting some cross sections from Serpent, you
 generate a ``yourInputFileName_xs.m`` file using `set
 xsplot <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_xsplot>`__
 as documented on the Serpent wiki. ``serpentTools`` can then read the
-output, figuring out its filetype automatically as with other readers.
+output, figuring out its file type automatically as with other readers.
 Let’s plot some data used in the ``serpentTools`` regression suite.
 
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
+   |read-full| function. The |readData| function is used here
    to make it easier to reproduce the examples
 
 .. code:: 

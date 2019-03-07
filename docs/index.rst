@@ -25,7 +25,7 @@ Welcome to serpentTools's documentation!
        :alt: Zenodo DOI 10.5281/zenodo.1301036
   
 A suite of parsers designed to make interacting with
-:term:`SERPENT` [1]_ output files simple and flawless. 
+:term:`SERPENT` [serpent]_ output files simple and flawless. 
 
 The :term:`SERPENT` Monte Carlo code
 is developed by VTT Technical Research Centre of Finland, Ltd.
@@ -63,10 +63,6 @@ using :term:`SERPENT`.
    contributors
    glossary
 
-.. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
-    development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
-    <http://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
-
 Indices and tables
 ==================
 
@@ -74,3 +70,6 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+.. [serpent] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
+    development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
+    <http://www.sciencedirect.com/science/article/pii/S0306454914004095>`_

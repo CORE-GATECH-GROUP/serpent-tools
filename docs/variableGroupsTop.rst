@@ -1,7 +1,3 @@
-.. |Branching| replace:: :class:`~serpentTools.BranchingReader`
-
-.. |Results| replace:: :class:`~serpentTools.ResultsReader`
-
 .. |Serpent| replace:: ``SERPENT``
 
 .. _variable-groups:
@@ -10,7 +6,7 @@
 Variable Groups
 ===============
 
-The |Branching| and |Results| can also be used to store cross sections 
+The |BranchingReader| and |ResultsReader| can also be used to store cross sections 
 and other group constant data on
 :class:`~serpentTools.objects.HomogUniv` objects.
 The group constants to be stored are controlled by two distinct settings:
@@ -20,7 +16,7 @@ appear in the specific output file.
 The latter variables that are commonly grouped together, such
 as kinetic parameters or general cross sections, without having to exactly
 specify the names of each variable.
-Without adjusting these settings, the |Branching| and |Results| will store all data
+Without adjusting these settings, the |BranchingReader| and |ResultsReader| will store all data
 present in the file.
 
 Below are the various variable groups that can be used in the 

@@ -1,28 +1,22 @@
-.. |depReader| replace:: :class:`~serpentTools.DepletionReader`
-
-.. |depMat| replace:: :class:`~serpentTools.objects.materials.DepletedMaterial`
-
+.. |DepletedMaterial| replace:: :class:`~serpentTools.objects.DepletedMaterial`
 .. |materials| replace:: :attr:`~serpentTools.DepletionReader.materials`
-
-.. |matData| replace:: :attr:`~serpentTools.objects.materials.DepletedMaterial.data`
-
-.. |getValues| replace:: :meth:`~serpentTools.objects.materials.DepletedMaterial.getValues`
-
-.. |depMatPlot| replace:: :meth:`~serpentTools.objects.materials.DepletedMaterial.plot` 
+.. |matData| replace:: :attr:`~serpentTools.objects.DepletedMaterial.data`
+.. |getValues| replace:: :meth:`~serpentTools.objects.DepletedMaterial.getValues`
+.. |DepletedMaterialPlot| replace:: :meth:`~serpentTools.objects.DepletedMaterial.plot` 
 
 .. _depletion-reader-ex:
 
-===============
-DepletionReader
-===============
+================
+Depletion Reader
+================
 
 Basic Operation
 ---------------
 SERPENT produces a
 `burned material file <http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Burnup_calculation_output>`_,
 containing the evolution of material properties through burnup for all
-burned materials present in the problem. The |depReader| is capable of reading
-this file, and storing the data inside |depMat| objects.
+burned materials present in the problem. The |DepletionReader| is capable of reading
+this file, and storing the data inside |DepletedMaterial| objects.
 Each such object has methods and attributes that should ease analysis.
 
 .. code:: 
@@ -80,7 +74,7 @@ Depleted Material Objects
 -------------------------
 
 As mentioned before, all the material data is stored inside these
-|depMat| objects.
+|DepletedMaterial| objects.
 These objects share access to the metadata of the reader as well.
 
 .. code:: 
@@ -150,7 +144,7 @@ positions in burnup/day vectors.
 Data Retrieval
 --------------
 
-At the heart of the |depMat|  is the |getValues| method.
+At the heart of the |DepletedMaterial|  is the |getValues| method.
 This method acts as an slicing mechanism that returns data for a
 select number of isotopes at select points in time. |getValues| 
 requires two arguments for the units of time requested, e.g. ``days`` or
@@ -181,7 +175,7 @@ or ``zai`` are not given.
     [[ 0.  0.  0.  0.]
      [ 0.  0.  0.  0.]]
 
-The |depMat| uses this slicing for the built-in |depMatPlot| method, 
+The |DepletedMaterial| uses this slicing for the built-in |DepletedMaterialPlot| method, 
 which takes similar slicing arguments to |getValues|.
 
 By default, the plot method will plot data for all isotopes present,
@@ -202,7 +196,7 @@ arguments, respectively.
 
 .. image:: DepletionReader_files/DepletionReader_24_0.png
 
-This type of plotting can also be applied to the |depMat|
+This type of plotting can also be applied to the |DepletedMaterial|
 level, with similar options for formatting and retrieving data. The
 materials to be plotted can be filtered using the ``materials``
 argument. The ``labelFmt`` argument can be used to apply a consistent
@@ -235,7 +229,7 @@ replacements
 Settings
 --------
 
-The |depReader| also has a collection of settings to control
+The |DepletionReader| also has a collection of settings to control
 what data is stored. If none of these settings are modified, the default
 is to store all the data from the output file. The settings that
 control the depletion reader are 
@@ -245,7 +239,7 @@ control the depletion reader are
   * :ref:`depletion-metadataKeys`
   * :ref:`depletion-processTotal`
 
-Below is an example of configuring a |depReader| that only
+Below is an example of configuring a |DepletionReader| that only
 stores the burnup days, and atomic density for all materials that begin
 with ``bglass`` followed by at least one integer.
 
@@ -265,12 +259,12 @@ with ``bglass`` followed by at least one integer.
 Conclusion
 ----------
 
-The |depReader| is capable of reading and storing all the data
+The |DepletionReader| is capable of reading and storing all the data
 from the SERPENT burned materials file. Upon reading, the reader creates
-custom |depMat| objects that are responsible for storing and
-retrieving the data. These objects also have a handy |depMatPlot| method for
+custom |DepletedMaterial| objects that are responsible for storing and
+retrieving the data. These objects also have a handy |DepletedMaterialPlot| method for
 quick analysis. Use of the 
-:py:class:`~serpentTool.settings.rc` settings control object allows
+:class:`~serpentTool.settings.rc` settings control object allows
 increased control over the data selected from the output file.
 
 References

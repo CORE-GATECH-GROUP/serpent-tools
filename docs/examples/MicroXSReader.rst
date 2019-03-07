@@ -1,26 +1,16 @@
-.. |reader| replace:: :class:`~serpentTools.MicroXSReader`
-
 .. |nfy| replace:: :attr:`~serpentTools.MicroXSReader.nfy`
-
 .. |fluxRatio| replace:: :attr:`~serpentTools.MicroXSReader.fluxRatio`
-
 .. |fluxUnc| replace:: :attr:`~serpentTools.MicroXSReader.fluxUnc`
-
 .. |xsVal| replace:: :attr:`~serpentTools.MicroXSReader.xsVal`
-
 .. |xsUnc| replace:: :attr:`~serpentTools.MicroXSReader.xsVal`
-
 .. |getFY| replace::  :meth:`~serpentTools.MicroXSReader.getFY`
-
 .. |getXS| replace::  :meth:`~serpentTools.MicroXSReader.getXS`
-
-.. |settings| replace::  :class:`~serpentTools.settings.rc`
 
 .. _ex-microXS:
 
-=============
-MicroXSReader
-=============
+==========================
+Micro cross section reader
+==========================
 
 Basic Operation
 ---------------
@@ -32,8 +22,8 @@ produces a `micro depletion
 file <http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Micro_depletion_output>`__,
 containing independent and cumulative fission yields as well as group
 cross-sections for the isotopes and reactions defined by the user. The
-|reader| is capable of reading this file, and storing the data
-directly on the reader. The |reader| has two methods to retrieve the data
+|MicroXSReader| is capable of reading this file, and storing the data
+directly on the reader. The |MicroXSReader| has two methods to retrieve the data
 and ease the analysis. Note: in order to obtain the micro depletion
 files, the user must set the ``mdep`` card in the input
 `file <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_mdep>`__.
@@ -41,14 +31,12 @@ files, the user must set the ``mdep`` card in the input
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
+   |read-full| function. The |readData| function is used here
    to make it easier to reproduce the examples
 
 .. code:: 
     
     >>> import serpentTools
-    >>> from serpentTools.settings import rc
     >>> mdxFile = 'ref_mdx0.m'
     >>> mdx = serpentTools.readDataFile(mdxFile)
 
@@ -66,7 +54,7 @@ and corresponding fission yield values.
      (902280, 2.53e-08),
      (902280, 0.5),
      (902280, 14.0),
-    (902290, 2.53e-08)]
+     (902290, 2.53e-08)]
 
 Each pair represents the isotope undergoing fission and the impending
 neutron energy in MeV.
@@ -75,8 +63,8 @@ neutron energy in MeV.
     
     >>> pair = list(pairs)[0] # obtain the first (isotope, energy) pair
     >>> print('Isotope= {: 1.0f}'.format(pair[0]))
-    >>> print('Energy= {} MeV'.format(pair[1]))
     Isotope=  902270
+    >>> print('Energy= {} MeV'.format(pair[1]))
     Energy= 2.53e-08 MeV
 
 The results for each pair are dictionaries that contain three fields:
@@ -115,10 +103,8 @@ and the corresponding values are group fluxes values.
 Cross sections and their uncertainties are stored in the |xsVal| and
 |xsUnc| dictionaries, where the keys represent a specific universe and
 the corresponding values are dictionaries.
+The keys within the nested dictionary describe the isotope, reaction and special flag::
 
-.. code:: 
-    
-    >>> # The keys within the nested dictionary describe the isotope, reaction and special flag
     >>> print(mdx.xsVal['0'].keys())
     dict_keys([(10010, 102, 0), (982490, 18, 0), (982510, 102, 0), (982510, 16, 0),
     (982510, 17, 0), (982510, 18, 0), (40090, 107, 0)])
@@ -158,7 +144,7 @@ store the group-wise flux values and uncertainties respectively.
 Data Retrieval
 --------------
 
-The |reader| object has two ``get`` methods:
+The |MicroXSReader| object has two ``get`` methods:
 1. |getFY| method obtains the independent and cumulative fission yields
 for a specific parent (ZZAAA0/1), daughter (ZZAAA0/1), neutron energy
 (MeV). If no parent or daaughter is found, the method raises an
@@ -171,8 +157,8 @@ universe, isotope and reaction.
     
     >>> indYield, cumYield = mdx.getFY(parent=922350, energy=2.53e-08, daughter=541350 )
     >>> print('Independent yield = {}'.format(indYield))
-    >>> print('Cumulative yield = {}'.format(cumYield))
     Independent yield = 0.000785125
+    >>> print('Cumulative yield = {}'.format(cumYield))
     Cumulative yield = 0.065385
 
 By default, the method includes a flag that allows to obtain the values
@@ -182,8 +168,8 @@ for the closest energy defined by the user.
     
     >>> indYield, cumYield = mdx.getFY(parent=922350, energy=1e-06, daughter=541350 )
     >>> print('Independent yield = {}'.format(indYield))
-    >>> print('Cumulative yield = {}'.format(cumYield))
     Independent yield = 0.000785125
+    >>> print('Cumulative yield = {}'.format(cumYield))
     Cumulative yield = 0.065385
 
 The user can set this boolean flag to False if only the values at
@@ -233,12 +219,13 @@ method raises an error.
 Settings
 --------
 
-The |reader| also has a collection of |settings| to control what
+The |MicroXSReader| also has a collection of |rc| to control what
 data is stored. If none of these settings are modified, the default is
 to store all the data from the output file.
 
 .. code:: 
     
+    >>> from serpentTools.settings import rc
     >>> rc['microxs.getFY'] = False # True/False only
     >>> rc['microxs.getXS'] = True # True/False only
     >>> rc['microxs.getFlx'] = True # True/False only
@@ -258,10 +245,10 @@ to store all the data from the output file.
 Conclusion
 ----------
 
-The |reader| is capable of reading and storing all the data
+The |MicroXSReader| is capable of reading and storing all the data
 from the SERPENT micro depletion file. Fission yields, cross-sections
 and flux ratios are stored on the reader. The reader also includes two
-methods |getFY| and |getXS| to retrieve the data. Use of |settings|
+methods |getFY| and |getXS| to retrieve the data. Use of |rc|
 settings control object allows increased control over the data selected
 from the output file.
 

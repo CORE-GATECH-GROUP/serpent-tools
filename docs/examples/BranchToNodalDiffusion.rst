@@ -1,27 +1,13 @@
-.. |BranchReader| replace:: :class:`~serpentTools.BranchingReader`
-
-.. |BranchCollector| replace:: :class:`~serpentTools.BranchCollector`
-
 .. |BranchCol-tables| replace:: :attr:`~serpentTools.BranchCollector.xsTables`
-
 .. |BranchCol-states| replace:: :attr:`~serpentTools.BranchCollector.states`
-
 .. |BranchCol-perturbations| replace:: :attr:`~serpentTools.BranchCollector.perturbations`
-
 .. |BranchCol-burnups| replace:: :attr:`~serpentTools.BranchCollector.burnups`
-
 .. |BranchCol-axis| replace:: :attr:`~serpentTools.BranchCollector.axis`
-
 .. |BranchCol-universes| replace:: :attr:`~serpentTools.BranchCollector.universes`
-
 .. |BranchCol-univIndex| replace:: :attr:`~serpentTools.BranchCollector.univIndex`
-
 .. |BranchedUniv| replace:: :class:`~serpentTools.xs.BranchedUniv`
-
 .. |BranchedUniv-tables| replace:: :attr:`~serpentTools.xs.BranchedUniv.xsTables`
-
 .. |BranchedUniv-states| replace:: :attr:`~serpentTools.xs.BranchedUniv.states`
-
 .. |BranchedUniv-perturbations| replace:: :attr:`~serpentTools.xs.BranchedUniv.perturbations`
 
 .. _branch-col-example:
@@ -32,7 +18,7 @@ Coefficient file to nodal diffusion cross sections
 A recent feature of SERPENT is the ability to performing branching
 calculations using the `automated burnup
 sequence <http://serpent.vtt.fi/mediawiki/index.php/Automated_burnup_sequence>`__.
-``serpentTools`` can read these coefficient files using the |BranchReader|
+``serpentTools`` can read these coefficient files using the |BranchingReader|
 This automated burnup sequence is ideal for generating group constant
 data for nodal diffusion codes, that often include some multi-physics
 features, criticality searches, or other control mechanisms. A
@@ -59,7 +45,7 @@ and 750 ppm boron in coolant. Fuel temperature had a nominal branch at
 900 K, with 1200 and 600 K perturbations as well. These can be confirmed
 by observing the
 :attr:`~serpentTools.BranchingReader.branches`
-dictionary on the |BranchReader|.
+dictionary on the |BranchingReader|.
 
 .. code:: 
     
@@ -75,7 +61,7 @@ dictionary on the |BranchReader|.
     'FT600'),
      ('B1000', 'FT600')]
 
-Cross sections are spread out through this |BranchReader| across
+Cross sections are spread out through this |BranchingReader| across
 branches, burnup, and universes. The job of the |BranchCollector| is
 to place that data into mutli-dimensional matrices that represent the
 perturbations chosen by the user. A single group constant, say total
@@ -83,7 +69,7 @@ cross section, has unique values for each universe, at each burnup
 point, for each perturbed state, and each energy group. Such a matrix
 would then contain five dimensions for this case.
 
-First, we create the |BranchCollector| from the |BranchReader|
+First, we create the |BranchCollector| from the |BranchingReader|
 and instruct the reader what perturbations are present in the file. The
 ordering is not important at this point, as it can be changed later.
 
@@ -169,14 +155,10 @@ constants for specific universes with the |BranchCol-universes| dictionary.
 .. code:: 
     
     >>> collector.universes
-    {0: <serpentTools.BranchedUniv at 0x7fb62f749a98>,
-     10:
-    <serpentTools.BranchedUniv at 0x7fb62f731b88>,
-     20:
-    <serpentTools.BranchedUniv at 0x7fb62f749e08>,
-     30:
-    <serpentTools.BranchedUniv at 0x7fb62f749e58>,
-     40:
+    {0: <serpentTools.BranchedUniv at 0x7fb62f749a98>, 10:
+    <serpentTools.BranchedUniv at 0x7fb62f731b88>, 20:
+    <serpentTools.BranchedUniv at 0x7fb62f749e08>, 30:
+    <serpentTools.BranchedUniv at 0x7fb62f749e58>, 40:
     <serpentTools.BranchedUniv at 0x7fb62f749ea8>}
     >>> u0 = collector.universes[0]
 
@@ -325,9 +307,6 @@ The full file is available for download:
             instead of ``'infTot'``, but all
     other names would be unchanged.
 
-
-.. code:: 
-    
     >>> writer = Writer(collector)
     >>> print(writer.write.__doc__.strip())
     Write the contents of a single universe
@@ -347,8 +326,6 @@ The full file is available for download:
             mode: {'a', 'w'}
                 Write or append to file. Only
     needed if stream is a string
-
-.. code:: 
     
     >>> # write to a file "in memory"
     >>> out = writer.write(0)

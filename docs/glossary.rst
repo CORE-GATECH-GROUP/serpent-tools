@@ -78,7 +78,7 @@ Glossary
 
     SERPENT
         Monte Carlo particle transport code developed at VTT Technical
-        Research Centre of Finland, Ltd. Produces output files
+        Research Centre of Finland, Ltd [serpent]_. Produces output files
         that can be parsed by this project. More information, including
         distribution and licensing of ``SERPENT`` can be found at
         `<http://montecarlo.vtt.fi>`_. 

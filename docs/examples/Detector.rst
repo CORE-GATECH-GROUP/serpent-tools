@@ -1,37 +1,24 @@
-.. |detector| replace:: :class:`~serpentTools.objects.Detector`
-
-.. |detectorReader| replace:: :class:`~serpentTools.DetectorReader`
-
-.. |detBins| replace:: :attr:`~serpentTools.objects.Detector.bins`
-
-.. |detIndx| replace:: :attr:`~serpentTools.objects.Detector.indexes`
-
-.. |detTallies| replace:: :attr:`~serpentTools.objects.Detector.tallies`
-
-.. |detErrors| replace:: :attr:`~serpentTools.objects.Detector.errors`
-
-.. |detGrids| replace:: :attr:`~serpentTools.objects.Detector.grids`
-
-.. |detSlice| replace:: :meth:`~serpentTools.objects.Detector.slice`
-
+.. |DetBins| replace:: :attr:`~serpentTools.objects.Detector.bins`
+.. |DetIndx| replace:: :attr:`~serpentTools.objects.Detector.indexes`
+.. |DetTallies| replace:: :attr:`~serpentTools.objects.Detector.tallies`
+.. |DetErrors| replace:: :attr:`~serpentTools.objects.Detector.errors`
+.. |DetGrids| replace:: :attr:`~serpentTools.objects.Detector.grids`
+.. |DetSlice| replace:: :meth:`~serpentTools.objects.Detector.slice`
 .. |plot| replace:: :meth:`~serpentTools.objects.Detector.plot`
-
 .. |mesh| replace:: :meth:`~serpentTools.objects.Detector.meshPlot`
-
 .. |spectrum| replace:: :meth:`~serpentTools.objects.Detector.spectrumPlot`
-
 .. |hexDet| replace:: :class:`~serpentTools.objects.HexagonalDetector` 
 
 .. _detector-example:
 
-==============
-DetectorReader
-==============
+===============
+Detector Reader
+===============
 
 Basic Operation
 ---------------
 
-The |detectorReader| is capable of reading SERPENT detector files.
+The |DetectorReader| is capable of reading SERPENT detector files.
 These detectors can be defined with many binning parameters, listed
 `on the SERPENT
 Wiki <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#det_.28detector_definition.29>`_.
@@ -39,7 +26,7 @@ One could define a detector that has a spatial mesh, ``dx/dy/dz/``, but
 also includes reaction and material bins, ``dr, dm``. Detectors are
 stored on the reader object in the 
 :attr:`~serpentTools.DetectorReader.detectors`
-dictionary as custom |detector| objects. 
+dictionary as custom |Detector| objects. 
 Here, all energy and spatial grid data are stored,
 including other binning information such as reaction, universe, and
 lattice bins.
@@ -47,8 +34,7 @@ lattice bins.
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
+   |read-full| function. The |readData| function is used here
    to make it easier to reproduce the examples
 
 .. code:: 
@@ -60,8 +46,8 @@ lattice bins.
     >>> pin = serpentTools.readDataFile(pinFile)
     >>> bwr = serpentTools.readDataFile(bwrFile)
     >>> print(pin.detectors)
-    >>> print(bwr.detectors)
     {'nodeFlx': <serpentTools.objects.Detector object at 0x7f6df2162b70>}
+    >>> print(bwr.detectors)
     {'xymesh': <serpentTools.objects.Detector object at 0x7f6df2162a90>, 
      'spectrum': <serpentTools.objects.Detector object at 0x7f6df2162b00>}
 
@@ -89,16 +75,15 @@ below:
 |              | 20x20 xy grid |
 +--------------+---------------+
 
-For each |detector| object,
-the full tally matrix is stored in the
-|detBins| array.
+For each |Detector| object, the full tally matrix is stored in the
+|DetBins| array.
 
 .. code:: 
     
     >>> nodeFlx = pin.detectors['nodeFlx']
     >>> print(nodeFlx.bins.shape)
-    >>> nodeFlx.bins[:3,:].T
     (16, 12)
+    >>> nodeFlx.bins[:3,:].T
     array([[1.00000e+00, 2.00000e+00, 3.00000e+00],
            [1.00000e+00, 1.00000e+00, 1.00000e+00],
            [1.00000e+00, 2.00000e+00, 3.00000e+00],
@@ -123,7 +108,7 @@ Here, only three columns, shown as rows for readability, are changing:
     For SERPENT-1, there would be an additional column 12 that
     contained the scores for each bin
 
-Detectors can also be obtained by indexing into the |detectorReader|, as
+Detectors can also be obtained by indexing into the |DetectorReader|, as
 
 .. code::
 
@@ -133,7 +118,7 @@ Detectors can also be obtained by indexing into the |detectorReader|, as
 Once each detector is given this binned tally data, the
 :meth:`~serpentTools.objects.Detector.reshape`
 method is called to recast the
-|detTallies|, |detErrors|, and, if applicable,
+|DetTallies|, |DetErrors|, and, if applicable,
 the :attr:`~serpentTools.objects.Detector.scores` columns into
 individual, multidimensional arrays. For this case,
 since the only variable bin quantity is that of the universe, these
@@ -153,9 +138,9 @@ will all be 1D arrays.
            0.00251, 0.00282, 0.00307, 0.00359, 0.00415, 0.00511, 0.00687,
            0.00809, 0.01002])
 
-Bin information is retained through the |detIndx| attribute. This is an 
+Bin information is retained through the |DetIndx| attribute. This is an 
 :class:`~collections.OrderedDict` as the keys are placed according to their column
-position. These postions can be found in the SERPENT Manual, and are
+position. These positions can be found in the SERPENT Manual, and are
 provided in the ``DET_COLS`` tuple.
 
 .. note:: 
@@ -175,8 +160,8 @@ provided in the ``DET_COLS`` tuple.
     OrderedDict([('universe',
                   array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15]))])
 
-Each item in the |detIndx| ordered dictionary corresponds to the
-unique values of that bin in the original |detBins| array. Here,
+Each item in the |DetIndx| ordered dictionary corresponds to the
+unique values of that bin in the original |DetBins| array. Here,
 ``universe`` is the first item and contains an equal number of elements
 to the size of the first (and only) axis in the ``nodeFlx`` tally matrix
 
@@ -185,7 +170,7 @@ to the size of the first (and only) axis in the ``nodeFlx`` tally matrix
     >>> assert nodeFlx.indexes['universe'].size == nodeFlx.tallies.size
 
 For detectors that include some grid matrices, such as spatial or energy
-meshes ``DET<name>E``, these arrays are stored in the |detGrids| dictionary
+meshes ``DET<name>E``, these arrays are stored in the |DetGrids| dictionary
 
 .. code:: 
     
@@ -193,16 +178,16 @@ meshes ``DET<name>E``, these arrays are stored in the |detGrids| dictionary
     >>> print(spectrum.grids['E'][:5, :])
     [[1.00002e-11 4.13994e-07 2.07002e-07]
      [4.13994e-07 5.31579e-07 4.72786e-07]
-    [5.31579e-07 6.25062e-07 5.78320e-07]
+     [5.31579e-07 6.25062e-07 5.78320e-07]
      [6.25062e-07 6.82560e-07 6.53811e-07]
-    [6.82560e-07 8.33681e-07 7.58121e-07]]
+     [6.82560e-07 8.33681e-07 7.58121e-07]]
 
 
 Multi-dimensional Detectors
 ---------------------------
 
-The |detector| objects are capable
-of reshaping the detector data intoan array where each axis corresponds to a
+The |Detector| objects are capable
+of reshaping the detector data into an array where each axis corresponds to a
 varying bin. In the above examples, the reshaped data was one-dimensional,
 because the detectors only tallied data against one bin, universe and energy.
 In the following example, the detector has been configured to tally the
@@ -217,7 +202,7 @@ fission and capture rates (two ``dr`` arguments) in an XY mesh.
     ymesh [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
     xmesh [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
 
-Traversing the first axis in the |detTallies| array corresponds to
+Traversing the first axis in the |DetTallies| array corresponds to
 changing the value of the ``reaction``. The second axis corresponds to
 changing ``ymesh`` values, and the final axis reflects changes in
 ``xmesh``.
@@ -238,15 +223,15 @@ Slicing
 
 As the detectors produced by SERPENT can contain multiple bin types, as
 seen in ``DET_COLS``, obtaining data from the tally data can become
-complicated. This retrieval can be simplified using the |detSlice| method. 
-This method takes an argument indicating what bins (keys in |detIndx|)
+complicated. This retrieval can be simplified using the |DetSlice| method. 
+This method takes an argument indicating what bins (keys in |DetIndx|)
 to fix at what position.
 
 If we want to retrieve the tally data for the fission reaction in the
 ``spectrum`` detector, you would instruct the
-|detSlice| method to use column 1 along the axis that corresponds to the reaction bin, 
+|DetSlice| method to use column 1 along the axis that corresponds to the reaction bin, 
 as the fission reaction corresponded to reaction tally 2 in the original
-matrix. Since python and numpy arrays are zero indexed, the second
+matrix. Since python and :term:`numpy` arrays are zero indexed, the second
 reaction tally is stored in column 1.
 
 .. code:: 
@@ -271,7 +256,7 @@ This method also works for slicing the error, or score, matrix
 Plotting Routines
 -----------------
 
-Each |detector| object is capable of
+Each |Detector| object is capable of
 simple 1D and 2D plotting routines. The simplest 1D plot method is simply |plot|, 
 however a wide range of plot options are supported.
 Below are keyword arguments that can be used to format the plots.
@@ -324,7 +309,7 @@ documentation <https://matplotlib.org/api/_as_gen/matplotlib.pyplot.plot.html>`_
 
 Passing ``what='errors'`` to the plot method plots the associated
 relative errors, rather than the tally data on the y-axis. 
-Similarly, passing a key from |detIndx|
+Similarly, passing a key from |DetIndx|
 as the ``xdim`` argument sets the x-axis to be that specific index.
 
 .. code:: 
@@ -341,8 +326,8 @@ For data with dimensionality greater than one, the |mesh| method
 can be used to plot some 2D slice of the data on a Cartesian grid.
 Passing a dictionary as the ``fixed`` argument restricts the tally data
 down to two dimensions. The X and Y axis can be quantities from
-|detGrids| or |detIndx|. If the quantity to be used for an axis is in
-the |detGrids| dictionary, then the appropriate spatial or energetic grid
+|DetGrids| or |DetIndx|. If the quantity to be used for an axis is in
+the |DetGrids| dictionary, then the appropriate spatial or energetic grid
 from the detector file will be used. Otherwise, the axis will reflect
 changes in a specific bin type. The following keyword arguments can be
 used in conjunction with the above options to format the mesh plots.
@@ -412,7 +397,7 @@ from before
 Spectrum Plots
 ~~~~~~~~~~~~~~
 
-The |detector| objects are also capable of energy spectrum plots, if
+The |Detector| objects are also capable of energy spectrum plots, if
 an associated energy grid is given. The ``normalize`` option will
 normalize the data per unit lethargy. This plot takes some additional
 assumptions with the scaling and labeling, but all the same controls as
@@ -511,7 +496,7 @@ from hexagonal detectors in
     'hex3': <serpentTools.objects.HexagonalDetector at 0x7f1ad03d5c88>}
 
 Here, two |hexDet| objects are produced, with similar
-|detTallies| and slicing methods as demonstrated above.
+|DetTallies| and slicing methods as demonstrated above.
 
 .. code:: 
     
@@ -588,11 +573,11 @@ and utilizing their mesh structure, is not fully supported.
 Conclusion
 ----------
 
-The |detectorReader| is capable of reading and storing detector data from SERPENT detector files.
-The data is stored on custom |detector|
+The |DetectorReader| is capable of reading and storing detector data from SERPENT detector files.
+The data is stored on custom |Detector|
 objects, capable of reshaping tally and error matrices into arrays with
 dimensionality reflecting the detector binning.
-These |detector| objects have simple methods for retrieving and plotting detector data.
+These |Detector| objects have simple methods for retrieving and plotting detector data.
 
 References
 ----------

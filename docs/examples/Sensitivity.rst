@@ -1,9 +1,5 @@
-.. |reader| replace:: :class:`~serpentTools.SensitivityReader`
-
 .. |sens| replace:: :attr:`~serpentTools.SensitivityReader.sensitivities`
-
 .. |eneSens| replace::  :attr:`~serpentTools.SensitivityReader.energyIntegratedSens`
-
 .. |plot| replace::  :meth:`~serpentTools.SensitivityReader.plot`
 
 .. _ex-sensitivity:
@@ -12,7 +8,7 @@ Sensitivity Reader
 ==================
 
 As of SERPENT 2.1.29, the ability to compute sensitivities using
-Generalized Perturbation Theory [1]_. An overview of the functionality,
+Generalized Perturbation Theory [gpt]_. An overview of the functionality,
 and how to enable these features is included on the `SERPENT wiki -
 Sensitivity
 Calculations <http://serpent.vtt.fi/mediawiki/index.php/Sensitivity_calculations>`__.
@@ -22,24 +18,19 @@ and indexes, denoting the sensitivity of a quantity to perturbations in
 isotopic parameters, such as cross sections or fission spectrum. These
 perturbations can be applied to specific materials and/or isotopes.
 
-The |reader| is capable of reading this file and storing
+The |SensitivityReader| is capable of reading this file and storing
 all the arrays and perturbation parameters contained therein. A basic
 plot method is also contained on the reader.
-
-.. code:: 
-    
-    >>> from matplotlib import pyplot
-    >>> import serpentTools
-
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
+   |read-full| function. The |readData| function is used here
    to make it easier to reproduce the examples
+
 
 .. code:: 
     
+    >>> import serpentTools
     >>> sens = serpentTools.readDataFile('flattop_sens.m')
 
 The arrays that are stored in |sens| and |eneSens| 
@@ -104,7 +95,7 @@ into ``MATLAB``/``Octave``, but with zero-indexing.
 Plotting
 --------
 
-The |reader| has a |plot| method for visualizing the
+The |SensitivityReader| has a |plot| method for visualizing the
 sensitivities.
 
 .. note::
@@ -172,13 +163,10 @@ the legend outside the plot.
 Conclusion
 ----------
 
-The |reader| can quickly read sensitivity files, and stores
+The |SensitivityReader| can quickly read sensitivity files, and stores
 all data present in the file. A versatile |plot| method can be used to
 quickly visualize sensitivities.
 
-References
-----------
-
-.. [1] Aufiero, M. et al. “A collision history-based approach to
-       sensitivity/perturbation calculations in the continuous energy Monte
-       Carlo code SERPENT”, Ann. Nucl. Energy, 152 (2015) 245-258.
+.. [gpt] Aufiero, M. et al. “A collision history-based approach to
+   sensitivity/perturbation calculations in the continuous energy Monte
+   Carlo code SERPENT”, Ann. Nucl. Energy, 152 (2015) 245-258.

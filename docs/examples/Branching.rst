@@ -1,10 +1,5 @@
-.. |branchReader| replace:: :class:`~serpentTools.BranchingReader`
-
-.. |branchContainer| replace:: :class:`~serpentTools.objects.BranchContainer`
-
-.. |homogUniv| replace:: :class:`~serpentTools.objects.HomogUniv`
-
-.. |homogUnivPlot| replace:: :meth:`~serpentTools.objects.HomogUniv.plot`
+.. |BranchContainer| replace:: :class:`~serpentTools.objects.BranchContainer`
+.. |HomogUnivPlot| replace:: :meth:`~serpentTools.objects.HomogUniv.plot`
 
 .. _branching-ex:
 
@@ -30,14 +25,13 @@ Basic Operation
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
+   |read-full| function. The |readData| function is used here
    to make it easier to reproduce the examples
 
 .. note::
 
     Without modifying the settings, the
-    :class:`~serpentTools.BranchingReader` assumes that all
+    |BranchingReader| assumes that all
     group constant data is presented without the associated uncertainties.
     See :ref:`branching-settings` for examples on the various ways to
     control operation
@@ -49,31 +43,21 @@ Basic Operation
     >>> branchFile = 'demo.coe'
     >>> r0 = serpentTools.readDataFile(branchFile)
 
-The branches are stored in custom |branchContainer| objects in the
-:attr:`~serpentTools.BranchingReader.branches`
-dictionary
+The branches are stored in custom |BranchContainer| objects in the
+:attr:`~serpentTools.BranchingReader.branches` dictionary
 
 .. code:: 
     
     >>> r0.branches
-    {('B1000',
-      'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b42978>,
-     ('B1000',
-      'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b58a58>,
-     ('B1000',
-      'nom'): <serpentTools.objects.BranchContainer at 0x7fa068aac860>,
-     ('B750',
-      'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b3a908>,
-     ('B750',
-      'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b509e8>,
-     ('B750',
-      'nom'): <serpentTools.objects.BranchContainer at 0x7fa068a9c860>,
-     ('nom',
-      'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b33898>,
-     ('nom',
-      'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b47978>,
-     ('nom',
-      'nom'): <serpentTools.objects.BranchContainer at 0x7fa068a8b860>}
+    {('B1000', 'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b42978>,
+     ('B1000', 'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b58a58>,
+     ('B1000', 'nom'): <serpentTools.objects.BranchContainer at 0x7fa068aac860>,
+     ('B750', 'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b3a908>,
+     ('B750', 'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b509e8>,
+     ('B750', 'nom'): <serpentTools.objects.BranchContainer at 0x7fa068a9c860>,
+     ('nom', 'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b33898>,
+     ('nom', 'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b47978>,
+     ('nom', 'nom'): <serpentTools.objects.BranchContainer at 0x7fa068a8b860>}
 
 Here, the keys are tuples of strings indicating what
 perturbations/branch states were applied for each ``SERPENT`` solution.
@@ -87,8 +71,7 @@ Examining a particular case
 
 ``SERPENT`` allows the user to define variables for each branch through 
 ``var V1_name V1_value`` cards. These are stored in the 
-:attr:`~serpentTools.objects.BranchContainer.stateData` 
-attribute
+:attr:`~serpentTools.objects.BranchContainer.stateData` attribute
 
 .. code:: 
     
@@ -111,8 +94,8 @@ Group Constant Data
     Group constants are converted from ``SERPENT_STYLE`` to
     ``mixedCase`` to fit the overall style of the project.
 
-The |branchContainer| stores group constant data in |homogUniv| objects in the 
-:attr:`~serpentTools.objects.BranchCollector.universes` dictionary
+The |BranchContainer| stores group constant data in |HomogUniv| objects in the 
+:attr:`~serpentTools.objects.BranchContainer.universes` dictionary
 
 .. code:: 
     
@@ -137,8 +120,7 @@ The |branchContainer| stores group constant data in |homogUniv| objects in the
 The keys here are vectors indicating the universe ID, burnup, and burnup
 index corresponding to the point in the burnup schedule. ``SERPENT``
 prints negative values of burnup to indicate units of days, which is
-reflected in the 
-:attr:`~serpentTools.objects.BranchContainer.hasDays`
+reflected in the :attr:`~serpentTools.objects.BranchContainer.hasDays`
 attribute. ``hasDays-> True`` indicates
 that the values of burnup, second item in the above tuple, are in terms
 of days, not MWd/kgU.
@@ -149,32 +131,26 @@ the :meth:`~serpentTools.objects.BranchContainer.getUniv` method
     
     >>> univ0 = b0.universes[0, 1, 1]
     >>> print(univ0)
-    >>> print(univ0.name)
-    >>> print(univ0.bu)
-    >>> print(univ0.step)
-    >>> print(univ0.day)
-    >>> print(b0.hasDays)
     <HomogUniv 0: burnup: 1.000 MWd/kgu, step: 1>
+    >>> print(univ0.name)
     0
+    >>> print(univ0.bu)
     1.0
+    >>> print(univ0.step)
     1
+    >>> print(univ0.day)
     None
+    >>> print(b0.hasDays)
     False
 
 Group constant data is spread out across the following sub-dictionaries:
 
-1. :attr:`~serpentTools.objects.HomogUniv.infExp`: 
-   Expected values for infinite medium group constants
-2. :attr:`~serpentTools.objects.HomogUniv.infUnc`: 
-   Relative uncertainties for infinite medium group constants
-3. :attr:`~serpentTools.objects.HomogUniv.b1Exp`: 
-   Expected values for leakge-corrected group constants
-4. :attr:`~serpentTools.objects.HomogUniv.b1Unc`: 
-   Relative uncertainties for leakge-corrected group constants
-5. :attr:`~serpentTools.objects.HomogUniv.gc`: 
-   Group constant data that does not match the ``INF`` nor ``B1`` scheme
-6. :attr:`~serpentTools.objects.HomogUniv.gcUnc`: 
-   Relative uncertainties for data in :attr:`~serpentTools.objects.HomogUniv.gc`: 
+1. |HomogUniv-infExp|: Expected values for infinite medium group constants
+2. |HomogUniv-infUnc|: Relative uncertainties for infinite medium group constants
+3. |HomogUniv-b1Exp|: Expected values for leakage-corrected group constants
+4. |HomogUniv-b1Unc|: Relative uncertainties for leakage-corrected group constants
+5. |HomogUniv-gc|: Group constant data that does not match the ``INF`` nor ``B1`` scheme
+6. |HomogUniv-gcUnc|: Relative uncertainties for data in |HomogUniv-gc|
 
 For this problem, only expected values for infinite and critical
 spectrum (b1) group constants are returned, so only the ``infExp`` and
@@ -218,8 +194,8 @@ the :meth:`~serpentTools.objects.HomogUniv.get` method.
 Plotting Universe Data
 ----------------------
 
-|homogUniv| objects are capable of plotting homogenized data using the
-|homogUnivPlot| method. This method is tuned to plot group constants, such as
+|HomogUniv| objects are capable of plotting homogenized data using the
+|HomogUnivPlot| method. This method is tuned to plot group constants, such as
 cross sections, for a known group structure. This is reflected in the
 default axis scaling, but can be adjusted on a per case basis. If the
 group structure is not known, then the data is plotted simply against
@@ -237,9 +213,8 @@ bin-index.
 
 .. image:: Branching_files/Branching_33_0.png
 
-The :class:`serpentTools.ResultsReader` example 
-has a more thorough example of this |homogUnivPlot|  method, including
-formatting the line labels - :ref:`ex-res-plotUniv`.
+The |ResultsReader| example has a more thorough example of this |HomogUnivPlot|
+method, including formatting the line labels - :ref:`ex-res-plotUniv`.
 
 Iteration
 ---------
@@ -247,7 +222,7 @@ Iteration
 The branching reader has a
 :meth:`~serpentTools.BranchingReader.iterBranches`
 method that works to yield branch names and their associated
-|branchContainer| objects. This can
+|BranchContainer| objects. This can
 be used to efficiently iterate over all the branches presented in the file.
 
 .. code:: 
@@ -272,7 +247,7 @@ User Control
 The ``SERPENT``
 `set coefpara <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_coefpara>`_
 card already restricts the data present in the coefficient file to user
-control, and the |branchReader|  includes similar control. 
+control, and the |BranchingReader|  includes similar control. 
 
   * :ref:`branching-floatvariables`
   * :ref:`branching-intVariables`
@@ -294,7 +269,7 @@ that the default action is to store all state data variables as strings.
 
 As demonstrated in the :ref:`group-const-variables` example, use of
 :ref:`xs-variableExtras` and :ref:`xs-variableGroups` controls what data is
-stored on the |homogUniv| 
+stored on the |HomogUniv| 
 objects. By default, all variables present in the coefficient file are stored.
 
 .. code:: 
@@ -318,7 +293,6 @@ objects. By default, all variables present in the coefficient file are stored.
 Inspecting the data stored on the homogenized universes reveals only the
 variables explicitly requested are present
 
-
 .. code:: 
     
     >>> univ4 = b1.getUniv(0, 0)
@@ -330,7 +304,7 @@ variables explicitly requested are present
 Conclusion
 ----------
 
-The |branchReader| is capable of reading coefficient files created
+The |BranchingReader| is capable of reading coefficient files created
 by the ``SERPENT`` automated branching process. The data is stored
 according to the branch parameters, universe information, and burnup.
 This reader also supports user control of the processing by selecting
