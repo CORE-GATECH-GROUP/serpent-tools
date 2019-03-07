@@ -35,7 +35,7 @@ from serpentTools.messages import (
     warning, SerpentToolsException,
     info,
 )
-from serpentTools.io import toMatlab
+from serpentTools.io import MatlabConverter
 
 
 MapStrVersions = {
@@ -755,8 +755,9 @@ class ResultsReader(XSReader):
         --------
         * :func:`scipy.io.savemat`
         """
-        return toMatlab(self, fileP, reconvert, append, format, longNames,
-                        compress, oned)
+        converter = MatlabConverter(self, fileP)
+        return converter.convert(reconvert, append, format, longNames,
+                                 compress, oned)
 
     def _gather_matlab(self, reconvert):
         if reconvert:
