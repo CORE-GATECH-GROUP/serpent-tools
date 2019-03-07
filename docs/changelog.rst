@@ -13,6 +13,17 @@
 Changelog
 =========
 
+Next
+====
+
+* Easier construction of |branchCollector| objects with
+  :class:`~serpentTools.xs.BranchCollector.fromFile`.
+* Don't require passing branch information to |branchCollector|. Will be infered
+  from file and set with ``(p1, p2, ...)``. State data can be used to 
+  determine which index is a given perturbation type.
+* Direct ``toMatlab`` methods for ``SensitivityReader``, |depmtxReader|
+  |depletionReader|, |detectorReader|, ``HistoryReader``, and |detector| objects.
+
 .. _v0.6.2:
 
 :release-tag:`0.6.2`

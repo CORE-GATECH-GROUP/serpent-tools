@@ -3,12 +3,13 @@ Utilities to make testing easier
 """
 
 from functools import wraps
-from unittest import TestCase
+from unittest import TestCase, SkipTest
 from logging import NOTSET
 
 from serpentTools.messages import (
     DictHandler, __logger__, removeHandler, addHandler,
 )
+from serpentTools.utils import checkScipy
 
 
 class LoggerMixin(object):
@@ -164,6 +165,19 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
         failMsg = "Found {} match for {} under {} but should not have"
         self.assertFalse(self.msgInLogs(level, msg, partial),
                          msg=failMsg.format(matchType, msg, level))
+
+
+HAS_SCIPY = checkScipy('1.0')
+
+
+class MatlabTesterHelper(TestCase):
+    """Helper class for matlab conversion"""
+
+    def setUp(self):
+        """Call this from subclasses to skip if scipy is unavailable"""
+        # skip tests if scipy not installed
+        if not HAS_SCIPY:
+            raise SkipTest("scipy needed to test matlab conversion")
 
 
 def plotTest(f):

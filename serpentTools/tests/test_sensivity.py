@@ -1,21 +1,21 @@
 """
 Test the sensitivity reader
 """
-from os import remove
 from unittest import TestCase, skipUnless
 from collections import OrderedDict
 from itertools import product
 
-from six import iteritems
+from six import iteritems, BytesIO
 from numpy import array, inf
 from numpy.testing import assert_allclose, assert_array_equal
 
 from serpentTools.data import getFile
 from serpentTools.parsers.sensitivity import SensitivityReader
-from serpentTools.io import toMatlab
 from serpentTools.utils import checkScipy
 from serpentTools.tests import compareDictOfArrays
-from serpentTools.tests.utils import (plotTest, getLegendTexts)
+from serpentTools.tests.utils import (
+    plotTest, getLegendTexts, MatlabTesterHelper,
+)
 
 TEST_FILE = getFile('bwr_sens0.m')
 
@@ -288,7 +288,7 @@ class SensitivityPlotTester(SensitivityTestHelper):
             self.reader.plot("THIS SHOULD FAIL")
 
 
-class Sens2MatlabHelper(SensitivityTestHelper):
+class Sens2MatlabHelper(MatlabTesterHelper, SensitivityTestHelper):
     """Base class for comparing sensitivity reader to matlab"""
 
     def setUp(self):
@@ -300,6 +300,7 @@ class Sens2MatlabHelper(SensitivityTestHelper):
             key: value[convertIx] for key, value in iteritems(
                 SensitivityReader._RECONVERT_LIST_MAP)}
         self.sensFmts = SensitivityReader._RECONVERT_SENS_FMT[convertIx]
+        MatlabTesterHelper.setUp(self)
 
     def _testGathered(self, gathered):
         """Test the contents of the gathered data"""
@@ -340,9 +341,9 @@ class Sens2MatlabHelper(SensitivityTestHelper):
     def test_toMatlab(self):
         """Verify the contents of the reader can be written to matlab"""
         from scipy.io import loadmat
-        fp = "sens2matlab_r{}.mat".format(int(self.RECONVERT))
-        toMatlab(self.reader, fp)
-        gathered = loadmat(fp)
+        stream = BytesIO()
+        self.reader.toMatlab(stream)
+        gathered = loadmat(stream)
         # some vectors will be written as 2D row/column vectors
         # need to reshape them to 1D arrays
         keys = gathered.keys()
@@ -352,8 +353,6 @@ class Sens2MatlabHelper(SensitivityTestHelper):
             value = gathered[key]
             if value.size > 1 and 1 in value.shape:
                 gathered[key] = value.flatten()
-
-        remove(fp)
 
 
 class ReconvertedSens2MatlabTester(Sens2MatlabHelper):

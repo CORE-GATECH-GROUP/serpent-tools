@@ -17,6 +17,7 @@ from serpentTools.parsers.xsplot import XSPlotReader
 from serpentTools.parsers.sensitivity import SensitivityReader
 from serpentTools.parsers.microxs import MicroXSReader
 from serpentTools.parsers.depmatrix import DepmtxReader, readDepmtx
+from serpentTools.io.hooks import matlabHook
 
 READERS = {
     'dep': DepletionReader,
@@ -194,3 +195,14 @@ def depmtx(fileP):
     n0 = n0.reshape(n0.size, 1)
     n1 = n1.reshape(n1.size, 1)
     return t, n0, zai, a, n1
+
+
+#
+# Hooks for exporting to other data types
+#
+
+DepletionReader.toMatlab = matlabHook
+DetectorReader.toMatlab = matlabHook
+SensitivityReader.toMatlab = matlabHook
+HistoryReader.toMatlab = matlabHook
+DepmtxReader.toMatlab = matlabHook
