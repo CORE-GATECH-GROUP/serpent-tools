@@ -10,6 +10,7 @@ __all__ = [
     'XSData',
 ]
 
+
 class XSData(NamedObject):
     docParams = """name: str
         Name of this material

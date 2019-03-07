@@ -18,6 +18,7 @@ __all__ = [
     'DepletedMaterial',
 ]
 
+
 def deprecateTimepointsWarning():
     """Warning that the use of timepoints in plots is going away"""
     from serpentTools.messages import _updateFilterAlert
