@@ -1,28 +1,22 @@
-.. |depReader| replace:: :py:class:`~serpentTools.parsers.depletion.DepletionReader`
-
-.. |depMat| replace:: :py:class:`~serpentTools.objects.materials.DepletedMaterial`
-
-.. |materials| replace:: :py:attr:`~serpentTools.parsers.depletion.DepletionReader.materials`
-
-.. |matData| replace:: :py:attr:`~serpentTools.objects.materials.DepletedMaterial.data`
-
-.. |getValues| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.getValues`
-
-.. |depMatPlot| replace:: :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot` 
+.. |DepletedMaterial| replace:: :class:`~serpentTools.objects.DepletedMaterial`
+.. |materials| replace:: :attr:`~serpentTools.DepletionReader.materials`
+.. |matData| replace:: :attr:`~serpentTools.objects.DepletedMaterial.data`
+.. |getValues| replace:: :meth:`~serpentTools.objects.DepletedMaterial.getValues`
+.. |DepletedMaterialPlot| replace:: :meth:`~serpentTools.objects.DepletedMaterial.plot` 
 
 .. _depletion-reader-ex:
 
-===============
-DepletionReader
-===============
+================
+Depletion Reader
+================
 
 Basic Operation
 ---------------
 SERPENT produces a
 `burned material file <http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Burnup_calculation_output>`_,
 containing the evolution of material properties through burnup for all
-burned materials present in the problem. The |depReader| is capable of reading
-this file, and storing the data inside |depMat| objects.
+burned materials present in the problem. The |DepletionReader| is capable of reading
+this file, and storing the data inside |DepletedMaterial| objects.
 Each such object has methods and attributes that should ease analysis.
 
 .. code:: 
@@ -30,11 +24,10 @@ Each such object has methods and attributes that should ease analysis.
     >>> import serpentTools
     >>> from serpentTools.settings import rc
 
-
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.parsers.read` function. The
+   :func:`~serpentTools.read` function. The
    :func:`~serpentTools.data.readDataFile` function is used here
    to make it easier to reproduce the examples
 
@@ -50,12 +43,6 @@ the corresponding values are the depleted material.
 .. code:: 
     
     >>> dep.materials
-
-
-
-
-.. parsed-literal::
-
     {'fuel0': <serpentTools.objects.materials.DepletedMaterial at 0x7f8f8dccde80>,
      'bglass0': <serpentTools.objects.materials.DepletedMaterial at 0x7f8f8f42f518>,
      'total': <serpentTools.objects.materials.DepletedMaterial at 0x7f8f8dce7940>}
@@ -63,29 +50,11 @@ the corresponding values are the depleted material.
 Metadata, such as the isotopic vector and depletion schedule are also
 present inside the reader
 
-
 .. code:: 
     
     >>> dep.metadata.keys()
-
-
-
-
-.. parsed-literal::
-
     dict_keys(['zai', 'names', 'burnup', 'days'])
-
-
-
-.. code:: 
-    
     >>> dep.metadata['burnup']
-
-
-
-
-.. parsed-literal::
-
     array([0.  , 0.02, 0.04, 0.06, 0.08, 0.1 , 0.12, 0.14, 0.16, 0.18, 0.2 ,
            0.22, 0.24, 0.26, 0.28, 0.3 , 0.32, 0.34, 0.36, 0.38, 0.4 , 0.42,
            0.44, 0.46, 0.48, 0.5 , 0.52, 0.54, 0.56, 0.58, 0.6 , 0.62, 0.64,
@@ -93,18 +62,7 @@ present inside the reader
            0.88, 0.9 , 0.92, 0.94, 0.96, 0.98, 1.  , 1.02, 1.04, 1.06, 1.08,
            1.1 , 1.12, 1.14, 1.16, 1.18, 1.2 , 1.22, 1.24, 1.26, 1.28, 1.3 ,
            1.32, 1.34, 1.36, 1.38, 1.4 , 1.42])
-
-
-
-.. code:: 
-    
     >>> dep.metadata['names']
-
-
-
-
-.. parsed-literal::
-
     ['Xe135', 'I135', 'U234', 'U235', 'U236', 'U238',
      'Pu238', 'Pu239', 'Pu240', 'Pu241', 'Pu242', 'Np237',
      'Am241', 'Am243', 'Cm243', 'Cm244', 'Cm245', 'Cs133',
@@ -112,22 +70,17 @@ present inside the reader
      'Eu153', 'Gd155', 'Mo95', 'Tc99', 'Ru101', 'Rh103',
      'Ag109', 'Cd113', 'lost', 'total']
 
-
-
-DepletedMaterial
-----------------
+Depleted Material Objects
+-------------------------
 
 As mentioned before, all the material data is stored inside these
-|depMat| objects.
+|DepletedMaterial| objects.
 These objects share access to the metadata of the reader as well.
 
 .. code:: 
     
     >>> fuel = dep.materials['fuel0']
     >>> print(fuel.burnup)
-
-.. parsed-literal::
-
     [0.         0.00702676 0.0144405  0.0218803  0.0297245  0.0370823
      0.0447201  0.0513465  0.0590267  0.0671439  0.073392   0.0802637
      0.0887954  0.0974604  0.104807   0.111528   0.119688   0.128006
@@ -140,9 +93,6 @@ These objects share access to the metadata of the reader as well.
      0.404159   0.412113   0.419194   0.426587   0.43425    0.442316
      0.449562   0.456538   0.465128   0.472592   0.479882   0.487348
      0.494634   0.502167   0.508326   0.515086   0.522826   0.530643  ]
-
- .. code::
-
     >>> print(fuel.days is dep.metadata['days'])
     True
 
@@ -160,24 +110,8 @@ used are accessible as attributes as well.
 .. code:: 
     
     >>> fuel.data.keys()
-
-
-
-
-.. parsed-literal::
-
     dict_keys(['volume', 'burnup', 'adens', 'mdens', 'a', 'h', 'sf', 'gsrc', 'ingTox', 'inhTox'])
-
-
-
-.. code:: 
-    
     >>> print(fuel.adens)
-    >>> print(fuel.adens is fuel.data['adens'])
-
-
-.. parsed-literal::
-
     [[0.00000e+00 2.43591e-09 4.03796e-09 ... 4.70133e-09 4.70023e-09
       4.88855e-09]
      [0.00000e+00 6.06880e-09 8.11783e-09 ... 8.05991e-09 8.96359e-09
@@ -191,8 +125,8 @@ used are accessible as attributes as well.
       8.86782e-13]
      [6.88332e-02 6.88334e-02 6.88336e-02 ... 6.88455e-02 6.88457e-02
       6.88459e-02]]
+    >>> print(fuel.adens is fuel.data['adens'])
     True
-
 
 Similar to the original file, the rows of the matrix correspond to
 positions in the isotopic vector, and the columns correspond to
@@ -210,7 +144,7 @@ positions in burnup/day vectors.
 Data Retrieval
 --------------
 
-At the heart of the |depMat|  is the |getValues| method.
+At the heart of the |DepletedMaterial|  is the |getValues| method.
 This method acts as an slicing mechanism that returns data for a
 select number of isotopes at select points in time. |getValues| 
 requires two arguments for the units of time requested, e.g. ``days`` or
@@ -235,16 +169,13 @@ or ``zai`` are not given.
     >>> print(isoVals.shape)
     >>> zaiVals = fuel.getValues('days', 'a', dayPoints, zai=zai)
     print(isoVals - zaiVals)
-
-.. parsed-literal::
-
     (2, 4)
     [[0.00000e+00 3.28067e+14 3.24606e+14 3.27144e+14]
      [0.00000e+00 0.00000e+00 0.00000e+00 0.00000e+00]]
     [[ 0.  0.  0.  0.]
      [ 0.  0.  0.  0.]]
 
-The |depMat| uses this slicing for the built-in |depMatPlot| method, 
+The |DepletedMaterial| uses this slicing for the built-in |DepletedMaterialPlot| method, 
 which takes similar slicing arguments to |getValues|.
 
 By default, the plot method will plot data for all isotopes present,
@@ -265,7 +196,7 @@ arguments, respectively.
 
 .. image:: DepletionReader_files/DepletionReader_24_0.png
 
-This type of plotting can also be applied to the |depMat|
+This type of plotting can also be applied to the |DepletedMaterial|
 level, with similar options for formatting and retrieving data. The
 materials to be plotted can be filtered using the ``materials``
 argument. The ``labelFmt`` argument can be used to apply a consistent
@@ -291,18 +222,14 @@ replacements
     ...          materials=['fuel0', 'total'],
     ...          labelFmt="{mat}: {iso} // {zai}", loglog=True);
 
-
-
 .. image:: DepletionReader_files/DepletionReader_26_0.png
-
-
 
 .. _depletion-settings:
 
 Settings
 --------
 
-The |depReader| also has a collection of settings to control
+The |DepletionReader| also has a collection of settings to control
 what data is stored. If none of these settings are modified, the default
 is to store all the data from the output file. The settings that
 control the depletion reader are 
@@ -312,7 +239,7 @@ control the depletion reader are
   * :ref:`depletion-metadataKeys`
   * :ref:`depletion-processTotal`
 
-Below is an example of configuring a |depReader| that only
+Below is an example of configuring a |DepletionReader| that only
 stores the burnup days, and atomic density for all materials that begin
 with ``bglass`` followed by at least one integer.
 
@@ -322,45 +249,22 @@ with ``bglass`` followed by at least one integer.
     >>> rc['depletion.metadataKeys'] = ['BU']
     >>> rc['depletion.materialVariables'] = ['ADENS']
     >>> rc['depletion.materials'] = [r'bglass\d+']
-
     >>> bgReader = serpentTools.readDataFile(depFile)
-
-.. code:: 
-    
     >>> bgReader.materials.keys()
-
-
-
-
-.. parsed-literal::
-
     dict_keys(['bglass0'])
-
-
-
-.. code:: 
-    
     >>> bglass = bgReader.materials['bglass0']
     >>> bglass.data.keys()
-
-
-
-
-.. parsed-literal::
-
     dict_keys(['adens'])
-
-
 
 Conclusion
 ----------
 
-The |depReader| is capable of reading and storing all the data
+The |DepletionReader| is capable of reading and storing all the data
 from the SERPENT burned materials file. Upon reading, the reader creates
-custom |depMat| objects that are responsible for storing and
-retrieving the data. These objects also have a handy |depMatPlot| method for
+custom |DepletedMaterial| objects that are responsible for storing and
+retrieving the data. These objects also have a handy |DepletedMaterialPlot| method for
 quick analysis. Use of the 
-:py:class:`~serpentTool.settings.rc` settings control object allows
+:class:`~serpentTool.settings.rc` settings control object allows
 increased control over the data selected from the output file.
 
 References

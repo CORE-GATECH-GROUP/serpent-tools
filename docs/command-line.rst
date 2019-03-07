@@ -38,6 +38,8 @@ Display the available options by passing the ``-h`` flag::
          list                show the default settings
          to-matlab           convert output file to .mat file
 
+.. _cli-seed:
+
 Random Seed Generation
 ======================
 

@@ -1,5 +1,3 @@
-.. |depmtxReader| replace:: :class:`~serpentTools.parsers.depmatrix.DepmtxReader`
-
 .. _depmtx-reader-ex:
 
 =======================
@@ -20,12 +18,12 @@ As of ``SERPENT`` 2.1.30, these files contain
 Files such as this are present for each burnable material tracked by ``SERPENT`` and
 at each time step in the problem.
 
-This document will demonstrate the |depmtxReader|, designed to store such data.
+This document will demonstrate the |DepmtxReader|, designed to store such data.
 
 .. note::
 
    The depletion matrices can be very large for most problems, ~1000 x 1000 elements.
-   For this reason, the |depmtxReader| can store matrices in
+   For this reason, the |DepmtxReader| can store matrices in
    `Compressed Sparse Column <https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html>`_
    or full :term:`numpy` arrays. The reader will use the sparse format
    if :term:`scipy` is installed unless explicitely told to use dense arrays.
@@ -37,8 +35,7 @@ Basic Operation
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.parsers.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
+   |read-full| function. The |readData| function is used here
    to make it easier to reproduce the examples
 
 .. code::
@@ -96,7 +93,7 @@ Number densities and entries in the depletion matrix are stored using the
            922400, 922410])
 
 One can easily check if the depletion matrix is stored in a sparse or dense structure using the 
-:attr:`~serpentTools.parsers.depmatrix.DepmtxReader.sparse` attribute::
+:attr:`~serpentTools.DepmtxReader.sparse` attribute::
 
    >>> reader.sparse
    True
@@ -128,7 +125,7 @@ We can see that there is not a lot of change in the isotopic concentration
 in this depletion step.
 Furthermore, the classical fission yield distributions are not present
 due to the lack of fission yield data.
-Using a more complete, and typical dataset, one can view the distribution
+Using a more complete, and typical data set, one can view the distribution
 of fission products more clearly, demonstrated in the below plot.
 
 .. image:: images/depmtx-large.png

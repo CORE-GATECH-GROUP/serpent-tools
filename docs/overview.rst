@@ -1,5 +1,3 @@
-.. |read| replace:: :func:`serpentTools.parsers.read`
-
 .. _project-overview:
 
 ================
@@ -8,19 +6,19 @@ Project Overview
 
 The ``serpentTools`` package contains a variety of parsing utilities,
 each designed to read a specific output from the :term:`SERPENT`
-Monte Carlo code [1]_.
+Monte Carlo code [serpent]_.
 Many of the parsing utilities store the outputs in custom container objects,
 while other store or return a collection of arrays.
 This page gives an overview of what files are currently supported,
 including links to examples and relevant documentation.
 
 Unless otherwise noted, all the files listed below can be read using
-|read|. For example::
+|read-full|. For example::
 
     >>> import serpentTools
     >>> res = serpentTools.read('my_resFile_res.m')
 
-would return a :class:`~serpentTools.parsers.results.ResultsReader`.
+would return a |ResultsReader|
 
 Some file-types have an additional reader that is capable of reading 
 multiple files and computing actual uncertainties. These ``samplers``
@@ -41,7 +39,7 @@ Main output File
   - ``[input]_res.m``
 * SERPENT wiki: 
   `Output parameters <http://serpent.vtt.fi/mediawiki/index.php/Output_parameters>`_
-* Primary Reader: :class:`serpentTools.parsers.results.ResultsReader`
+* Primary Reader: |ResultsReader|
 * Example - notebook: :ex-notebook:`ResultsReader`
 * Example - manual: :ref:`ex-results`
 
@@ -53,11 +51,11 @@ Depletion File
 * File Description: Output from burnup calculations, showing quantities for 
   various materials - ``[input]_dep.m``
 * SERPENT wiki: 
-  http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Burnup_calculation_output
-* Primary Reader: :class:`serpentTools.parsers.depletion.DepletionReader`
+  `Depletion output <http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Burnup_calculation_output>`_
+* Primary Reader: |DepletionReader|
 * Example - notebook: :ex-notebook:`DepletionReader`
 * Example - manual: :ref:`depletion-reader-ex`
-* Sampler - :class:`serpentTools.samplers.depletion.DepletionSampler`
+* Sampler - :class:`serpentTools.samplers.DepletionSampler`
 
 .. _ov-detector:
 
@@ -68,10 +66,10 @@ Detector/ Tally File
   - ``[input]_det[N].m``
 * SERPENT wiki: `Detector definitiion
   <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#det_.28detector_definition.29>`_
-* Primary Reader: :class:`serpentTools.parsers.detector.DetectorReader`
+* Primary Reader: |DetectorReader|
 * Example - notebook: :ex-notebook:`Detector`
 * Example - manual: :ref:`detector-example`
-* Sampler - :class:`serpentTools.samplers.detector.DetectorSampler`
+* Sampler - :class:`serpentTools.samplers.DetectorSampler`
 
 .. _ov-sensitivity:
 
@@ -83,7 +81,7 @@ Sensitivity File
 * SERPENT wiki: `Overview
   <http://serpent.vtt.fi/mediawiki/index.php/Sensitivity_calculations>`_,
   `Output <http://serpent.vtt.fi/mediawiki/index.php/Sensitivity_calculations#Output>`_
-* Primary Reader: :class:`serpentTools.parsers.sensitivity.SensitivityReader`
+* Primary Reader: |SensitivityReader|
 * Example - notebook: :ex-notebook:`Sensitivity`
 * Example - manual: :ref:`ex-sensitivity`
   
@@ -97,7 +95,8 @@ Branching Coefficient File
 * SERPENT wiki: `Overview 
   <http://serpent.vtt.fi/mediawiki/index.php/Automated_burnup_sequence>`_,
   `Output <http://serpent.vtt.fi/mediawiki/index.php/Automated_burnup_sequence#Output_format>`_
-* Primary Reader: :class:`serpentTools.parsers.branching.BranchingReader`
+* Primary Reader: |BranchingReader|
+* Secondary Read function: :func:`serpentTools.BranchCollector.fromFile`
 * Example - notebook: :ex-notebook:`Branching`
 * Example - manual: :ref:`branching-ex`
 
@@ -111,24 +110,9 @@ Micro-depletion File
   <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_mdep>`_, 
   `Output 
   <http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Micro_depletion_output>`_
-* Primary Reader: :class:`serpentTools.parsers.microxs.MicroXSReader`
+* Primary Reader: |MicroXSReader|
 * Example - notebook: :ex-notebook:`MicroXSReader`
 * Example - manual: :ref:`ex-microXS`
-
-.. _ov-depmtx:
-
-Depletion Matrix File
-=====================
-
-.. note::
-
-    The depletion matrix outputs cannot be read with the |read| function.
-
-* File Description: Contains the full depletion matrix, beginning and end of step 
-  isotopic vector, and length of time of the depletion interval for each burnable 
-  material - ``[depmtx]_[material][N].m``
-* SERPENT Input: ``set depmtx 1``
-* Reader: :func:`serpentTools.parsers.depmtx`
 
 .. _ov-xsplot:
 
@@ -139,7 +123,7 @@ Cross Section Plot File
   - ``[input]_xs0.m``
 * SERPENT wiki: `Input syntax
   <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_xsplot>`_
-* Primary Reader: :class:`serpentTools.parsers.xsplot.XSPlotReader`
+* Primary Reader: |XSPlotReader|
 * Example - notebook: :ex-notebook:`XSPlot`
 * Example - manual: :ref:`ex-xsplot`
 
@@ -149,11 +133,7 @@ Depletion Matrix File
 =====================
 * File Description: Data pertaining to depletion for a single burnable material
   at a single point in time - ``depmtx_[material-identifier]-s[step].m``
-* Primary Reader: :class:`serpentTools.parsers.depmatrix.DepmtxReader`
+* Primary Reader: |DepmtxReader|
 * Example - notebook: :ex-notebook:`DepletionMatrix`
 * Example - manual: :ref:`depmtx-reader-ex`
-
-.. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
-    development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
-    <http://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
 

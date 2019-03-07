@@ -5,5 +5,4 @@ Results Reader
 ==============
 
 
-.. autoclass:: serpentTools.parsers.results.ResultsReader
-
+.. autoclass:: serpentTools.ResultsReader

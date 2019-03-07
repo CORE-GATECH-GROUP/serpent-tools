@@ -1,5 +1,3 @@
-.. |rc| replace:: :py:class:`~serpentTools.settings.rc`
-
 .. _settings-ex:
 
 ============
@@ -8,12 +6,10 @@ User Control
 
 The ``serpentTools`` package is designed to, without intervention, be able to store all the
 data contained in each of the various output files. However, the
-:py:mod:`serpentTools.settings` module grants great flexibility to the user
-over what data is obtained through the
-`rc <https://unix.stackexchange.com/questions/3467/what-does-rc-in-bashrc-stand-for>`_
-class. 
+:mod:`serpentTools.settings` module grants great flexibility to the user
+over what data is obtained through the |rc| class. 
 
-All the settings are given in :ref:`default-settings` 
+All the settings are given in :ref:`default-settings`,
 showing their default values and possible options.
 
 Basic Usage
@@ -25,15 +21,9 @@ Basic Usage
     >>> from serpentTools.settings import rc
 
 The |rc| object can be used like a dictionary, polling all possible settings
-with the ``.keys`` method.
-.. code:: 
+with the ``.keys`` method::
     
     >>> rc.keys()
-
-
-.. parsed-literal::
- 
-
     dict_keys(['depletion.processTotal', 'verbosity', 'xs.getInfXS',
     'branching.intVariables', 'serpentVersion',
     'sampler.raiseErrors', 'xs.getB1XS', 'xs.variableGroups', 'xs.variableExtras',
@@ -42,25 +32,16 @@ with the ``.keys`` method.
     'xs.reshapeScatter', 'branching.floatVariables', 'detector.names'])
 
 Settings such as :ref:`depletion-materials` are specific for the
-:py:class:`~serpentTools.parsers.depletion.DepletionReader`, 
-while settings that are led with ``xs`` are sent to
-the :py:class:`~serpentTools.parsers.results.ResultsReader` and 
-:py:class:`~serpentTools.parsers.branching.BranchingReader` as well as their specific
-settings.
+|DepletionReader| while settings that are led with ``xs`` are sent to
+the |ResultsReader| and |BranchingReader| as well as their specific settings.
 Updating a setting is similar to setting a value in a dictionary
 
 .. code:: 
     
     >>> rc['verbosity'] = 'debug'
-
-
-.. parsed-literal::
- 
-
     DEBUG   : serpentTools: Updated setting verbosity to debug
 
-
-The ``rc`` object automatically checks to make sure the value is of the
+The |rc| object automatically checks to make sure the value is of the
 correct type, and is an allowable option, if given.
 
 .. code:: 
@@ -69,48 +50,25 @@ correct type, and is an allowable option, if given.
     ...     rc['depletion.metadataKeys'] = False
     >>> except TypeError as te:
     ...     print(te)
-
-
-.. parsed-literal::
- 
-
     Setting depletion.metadataKeys should be of type <class 'list'>, not <class
     'bool'>
-
-
-.. code:: 
-    
     >>> try:
     ...     rc['serpentVersion'] = '1.2.3'
     >>> except KeyError as ke:
     ...     print(ke)
-
-
-.. parsed-literal::
- 
-
     'Setting serpentVersion is 1.2.3 and not one of the allowed options: 2.1.29,
     2.1.30'
 
-
-The ``rc`` module can also be used inside a context manager to revert
-changes.
+The |rc| object can also be used inside a context manager to revert changes.
 
 .. code:: 
     
     >>> with rc:
     ...     rc['depletion.metadataKeys'] = ['ZAI', 'BU']
     ...     
-    >>> rc['depletion.metadataKeys']
-    >>> rc['verbosity'] = 'info'
-
-
-.. parsed-literal::
- 
-
     DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI', 'BU']
-    DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI',
-    'NAMES', 'DAYS', 'BU']
+    DEBUG   : serpentTools: Updated setting depletion.metadataKeys to ['ZAI', 'NAMES', 'DAYS', 'BU']
+    >>> rc['verbosity'] = 'info'
 
 .. _group-const-variables:
 
@@ -128,27 +86,14 @@ extracted from the results and coefficient files.
 These variable groups are described in :ref:`varialble-groups` 
 and rely upon the ``SERPENT`` version to properly expand the groups.
 
-
 .. code:: 
     
     >>> rc['serpentVersion']
-
-.. parsed-literal::
- 
-
     '2.1.29'
-
-.. code:: 
-    
     >>> rc['xs.variableGroups'] = ['kinetics', 'xs', 'diffusion']
     >>> rc['xs.variableExtras'] = ['XS_DATA_FILE_PATH']
     >>> varSet = rc.expandVariables()
     >>> print(sorted(varSet))
-
-
-.. parsed-literal::
- 
-
     ['ABS', 'ADJ_IFP_ANA_BETA_EFF', 'ADJ_IFP_ANA_LAMBDA', 'ADJ_IFP_GEN_TIME',
     'ADJ_IFP_IMP_BETA_EFF', 'ADJ_IFP_IMP_LAMBDA', 'ADJ_IFP_LIFETIME',
     'ADJ_IFP_ROSSI_ALPHA', 'ADJ_INV_SPD', 'ADJ_MEULEKAMP_BETA_EFF',
@@ -171,8 +116,7 @@ not present in this set
     >>> assert 'INF_SCATT3' not in varSet
 
 This is because two additional settings instruct the
-:py:class:`~serpentTools.parsers.branching.BranchingReader`
-and :py:class:`~serpentTools.parsers.results.ResultsReader` to obtain
+|BranchingReader| and |ResultsReader| to obtain
 infinite medium and leakage-corrected
 cross sections: :ref:`xs-getInfXS` and :ref:`xs-getB1XS`, respectively. 
 By default, :ref:`xs-getInfXS` and :ref:`xs-getB1XS` default to True. This, in
@@ -190,20 +134,16 @@ Configuration Files
 
 The |rc| object allows for settings to be updated
 from a yaml configuration file using the
-:py:meth:`~serpentTools.settings.rc.loadYaml` method.
+:meth:`~serpentTools.settings.rc.loadYaml` method.
 The file is structured with the names of settings as keys and the
 desired setting value as the values.
 The loader also attempts to expand nested settings, like reader-specific
-settings, that may be lumped in a second level.
-
-::
+settings, that may be lumped in a second level::
 
     verbosity: warning
     xs.getInfXS: False
 
-However, the loader can also expand a nested dictionary structure, as
-
-::
+However, the loader can also expand a nested dictionary structure, as::
 
     branching:
       floatVariables: [Fhi, Blo]
@@ -215,11 +155,6 @@ However, the loader can also expand a nested dictionary structure, as
 .. code:: 
     
     >>> %cat myConfig.yaml
-
-
-.. parsed-literal::
- 
-
     xs.getInfXS: False
     xs.getB1XS: True
     xs.variableGroups: [gc-meta, kinetics,
@@ -232,21 +167,8 @@ However, the loader can also expand a nested dictionary structure, as
     materialVariables:
         [ADENS, MDENS, VOLUME]
     serpentVersion: 2.1.29
-
-
-.. code:: 
-    
     >>> myConf = 'myConfig.yaml'
     >>> rc.loadYaml(myConf)
-    >>> rc['xs.getInfXS']
-
-.. parsed-literal::
- 
-
     INFO    : serpentTools: Done
-
-.. parsed-literal::
- 
-
+    >>> rc['xs.getInfXS']
     False
-

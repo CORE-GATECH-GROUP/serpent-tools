@@ -14,6 +14,7 @@ from serpentTools import BranchingReader
 
 __all__ = [
     'BranchCollector',
+    'BranchedUniv',
 ]
 
 

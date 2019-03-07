@@ -1,8 +1,8 @@
-.. |Results| replace:: :py:class:`~serpentTools.parsers.results.ResultsReader`
+.. |Results| replace:: :py:class:`~serpentTools.ResultsReader`
 
-.. |Branching| replace:: :py:class:`~serpentTools.parsers.branching.BranchingReader`
+.. |Branching| replace:: :py:class:`~serpentTools.BranchingReader`
 
-.. |Depletion| replace:: :py:class:`~serpentTools.parsers.depletion.DepletionReader`
+.. |Depletion| replace:: :py:class:`~serpentTools.DepletionReader`
 
 .. _defaultSettings:
 
@@ -15,7 +15,7 @@ readers to control what data is stored and how the
 data is stored. There are specific settings for each reader, 
 and those are of the form ``<leader>.<setting>``,
 so :ref:`depletion-materials` is used only by the
-:py:class:`~serpentTools.parsers.depletion.DepletionReader`.
+:class:`~serpentTools.DepletionReader`.
 Without modifying any settings, each reader defaults to storing all of the
 data present in the output file.
 Many of the settings instruct the readers to store specific data, such as

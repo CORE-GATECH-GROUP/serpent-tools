@@ -4,4 +4,4 @@
 Depletion Matrix Reader
 =======================
 
-.. autoclass:: serpentTools.parsers.depmatrix.DepmtxReader
+.. autoclass:: serpentTools.DepmtxReader

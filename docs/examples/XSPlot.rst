@@ -1,8 +1,5 @@
-.. |reader| replace:: :py:class:`~serpentTools.parsers.xsplot.XSPlotReader`
-
-.. |xsections| replace:: :py:attr:`~serpentTools.parsers.xsplot.XSPlotReader.xsections`
-
-.. |xsdata| replace:: :py:class:`~serpentTools.objects.xsdata.XSData`
+.. |xsections| replace:: :attr:`~serpentTools.XSPlotReader.xsections`
+.. |xsdata| replace:: :class:`~serpentTools.objects.xsdata.XSData`
 
 .. _ex-xsplot:
 
@@ -13,17 +10,16 @@ Basic Operation
 ---------------
 
 Firstly, to get started plotting some cross sections from Serpent, you
-generate a yourInputFileName_xs.m file using `set
+generate a ``yourInputFileName_xs.m`` file using `set
 xsplot <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_xsplot>`__
 as documented on the Serpent wiki. ``serpentTools`` can then read the
-output, figuring out its filetype automatically as with other readers.
+output, figuring out its file type automatically as with other readers.
 Let’s plot some data used in the ``serpentTools`` regression suite.
 
 .. note::
 
    The preferred way to read your own output files is with the
-   :func:`~serpentTools.parsers.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
+   |read-full| function. The |readData| function is used here
    to make it easier to reproduce the examples
 
 .. code:: 
@@ -38,9 +34,6 @@ sections are available from the file:
 .. code::
 
     >>> xsreader.xsections.keys()
-
-.. parsed-literal::
- 
     dict_keys(['i4009_03c', 'i7014_03c', 'i8016_03c', 'i94239_03c', 'mbe',
     'mfissile'])
 
@@ -49,7 +42,7 @@ attribute, which contains a dictionary of named |xsdata| objects. Entries
 starting with “i” are isotopes, while “m” preceded names are materials.
 Notably, materials not appearing in the neutronics calculation, e.g.,
 external tanks in Serpent continuous reprocessing calculations, are not
-printed in the yourInputFileName_xs.m file.
+printed in the ``yourInputFileName_xs.m`` file.
 
 Plotting the entries is very easy, check this out:
 
@@ -57,10 +50,7 @@ Plotting the entries is very easy, check this out:
 
     >>> xsreader.xsections['i4009_03c'].plot(legend='right');
 
-
-
 .. image:: images/XSPlot_files/XSPlot_8_0.png
-
 
 This is nice to have an automatically generated legend, but gets
 somewhat busy quickly. So, it’s easy to check which MT numbers are
@@ -69,10 +59,6 @@ available, and plot only a few:
 .. code::
 
     >>> xsreader.xsections['i4009_03c'].showMT()
-
-
-.. parsed-literal::
-
     MT numbers available for i4009_03c:
     -----------------------------------
     1     Total
@@ -84,14 +70,9 @@ available, and plot only a few:
     105   (n,t)
     103   (n,p)
     104   (n,d)
-
-
-.. code::
-
     >>> xsreader.xsections['i4009_03c'].plot(mts=[2, 16], title='Less busy!');
 
 .. image:: images/XSPlot_files/XSPlot_11_0.png
-
 
 Of course, the same process can be applied to materials, but Serpent has
 some special unique negative MT numbers. The code will give you their
@@ -100,10 +81,6 @@ meaning without requiring your reference back to the wiki.
 .. code::
 
     >>> xsreader.xsections['mfissile'].showMT()
-
-
-.. parsed-literal::
-
     MT numbers available for mfissile:
     ----------------------------------
     -1   Macro total
@@ -113,19 +90,15 @@ meaning without requiring your reference back to the wiki.
     -7   Macro total fission neutron production
     -16  Macro total scattering neutron production
 
-.. code:: 
-
     >>> xsreader.xsections['mfissile'].plot(mts=[-3, -6, -16], loglog=True)
 
-
 .. image:: images/XSPlot_files/XSPlot_15_1.png
-
 
 Lastly, there are two ways to directly access data from Serpent’s xsplot
 output. Firstly, if you’d like to see the data as-stored, just check the
 attribute called “data” belonging to the |xsdata| object. Its columns
 correspond to MT reactions, ordered in the same way as 
-:py:meth:`~serpentTools.object.xsdata.XSData.showMT` presents.
+:meth:`~serpentTools.objects.XSData.showMT` presents.
 The rows correspond to values at the energies in metadata[‘egrid’].
 
 The other method regards presenting tabular data in a visually appealing
@@ -135,12 +108,6 @@ obtain pretty tables.
 .. code::
 
     >>> xsreader.xsections['mfissile'].xsdata
-
-
-
-
-.. parsed-literal::
-
     array([[7.84253e+01, 4.04950e-01, 1.96698e+01, 5.83505e+01, 1.67674e+02,
             0.00000e+00],
            [3.61666e+01, 3.69643e-01, 1.20450e+01, 2.37520e+01, 6.80558e+01,
@@ -161,11 +128,6 @@ obtain pretty tables.
             0.00000e+00],
            [2.93887e-01, 1.36424e-01, 1.13642e-04, 1.20609e-01, 5.96505e-01,
             1.28477e-02]])
-
-
-
-.. code::
-
     >>> xsreader.xsections['mfissile'].tabulate()
 
 .. raw:: html
@@ -301,8 +263,6 @@ obtain pretty tables.
       </tbody>
     </table>
     </div>
-
-
 
 Conclusions
 -----------

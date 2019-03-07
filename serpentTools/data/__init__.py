@@ -63,6 +63,16 @@ def readDataFile(path, **kwargs):
     IOError:
         If the file for ``path`` does not exist
 
+    Examples
+    --------
+
+    Obtain a detector file from the examples
+
+    >>> import serpentTools
+    >>> d = serpentTools.readDataFile('bwr_det0.m')
+    >>> d.detectors.keys()
+    dict_keys(['spectrum', 'xymesh'])
+
     See Also
     --------
     * :func:`serpentTools.read`

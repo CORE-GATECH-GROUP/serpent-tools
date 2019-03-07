@@ -6,6 +6,10 @@ from serpentTools.messages import error
 from serpentTools.objects.base import NamedObject
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 
+__all__ = [
+    'XSData',
+]
+
 
 class XSData(NamedObject):
     docParams = """name: str

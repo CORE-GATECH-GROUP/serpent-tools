@@ -1,6 +1,6 @@
 .. _history:
 
-.. |arrays| replace:: :py:attr:`~serpentTools.parsers.history.HistoryReader.arrays`
+.. |arrays| replace:: :py:attr:`~serpentTools.HistoryReader.arrays`
 
 ==============
 History Reader
@@ -30,7 +30,7 @@ From this wiki
 
     The first column listed above, the index column, is not present in the arrays.
     If only the active cycles are desired, utilze the 
-    :py:attr:`~serpentTools.parsers.history.HistoryReader.numInactive`
+    :py:attr:`~serpentTools.HistoryReader.numInactive`
     to determine the starting index for array indexing::
 
         >>> his = serpentTools.read('bwr_his0.m')
@@ -38,5 +38,5 @@ From this wiki
         >>> timeR = his.arrays['time']
         >>> activeTime = timeR[nSkip:]
 
-.. autoclass:: serpentTools.parsers.history.HistoryReader
+.. autoclass:: serpentTools.HistoryReader
    :special-members: __len__, __contains__, __iter__

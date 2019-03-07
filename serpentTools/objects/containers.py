@@ -50,7 +50,9 @@ HOMOG_VAR_TO_ATTR = {
     'MICRO_E': 'microGroups', 'MICRO_NG': 'numMicroGroups',
     'MACRO_E': 'groups', 'MACRO_NG': 'numGroups'}
 
-__all__ = ('HomogUniv', 'BranchContainer', 'SCATTER_MATS', 'SCATTER_ORDERS')
+__all__ = (
+    'HomogUniv', 'BranchContainer',
+)
 
 
 CRIT_RE = compile('K[EI][NF]F')

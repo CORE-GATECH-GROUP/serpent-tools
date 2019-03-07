@@ -23,8 +23,6 @@ import sys
 sys.path.append(os.path.abspath('../serpentTools/'))
 from _version import get_versions
 
-ON_RTD = os.environ.get('READTHEDOCS', None) == 'True'
-
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -199,3 +197,30 @@ intersphinx_mapping = {
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
 }
+
+# -- Prepend the following lines to each rst file generated
+# Create a common substitution set that doesn't have to be rewritten per-page
+rst_prolog = """
+.. |HomogUniv| replace:: :class:`~serpentTools.objects.HomogUniv`
+.. |HomogUniv-infExp| replace:: :attr:`~serpentTools.objects.HomogUniv.infExp`
+.. |HomogUniv-infUnc| replace:: :attr:`~serpentTools.objects.HomogUniv.infUnc`
+.. |HomogUniv-b1Exp| replace:: :attr:`~serpentTools.objects.HomogUniv.b1Exp`
+.. |HomogUniv-b1Unc| replace:: :attr:`~serpentTools.objects.HomogUniv.b1Unc`
+.. |HomogUniv-gc| replace:: :attr:`~serpentTools.objects.HomogUniv.gc`
+.. |HomogUniv-gcUnc| replace:: :attr:`~serpentTools.objects.HomogUniv.gcUnc`
+.. |ResultsReader| replace:: :class:`~serpentTools.ResultsReader`
+.. |Detector| replace:: :class:`~serpentTools.objects.Detector`
+.. |DetectorReader| replace:: :class:`~serpentTools.DetectorReader`
+.. |DepletionReader| replace:: :class:`~serpentTools.DepletionReader`
+.. |DepmtxReader| replace:: :class:`~serpentTools.DepmtxReader`
+.. |BranchCollector| replace:: :class:`~serpentTools.BranchCollector`
+.. |BranchingReader| replace:: :class:`~serpentTools.BranchingReader`
+.. |XSPlotReader| replace:: :class:`~serpentTools.XSPlotReader`
+.. |HistoryReader| replace:: :class:`~serpentTools.HistoryReader`
+.. |SensitivityReader| replace:: :class:`~serpentTools.SensitivityReader`
+.. |read-short| replace:: :func:`~serpentTools.read`
+.. |read-full| replace:: :func:`serpentTools.read`
+.. |readData| replace:: :func:`serpentTools.readDataFile`
+.. |rc| replace:: :class:`serpentTools.settings.rc`
+.. |MicroXSReader| replace:: :class:`~serpentTools.MicroXSReader`
+"""
