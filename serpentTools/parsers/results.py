@@ -349,9 +349,10 @@ class ResultsReader(XSReader):
                     verWarning = False
                     varType, varVals = self._getVarValues(tline)  # version
                     if self.__serpentVersion not in varVals:
-                        warning("SERPENT {} found in {}, but version {} is defined"
-                                " in settings".format(varVals, self.filePath,
-                                                      self.__serpentVersion))
+                        warning("SERPENT {} found in {}, but version {} is "
+                                "defined in settings"
+                                .format(varVals, self.filePath,
+                                        self.__serpentVersion))
                         warning("  Attemping to read anyway. Please report "
                                 "strange behaviors/failures to developers.")
                 if self._keysVersion['univ'] in tline:
