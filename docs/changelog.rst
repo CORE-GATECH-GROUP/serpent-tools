@@ -17,6 +17,8 @@ Next
 * Direct ``toMatlab`` methods for |SensitivityReader|, |DepmtxReader|
   |DepletionReader|, |DetectorReader|, |HistoryReader|, and |Detector| objects.
 * Overhaul, reorganization, and cleanup of documentation
+* |DepletionReader| ``saveAsMatlab`` in favor of
+  :meth:`~serpentTools.DepletionReader.toMatlab`
 
 .. _v0.6.2:
 
@@ -29,7 +31,7 @@ Next
 * Add :mod:`serpentTools.io` module for converting objects to
   other data types. Currently a general function for converting
   |toMatlab-short|
-* |DetectorReader| and |Detector| objects can be writen to 
+* |DetectorReader| and |Detector| objects can be written to 
   MATLAB files using |toMatlab-full|
 * |resultReader| can plot data using
   :meth:`~serpentTools.ResultsReader.plot`

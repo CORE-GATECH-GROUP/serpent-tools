@@ -15,7 +15,7 @@ from serpentTools.parsers.base import MaterialReader
 from serpentTools.objects.materials import DepletedMaterial
 from serpentTools.utils.core import deconvertVariableName
 from serpentTools.messages import (
-    warning, debug, error, SerpentToolsException,
+    warning, debug, error, SerpentToolsException, deprecated,
 )
 from serpentTools.utils import (
     getKeyMatchingShapes,
@@ -366,11 +366,15 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             lower, upper, 'burnup')
         return similar
 
+    @deprecated("toMatlab")
     def saveAsMatlab(self, fileP, reconvert=True, metadata=None,
                      append=True, format='5', longNames=True,
                      compress=True, oned='row'):
         """
         Write a binary MATLAB file from the contents of this reader
+
+        .. deprecated:: 0.7.0
+            Use :meth:`~serpentTools.DepletionReader.toMatlab`
 
         Parameters
         ----------
@@ -410,12 +414,10 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         :func:`scipy.io.savemat`
         """
         if metadata is not None:
+            warn("metadata argument is deprecated. All metadata written",
+                 FutureWarning)
             # need this path to perserve selecting not to write
             # metadata
-            from scipy.io import savemat
-            data = self._gather_matlab(reconvert, metadata)
-            return savemat(fileP, data, append, format, longNames,
-                           compress, oned)
         converter = MatlabConverter(self, fileP)
         return converter.convert(reconvert, append, format, longNames,
                                  compress, oned)
@@ -428,9 +430,6 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         output file types
         """
 
-        if metadata is not None:
-            warn("version 0.7.0+ will not use metadata argument and write "
-                 "all by default.", FutureWarning)
         # set these here to reduce number of if/elses
 
         if reconvert:
@@ -438,12 +437,8 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         else:
             converter = prepToMatlab
 
-        # remove for v0.7.0
-        if metadata and self.metadata:
-            data = {k.upper() if reconvert else k: v
-                    for k, v in iteritems(self.metadata)}
-        else:
-            data = {}
+        data = {k.upper() if reconvert else k: v
+                for k, v in iteritems(self.metadata)}
 
         for matName, material in iteritems(self.materials):
             for varName, varData in iteritems(material.data):

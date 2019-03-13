@@ -1,11 +1,11 @@
 """Test the depletion file."""
-from unittest import TestCase, skipIf
+from unittest import TestCase
 from os import remove
 
 from numpy import array
 from numpy.testing import assert_equal
 
-from six import iteritems
+from six import iteritems, BytesIO
 
 from serpentTools.data import getFile
 from serpentTools.settings import rc
@@ -13,8 +13,7 @@ from serpentTools.parsers.depletion import (
     DepletionReader, getMaterialNameAndVariable, getMatlabVarName,
     prepToMatlab, deconvert,
 )
-from serpentTools.utils import checkScipy
-from serpentTools.tests.utils import LoggerMixin
+from serpentTools.tests.utils import LoggerMixin, MatlabTesterHelper
 
 
 DEP_FILE = 'ref_dep.m'
@@ -262,37 +261,26 @@ class DepletionUtilTester(TestCase):
         self.assertEqual(self.BAD_0, getMatlabVarName(self.VAR_CHUNK[0]))
 
 
-class DepMatlabExportHelper(TestCase):
+class DepMatlabExportHelper(MatlabTesterHelper):
     """
     Class that tests the saveAsMatlab method for DepletionReaders
     """
-
-    MAT_FILE_TEMPLATE = "dep_c{}_m{}.mat"
 
     @classmethod
     def setUpClass(cls):
         cls.reader = DepletionReader(DEP_FILE_PATH)
         cls.reader.read()
 
-    def setUp(self):
-        self.MAT_FILE = self.MAT_FILE_TEMPLATE.format(
-            1 if self.RECONVERT else 0,
-            1 if self.SAVE_METADATA else 0,
-        )
-
-    @skipIf(not checkScipy(), "scipy not installed")
-    def test_saveMatlab(self):
+    def test_toMatlab(self):
         """
         Verify that the reader can write data to a .mat file
         """
         from scipy.io import loadmat
-        self.reader.saveAsMatlab(self.MAT_FILE, self.RECONVERT,
-                                 self.SAVE_METADATA)
-        loaded = loadmat(self.MAT_FILE)
+        stream = BytesIO()
+        self.reader.toMatlab(stream, self.RECONVERT)
+        loaded = loadmat(stream)
         self.check(loaded)
-        if self.SAVE_METADATA:
-            self.checkMetadata(loaded)
-        remove(self.MAT_FILE)
+        self.checkMetadata(loaded)
 
     def check(self, loaded):
         """Check the contents of the data loaded from the .mat file"""
@@ -313,8 +301,10 @@ class DepMatlabExportHelper(TestCase):
                     err_msg="{} {}".format(materialName, variableName))
 
     def checkMetadata(self, loaded):
-        """Check the contents of the metadata loaded from mat file"""
-        pass
+        for key, data in iteritems(self.reader.metadata):
+            expected = key.upper() if self.RECONVERT else key
+            assert expected in loaded, (
+                "Missing {} from metadata".format(expected))
 
     def constructExpectedVarName(self, material, variable):
         """
@@ -323,7 +313,7 @@ class DepMatlabExportHelper(TestCase):
         raise NotImplementedError
 
 
-class DepMatlabExportConverter(object):
+class DepMatlabExportConverter(DepMatlabExportHelper):
     """Mixin class that converts variables back to orgiginal form"""
 
     RECONVERT = True
@@ -333,7 +323,7 @@ class DepMatlabExportConverter(object):
         return deconvert(material, variable)
 
 
-class DepMatlabExportNoConverter(object):
+class DepMatlabExportNoConverter(DepMatlabExportHelper):
     """Mixin class that does not convert to original form"""
 
     RECONVERT = False
@@ -343,48 +333,6 @@ class DepMatlabExportNoConverter(object):
         return prepToMatlab(material, variable)
 
 
-class DepMatlabExportMetadataTester(DepMatlabExportHelper):
-    """Class that sends metadata to the matlab file and checks"""
-
-    SAVE_METADATA = True
-
-    def checkMetadata(self, loaded):
-        for key, data in iteritems(self.reader.metadata):
-            expected = key.upper() if self.RECONVERT else key
-            assert expected in loaded, (
-                "Missing {} from metadata".format(expected))
-
-
-class DepMatlabExportWithoutMetadataTester(DepMatlabExportHelper):
-    """Class that does not send metadata to the matlab file and checks"""
-
-    SAVE_METADATA = False
-
-    def checkMetadata(self, loaded):
-        for key, data in iteritems(self.reader.metadata):
-            assert key not in loaded, (
-                "{} from metadata present and should not be".format(key))
-
-
-class DepMatlabExportConvWithMetadata(
-        DepMatlabExportConverter, DepMatlabExportMetadataTester):
-    """Class that saves a matlab file with converted names and metadata"""
-    pass
-
-
-class DepMatlabExportConvWithoutMetadata(
-        DepMatlabExportConverter, DepMatlabExportWithoutMetadataTester):
-    """Class that saves a matlab file with converted names and no metadata"""
-    pass
-
-
-class DepMatlabExportNoConvWithMetadata(
-        DepMatlabExportNoConverter, DepMatlabExportMetadataTester):
-    """Class that saves a matlab file without converted names and metadata"""
-    pass
-
-
-del DepMatlabExportMetadataTester, DepMatlabExportWithoutMetadataTester
 del DepMatlabExportHelper
 
 
