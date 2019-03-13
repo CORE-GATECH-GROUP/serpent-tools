@@ -14,9 +14,26 @@ Next
 * Don't require passing branch information to |BranchCollector|. Will be inferred
   from file and set with ``(p1, p2, ...)``. State data can be used to 
   determine which index is a given perturbation type.
-* Direct ``toMatlab`` methods for |SensitivityReader|, |DepmtxReader|
-  |DepletionReader|, |DetectorReader|, |HistoryReader|, and |Detector| objects.
+* Direct ``toMatlab`` methods for |ResultsReader|, |SensitivityReader|,
+  |DepmtxReader| |DepletionReader|, |DetectorReader|, |HistoryReader|,
+  and |Detector| objects.
 * Overhaul, reorganization, and cleanup of documentation
+
+Incompatible API Changes
+------------------------
+
+* |HomogUniv| objects are now stored on |ResultsReader| with 
+  zero-based indexing for burnup. The previous first value of 
+  burnup step was one. All burnup indices are now decreased by
+  one. Similarly, if no burnup was present in the file, the
+  values of burnup and days for all universes is zero.
+* When reading Detectors with a single tally, the value of ``tallies``,
+  ``errors``, and ``scores`` are stored as floats, rather than 
+  :term:`numpy` arrays.
+
+Deprecations
+------------
+
 * |DepletionReader| ``saveAsMatlab`` in favor of
   :meth:`~serpentTools.DepletionReader.toMatlab`
 
@@ -33,7 +50,7 @@ Next
   |toMatlab-short|
 * |DetectorReader| and |Detector| objects can be written to 
   MATLAB files using |toMatlab-full|
-* |resultReader| can plot data using
+* |ResultsReader| can plot data using
   :meth:`~serpentTools.ResultsReader.plot`
 * Experimental |BranchCollector| for
   collecting group constants from coefficient files. Collects
@@ -48,18 +65,6 @@ Next
 
    The API for the |BranchCollector| may be subject to change
    through revisions until ``0.7.0``
-
-Incompatible API Changes
-------------------------
-
-* |HomogUniv| objects are now stored on |ResultReader| with 
-  zero-based indexing for burnup. The previous first value of 
-  burnup step was one. All burnup indices are now decreased by
-  one. Similarly, if no burnup was present in the file, the
-  values of burnup and days for all universes is zero.
-* When reading Detectors with a single tally, the value of ``tallies``,
-  ``errors``, and ``scores`` are stored as floats, rather than 
-  :term:`numpy` arrays.
 
 Pending Deprecations
 --------------------
