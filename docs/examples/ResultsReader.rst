@@ -33,7 +33,6 @@ should ease the analyses.
     >>> import numpy as np
     >>> import serpentTools
     >>> from serpentTools.settings import rc
-    >>> rc['serpentVersion'] = '2.1.30'
 
     >>> resFile = 'InnerAssembly_res.m'
     >>> res = serpentTools.readDataFile(resFile)
