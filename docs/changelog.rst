@@ -6,13 +6,15 @@
 Changelog
 =========
 
-Next
-====
+.. _v0.7.0:
+
+:release-tag:`0.7.0rc0`
+=======================
 
 * Easier construction of |BranchCollector| objects with
   :class:`~serpentTools.xs.BranchCollector.fromFile`.
 * Don't require passing branch information to |BranchCollector|. Will be inferred
-  from file and set with ``(p1, p2, ...)``. State data can be used to 
+  from file and set with ``(p0, p1, ...)``. State data can be used to 
   determine which index is a given perturbation type.
 * Direct ``toMatlab`` methods for |ResultsReader|, |SensitivityReader|,
   |DepmtxReader| |DepletionReader|, |DetectorReader|, |HistoryReader|,
