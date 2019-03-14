@@ -22,7 +22,7 @@ class BranchedUniv(object):
     """
     Class for storing cross sections for a single universe across branches
 
-    .. versionadded:: 0.6.2
+    .. versionadded:: 0.7.0
 
     Parameters
     ----------
@@ -182,13 +182,7 @@ class BranchCollector(object):
     """
     Main class that collects and arranges branched data
 
-    .. versionadded:: 0.6.2
-
-    .. warning::
-
-        This is experimental, and the structure of
-        the underlying data may change. This will
-        be stable in version 0.7.0
+    .. versionadded:: 0.7.0
 
     Parameters
     ----------
