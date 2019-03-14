@@ -24,13 +24,6 @@ class BranchedUniv(object):
 
     .. versionadded:: 0.6.2
 
-    .. warning::
-
-        This is experimental, and the structure of
-        the underlying data may change. This will
-        be stable in version 0.7.0
-
-
     Parameters
     ----------
     univID: str or int
@@ -228,8 +221,6 @@ class BranchCollector(object):
     )
 
     def __init__(self, source):
-        warn("This is an experimental feature, subject to change.",
-             UserWarning)
         if isinstance(source, BranchingReader):
             reader = source
         else:
