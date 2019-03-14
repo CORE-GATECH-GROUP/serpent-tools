@@ -19,6 +19,10 @@ Next
 * Overhaul, reorganization, and cleanup of documentation
 * |DepletionReader| ``saveAsMatlab`` in favor of
   :meth:`~serpentTools.DepletionReader.toMatlab`
+* SERPENT ``2.1.30`` is the default version of :ref:`serpentVersion`. Will
+  alter some variable groups, like :ref:`optimization-base` and
+  :ref:`optimization-2-1-30`, that exist in both versions but are slightly
+  different.
 
 .. _v0.6.2:
 

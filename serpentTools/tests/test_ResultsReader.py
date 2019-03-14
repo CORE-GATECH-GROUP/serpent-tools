@@ -1,7 +1,7 @@
 """Test the results reader."""
 
 from os import remove
-import unittest
+from unittest import TestCase
 
 from numpy import array
 from numpy.testing import assert_equal
@@ -32,7 +32,17 @@ def tearDownModule():
     remove(NO_GCU_FILE)
 
 
-class TestBadFiles(unittest.TestCase):
+class Serp2129Helper(TestCase):
+    """Sets the serpentVersion to 2.1.29 for reading"""
+
+    def setUp(self):
+        rc['serpentVersion'] = '2.1.29'
+
+    def tearDown(self):
+        rc['serpentVersion'] = '2.1.30'
+
+
+class TestBadFiles(Serp2129Helper):
     """
     Test bad files.
 
@@ -68,16 +78,6 @@ class TestBadFiles(unittest.TestCase):
             badReader.read()
         remove(badFile)
 
-
-class TestEmptyAttributes(unittest.TestCase):
-    """
-    Test a case, in which some results do exist in the file,
-    however the read procedure assigns no results into the attributes.
-    Hence metadata, resdata and universes are all empty
-
-    Raises SerpentToolsException
-    """
-
     def test_emptyAttributes(self):
         """Verify that the reader raises error when all attributes are empty"""
         testFile = getFile('pwr_emptyAttributes_res.m')
@@ -88,7 +88,7 @@ class TestEmptyAttributes(unittest.TestCase):
                 testReader.read()
 
 
-class TestGetUniv(unittest.TestCase):
+class TestGetUniv(TestCase):
     """
     Test the getUniv method.
 
@@ -133,7 +133,7 @@ class TestGetUniv(unittest.TestCase):
         assert_equal(xsDict.infExp['infAbs'], self.expectedinfValAbs)
 
 
-class TesterCommonResultsReader(unittest.TestCase):
+class TesterCommonResultsReader(TestCase):
     """
     Class with common tests for the results reader.
 
@@ -565,7 +565,6 @@ class TestFilterResultsNoBurnup(TesterCommonResultsReader):
         self.file = getFile('pwr_noBU_res.m')
         # universe id, Idx, Idx, Idx
         with rc:
-            rc['serpentVersion'] = '2.1.30'
             rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
                                        'diffusion', 'eig', 'burnup-coeff']
             rc['xs.getInfXS'] = True  # only store inf cross sections
@@ -582,7 +581,6 @@ class TestResultsNoBurnNoGcu(TestFilterResultsNoBurnup):
     def setUp(self):
         self.file = NO_GCU_FILE
         with rc:
-            rc['serpentVersion'] = '2.1.30'
             rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
                                        'diffusion', 'eig', 'burnup-coeff']
             rc['xs.getInfXS'] = True  # only store inf cross sections
@@ -592,7 +590,7 @@ class TestResultsNoBurnNoGcu(TestFilterResultsNoBurnup):
             self.reader.read()
 
 
-class RestrictedResultsReader(unittest.TestCase):
+class RestrictedResultsReader(Serp2129Helper):
     """Class that restricts the variables read from the results file"""
 
     expectedInfFlux_bu0 = TestReadAllResults.expectedInfVals
@@ -629,4 +627,5 @@ class RestrictedResultsReader(unittest.TestCase):
 del TesterCommonResultsReader
 
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()

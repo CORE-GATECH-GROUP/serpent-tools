@@ -333,8 +333,10 @@ class ResultsReader(XSReader):
         if self.__serpentVersion in MapStrVersions:
             self._keysVersion = MapStrVersions[self.__serpentVersion]
         else:
-            warning("Version {} is not supported by the "
+            warning("SERPENT {} is not supported by the "
                     "ResultsReader".format(self.__serpentVersion))
+            warning("  Attemping to read anyway. Please report strange "
+                    "behaviors/failures to developers.")
         univSet = set()
         verWarning = True
         with open(self.filePath) as fid:
@@ -347,9 +349,12 @@ class ResultsReader(XSReader):
                     verWarning = False
                     varType, varVals = self._getVarValues(tline)  # version
                     if self.__serpentVersion not in varVals:
-                        warning("Version {} is used, but version {} is defined"
-                                " in settings".format(varVals,
-                                                      self.__serpentVersion))
+                        warning("SERPENT {} found in {}, but version {} is "
+                                "defined in settings"
+                                .format(varVals, self.filePath,
+                                        self.__serpentVersion))
+                        warning("  Attemping to read anyway. Please report "
+                                "strange behaviors/failures to developers.")
                 if self._keysVersion['univ'] in tline:
                     varType, varVals = self._getVarValues(tline)  # universe
                     if varVals in univSet:
