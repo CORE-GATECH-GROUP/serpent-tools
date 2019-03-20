@@ -215,7 +215,7 @@ def placeLegend(ax, legend, ncol=1, handles_labels=None):
     # if no legend explicitely requested and only one
     # item plotted, do not add a legend
     if legend is None and len(handles) == len(labels) == 1:
-        return
+        return ax
     ncol = max(1, int(ncol)) if ncol else 1
     if not isinstance(legend, str):
         ax.legend(handles, labels, ncol=ncol)
