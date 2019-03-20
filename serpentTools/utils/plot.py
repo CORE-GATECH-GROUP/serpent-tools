@@ -17,6 +17,7 @@ __all__ = [
     'setAx_ylims',
     'normalizerFactory',
     'placeLegend',
+    'inferAxScale'
 ]
 
 LEGEND_KWARGS = {
