@@ -43,6 +43,13 @@ Deprecations
   :ref:`optimization-2-1-30`, that exist in both versions but are slightly
   different.
 
+Bug Fixes
+---------
+
+* Fixed a bug that caused some plots not to return the axes object of the plot
+* |HomogUniv| plots are plotted against energy group when no group structure
+  can be determined, and now labeled as such
+
 .. _v0.6.2:
 
 :release-tag:`0.6.2`

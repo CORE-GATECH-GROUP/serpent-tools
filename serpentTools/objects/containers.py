@@ -25,6 +25,7 @@ from serpentTools.utils import (
     compareDocDecorator,
     magicPlotDocDecorator,
     formatPlot,
+    inferAxScale,
 )
 
 from serpentTools.objects.base import (DEF_COMP_LOWER,
@@ -320,7 +321,7 @@ class HomogUniv(NamedObject):
         return self.gcUnc if uncertainty else self.gc
 
     @magicPlotDocDecorator
-    def plot(self, qtys, limitE=True, ax=None, logx=True, logy=True,
+    def plot(self, qtys, limitE=True, ax=None, logx=None, logy=None,
              loglog=None, sigma=3, xlabel=None, ylabel=None, legend=None,
              ncol=1, steps=True, labelFmt=None, labels=None):
         """
@@ -401,11 +402,15 @@ class HomogUniv(NamedObject):
             yVals = hstack((yVals, yVals[-1]))
             nbins = yVals.size
             yUncs = hstack((yUncs, yUncs[-1])) * yVals * sigma
-            xdata = self.__getEGrid(nbins, macroBins, microBins)
-            if limitE:
+
+            xdata, foundE = self.__getEGrid(nbins, macroBins, microBins)
+
+            if limitE and foundE:
                 xdata = xdata.copy()
                 xdata[xdata.argmax()] = eneCap
+
             label = self.__formatLabel(label, key)
+
             ax.errorbar(xdata, yVals, yerr=yUncs, label=label,
                         drawstyle=drawstyle)
 
@@ -415,22 +420,31 @@ class HomogUniv(NamedObject):
             sigStr = r" $\pm{}\sigma$".format(sigma) if sigma else ""
             ylabel = ' '.join((ylabel, sigStr, yUnits))
 
+        if xlabel is None:
+            xlabel = "Energy [MeV]" if foundE else "Energy Group"
+
         if legend is None:
             legend = len(qtys) > 1
         if loglog is not None:
             logx = logy = loglog
+        else:
+            if logx is None:
+                logx = foundE
+            if logy is None:
+                logy = inferAxScale(ax, 'y')
+
         formatPlot(ax, logx=logx, logy=logy, ncol=ncol,
                    legend=legend, xlabel=xlabel or "Energy [MeV]",
                    ylabel=ylabel)
         return ax
 
     def __getEGrid(self, nbins, macroBins, microBins):
-        """Attempt to obtian the correct energy group for plotting."""
+        """Return group structure that matches number of groups"""
         if macroBins is not None and nbins == macroBins:
-            return self.groups
+            return self.groups, True
         if microBins is not None and nbins == microBins:
-            return self.microGroups
-        return arange(nbins)
+            return self.microGroups, True
+        return arange(0.5, nbins + 0.5), False
 
     def __formatLabel(self, label, key):
         mapping = {
