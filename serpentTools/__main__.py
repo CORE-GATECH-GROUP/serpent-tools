@@ -14,7 +14,7 @@ import six
 
 import serpentTools
 from serpentTools import settings
-from serpentTools.messages import info, debug, error
+from serpentTools.messages import info, error
 from serpentTools.parsers import inferReader
 from serpentTools.io import MatlabConverter
 
