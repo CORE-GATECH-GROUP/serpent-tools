@@ -119,9 +119,6 @@ def _toMatlab(args):
     if not outFile:
         base = splitext(inFile)[0]
         outFile = base + '.mat'
-        herald = info
-    else:
-        herald = debug
 
     # inferReader returns the class, but we need an instance
     reader = inferReader(inFile)(inFile)
@@ -139,7 +136,12 @@ def _toMatlab(args):
     converter.convert(True, append=args.append,
                       format=args.format, longNames=args.longNames,
                       compress=not args.large, oned=args.oned)
-    herald("Wrote contents from {} to {}".format(inFile, outFile))
+    if not args.q:
+        if args.v:
+            info("Wrote contents of {} to {}".format(inFile, outFile))
+        else:
+            print(outFile)
+
     return 0
 
 
