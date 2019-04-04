@@ -49,6 +49,8 @@ Bug Fixes
 * Fixed a bug that caused some plots not to return the axes object of the plot
 * |HomogUniv| plots are plotted against energy group when no group structure
   can be determined, and now labeled as such
+* Removed a non-zero exit code from a successful use of the :ref:`cli-seed`
+  command line command
 
 .. _v0.6.2:
 

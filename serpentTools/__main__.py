@@ -14,7 +14,7 @@ import six
 
 import serpentTools
 from serpentTools import settings
-from serpentTools.messages import info, debug, error
+from serpentTools.messages import info, error
 from serpentTools.parsers import inferReader
 from serpentTools.io import MatlabConverter
 
@@ -119,9 +119,6 @@ def _toMatlab(args):
     if not outFile:
         base = splitext(inFile)[0]
         outFile = base + '.mat'
-        herald = info
-    else:
-        herald = debug
 
     # inferReader returns the class, but we need an instance
     reader = inferReader(inFile)(inFile)
@@ -139,16 +136,24 @@ def _toMatlab(args):
     converter.convert(True, append=args.append,
                       format=args.format, longNames=args.longNames,
                       compress=not args.large, oned=args.oned)
-    herald("Wrote contents from {} to {}".format(inFile, outFile))
+    if not args.q:
+        if args.v:
+            info("Wrote contents of {} to {}".format(inFile, outFile))
+        else:
+            print(outFile)
+
     return 0
 
 
 def _seedInterface(args):
     """Interface to launch the uniquely-seeded file generation"""
     from serpentTools.seed import seedFiles
-    return seedFiles(args.file, args.N, seed=args.seed,
-                     outputDir=args.output_dir,
-                     link=args.link, length=args.length)
+    files = seedFiles(args.file, args.N, seed=args.seed,
+                      outputDir=args.output_dir,
+                      link=args.link, length=args.length)
+    if not args.q:
+        print('\n'.join(files))
+    return 0
 
 
 def _listDefaults(args):
