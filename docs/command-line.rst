@@ -10,6 +10,9 @@ access this interface with::
 
     $ python -m serpentTools
 
+Where the above command is executed from the terminal, neglecting the ``$``.
+More information can be found in :ref:`install_terminals`.
+
 .. note::
     
     Outputs here are accurate up to version ``0.6.1+12``
