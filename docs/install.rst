@@ -9,13 +9,28 @@ python that plays well with libraries like :term:`numpy` and :term:`matplotlib`.
 This is easy or less easy depending on your operating system, but we have
 a brief walk through at :ref:`install-python-dist`.
 
-.. note::
+.. _install_terminals:
 
-    Commands below that begin with ``$`` must be run from the
-    terminal containing your preferred python distribution.
-    Depending on operating system, this could be the normal
-    terminal, or a modified prompt. See :ref:`install-python-dist`
-    for more information if you are not sure.
+Terminal terminology
+====================
+
+Commands below that begin with ``$`` must be run from the
+terminal containing your preferred python distribution, neglecting
+the ``$``.
+Depending on operating system, this could be the normal
+terminal, or a modified prompt. See :ref:`install-python-dist`
+for more information if you are not sure.
+
+Commands that begin with ``>>>`` should be run inside of a python
+environment.
+The following would be a valid set of instructions to pass to your terminal,
+printing a very basic python command::
+
+    $ python -m "print('hello world')"
+    hello world
+    $ python
+    >>> print('hello world')
+    hello world
 
 .. _install-pip:
 
