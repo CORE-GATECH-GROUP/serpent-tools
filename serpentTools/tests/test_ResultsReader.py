@@ -1,10 +1,11 @@
 """Test the results reader."""
 
 from os import remove
+from shutil import copy
 from unittest import TestCase
 
 from numpy import array
-from numpy.testing import assert_equal
+from numpy.testing import assert_array_equal
 from six import iteritems
 
 from serpentTools.settings import rc
@@ -15,21 +16,33 @@ from serpentTools.messages import SerpentToolsException
 
 GCU_START_STR = "GCU_UNIVERSE_NAME"
 NO_GCU_FILE = "./pwr_noGcu_res.m"
-GOOD_FILE = getFile("pwr_noBU_res.m")
+ADF_FILE = "./pwr_adf_res.m"
+RES_NO_BU = getFile("pwr_noBU_res.m")
 
 
 def setUpModule():
     """Write the result file with no group constant data."""
-    with open(NO_GCU_FILE, 'w') as noGcu, open(GOOD_FILE) as good:
+    with open(NO_GCU_FILE, 'w') as noGcu, open(RES_NO_BU) as good:
         for line in good:
             if GCU_START_STR in line:
                 break
             noGcu.write(line)
+    copy(RES_NO_BU, ADF_FILE)
+    with open(ADF_FILE, 'a') as stream:
+        stream.write("""
+% Assembly discontinuity factors (order: W-S-E-N / NW-NE-SE-SW):
+
+DF_SURFACE                (idx, [1:  3])  = 'ADF' ;
+DF_SYM                    (idx, 1)        = 1 ;
+DF_N_SURF                 (idx, 1)        = 4 ;
+DF_N_CORN                 (idx, 1)        = 4 ;
+""")
 
 
 def tearDownModule():
     """Remove the noGcu file."""
     remove(NO_GCU_FILE)
+    remove(ADF_FILE)
 
 
 class Serp2129Helper(TestCase):
@@ -130,7 +143,7 @@ class TestGetUniv(TestCase):
     def test_validUniv(self):
         """Verify that getUniv returns the correct universe"""
         xsDict = self.reader.getUniv('0', burnup=0.0, index=0, timeDays=0.0)
-        assert_equal(xsDict.infExp['infAbs'], self.expectedinfValAbs)
+        assert_array_equal(xsDict.infExp['infAbs'], self.expectedinfValAbs)
 
 
 class TesterCommonResultsReader(TestCase):
@@ -179,14 +192,14 @@ class TesterCommonResultsReader(TestCase):
                 self.assertSetEqual(set(self.reader.metadata[key]),
                                     set(expectedValue))
             else:
-                assert_equal(self.reader.metadata[key], expectedValue)
+                assert_array_equal(self.reader.metadata[key], expectedValue)
 
     def test_resdata(self):
         """Verify that results data is properly stored."""
         expectedKeys = self.expectedResdata
         actualKeys = set(self.reader.resdata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
-        assert_equal(self.reader.resdata['absKeff'], self.expectedKeff)
+        assert_array_equal(self.reader.resdata['absKeff'], self.expectedKeff)
 
     def test_burnup(self):
         """Verify the burnup vector is properly stored."""
@@ -197,7 +210,7 @@ class TesterCommonResultsReader(TestCase):
                     "{} should have burnup, but does not".format(self))
             raise self.skipTest(
                 "{} does not, and should not, have burnup".format(self))
-        assert_equal(actualBurnDays, self.expectedDays)
+        assert_array_equal(actualBurnDays, self.expectedDays)
 
     def test_universes(self):
         """Verify that results for all states (univ, bu, buIdx, days) exist.
@@ -216,12 +229,12 @@ class TesterCommonResultsReader(TestCase):
         expUniv = self.reader.universes[expSt0]
         self.assertSetEqual(set(expUniv.infExp.keys()), self.expectedInfExp)
         self.assertSetEqual(set(expUniv.gc.keys()), self.expectedUnivgcData)
-        assert_equal(expUniv.infExp['infFlx'], self.expectedInfVals)
-        assert_equal(expUniv.infUnc['infFlx'], self.expectedInfUnc)
-        assert_equal(expUniv.gc['cmmTranspxs'], self.expectedCMM)
-        assert_equal(expUniv.gcUnc['cmmTranspxs'], self.expectedCMMunc)
-        assert_equal(expUniv.groups, self.expectedGroups)
-        assert_equal(expUniv.microGroups, self.expectedMicroGroups)
+        assert_array_equal(expUniv.infExp['infFlx'], self.expectedInfVals)
+        assert_array_equal(expUniv.infUnc['infFlx'], self.expectedInfUnc)
+        assert_array_equal(expUniv.gc['cmmTranspxs'], self.expectedCMM)
+        assert_array_equal(expUniv.gcUnc['cmmTranspxs'], self.expectedCMMunc)
+        assert_array_equal(expUniv.groups, self.expectedGroups)
+        assert_array_equal(expUniv.microGroups, self.expectedMicroGroups)
 
 
 class TestFilterResults(TesterCommonResultsReader):
@@ -599,7 +612,7 @@ class RestrictedResultsReader(Serp2129Helper):
 
     def _testUnivFlux(self, reader):
         univ = reader.getUniv('0', index=0)
-        assert_equal(self.expectedInfFlux_bu0, univ.get("infFlx"))
+        assert_array_equal(self.expectedInfFlux_bu0, univ.get("infFlx"))
 
     def test_justFlux(self):
         """Restrict the variables to gcu inf flux and verify their values"""
@@ -621,10 +634,24 @@ class RestrictedResultsReader(Serp2129Helper):
             rc['xs.variableExtras'] = ['ABS_KEFF', 'INF_FLX']
             r = readDataFile(self.dataFile)
         self._testUnivFlux(r)
-        assert_equal(self.expectedAbsKeff, r.resdata['absKeff'])
+        assert_array_equal(self.expectedAbsKeff, r.resdata['absKeff'])
 
 
 del TesterCommonResultsReader
+
+
+class ResADFTester(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.reader = ResultsReader(ADF_FILE)
+        cls.reader.read()
+
+    def test_adf(self):
+        univ = self.reader.getUniv('0', index=0)
+        expected = array('ADF')
+        assert_array_equal(expected, univ.gc['dfSurface'])
+
 
 if __name__ == '__main__':
     from unittest import main

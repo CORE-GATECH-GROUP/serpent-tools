@@ -4,7 +4,7 @@ Core utilities
 
 from re import compile
 
-from numpy import array, ndarray
+from numpy import array, ndarray, fromiter
 
 
 # Regular expressions
@@ -15,28 +15,33 @@ SCALAR_REGEX = compile(r'=.+;')  # scalar
 FIRST_WORD_REGEX = compile(r'^\w+')  # first word in the line
 
 
-def str2vec(iterable, of=float, out=array):
+def str2vec(iterable, dtype=float, out=array):
     """
     Convert a string or other iterable to vector.
 
     Parameters
     ----------
     iterable: str or iterable
-        If string, will be split with ``split(splitAt)``
-        to create a list. Every item in this list, or original
+        If a string containing spaces, will be split using
+        ```iterable.split()``. If no spaces are found, the
+        outgoing type is filled with a single string, e.g.
+        a list with a single string as the first and only
+        entry. This is returned directly, avoiding conversion
+        with ``dtype``.
+        Every item in this split list, or original
         iterable, will be iterated over and converted accoring
         to the other arguments.
-    of: type
+    dtype: type
         Convert each value in ``iterable`` to this data type.
     out: type
         Return data type. Will be passed the iterable of
-        converted items of data dtype ``of``.
+        converted items of data dtype ``dtype``.
 
     Returns
     -------
     vector
         Iterable of all values of ``iterable``, or split variant,
-        converted to type ``of``.
+        converted to type ``dtype``.
 
     Examples
     --------
@@ -53,10 +58,19 @@ def str2vec(iterable, of=float, out=array):
         >>> str2vec(x)
         array([1., 2., 3., 4.,])
 
+        >>> str2vec("ADF")
+        array(['ADF', dtype='<U3')
+
     """
-    vec = (iterable.split() if isinstance(iterable, str)
-           else iterable)
-    return out([of(xx) for xx in vec])
+    if isinstance(iterable, str):
+        if ' ' in iterable:
+            iterable = iterable.split()
+        else:
+            return out([iterable])
+    cmap = map(dtype, iterable)
+    if out is array:
+        return fromiter(cmap, dtype)
+    return out(cmap)
 
 
 def splitValsUncs(iterable, copy=False):
