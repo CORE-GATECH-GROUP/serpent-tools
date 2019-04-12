@@ -8,17 +8,17 @@ Changelog
 
 .. _v0.7.0:
 
-:release-tag:`0.7.0rc0`
+:release-tag:`0.7.0`
 =======================
 
-* Easier construction of |BranchCollector| objects with
-  :class:`~serpentTools.xs.BranchCollector.fromFile`.
-* Don't require passing branch information to |BranchCollector|. Will be inferred
-  from file and set with ``(p0, p1, ...)``. State data can be used to 
-  determine which index is a given perturbation type.
+* Easier construction of |BranchCollector| objects - :pull:`276`
+    * Directly from the class :class:`~serpentTools.xs.BranchCollector.fromFile`
+    * Don't require passing branch information to |BranchCollector|. Will be inferred
+      from file and set with ``(p0, p1, ...)``. State data can be used to 
+      determine which index is a given perturbation type.
 * Direct ``toMatlab`` methods for |ResultsReader|, |SensitivityReader|,
   |DepmtxReader| |DepletionReader|, |DetectorReader|, |HistoryReader|,
-  and |Detector| objects.
+  and |Detector| objects - :pull:`290`, :pull:`291`
 * Overhaul, reorganization, and cleanup of documentation
 
 Incompatible API Changes
@@ -28,10 +28,10 @@ Incompatible API Changes
   zero-based indexing for burnup. The previous first value of 
   burnup step was one. All burnup indices are now decreased by
   one. Similarly, if no burnup was present in the file, the
-  values of burnup and days for all universes is zero.
+  values of burnup and days for all universes is zero - :pull:`288`
 * When reading Detectors with a single tally, the value of ``tallies``,
   ``errors``, and ``scores`` are stored as floats, rather than 
-  :term:`numpy` arrays.
+  :term:`numpy` arrays - :pull:`289`
 
 Deprecations
 ------------
@@ -46,11 +46,16 @@ Deprecations
 Bug Fixes
 ---------
 
+* |BranchingReader| is now capable of reading ``.coe`` files with
+  uncertainties - :pull:`272`
 * Fixed a bug that caused some plots not to return the axes object of the plot
+  - :pull:`297`
 * |HomogUniv| plots are plotted against energy group when no group structure
-  can be determined, and now labeled as such
+  can be determined, and now labeled as such - :pull:`299`
 * Removed a non-zero exit code from a successful use of the :ref:`cli-seed`
-  command line command
+  command line command - :pull:`300`
+* |ResultsReader| can process files with assembly discontinuity factors (ADFs)
+  - :pull:`305`
 
 .. _v0.6.2:
 
