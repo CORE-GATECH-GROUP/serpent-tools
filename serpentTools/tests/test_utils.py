@@ -45,8 +45,9 @@ class VariableConverterTester(TestCase):
 class VectorConverterTester(TestCase):
     """Class for testing the str2vec function"""
 
-    def setUp(self):
-        self.testCases = ("0 1 2 3", [0, 1, 2, 3], (0, 1, 2, 3), arange(4))
+    @classmethod
+    def setUpClass(cls):
+        cls.testCases = ("0 1 2 3", [0, 1, 2, 3], (0, 1, 2, 3), arange(4))
 
     def test_str2Arrays(self):
         """Verify that the str2vec converts to arrays."""
@@ -60,6 +61,13 @@ class VectorConverterTester(TestCase):
         expected = [0, 1, 2, 3]
         self._runConversionTest(int, expected, list)
 
+    def test_vecOfStr(self):
+        """Verify a single word can be converted with str2vec"""
+        key = 'ADF'
+        expected = array('ADF')
+        actual = str2vec(key)
+        assert_array_equal(expected, actual)
+
     def _runConversionTest(self, valType, expected, outType=None):
         if outType is None:
             outType = array
@@ -67,7 +75,7 @@ class VectorConverterTester(TestCase):
         else:
             compareType = outType
         for case in self.testCases:
-            actual = str2vec(case, of=valType, out=outType)
+            actual = str2vec(case, dtype=valType, out=outType)
             self.assertIsInstance(actual, compareType, msg=case)
             ofRightType = [isinstance(xx, valType) for xx in actual]
             self.assertTrue(all(ofRightType),
@@ -79,8 +87,9 @@ class VectorConverterTester(TestCase):
 class SplitValsTester(TestCase):
     """Class that tests splitValsUncs."""
 
-    def setUp(self):
-        self.input = arange(4)
+    @classmethod
+    def setUp(cls):
+        cls.input = arange(4)
 
     def test_splitVals(self):
         """Verify the basic functionality."""
@@ -321,8 +330,9 @@ class OverlapTester(TestCase):
 class SplitDictionaryTester(TestCase):
     """Class for testing utils.splitDictByKeys."""
 
-    def setUp(self):
-        self.map0 = {
+    @classmethod
+    def setUpClass(cls):
+        cls.map0 = {
             'hello': 'world',
             'missingFrom1': True,
             'infKeff': arange(2),
@@ -331,7 +341,7 @@ class SplitDictionaryTester(TestCase):
             'anaKeff': arange(6),
             'notBool': 1,
         }
-        self.map1 = {
+        cls.map1 = {
             'hello': 'world',
             'infKeff': arange(2),
             'float': 0.24,
@@ -340,9 +350,9 @@ class SplitDictionaryTester(TestCase):
             'anaKeff': arange(2),
             'absKeff': arange(2),
         }
-        self.badTypes = {'notBool': (int, bool)}
-        self.badShapes = {'anaKeff': ((6, ), (2, )), }
-        self.goodKeys = {'hello', 'absKeff', 'float', 'infKeff', }
+        cls.badTypes = {'notBool': (int, bool)}
+        cls.badShapes = {'anaKeff': ((6, ), (2, )), }
+        cls.goodKeys = {'hello', 'absKeff', 'float', 'infKeff', }
 
     def callTest(self, keySet=None):
         return splitDictByKeys(self.map0, self.map1, keySet)
