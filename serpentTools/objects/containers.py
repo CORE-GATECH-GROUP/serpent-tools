@@ -101,17 +101,17 @@ class HomogUniv(NamedObject):
     reshaped: bool
         ``True`` if scattering matrices have been reshaped to square
         matrices. Otherwise, these matrices are stored as vectors.
-    groups: None or :py:class:`numpy.array`
+    groups: None or :class:`numpy.array`
         Group boundaries from highest to lowest
     numGroups: None or int
         Number of energy groups bounded by ``groups``
-    microGroups: None or :py:class:`numpy.array`
+    microGroups: None or :class:`numpy.array`
         Micro group structure used to produce group constants.
         Listed from lowest to highest
 
     Raises
     ------
-    :class:`~serpentTools.SerpentToolsException`
+    :class:`serpentTools.SerpentToolsException`
         If a negative value of burnup, step, or burnup days is passed
 
     """
@@ -281,7 +281,7 @@ class HomogUniv(NamedObject):
 
         See Also
         --------
-        :meth:`__get__` to directly access data witout uncertainties
+        :meth:`__getitem__` to directly access data witout uncertainties
 
         """
         # 1. Check the input values
