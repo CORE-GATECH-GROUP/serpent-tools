@@ -1,6 +1,6 @@
 """Test the container object. """
 
-import unittest
+from unittest import TestCase
 from itertools import product
 
 from six import iteritems
@@ -8,12 +8,13 @@ from numpy import arange, ndarray, float64
 from numpy.testing import assert_array_equal
 
 from serpentTools.objects.containers import HomogUniv
+from serpentTools.messages import SerpentToolsException
 from serpentTools.tests import compareDictOfArrays
 
 NUM_GROUPS = 5
 
 
-class _HomogUnivTestHelper(unittest.TestCase):
+class _HomogUnivTestHelper(TestCase):
     """Class that runs the tests for the two sub-classes
 
     Subclasses will differ in how the ``mat`` data
@@ -129,6 +130,22 @@ class ReshapedHomogUnivTester(_HomogUnivTestHelper):
         return univ, vec, mat.reshape(NUM_GROUPS, NUM_GROUPS, order="F")
 
 
+class SimpleHomogUnivTester(TestCase):
+    """Class for simple tests on HomogUniv objects"""
+
+    def _wrapBadInit(self, *initArgs):
+        msg = "Args: {}".format(initArgs)
+        with self.assertRaises(SerpentToolsException, msg=msg):
+            HomogUniv('badInit', *initArgs)
+
+    def test_badinit(self):
+        """Verify that a HomogUniv cannot be constructed with negative time"""
+        self._wrapBadInit(-1, 0, None)
+        self._wrapBadInit(None, None, -10.0)
+        # good init
+        HomogUniv('good', None, None, None)
+
+
 def getParams():
     """Return the universe, vector, and matrix for testing."""
     univ = HomogUniv(300, 0, 0, 0)
@@ -140,7 +157,7 @@ def getParams():
 del _HomogUnivTestHelper
 
 
-class UnivTruthTester(unittest.TestCase):
+class UnivTruthTester(TestCase):
     """Class that tests the various boolean evaluations for HomogUniv"""
 
     def setUp(self):
@@ -169,7 +186,7 @@ class UnivTruthTester(unittest.TestCase):
         self.assertTrue(univ.hasData, msg=msg)
 
 
-class HomogUnivIntGroupsTester(unittest.TestCase):
+class HomogUnivIntGroupsTester(TestCase):
     """Class that ensures number of groups is stored as ints."""
 
     def setUp(self):
@@ -203,4 +220,5 @@ class HomogUnivIntGroupsTester(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    from unittest import main
+    main()

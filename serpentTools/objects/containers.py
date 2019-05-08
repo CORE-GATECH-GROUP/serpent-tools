@@ -59,13 +59,6 @@ __all__ = (
 CRIT_RE = compile('K[EI][NF]F')
 
 
-def isNonNeg(value):
-    """Return true if a value is None or non-negative"""
-    if value is None:
-        return True
-    return value >= 0
-
-
 class HomogUniv(NamedObject):
     """
     Class for storing homogenized universe specifications and retrieving them
@@ -124,7 +117,7 @@ class HomogUniv(NamedObject):
     """
 
     def __init__(self, name, bu, step, day):
-        if not all(isNonNeg(xx) for xx in (bu, step, day)):
+        if not all(xx is None or xx >= 0 for xx in (bu, step, day)):
             tail = ['{}: {}'.format(valName, val)
                     for valName, val in zip(('burnup', 'index', 'days'),
                                             (bu, step, day))]
