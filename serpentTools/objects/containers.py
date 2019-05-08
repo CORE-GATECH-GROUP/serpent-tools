@@ -279,6 +279,10 @@ class HomogUniv(NamedObject):
             If the variable requested is not stored on the
             object
 
+        See Also
+        --------
+        :meth:`__get__` to directly access data witout uncertainties
+
         """
         # 1. Check the input values
         if not isinstance(uncertainty, bool):
@@ -299,8 +303,31 @@ class HomogUniv(NamedObject):
             raise KeyError(
                 "Variable {} absent from uncertainty dictionary".format(
                     variableName))
-        dx = setter.get(variableName)
-        return x, dx
+
+        return x, setter[variableName]
+
+    def __getitem__(self, gcname):
+        """
+        Return just the group constant with this name, no uncertainty
+
+        To return data with uncertainties, or to return uncertainties,
+        use :meth:`get`.
+        """
+        return self._lookup(gcname, False)[gcname]
+
+    def __setitem__(self, gckey, gcvalue):
+        """
+        Set the expected value of gckey to be gcvalue
+
+        No conversions are placed on the variable name. What you
+        pass is what gets set.
+
+        For uncertainties, or to convert variable
+        names to ``mixedCase``, use :meth:`addData`.
+
+        Much like a dictionary, this will overwrite existing data.
+        """
+        self._lookup(gckey, False)[gckey] = gcvalue
 
     def _lookup(self, variableName, uncertainty):
         if 'inf' == variableName[:3]:
@@ -376,13 +403,9 @@ class HomogUniv(NamedObject):
                 raise IndexError(
                     "Need equal number of labels for plot quantities. "
                     "Given {} expected: {}".format(len(labels), len(qtys)))
+
         for key, label in zip(qtys, labels):
-            valD = self._lookup(key, False)
-            if key not in valD:
-                warning("{} not found on object. Will not plot."
-                        .format(key))
-                continue
-            yVals = valD[key]
+            yVals = self.__getitem__(key)
             if len(yVals.shape) != 1 and 1 not in yVals.shape:
                 warning("Data for {} is not 1D. Will not plot"
                         .format(key))

@@ -145,6 +145,20 @@ class SimpleHomogUnivTester(TestCase):
         # good init
         HomogUniv('good', None, None, None)
 
+    def test_setGet(self):
+        infKey = 'infTestData'
+        infVal = arange(2)
+        univ = HomogUniv('setGetTest', None, None, None)
+        self.assertEqual(0, len(univ.infExp), msg='Before set')
+        self.assertEqual(0, len(univ.infUnc), msg='Before set')
+        univ[infKey] = infVal
+        self.assertEqual(1, len(univ.infExp), msg='After set')
+        self.assertTrue(infKey in univ.infExp)
+        self.assertEqual(0, len(univ.infUnc), msg='After set')
+        self.assertIs(univ[infKey], infVal)
+        with self.assertRaises(KeyError):
+            univ['this should not exist']
+
 
 def getParams():
     """Return the universe, vector, and matrix for testing."""
