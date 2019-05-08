@@ -701,7 +701,7 @@ class BranchContainer(BaseObject):
 
         Raises
         ------
-        :class:`~serpentTools.SerpentToolsException`
+        :class:`serpentTools.SerpentToolsException`
             If passed a value of ``burnDays`` and set up to work with burnup,
             or vice versa
         """
@@ -749,9 +749,9 @@ class BranchContainer(BaseObject):
 
         Raises
         ------
-        KeyError:
+        KeyError
             If the requested universe could not be found
-        :class:`~serpentTools.SerpentToolsException`
+        :class:`serpentTools.SerpentToolsException`
             If neither burnup nor index are given
         """
         if burnup is None and index is None:
