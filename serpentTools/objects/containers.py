@@ -331,13 +331,13 @@ class HomogUniv(NamedObject):
 
     def _lookup(self, variableName, uncertainty):
         if 'inf' == variableName[:3]:
-            if not uncertainty:
-                return self.infExp
-            return self.infUnc
+            if uncertainty:
+                return self.infUnc
+            return self.infExp
         elif "b1" == variableName[:2]:
-            if not uncertainty:
-                return self.b1Exp
-            return self.b1Unc
+            if uncertainty:
+                return self.b1Unc
+            return self.b1Exp
         return self.gcUnc if uncertainty else self.gc
 
     @magicPlotDocDecorator
