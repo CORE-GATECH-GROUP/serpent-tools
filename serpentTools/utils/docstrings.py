@@ -76,13 +76,16 @@ LEGEND = """legend: bool or str or None
 
 NCOL = """ncol: int\n    Integer number of columns to apply to the legend."""
 
+MESH_THRESH = """thresh: float
+    Do not plot data less than or equal to this value."""
+
 PLOT_MAGIC_STRINGS = {
     'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,
     'xlabel': XLABEL, 'ylabel': YLABEL, 'sigma': SIGMA,
     'ax': AX, 'rax': RETURNS_AX, 'labels': LABELS, 'xlabel': XLABEL,
     'ylabel': YLABEL, 'kwargs': KWARGS, 'cmap': CMAP, 'title': TITLE,
     'matLabelFmt': MAT_FMT_DOC, 'legend': LEGEND, 'ncol': NCOL,
-    'univLabelFmt': UNIV_FMT_DOC,
+    'univLabelFmt': UNIV_FMT_DOC, 'mthresh': MESH_THRESH,
 }
 """Magic strings that, if found as {x}, will be replaced by the key of x"""
 

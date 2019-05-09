@@ -1,6 +1,7 @@
 """Plot routines"""
 
 from numpy import meshgrid
+from numpy.ma import masked_less_equal
 from matplotlib import pyplot
 
 from serpentTools.messages import warning
@@ -17,7 +18,8 @@ __all__ = [
 
 @magicPlotDocDecorator
 def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
-                 logColor=False, normalizer=None, cbarLabel=None, **kwargs):
+                 logColor=False, normalizer=None, cbarLabel=None,
+                 thresh=None, **kwargs):
     """
     Create a cartesian mesh plot of the data
 
@@ -47,6 +49,7 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
         ``norm = normalizer(data, xticks, yticks)``
     cbarLabel: None or str
         Label to apply to colorbar
+    {thresh}
     {kwargs} :py:func:`matplotlib.pyplot.pcolormesh` or
         :func:`matplotlib.pyplot.imshow` if ``xticks`` and ``yticks``
         are ``None``
@@ -57,9 +60,9 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
 
     Raises
     ------
-    ValueError:
+    ValueError
         If ``logColor`` and data contains negative quantities
-    TypeError:
+    TypeError
         If only one of ``xticks`` or ``yticks`` is ``None``.
 
     Examples
@@ -89,6 +92,19 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     identified without obscuring the trends presented in the
     non-zero data.
 
+    Alternatively, one can use the ``thresh`` argument to
+    set a threshold for plotted data. Any value less
+    than or equal to ``thresh`` will not be colored,
+    and the colorbar will be updated to reflect this.
+
+    .. plot::
+        :include-source:
+
+        >>> from serpentTools.plot import cartMeshPlot
+        >>> from numpy import arange
+        >>> data = arange(100).reshape(10, 10)
+        >>> cartMeshPlot(data, thresh=50)
+
     See Also
     --------
     * :func:`matplotlib.pyplot.pcolormesh`
@@ -107,12 +123,16 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
                 "Use logColor instead.")
         logColor = bool(logColor or kwargs['logScale'])
 
+    if thresh is not None:
+        data = masked_less_equal(data, thresh)
+
     if logColor and data.min() < 0:
         raise ValueError("Will not apply log normalization to data with "
                          "negative elements")
     norm = normalizerFactory(data, normalizer, logColor, xticks, yticks)
 
     # make the plot
+
     ax = ax or pyplot.gca()
     if xticks is None:
         mappable = ax.imshow(data, cmap=cmap, norm=norm)
