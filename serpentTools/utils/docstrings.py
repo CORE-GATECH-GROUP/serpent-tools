@@ -76,7 +76,8 @@ LEGEND = """legend: bool or str or None
 
 NCOL = """ncol: int\n    Integer number of columns to apply to the legend."""
 
-MESH_THRESH = """thresh: float\n    Do not plot data less than or equal to this value."""
+MESH_THRESH = """thresh: float
+    Do not plot data less than or equal to this value."""
 
 PLOT_MAGIC_STRINGS = {
     'loglog': LOG_LOG, 'logy': LOGY, 'logx': LOGX,

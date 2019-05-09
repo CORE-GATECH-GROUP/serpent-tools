@@ -60,9 +60,9 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
 
     Raises
     ------
-    ValueError:
+    ValueError
         If ``logColor`` and data contains negative quantities
-    TypeError:
+    TypeError
         If only one of ``xticks`` or ``yticks`` is ``None``.
 
     Examples
@@ -91,6 +91,19 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     plotting sparse matrices, as the zero-valued indices can be
     identified without obscuring the trends presented in the
     non-zero data.
+
+    Alternatively, one can use the ``thresh`` argument to
+    set a threshold for plotted data. Any value less
+    than or equal to ``thresh`` will not be colored,
+    and the colorbar will be updated to reflect this.
+
+    .. plot::
+        :include-source:
+
+        >>> from serpentTools.plot import cartMeshPlot
+        >>> from numpy import arange
+        >>> data = arange(100).reshape(10, 10)
+        >>> cartMeshPlot(data, thresh=50)
 
     See Also
     --------

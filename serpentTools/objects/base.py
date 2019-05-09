@@ -484,7 +484,7 @@ class DetectorBase(NamedObject):
 
         Raises
         ------
-        :class:`~serpentTools.SerpentToolsException`
+        :class:`serpentTools.SerpentToolsException`
             If data to be plotted, with or without constraints, is not 1D
         KeyError
             If the data set by ``what`` not in the allowed selection
@@ -495,6 +495,7 @@ class DetectorBase(NamedObject):
         See Also
         --------
         * :meth:`slice`
+        * :func:`serpentTools.plot.cartMeshPlot`
         * :func:`matplotlib.pyplot.pcolormesh`
         """
         if fixed:

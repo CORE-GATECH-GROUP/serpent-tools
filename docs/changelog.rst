@@ -12,6 +12,9 @@ Next
 * Add :meth:`~serpentTools.objects.HomogUniv.__getitem__` and 
   :meth:`~serpentTools.objects.HomogUniv.__setitem__` convenience
   methods for accessing expected values on |HomogUniv| objects
+* Add ``thresh`` argument to |Detector| 
+  :meth:`~serpentTools.objects.CartesianDetector.meshPlot`, where
+  only data greater than ``thresh`` is plotted.
 
 .. _v0.7.0:
 
