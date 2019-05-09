@@ -448,7 +448,7 @@ class DetectorBase(NamedObject):
     def meshPlot(self, xdim='x', ydim='y', what='tallies', fixed=None, ax=None,
                  cmap=None, cbarLabel=None, logColor=False, xlabel=None,
                  ylabel=None, logx=False, logy=False, loglog=False,
-                 title=None, **kwargs):
+                 title=None, thresh=None, **kwargs):
         """
         Plot tally data as a function of two bin types on a cartesian mesh.
 
@@ -473,6 +473,7 @@ class DetectorBase(NamedObject):
         {logy}
         {loglog}
         {title}
+        {mthresh}
         cbarLabel: str
             Label to apply to colorbar. If not given, infer from ``what``
         {kwargs} :py:func:`~matplotlib.pyplot.pcolormesh`
@@ -519,7 +520,7 @@ class DetectorBase(NamedObject):
             cbarLabel = self._CBAR_LABELS[what]
         ax = cartMeshPlot(
             data, xgrid, ygrid, ax, cmap, logColor,
-            cbarLabel=cbarLabel, **kwargs)
+            cbarLabel=cbarLabel, thresh=thresh, **kwargs)
         if xlabel is None:
             xlabel = DETECTOR_PLOT_LABELS.get(xdim, xdim)
         if ylabel is None:
