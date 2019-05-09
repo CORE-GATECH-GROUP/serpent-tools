@@ -145,9 +145,9 @@ class XSData(NamedObject):
 
         Raises
         ------
-        ModuleNotFoundError:
-            if you don't have pandas.
-        TypeError:
+        ImportError
+            If ``pandas`` is not installed
+        TypeError
             if MT numbers that don't make sense come up
         """
         import pandas as pd
@@ -226,7 +226,7 @@ class XSData(NamedObject):
 
         Raises
         ------
-        TypeError:
+        TypeError
             if MT numbers that don't make sense come up
         """
 

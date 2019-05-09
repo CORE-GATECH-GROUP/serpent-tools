@@ -59,13 +59,6 @@ __all__ = (
 CRIT_RE = compile('K[EI][NF]F')
 
 
-def isNonNeg(value):
-    """Return true if a value is None or non-negative"""
-    if value is None:
-        return True
-    return value >= 0
-
-
 class HomogUniv(NamedObject):
     """
     Class for storing homogenized universe specifications and retrieving them
@@ -108,23 +101,23 @@ class HomogUniv(NamedObject):
     reshaped: bool
         ``True`` if scattering matrices have been reshaped to square
         matrices. Otherwise, these matrices are stored as vectors.
-    groups: None or :py:class:`numpy.array`
+    groups: None or :class:`numpy.array`
         Group boundaries from highest to lowest
     numGroups: None or int
         Number of energy groups bounded by ``groups``
-    microGroups: None or :py:class:`numpy.array`
+    microGroups: None or :class:`numpy.array`
         Micro group structure used to produce group constants.
         Listed from lowest to highest
 
     Raises
     ------
-    :class:`~serpentTools.SerpentToolsException`
+    :class:`serpentTools.SerpentToolsException`
         If a negative value of burnup, step, or burnup days is passed
 
     """
 
     def __init__(self, name, bu, step, day):
-        if not all(isNonNeg(xx) for xx in (bu, step, day)):
+        if not all(xx is None or xx >= 0 for xx in (bu, step, day)):
             tail = ['{}: {}'.format(valName, val)
                     for valName, val in zip(('burnup', 'index', 'days'),
                                             (bu, step, day))]
@@ -286,6 +279,10 @@ class HomogUniv(NamedObject):
             If the variable requested is not stored on the
             object
 
+        See Also
+        --------
+        :meth:`__getitem__` to directly access data witout uncertainties
+
         """
         # 1. Check the input values
         if not isinstance(uncertainty, bool):
@@ -306,18 +303,41 @@ class HomogUniv(NamedObject):
             raise KeyError(
                 "Variable {} absent from uncertainty dictionary".format(
                     variableName))
-        dx = setter.get(variableName)
-        return x, dx
+
+        return x, setter[variableName]
+
+    def __getitem__(self, gcname):
+        """
+        Return just the group constant with this name, no uncertainty
+
+        To return data with uncertainties, or to return uncertainties,
+        use :meth:`get`.
+        """
+        return self._lookup(gcname, False)[gcname]
+
+    def __setitem__(self, gckey, gcvalue):
+        """
+        Set the expected value of gckey to be gcvalue
+
+        No conversions are placed on the variable name. What you
+        pass is what gets set.
+
+        For uncertainties, or to convert variable
+        names to ``mixedCase``, use :meth:`addData`.
+
+        Much like a dictionary, this will overwrite existing data.
+        """
+        self._lookup(gckey, False)[gckey] = gcvalue
 
     def _lookup(self, variableName, uncertainty):
         if 'inf' == variableName[:3]:
-            if not uncertainty:
-                return self.infExp
-            return self.infUnc
+            if uncertainty:
+                return self.infUnc
+            return self.infExp
         elif "b1" == variableName[:2]:
-            if not uncertainty:
-                return self.b1Exp
-            return self.b1Unc
+            if uncertainty:
+                return self.b1Unc
+            return self.b1Exp
         return self.gcUnc if uncertainty else self.gc
 
     @magicPlotDocDecorator
@@ -383,13 +403,9 @@ class HomogUniv(NamedObject):
                 raise IndexError(
                     "Need equal number of labels for plot quantities. "
                     "Given {} expected: {}".format(len(labels), len(qtys)))
+
         for key, label in zip(qtys, labels):
-            valD = self._lookup(key, False)
-            if key not in valD:
-                warning("{} not found on object. Will not plot."
-                        .format(key))
-                continue
-            yVals = valD[key]
+            yVals = self.__getitem__(key)
             if len(yVals.shape) != 1 and 1 not in yVals.shape:
                 warning("Data for {} is not 1D. Will not plot"
                         .format(key))
@@ -685,7 +701,7 @@ class BranchContainer(BaseObject):
 
         Raises
         ------
-        :class:`~serpentTools.SerpentToolsException`
+        :class:`serpentTools.SerpentToolsException`
             If passed a value of ``burnDays`` and set up to work with burnup,
             or vice versa
         """
@@ -733,9 +749,9 @@ class BranchContainer(BaseObject):
 
         Raises
         ------
-        KeyError:
+        KeyError
             If the requested universe could not be found
-        :class:`~serpentTools.SerpentToolsException`
+        :class:`serpentTools.SerpentToolsException`
             If neither burnup nor index are given
         """
         if burnup is None and index is None:

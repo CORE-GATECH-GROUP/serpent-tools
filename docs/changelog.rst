@@ -6,6 +6,13 @@
 Changelog
 =========
 
+Next
+====
+
+* Add :meth:`~serpentTools.objects.HomogUniv.__getitem__` and 
+  :meth:`~serpentTools.objects.HomogUniv.__setitem__` convenience
+  methods for accessing expected values on |HomogUniv| objects
+
 .. _v0.7.0:
 
 :release-tag:`0.7.0`
