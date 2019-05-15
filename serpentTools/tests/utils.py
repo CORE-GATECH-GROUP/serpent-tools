@@ -194,5 +194,34 @@ def plotTest(f):
 
 def getLegendTexts(ax):
     """Return all texts for items in legend."""
-    lgd = ax.legend()
+    lgd = ax.get_legend()
     return [item.get_text() for item in lgd.get_texts()]
+
+
+def testPlotAttrs(testobj, ax=None, xlabel=None, ylabel=None,
+                  xscale=None, yscale=None, legendLabels=None,
+                  title=None):
+    """Compare properties of a generated axes object"""
+    if ax is None:
+        from matplotlib.pyplot import gca
+        ax = gca()
+
+    if xlabel is not None:
+        testobj.assertEqual(xlabel, ax.get_xlabel(), msg='xlabel')
+
+    if ylabel is not None:
+        testobj.assertEqual(ylabel, ax.get_ylabel(), msg='ylabel')
+
+    if xscale is not None:
+        testobj.assertEqual(xscale, ax.get_xscale(), msg='xscale')
+
+    if yscale is not None:
+        testobj.assertEqual(yscale, ax.get_yscale(), msg='yscale')
+
+    if legendLabels is not None:
+        if isinstance(legendLabels, str):
+            legendLabels = [legendLabels, ]
+        testobj.assertEqual(legendLabels, getLegendTexts(ax),
+                            msg='legend text')
+    if title is not None:
+        testobj.assertEqual(title, ax.get_title(), msg='title')
