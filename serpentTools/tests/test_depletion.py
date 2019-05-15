@@ -13,7 +13,11 @@ from serpentTools.parsers.depletion import (
     DepletionReader, getMaterialNameAndVariable, getMatlabVarName,
     prepToMatlab, deconvert,
 )
-from serpentTools.tests.utils import LoggerMixin, MatlabTesterHelper
+from serpentTools.utils import DEPLETION_PLOT_LABELS
+from serpentTools.tests.utils import (
+    LoggerMixin, MatlabTesterHelper,
+    plotTest, testPlotAttrs,
+)
 
 
 DEP_FILE = 'ref_dep.m'
@@ -112,6 +116,34 @@ class DepletionTester(_DepletionTestHelper):
         for name, mat in iteritems(self.reader.materials):
             fromGetItem = self.reader[name]
             self.assertIs(mat, fromGetItem, msg=mat)
+
+    @plotTest
+    def test_plotFewIso(self):
+        """Test the basic functionality of the depletion plot"""
+        mat = self.reader[self.MATERIAL]
+        ax = mat.plot('days', 'adens', names='U235')
+        testPlotAttrs(
+            self, ax, xlabel=DEPLETION_PLOT_LABELS['days'],
+            ylabel=DEPLETION_PLOT_LABELS['adens'],
+            xscale='linear', yscale='linear',
+            legendLabels=['U235'],
+        )
+        # clear the plot for a second go
+
+        ax.clear()
+        mat.plot('burnup', 'adens', names=['U235', 'Xe135'], loglog=True)
+        testPlotAttrs(
+            self, ax, xlabel=DEPLETION_PLOT_LABELS['burnup'],
+            xscale='log', yscale='log', legendLabels=['U235', 'Xe135'],
+        )
+
+    @plotTest
+    def test_plotFormatting(self):
+        mat = self.reader[self.MATERIAL]
+        ax = mat.plot('days', 'adens', names='U235',
+                      labelFmt="{mat}-{iso}")
+        testPlotAttrs(
+            self, ax, legendLabels=[self.MATERIAL + '-U235'])
 
 
 class DepletedMaterialTester(_DepletionTestHelper):
