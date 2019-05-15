@@ -11,6 +11,7 @@ from serpentTools.utils.docstrings import magicPlotDocDecorator
 __all__ = [
     'DETECTOR_PLOT_LABELS',
     'DEPLETION_PLOT_LABELS',
+    'RESULTS_PLOT_XLABELS',
     'formatPlot',
     'addColorbar',
     'setAx_xlims',
@@ -64,6 +65,11 @@ for key in _DET_LABEL_INDEXES:
 
 del _DET_LABEL_INDEXES
 
+RESULTS_PLOT_XLABELS = {
+    'burnup': DEPLETION_PLOT_LABELS['burnup'],
+    'burnDays': DEPLETION_PLOT_LABELS['days'],
+    'burnStep': "Burnup step",
+}
 
 PLOT_FORMAT_DEFAULTS = {
     'xlabel': None, 'ylabel': None, 'legend': True,
