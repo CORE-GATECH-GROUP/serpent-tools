@@ -126,7 +126,7 @@ class DepletionTester(_DepletionTestHelper):
             self, ax, xlabel=DEPLETION_PLOT_LABELS['days'],
             ylabel=DEPLETION_PLOT_LABELS['adens'],
             xscale='linear', yscale='linear',
-            legendLabels=['U235'],
+            legendLabels=[],
         )
         # clear the plot for a second go
 
@@ -140,7 +140,7 @@ class DepletionTester(_DepletionTestHelper):
     @plotTest
     def test_plotFormatting(self):
         mat = self.reader[self.MATERIAL]
-        ax = mat.plot('days', 'adens', names='U235',
+        ax = mat.plot('days', 'adens', names='U235', legend=True,
                       labelFmt="{mat}-{iso}")
         testPlotAttrs(
             self, ax, legendLabels=[self.MATERIAL + '-U235'])
