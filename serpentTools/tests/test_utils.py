@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from numpy import arange, ndarray, array, ones, ones_like, zeros_like
 from numpy.testing import assert_array_equal
-from six import iteritems
+from six import iteritems, assertRaisesRegex
 
 from serpentTools.utils import (
     convertVariableName,
@@ -24,7 +24,10 @@ from serpentTools.utils import (
     DC_STAT_NOT_IMPLEMENTED,
     DC_STAT_DIFF_TYPES,
     DC_STAT_DIFF_SHAPES,
+    formatPlot,
 )
+
+from serpentTools.tests.utils import plotTest, testPlotAttrs
 
 
 class VariableConverterTester(TestCase):
@@ -385,6 +388,58 @@ class SplitDictionaryTester(TestCase):
         self.assertDictEqual(self.badTypes, badTypes)
         self.assertDictEqual(self.badShapes, badShapes)
         self.assertSetEqual(self.goodKeys, goodKeys)
+
+
+class PlotTestTester(TestCase):
+    """Class to test the validity of the plot test utils"""
+    XLABEL = "Test x label"
+    YLABEL = "Test y label"
+
+    def buildPlot(self):
+        from matplotlib.pyplot import gca
+        ax = gca()
+        ax.plot([1, 2, 3], label=1)
+        ax.legend()
+        ax.set_ylabel(self.YLABEL)
+        ax.set_xlabel(self.XLABEL)
+        return ax
+
+    @plotTest
+    def test_plotAttrs_gca(self):
+        """Test the testPlotAttrs without passing an axes object"""
+        self.buildPlot()
+        testPlotAttrs(self, xlabel=self.XLABEL, ylabel=self.YLABEL)
+
+    @plotTest
+    def test_plotAttrs_fail(self):
+        """Test the failure modes of the testPlotAttrs function"""
+        ax = self.buildPlot()
+        with assertRaisesRegex(self, AssertionError, 'xlabel'):
+            testPlotAttrs(self, ax, xlabel="Bad label")
+        with assertRaisesRegex(self, AssertionError, 'ylabel'):
+            testPlotAttrs(self, ax, ylabel="Bad label")
+        with assertRaisesRegex(self, AssertionError, 'xscale'):
+            testPlotAttrs(self, ax, xscale="log")
+        with assertRaisesRegex(self, AssertionError, 'yscale'):
+            testPlotAttrs(self, ax, yscale="log")
+        with assertRaisesRegex(self, AssertionError, 'legend text'):
+            testPlotAttrs(self, ax, legendLabels='bad text')
+        with assertRaisesRegex(self, AssertionError, 'legend text'):
+            testPlotAttrs(self, ax, legendLabels=['1', '2'])
+        with assertRaisesRegex(self, AssertionError, 'title'):
+            testPlotAttrs(self, ax, title='Bad title')
+
+    @plotTest
+    def test_formatPlot(self):
+        """Test the capabilities of the formatPlot function"""
+        ax = self.buildPlot()
+        newX = 'new x label'
+        newY = 'new y label'
+        title = 'plot title'
+        formatPlot(ax, xlabel=newX, ylabel=newY, loglog=True,
+                   title=title)
+        testPlotAttrs(self, ax, xlabel=newX, ylabel=newY,
+                      xscale='log', yscale='log', title=title)
 
 
 if __name__ == '__main__':

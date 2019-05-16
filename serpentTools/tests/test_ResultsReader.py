@@ -12,6 +12,11 @@ from serpentTools.settings import rc
 from serpentTools.data import getFile, readDataFile
 from serpentTools.parsers import ResultsReader
 from serpentTools.messages import SerpentToolsException
+from serpentTools.utils import RESULTS_PLOT_XLABELS
+from serpentTools.tests.utils import (
+    plotTest,
+    testPlotAttrs,
+)
 
 
 GCU_START_STR = "GCU_UNIVERSE_NAME"
@@ -638,6 +643,60 @@ class RestrictedResultsReader(Serp2129Helper):
 
 
 del TesterCommonResultsReader
+
+
+class ResPlotTester(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        with rc:
+            rc['xs.variableExtras'] = [
+                'ABS_KEFF',
+                'TOT_CPU_TIME',
+                'BURN_DAYS',
+                'BURNUP',
+                'BURN_STEP',
+            ]
+            cls.reader = ResultsReader(getFile('InnerAssembly_res.m'))
+            cls.reader.read()
+
+    @plotTest
+    def test_singlePlot(self):
+        """Test the plot capabilities of the ResultsReader"""
+        ax = self.reader.plot('absKeff', sigma=3)
+        testPlotAttrs(
+            self, ax, xlabel=RESULTS_PLOT_XLABELS['burnDays'],
+            ylabel="absKeff$ \\pm 3\\sigma$",
+        )
+
+        ax.clear()
+        newLabel = 'Multiplication factor'
+        self.reader.plot('burnup', {'absKeff': newLabel}, ax=ax, sigma=0,
+                         logx=True)
+        testPlotAttrs(
+            self, ax, ylabel=newLabel, xscale='log',
+            xlabel=RESULTS_PLOT_XLABELS['burnup'],
+        )
+        # plot two quantities
+        ax.clear()
+        self.reader.plot('burnStep', ['absKeff', 'totCpuTime'], ax=ax,
+                         sigma=0, ylabel="ylabel")
+        testPlotAttrs(
+            self, ax, xlabel=RESULTS_PLOT_XLABELS['burnStep'],
+            ylabel="ylabel", legendLabels=['absKeff', 'totCpuTime'],
+        )
+
+    @plotTest
+    def test_rightPlot(self):
+        """Test plotting on left and right y axis"""
+        left, right = self.reader.plot('absKeff', sigma=0, right='totCpuTime')
+        testPlotAttrs(
+            self, left, ylabel='absKeff',
+            legendLabels=['absKeff', 'totCpuTime [right]'],
+        )
+        testPlotAttrs(
+            self, right, ylabel='totCpuTime',
+        )
 
 
 class ResADFTester(TestCase):

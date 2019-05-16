@@ -30,6 +30,7 @@ from serpentTools.utils import (
     placeLegend,
     magicPlotDocDecorator,
     deconvertVariableName,
+    RESULTS_PLOT_XLABELS,
 )
 from serpentTools.messages import (
     warning, SerpentToolsException,
@@ -586,8 +587,6 @@ class ResultsReader(XSReader):
         if y is None:
             y = x
             x = "burnDays"
-        if x == 'days':
-            x = 'burnDays'
 
         sigma = max(int(sigma), 0)
 
@@ -597,11 +596,7 @@ class ResultsReader(XSReader):
             right = self._expandPlotIterables(right, ' [right]')
 
         if xlabel is True:
-            xlabel = {
-                'burnup': 'Burnup [MWd/kgU]',
-                'burnDays': 'Burnup [d]',
-                'burnStep': 'Burnup step',
-            }[x]
+            xlabel = RESULTS_PLOT_XLABELS[x]
 
         if len(y) == 1 and ylabel is None:
             for ylabel in y.values():
