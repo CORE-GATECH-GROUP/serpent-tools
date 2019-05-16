@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from numpy import arange, ndarray, array, ones, ones_like, zeros_like
 from numpy.testing import assert_array_equal
-from six import iteritems
+from six import iteritems, assertRaisesRegex
 
 from serpentTools.utils import (
     convertVariableName,
@@ -414,19 +414,19 @@ class PlotTestTester(TestCase):
     def test_plotAttrs_fail(self):
         """Test the failure modes of the testPlotAttrs function"""
         ax = self.buildPlot()
-        with self.assertRaisesRegex(AssertionError, 'xlabel'):
+        with assertRaisesRegex(self, AssertionError, 'xlabel'):
             testPlotAttrs(self, ax, xlabel="Bad label")
-        with self.assertRaisesRegex(AssertionError, 'ylabel'):
+        with assertRaisesRegex(self, AssertionError, 'ylabel'):
             testPlotAttrs(self, ax, ylabel="Bad label")
-        with self.assertRaisesRegex(AssertionError, 'xscale'):
+        with assertRaisesRegex(self, AssertionError, 'xscale'):
             testPlotAttrs(self, ax, xscale="log")
-        with self.assertRaisesRegex(AssertionError, 'yscale'):
+        with assertRaisesRegex(self, AssertionError, 'yscale'):
             testPlotAttrs(self, ax, yscale="log")
-        with self.assertRaisesRegex(AssertionError, 'legend text'):
+        with assertRaisesRegex(self, AssertionError, 'legend text'):
             testPlotAttrs(self, ax, legendLabels='bad text')
-        with self.assertRaisesRegex(AssertionError, 'legend text'):
+        with assertRaisesRegex(self, AssertionError, 'legend text'):
             testPlotAttrs(self, ax, legendLabels=['1', '2'])
-        with self.assertRaisesRegex(AssertionError, 'title'):
+        with assertRaisesRegex(self, AssertionError, 'title'):
             testPlotAttrs(self, ax, title='Bad title')
 
     @plotTest
