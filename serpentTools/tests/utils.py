@@ -193,8 +193,17 @@ def plotTest(f):
 
 
 def getLegendTexts(ax):
-    """Return all texts for items in legend."""
+    """
+    Return all texts for items in legend.
+
+    An empty list signifies no legend or no labeled
+    objects.
+    """
     lgd = ax.get_legend()
+
+    if lgd is None:
+        return []
+
     return [item.get_text() for item in lgd.get_texts()]
 
 
