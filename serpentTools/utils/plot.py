@@ -48,6 +48,7 @@ DEPLETION_PLOT_LABELS = {
 
 DETECTOR_PLOT_LABELS = {
     'energy': 'Energy [MeV]',
+    'time': 'Time [s]',
 }
 for dim in ['x', 'y', 'z']:
     DETECTOR_PLOT_LABELS[dim] = "{} Position [cm]".format(dim.capitalize())
