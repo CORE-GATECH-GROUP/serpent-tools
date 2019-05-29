@@ -334,6 +334,29 @@ class SingleTallyTester(TestCase):
         self.assertEqual(self.detector.errors, 0.05187)
 
 
+class TimeBinnedDetectorTester(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.reader = read(getFile('time_det0.m'), 'det')
+        cls.timeDet = cls.reader['FP']
+
+    def test_timeDetector(self):
+        """Verify a simple time-binned detector is processed properly"""
+        self.assertEqual(1, len(self.timeDet.grids),
+                         msg=', '.join(self.timeDet.grids.keys()))
+        self.assertTrue("T" in self.timeDet.grids)
+        expTallies = array([9.99978E-01, 2.24379E-05])
+        expErrors = array([0.00002, 1.0])
+        expTimeGrid = array([
+            [0.00000E+00, 2.50000E-05, 1.25000E-05],
+            [2.50000E-05, 5.00000E-05, 3.75000E-05],
+        ])
+        assert_equal(self.timeDet.tallies, expTallies)
+        assert_equal(self.timeDet.errors, expErrors)
+        assert_equal(self.timeDet.grids['T'], expTimeGrid)
+
+
 if __name__ == '__main__':
     from unittest import main
     main()
