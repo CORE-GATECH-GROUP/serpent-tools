@@ -15,6 +15,7 @@ Next
 * Add ``thresh`` argument to |Detector| 
   :meth:`~serpentTools.objects.CartesianDetector.meshPlot`, where
   only data greater than ``thresh`` is plotted.
+* Mitigate pending deprecated imports from ``collections`` - :issue:`313`
 
 .. _v0.7.0:
 
