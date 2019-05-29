@@ -16,6 +16,11 @@ Next
   :meth:`~serpentTools.objects.CartesianDetector.meshPlot`, where
   only data greater than ``thresh`` is plotted.
 
+Bug fixes
+---------
+
+* Tally data for detectors with time-bins are properly handled - :issue:`312`
+
 .. _v0.7.0:
 
 :release-tag:`0.7.0`
