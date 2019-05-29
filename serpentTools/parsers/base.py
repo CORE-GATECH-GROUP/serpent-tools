@@ -5,13 +5,13 @@ Contains the abstract base class upon which all readers
 are built.
 """
 
-from collections import Callable
 from abc import ABCMeta, abstractmethod
 import re
 
 from six import add_metaclass
 
 from numpy import array
+from serpentTools._compat import Callable
 from serpentTools.messages import info
 from serpentTools.settings import rc
 from serpentTools.objects.base import BaseObject

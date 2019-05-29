@@ -3,13 +3,13 @@ Utilities for collecting and exporting group constants from a
 branching file
 """
 
-from collections import Iterable
 from itertools import product
 from warnings import warn
 from six import iteritems
 from six.moves import range
 from numpy import empty, nan, array, ndarray
 
+from serpentTools._compat import Iterable
 from serpentTools import BranchingReader
 
 __all__ = [

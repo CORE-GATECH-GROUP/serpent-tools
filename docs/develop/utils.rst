@@ -7,6 +7,8 @@ Utilities
 
 .. automodule:: serpentTools.utils
 
+.. automodule:: serpentTools.utils.compat
+
 
 .. _dev-testUtils:
 
