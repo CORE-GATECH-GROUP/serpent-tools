@@ -43,8 +43,12 @@ __all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
            'CylindricalDetector', 'SphericalDetector']
 
 
-DET_COLS = ('value', 'energy', 'universe', 'cell', 'material', 'lattice',
-            'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
+DET_COLS = (
+    'value', 'time', 'energy', 'universe',
+    'cell', 'material', 'lattice',
+    'reaction', 'zmesh', 'ymesh', 'xmesh',
+    'tally', 'error', 'scores',
+)
 """Name of the columns of the data"""
 
 
@@ -74,13 +78,13 @@ class Detector(DetectorBase):
     def _isReshaped(self):
         return self.__reshaped
 
-    def addTallyData(self, bins):
+    def addTallyData(self, bins, hasTime=False):
         """Add tally data to this detector"""
         self.__reshaped = False
         self.bins = bins
-        self.reshape()
+        self.reshape(hasTime)
 
-    def reshape(self):
+    def reshape(self, hasTime=False):
         """
         Reshape the tally data into a multidimensional array
 
@@ -110,24 +114,35 @@ class Detector(DetectorBase):
             warning('Data has already been reshaped')
             return
         shape = []
+        tallyCol = 10
+        errorCol = 11
+        scoreCol = 12
+        if hasTime:
+            tallyCol += 1
+            errorCol += 1
+            scoreCol += 1
         self.indexes = OrderedDict()
-        hasScores = self.bins.shape[1] == 13
+        hasScores = self.bins.shape[1] == (scoreCol + 1)
+
         if self.bins.shape[0] == 1:
-            self.tallies = self.bins[0, 10]
-            self.errors = self.bins[0, 11]
+            # single tally value
+            self.tallies = self.bins[0, tallyCol]
+            self.errors = self.bins[0, errorCol]
             if hasScores:
-                self.scores = self.bins[0, 12]
+                self.scores = self.bins[0, scoreCol]
         else:
-            for index in range(1, 10):
-                uniqueVals = unique(self.bins[:, index])
+            for tallyIx, colIx in enumerate(
+                    range(1, tallyCol),
+                    start=1 if hasTime else 2):
+                uniqueVals = unique(self.bins[:, colIx])
                 if len(uniqueVals) > 1:
-                    indexName = self._indexName(index)
+                    indexName = self._indexName(tallyIx)
                     self.indexes[indexName] = array(uniqueVals, dtype=int) - 1
                     shape.append(len(uniqueVals))
-            self.tallies = self.bins[:, 10].reshape(shape)
-            self.errors = self.bins[:, 11].reshape(shape)
+            self.tallies = self.bins[:, tallyCol].reshape(shape)
+            self.errors = self.bins[:, errorCol].reshape(shape)
             if hasScores:
-                self.scores = self.bins[:, 12].reshape(shape)
+                self.scores = self.bins[:, scoreCol].reshape(shape)
         self._map = {'tallies': self.tallies, 'errors': self.errors,
                      'scores': self.scores}
         self.__reshaped = True
@@ -214,9 +229,10 @@ class HexagonalDetector(Detector):
                           detAttrs=Detector.docAttrs,
                           baseAttrs=DetectorBase.baseAttrs)
 
+    # column indicies in full (time-bin included) bins matrix
     _INDEX_MAP = {
-        8: 'ycoord',
-        9: 'xcoord',
+        9: 'ycoord',
+        10: 'xcoord',
     }
 
     _NON_CART = _INDEX_MAP.values()
@@ -405,10 +421,10 @@ class CylindricalDetector(Detector):
     {seeAlso:s}""".format(
         params=DetectorBase.baseParams, detAttrs=Detector.docAttrs,
         baseAttrs=DetectorBase.baseAttrs, seeAlso=docSeeAlso)
-
+    # column indices in full (time-bin included) bins matrix
     _INDEX_MAP = {
-        8: 'phi',
-        9: 'rmesh'
+        9: 'phi',
+        10: 'rmesh'
     }
 
     _NON_CART = _INDEX_MAP.values()
@@ -456,10 +472,12 @@ class SphericalDetector(Detector):
         params=DetectorBase.baseParams, detAttrs=Detector.docAttrs,
         baseAttrs=DetectorBase.baseAttrs,
         seeAlso=CylindricalDetector.docSeeAlso)
+
+    # column indices in full (time-bin included) bins matrix
     _INDEX_MAP = {
-        7: 'theta',
-        8: 'phi',
-        9: 'rmesh',
+        8: 'theta',
+        9: 'phi',
+        10: 'rmesh',
     }
 
     _NON_CART = _INDEX_MAP.values()
@@ -528,7 +546,7 @@ def detectorFactory(name, dataDict):
     tallyD = dataDict.pop('tally')
     detCls = _getDetectorType(dataDict)
     det = detCls(name)
-    det.addTallyData(tallyD)
+    det.addTallyData(tallyD, 'T' in dataDict)
     for gridK, value in iteritems(dataDict):
         det.grids[gridK] = value
     return det
