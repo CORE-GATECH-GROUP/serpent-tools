@@ -110,11 +110,12 @@ class BranchingReader(XSReader):
 
     def _processBranchUniverses(self, branch, burnup, burnupIndex):
         """Add universe data to this branch at this burnup."""
-        unvID, numVariables = [int(xx) for xx in self._advance()]
+        unvID, numVariables = self._advance()
+        numVariables = int(numVariables)
         univ = branch.addUniverse(unvID, burnup, burnupIndex - 1)
         for step in range(numVariables):
             splitList = self._advance(
-                possibleEndOfFile=step == numVariables - 1)
+                possibleEndOfFile=(step == numVariables - 1))
             varName = splitList[0]
             varValues = [float(xx) for xx in splitList[2:]]
             if not varValues:
