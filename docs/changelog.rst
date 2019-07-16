@@ -16,6 +16,7 @@ Next
   :meth:`~serpentTools.objects.CartesianDetector.meshPlot`, where
   only data greater than ``thresh`` is plotted.
 * Mitigate pending deprecated imports from ``collections`` - :issue:`313`
+* Increase required version of :term:`yaml` to ``5.1.1``
 
 Bug fixes
 ---------
