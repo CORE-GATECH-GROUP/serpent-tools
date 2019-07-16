@@ -82,6 +82,12 @@ class BranchContainerTester(_BranchTesterHelper):
         cls.refBranch = cls.reader.branches[cls.refBranchID]
         cls.refUniv = cls.refBranch.universes[cls.refUnivKey]
 
+    def test_universeIDWorkaround(self):
+        """Test that, for now, integer universe ids work"""
+        # Remove this test for versions >= 0.8.0
+        key = (int(self.refUnivKey[0]), ) + self.refUnivKey[1:]
+        self.assertIs(self.refUniv, self.refBranch.universes[key])
+
     def test_loadedUniv(self):
         """Verify the reference universe has the correct data loaded"""
         assortedExpected = {

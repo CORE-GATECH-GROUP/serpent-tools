@@ -5,6 +5,8 @@ branching file
 
 from itertools import product
 from warnings import warn
+from numbers import Real
+
 from six import iteritems
 from six.moves import range
 from numpy import empty, nan, array, ndarray
@@ -16,6 +18,35 @@ __all__ = [
     'BranchCollector',
     'BranchedUniv',
 ]
+
+
+# remove for versions >= 0.8.0
+
+
+class IntToStringDict(dict):
+    """Dictionary that allows accessing string keys with Reals
+
+    Used to mitigate API changes in how universe keys are stored
+    in BranchingReader and BranchCollector objects.
+    """
+
+    def __getitem__(self, key):
+        if key in self:
+            return dict.__getitem__(self, key)
+        if isinstance(key, Real) and float(key) in self:
+            warn("Universes will be stored as unconverted strings in future "
+                 "versions", FutureWarning)
+            return dict.__getitem__(self, str(key))
+        raise KeyError(key)
+
+    def get(self, key, default=None):
+        if key in self:
+            return dict.__getitem__(self, key)
+        if isinstance(key, Real) and float(key) in self:
+            warn("Universes will be stored as unconverted strings in future "
+                 "versions", FutureWarning)
+            return dict.__getitem__(self, str(key))
+        return dict.get(self, key, default)
 
 
 class BranchedUniv(object):
@@ -224,7 +255,8 @@ class BranchCollector(object):
         self.filePath = reader.filePath
         self._branches = reader.branches
         self.xsTables = {}
-        self.universes = {}
+        # Revert do dict for version >= 0.8.0
+        self.universes = IntToStringDict()
         self._perturbations = None
         self._states = None
         self._axis = None

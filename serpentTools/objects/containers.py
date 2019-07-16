@@ -9,6 +9,9 @@ Contents
 """
 from re import compile
 from itertools import product
+from collections.abc import Iterable
+from warnings import warn
+from numbers import Real
 
 from six import iteritems
 from matplotlib import pyplot
@@ -614,6 +617,33 @@ class HomogUniv(NamedObject):
     compareGCData.__doc__ = __docCompare.format(qty='gc')
 
 
+# remove for versions >= 0.8.0
+
+class _BranchContainerUnivDict(dict):
+    """
+    Workaround for supporting integer and string universe ids
+
+    Keys are of the form ``univID, index, burnup``
+    """
+
+    def __getitem__(self, key):
+        if not isinstance(key, Iterable):
+            raise KeyError(key)
+        if isinstance(key[0], Real) and key not in self:
+            warn("Universe ids are stored as unconverted strings, not int. "
+                 "Support for previous integer-access will be removed in "
+                 "future versions.",
+                 FutureWarning)
+            key = (str(key[0]), ) + key[1:]
+        return dict.__getitem__(self, key)
+
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+
 class BranchContainer(BaseObject):
     """
     Class that stores data for a single branch.
@@ -652,7 +682,8 @@ class BranchContainer(BaseObject):
         self.filePath = filePath
         self.branchID = branchID
         self.stateData = stateData
-        self.universes = {}
+        # Revert to dict for version >= 0.8.0
+        self.universes = _BranchContainerUnivDict()
         self.branchNames = branchNames
         self.__orderedUniverses = None
         self.__keys = set()
@@ -733,9 +764,15 @@ class BranchContainer(BaseObject):
 
         If burnup and index are given, burnup is used to search
 
+        ..warning::
+
+            Future versions will store read and store universes from
+            coefficient files as generic strings, without integer
+            conversion
+
         Parameters
         ----------
-        univID: int
+        univID: str
             Unique ID for the desired universe
         burnup: float or int
             Burnup [MWd/kgU] of the desired universe
@@ -744,7 +781,7 @@ class BranchContainer(BaseObject):
 
         Returns
         -------
-        :py:class:`~serpentTools.objects.containers.HomogUniv`
+        :class:`~serpentTools.objects.containers.HomogUniv`
             Requested universe
 
         Raises
