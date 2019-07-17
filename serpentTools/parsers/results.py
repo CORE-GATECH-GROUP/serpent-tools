@@ -187,7 +187,7 @@ class ResultsReader(XSReader):
                 self._counter['rslt'] = (
                     (self._counter['meta'] - 1) // self._numUniv + 1)
                 return
-                self._counter['rslt'] = self._counter['meta']
+            self._counter['rslt'] = self._counter['meta']
         elif self._keysVersion['univ'] in tline:
             self._posFile = 'univ'
             varType, varVals = self._getVarValues(tline)  # universe name
