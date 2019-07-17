@@ -21,6 +21,16 @@ Bug fixes
 ---------
 
 * Tally data for detectors with time-bins are properly handled - :issue:`312`
+* Support for generic string universe names for |BranchingReader| and
+  |BranchCollector| - :issue:`318`
+
+Pending Deprecations
+--------------------
+
+* Keys to |BranchedUniv| objects stored in
+  :attr:`serpentTools.xs.BranchCollector.universes` are stored as strings,
+  rather than integers, e.g. ``0`` is replaced with ``"0"``. A workaround
+  is in-place, but will be removed in future versions.
 
 .. _v0.7.0:
 
