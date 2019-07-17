@@ -101,21 +101,21 @@ The |BranchContainer| stores group constant data in |HomogUniv| objects in the
     
     >>> for key in b0.universes:
     ...     print(key)
-    (0, 1.0, 1)
-    (10, 1.0, 1)
-    (20, 1.0, 1)
-    (30, 1.0, 1)
-    (20, 0, 0)
-    (40, 0, 0)
-    (20, 10.0, 2)
-    (10, 10.0, 2)
-    (0, 0, 0)
-    (10, 0, 0)
-    (0, 10.0, 2)
-    (30, 0, 0)
-    (40, 10.0, 2)
-    (40, 1.0, 1)
-    (30, 10.0, 2)
+    ('0", 1.0, 1)
+    ('10", 1.0, 1)
+    ('20", 1.0, 1)
+    ('30", 1.0, 1)
+    ('20", 0, 0)
+    ('40", 0, 0)
+    ('20", 10.0, 2)
+    ('10", 10.0, 2)
+    ('0", 0, 0)
+    ('10", 0, 0)
+    ('0", 10.0, 2)
+    ('30", 0, 0)
+    ('40", 10.0, 2)
+    ('40", 1.0, 1)
+    ('30", 10.0, 2)
 
 The keys here are vectors indicating the universe ID, burnup, and burnup
 index corresponding to the point in the burnup schedule. ``SERPENT``
@@ -129,7 +129,7 @@ the :meth:`~serpentTools.objects.BranchContainer.getUniv` method
 
 .. code:: 
     
-    >>> univ0 = b0.universes[0, 1, 1]
+    >>> univ0 = b0.universes["0", 1, 1]
     >>> print(univ0)
     <HomogUniv 0: burnup: 1.000 MWd/kgu, step: 1>
     >>> print(univ0.name)
@@ -295,7 +295,7 @@ variables explicitly requested are present
 
 .. code:: 
     
-    >>> univ4 = b1.getUniv(0, 0)
+    >>> univ4 = b1.getUniv("0", 0)
     >>> univ4.infExp
     {'infTot': array([ 0.313338,  0.54515 ])}
     >>> univ4.b1Exp

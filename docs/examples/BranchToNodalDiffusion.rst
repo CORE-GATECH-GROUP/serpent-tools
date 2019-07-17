@@ -155,12 +155,12 @@ constants for specific universes with the |BranchCol-universes| dictionary.
 .. code:: 
     
     >>> collector.universes
-    {0: <serpentTools.BranchedUniv at 0x7fb62f749a98>, 10:
+    {"0": <serpentTools.BranchedUniv at 0x7fb62f749a98>, 10:
     <serpentTools.BranchedUniv at 0x7fb62f731b88>, 20:
     <serpentTools.BranchedUniv at 0x7fb62f749e08>, 30:
     <serpentTools.BranchedUniv at 0x7fb62f749e58>, 40:
     <serpentTools.BranchedUniv at 0x7fb62f749ea8>}
-    >>> u0 = collector.universes[0]
+    >>> u0 = collector.universes["0"]
 
 These |BranchedUniv| objects store views into the underlying
 collectors |BranchedUniv-tables| data corresponding to a single universe. The
