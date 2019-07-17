@@ -9,11 +9,10 @@ Contents
 """
 from re import compile
 from itertools import product
-from collections.abc import Iterable
 from warnings import warn
 from numbers import Real
 
-from six import iteritems
+from six import iteritems, PY2
 from matplotlib import pyplot
 from numpy import array, arange, hstack, ndarray, zeros_like
 
@@ -41,6 +40,11 @@ from serpentTools.messages import (
     critical,
     error,
 )
+
+if PY2:
+    from collections import Iterable
+else:
+    from collections.abc import Iterable
 
 SCATTER_MATS = set()
 SCATTER_ORDERS = 8
