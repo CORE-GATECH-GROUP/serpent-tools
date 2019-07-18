@@ -82,3 +82,8 @@ Glossary
         that can be parsed by this project. More information, including
         distribution and licensing of ``SERPENT`` can be found at
         `<http://montecarlo.vtt.fi>`_. 
+
+    yaml
+        Human-readable format used for configuration files in this
+        project. For more information, see
+        `<https://pyyaml.org/wiki/PyYAMLDocumentation>`_
