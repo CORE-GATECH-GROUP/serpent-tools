@@ -374,10 +374,6 @@ class ResultsReader(XSReader):
                 .format(self.filePath, self._numUniv,
                         self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
-            if not self.settings['expectGcu']:
-                raise SerpentToolsException(
-                    "Metadata and results data were not found in {}"
-                    .format(self.filePath))
             for keys, dictUniv in iteritems(self.universes):
                 if dictUniv.hasData():
                     return
