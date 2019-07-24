@@ -1,5 +1,5 @@
 """Test the results reader."""
-
+# pylint: disable=line-too-long
 from os import remove
 from shutil import copy
 from unittest import TestCase
@@ -41,7 +41,12 @@ DF_SURFACE                (idx, [1:  3])  = 'ADF' ;
 DF_SYM                    (idx, 1)        = 1 ;
 DF_N_SURF                 (idx, 1)        = 4 ;
 DF_N_CORN                 (idx, 1)        = 4 ;
-""")
+DF_VOLUME                 (idx, 1)        =  4.62250E+02 ;
+DF_SURF_AREA              (idx, [1:  4])  = [ 2.15000E+01  2.15000E+01  2.15000E+01  2.15000E+01 ];
+DF_MID_AREA               (idx, [1:  4])  = [ 2.15000E+00  2.15000E+00  2.15000E+00  2.15000E+00 ];
+DF_CORN_AREA              (idx, [1:  4])  = [ 2.15000E+00  2.15000E+00  2.15000E+00  2.15000E+00 ];
+DF_SURF_IN_CURR           (idx, [1:  16]) = [  1.19014E+15 0.00046  1.99543E+14 0.00114  1.19014E+15 0.00046  1.99543E+14 0.00114  1.19014E+15 0.00046  1.99543E+14 0.00114  1.19014E+15 0.00046  1.99543E+14 0.00114 ];
+""") # noqa
 
 
 def tearDownModule():
@@ -727,9 +732,25 @@ class ResADFTester(TestCase):
         cls.reader.read()
 
     def test_adf(self):
+        """Verify the storage of ADF data"""
         univ = self.reader.getUniv('0', index=0)
-        expected = array('ADF')
-        assert_array_equal(expected, univ.gc['dfSurface'])
+        self.assertTrue(type(univ.infExp['infKinf']) is float)
+        self.assertEqual(1.15306, univ.infExp['infKinf'])
+        self.assertEqual(0.00127, univ.infUnc['infKinf'])
+        self.assertTrue(type(univ.gc['dfSurface']) is str)
+        self.assertEqual('ADF', univ.gc['dfSurface'])
+        self.assertTrue(type(univ.gc['dfSym']) is int)
+        self.assertEqual(1, univ.gc['dfSym'])
+        self.assertTrue(type(univ.gc['dfVolume']) is float)
+        self.assertEqual(4.62250E+02, univ.gc['dfVolume'])
+        assert_array_equal(
+            array([2.15000E+01, 2.15000E+01, 2.15000E+01, 2.15000E+01]),
+            univ.gc['dfSurfArea'])
+        assert_array_equal(array([
+            1.19014E+15, 1.99543E+14, 1.19014E+15, 1.99543E+14,
+            1.19014E+15, 1.99543E+14, 1.19014E+15, 1.99543E+14]),
+            univ.gc['dfSurfInCurr'])
+        self.assertTrue('dfSurfArea' not in univ.gcUnc)
 
 
 if __name__ == '__main__':
