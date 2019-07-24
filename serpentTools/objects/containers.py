@@ -63,9 +63,6 @@ __all__ = (
 )
 
 
-CRIT_RE = compile('K[EI][NF]F')
-
-
 class HomogUniv(NamedObject):
     """
     Class for storing homogenized universe specifications and retrieving them
@@ -241,14 +238,9 @@ class HomogUniv(NamedObject):
         """
         Return the new value to be stored after some cleaning.
 
-        Makes sure all vectors, everything but keff/kinf data, are
-        converted to numpy arrays. Reshapes scattering matrices
-        if number of groups is known and ``xs.reshapeScatter``
+        Reshapes scattering matrices if number of groups
+        is known and ``xs.reshapeScatter``
         """
-        if not isinstance(value, ndarray):
-            value = array(value)
-        if CRIT_RE.search(name):
-            return value[0]
         ng = self.numGroups
         if self.__reshaped and name in SCATTER_MATS:
             if ng is None:

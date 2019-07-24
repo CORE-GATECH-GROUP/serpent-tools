@@ -29,12 +29,12 @@ class _HomogUnivTestHelper(TestCase):
         # Data definition
         rawData = {'B1_1': vec, 'B1_AS_LIST': list(vec),
                    'INF_1': vec, 'INF_S0': mat, 'CMM_TRANSP_X': vec,
-                   'INF_KEFF': vec, 'B1_KINF': vec, 'IMP_KEFF': vec,
-                   'INF_KINF': vec}
+                   'INF_KEFF': testK, 'B1_KINF': testK, 'IMP_KEFF': testK,
+                   'INF_KINF': testK}
         attrs = {'MACRO_E': groupStructure}
         # Partial dictionaries
         self.b1Unc = self.b1Exp = {
-            'b11': vec, 'b1AsList': vec, 'b1Kinf': testK,
+            'b11': vec, 'b1AsList': list(vec), 'b1Kinf': testK,
         }
         self.infUnc = self.infExp = {
             'inf1': vec, 'infS0': mat, 'infKeff': testK, 'infKinf': testK,
