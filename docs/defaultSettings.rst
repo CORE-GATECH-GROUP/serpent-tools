@@ -128,19 +128,6 @@ If true, store the micro-group cross sections.
   Type: bool
   
 
-.. _results-expectGcu:
-
----------------------
-``results.expectGcu``
----------------------
-
-Set this to False if no homogenized group contants are present in the output, as if ``set gcu -1`` is preset in the input file
-::
-
-  Default: True
-  Type: bool
-  
-
 .. _sampler-allExist:
 
 --------------------

@@ -20,14 +20,14 @@ from serpentTools.tests.utils import (
 
 
 GCU_START_STR = "GCU_UNIVERSE_NAME"
-NO_GCU_FILE = "./pwr_noGcu_res.m"
+NO_BU_GCU_FILE = "./pwr_noGcu_res.m"
 ADF_FILE = "./pwr_adf_res.m"
 RES_NO_BU = getFile("pwr_noBU_res.m")
 
 
 def setUpModule():
     """Write the result file with no group constant data."""
-    with open(NO_GCU_FILE, 'w') as noGcu, open(RES_NO_BU) as good:
+    with open(NO_BU_GCU_FILE, 'w') as noGcu, open(RES_NO_BU) as good:
         for line in good:
             if GCU_START_STR in line:
                 break
@@ -46,7 +46,7 @@ DF_N_CORN                 (idx, 1)        = 4 ;
 
 def tearDownModule():
     """Remove the noGcu file."""
-    remove(NO_GCU_FILE)
+    remove(NO_BU_GCU_FILE)
     remove(ADF_FILE)
 
 
@@ -597,7 +597,7 @@ class TestResultsNoBurnNoGcu(TestFilterResultsNoBurnup):
     HAS_UNIV = False
 
     def setUp(self):
-        self.file = NO_GCU_FILE
+        self.file = NO_BU_GCU_FILE
         with rc:
             rc['xs.variableGroups'] = ['versions', 'gc-meta', 'xs',
                                        'diffusion', 'eig', 'burnup-coeff']
@@ -606,6 +606,26 @@ class TestResultsNoBurnNoGcu(TestFilterResultsNoBurnup):
             rc['results.expectGcu'] = False
             self.reader = ResultsReader(self.file)
             self.reader.read()
+
+
+class NoUniverseTester(Serp2129Helper):
+    """Read a file ith burnup but no universes"""
+
+    def setUp(self):
+        filep = getFile("pwr_noUniv_res.m")
+        self.reader = ResultsReader(filep)
+        self.reader.read()
+
+    def test_noUniverse(self):
+        expectedBurnup = array([
+            [0.00000E+00, 0.00000E+00],
+            [5.00000E+02, 5.00260E+02]])
+        expectedAbsKeff = array([
+            [9.91938E-01, 0.00145],
+            [1.81729E-01, 0.00240]])
+        self.assertEqual(0, len(self.reader.universes))
+        assert_array_equal(expectedBurnup, self.reader.resdata['burnup'])
+        assert_array_equal(expectedAbsKeff, self.reader.resdata['absKeff'])
 
 
 class RestrictedResultsReader(Serp2129Helper):
@@ -642,7 +662,7 @@ class RestrictedResultsReader(Serp2129Helper):
         assert_array_equal(self.expectedAbsKeff, r.resdata['absKeff'])
 
 
-del TesterCommonResultsReader
+del TesterCommonResultsReader, Serp2129Helper
 
 
 class ResPlotTester(TestCase):

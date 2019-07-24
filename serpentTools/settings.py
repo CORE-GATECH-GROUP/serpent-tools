@@ -1,5 +1,6 @@
 """Settings to yield control to the user."""
 import os
+from warnings import warn
 
 from six import iteritems
 from yaml import safe_load
@@ -25,6 +26,8 @@ SETTING_DOC_FMTR = """.. _{tag}:
   {options}
 
 """
+
+_DEPRECATED = {'results.expectGcu'}
 
 SETTING_OPTIONS_FMTR = "Options: [{}]"
 defaultSettings = {
@@ -69,13 +72,6 @@ defaultSettings = {
         'description': 'List of detectors to store. Empty list -> store all '
                        'detectors',
         'type': list
-    },
-    'results.expectGcu': {
-        'default': True,
-        'description': 'Set this to False if no homogenized group contants '
-                       'are present in the output, as if ``set gcu -1`` is '
-                       'preset in the input file',
-        'type': bool,
     },
     'verbosity': {
         'default': 'warning',
@@ -305,12 +301,15 @@ class UserSettingsLoader(dict):
             If the value is not of the correct type
 
         """
-        if self.__inside:
-            self.__originals[name] = self[name]
+        if name in _DEPRECATED:
+            warn("Setting {} has been removed.".format(name))
+            return
         if name not in self:
             raise KeyError('Setting {} does not exist'.format(name))
         self._defaultLoader[name].validate(value)
         # if we've made it here, then the value is valid
+        if self.__inside:
+            self.__originals[name] = self[name]
         if self._defaultLoader[name].updater is not None:
             value = self._defaultLoader[name].updater(value)
         dict.__setitem__(self, name, value)

@@ -187,7 +187,7 @@ class ResultsReader(XSReader):
                 self._counter['rslt'] = (
                     (self._counter['meta'] - 1) // self._numUniv + 1)
                 return
-                self._counter['rslt'] = self._counter['meta']
+            self._counter['rslt'] = self._counter['meta']
         elif self._keysVersion['univ'] in tline:
             self._posFile = 'univ'
             varType, varVals = self._getVarValues(tline)  # universe name
@@ -374,10 +374,6 @@ class ResultsReader(XSReader):
                 .format(self.filePath, self._numUniv,
                         self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
-            if not self.settings['expectGcu']:
-                raise SerpentToolsException(
-                    "Metadata and results data were not found in {}"
-                    .format(self.filePath))
             for keys, dictUniv in iteritems(self.universes):
                 if dictUniv.hasData():
                     return
