@@ -4,7 +4,7 @@ Comparison utilities
 from numpy.core.defchararray import equal as charEqual
 from numpy import (
     fabs, zeros_like, ndarray, array, greater, multiply, subtract,
-    equal,
+    equal, asarray,
 )
 
 from serpentTools._compat import Iterable
@@ -540,6 +540,10 @@ def getLogOverlaps(quantity, arr0, arr1, unc0, unc1, sigma, relative=True):
       :mod:`serpentTools.messages`
     """
 
+    arr0 = asarray(arr0)
+    unc0 = asarray(unc0)
+    arr1 = asarray(arr1)
+    unc1 = asarray(unc1)
     if (arr0 == arr1).all():
         logIdenticalWithUncs(arr0, unc0, unc1, quantity)
         return True
