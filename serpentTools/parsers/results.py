@@ -1,5 +1,6 @@
 """Parser responsible for reading the ``*res.m`` files"""
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
+from numbers import Real
 import re
 from six import iteritems
 
@@ -251,9 +252,8 @@ class ResultsReader(XSReader):
 
         # Get variable specificy type converter
         if varNameSer not in self._varTypeLookup:
-            converter = self._varTypeLookup[varNameSer] = varTypeFactory(varNameSer)
-        else:
-            converter = self._varTypeLookup[varNameSer]
+            self._varTypeLookup[varNameSer] = varTypeFactory(varNameSer)
+        converter = self._varTypeLookup[varNameSer]
         values, uncertainties = converter(varVals)
 
         # Values without uncertainties
@@ -882,14 +882,18 @@ def gatherPairedUnivData(universe, uIndex, bIndex, shapeStart, convFunc,
     """Helper function to update universe dictionary for exporting"""
     for xsKey, xsVal in iteritems(expD):
         outKey = convFunc(xsKey)
-        xsUnc = uncD[xsKey]
         if outKey not in univData:
-            shape = xsVal.shape
-            if not shape:  # single value like infKinf
+            if isinstance(xsVal, Real):
                 shape = 1,
+            else:  # assume array or has shape
+                shape = xsVal.shape
             data = empty((shapeStart + shape + (2, )))
             univData[outKey] = data
         else:
             data = univData[outKey]
         data[bIndex, uIndex, ..., 0] = xsVal
-        data[bIndex, uIndex, ..., 1] = xsUnc
+        xsUnc = uncD.get(xsKey)
+        if xsUnc is None:
+            data[bIndex, uIndex, ..., 1] = 0.0
+        else:
+            data[bIndex, uIndex, ..., 1] = xsUnc
