@@ -6,17 +6,19 @@
 Changelog
 =========
 
-Next
-====
+.. _v0.7.1
+
+:release-tag:`0.7.1`
+====================
 
 * Add :meth:`~serpentTools.objects.HomogUniv.__getitem__` and 
   :meth:`~serpentTools.objects.HomogUniv.__setitem__` convenience
   methods for accessing expected values on |HomogUniv| objects
-* Add ``thresh`` argument to |Detector| 
-  :meth:`~serpentTools.objects.CartesianDetector.meshPlot`, where
+* Add ``thresh`` argument to |Detector| ``meshPlot`` where
   only data greater than ``thresh`` is plotted.
 * Mitigate pending deprecated imports from ``collections`` - :issue:`313`
 * Increase required version of :term:`yaml` to ``5.1.1``
+* Include ``SERPENT`` ``2.1.31`` support in :ref:`serpentVersion` setting
 
 Bug fixes
 ---------
@@ -32,6 +34,8 @@ Pending Deprecations
   :attr:`serpentTools.xs.BranchCollector.universes` are stored as strings,
   rather than integers, e.g. ``0`` is replaced with ``"0"``. A workaround
   is in-place, but will be removed in future versions.
+* ``SERPENT`` 1 style detectors with additional score column will not be
+  supported starting at version ``0.8.0``.
 
 .. _v0.7.0:
 
