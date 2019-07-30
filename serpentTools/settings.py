@@ -107,7 +107,7 @@ defaultSettings = {
     },
     'serpentVersion': {
         'default': '2.1.30',
-        'options': ['2.1.29', '2.1.30'],
+        'options': ['2.1.29', '2.1.30', '2.1.31'],
         'description': 'Version of SERPENT',
         'type': str
     },
