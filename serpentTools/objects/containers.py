@@ -7,14 +7,13 @@ Contents
 * :py:class:`~serpentTools.objects.containers.BranchContainer`
 
 """
-from re import compile
 from itertools import product
 from warnings import warn
 from numbers import Real
 
 from six import iteritems, PY2
 from matplotlib import pyplot
-from numpy import array, arange, hstack, ndarray, zeros_like
+from numpy import arange, hstack, ndarray, zeros_like
 
 from serpentTools.settings import rc
 from serpentTools.objects.base import NamedObject, BaseObject
