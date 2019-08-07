@@ -6,6 +6,18 @@
 Changelog
 =========
 
+Next
+====
+
+* Better handling of discontinuity factors
+* |HomogUniv| objects no longer automatically convert data to arrays
+
+Incompatible API Changes
+------------------------
+
+* Values are stored in array form on |HomogUniv| when it makes sense.
+  For example, values like ``infKinf`` are stored as scalars.
+
 .. _v0.7.1
 
 :release-tag:`0.7.1`

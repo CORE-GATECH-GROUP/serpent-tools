@@ -1,5 +1,7 @@
 """Parser responsible for reading the ``*res.m`` files"""
 from collections import OrderedDict
+from numbers import Real
+import re
 from six import iteritems
 
 from numpy import array, vstack, empty
@@ -89,6 +91,51 @@ METADATA_CONV = {
 Convert items in metadata dictionary from arrays to these data types
 """
 
+VAR_NO_CONV = {
+    "DF_SURFACE",
+}
+
+DF_CONV = {
+    # No uncertainty, convert to int
+    int: {
+        "DF_SYM",
+        "DF_N_SURF",
+        "DF_N_CORN",
+    },
+    # No uncertainty, convert to float
+    float: {
+        "DF_VOLUME",
+    },
+    # No uncertainty, convert to array of float
+    str2vec: {
+        "DF_SURF_AREA",
+        "DF_MID_AREA",
+        "DF_CORN_AREA,",
+        'MICRO_NG',
+        'MICRO_E',
+        'MACRO_NG',
+        'MACRO_E',
+    },
+}
+"""
+Functions for converting variable data to various types
+"""
+
+UNIV_K_RE = re.compile('_K[EI][NF]F')
+
+
+def varTypeFactory(key):
+    if key in VAR_NO_CONV:
+        return lambda x: (x, None)
+    for typeFunc in DF_CONV:
+        # no conversion for strings
+        if key in DF_CONV[typeFunc]:
+            return lambda x: (typeFunc(x), None)
+    # Perform array conversion, return expected values and uncertainties
+    if UNIV_K_RE.search(key) is not None:
+        return lambda x: str2vec(x, out=tuple)
+    return lambda x: splitValsUncs(x)
+
 
 __all__ = ['ResultsReader', ]
 
@@ -151,6 +198,7 @@ class ResultsReader(XSReader):
         self._numUniverses = 0
         self._univlist = []
         self.metadata, self.resdata, self.universes = {}, {}, {}
+        self._varTypeLookup = {}
 
     def _read(self):
         """Read through the results file and store requested data."""
@@ -196,18 +244,22 @@ class ResultsReader(XSReader):
     def _storeUnivData(self, varNameSer, varVals):
         """Process universes' data"""
         brState = self._getBUstate()  # obtain the branching tuple
-        values = str2vec(varVals)  # convert the string to float numbers
         if brState not in self.universes:
             self.universes[brState] = \
                 HomogUniv(brState[0], brState[1], brState[2], brState[3])
         if varNameSer == self._keysVersion['univ']:
             return
-        if varNameSer not in self._keysVersion['varsUnc']:
-            vals, uncs = splitValsUncs(values)
-            self.universes[brState].addData(varNameSer, uncs, True)
-            self.universes[brState].addData(varNameSer, vals, False)
-        else:
-            self.universes[brState].addData(varNameSer, array(values), False)
+
+        # Get variable specificy type converter
+        if varNameSer not in self._varTypeLookup:
+            self._varTypeLookup[varNameSer] = varTypeFactory(varNameSer)
+        converter = self._varTypeLookup[varNameSer]
+        values, uncertainties = converter(varVals)
+
+        # Values without uncertainties
+        self.universes[brState].addData(varNameSer, values, False)
+        if uncertainties is not None:
+            self.universes[brState].addData(varNameSer, uncertainties, True)
 
     def _storeResData(self, varNamePy, varVals):
         """Process time-dependent results data"""
@@ -385,6 +437,8 @@ class ResultsReader(XSReader):
     def _postcheck(self):
         self._inspectData()
         self._cleanMetadata()
+        del self._varTypeLookup
+        self._univList = []
 
     def _compare(self, other, lower, upper, sigma):
         similar = self.compareMetadata(other)
@@ -828,14 +882,18 @@ def gatherPairedUnivData(universe, uIndex, bIndex, shapeStart, convFunc,
     """Helper function to update universe dictionary for exporting"""
     for xsKey, xsVal in iteritems(expD):
         outKey = convFunc(xsKey)
-        xsUnc = uncD[xsKey]
         if outKey not in univData:
-            shape = xsVal.shape
-            if not shape:  # single value like infKinf
+            if isinstance(xsVal, Real):
                 shape = 1,
+            else:  # assume array or has shape
+                shape = xsVal.shape
             data = empty((shapeStart + shape + (2, )))
             univData[outKey] = data
         else:
             data = univData[outKey]
         data[bIndex, uIndex, ..., 0] = xsVal
-        data[bIndex, uIndex, ..., 1] = xsUnc
+        xsUnc = uncD.get(xsKey)
+        if xsUnc is None:
+            data[bIndex, uIndex, ..., 1] = 0.0
+        else:
+            data[bIndex, uIndex, ..., 1] = xsUnc
