@@ -5,3 +5,4 @@ jupyter==1.0.0
 coverage==4.5.1
 scipy==1.1.0
 pytest==5.1.2
+pytest-cov==2.7.1

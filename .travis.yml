@@ -25,10 +25,8 @@ install:
 
 # run
 script:
-  - pytest -v
+  - pytest --cov=serpentTools --cov-report= -v
   - bash scripts/travis/testNotebooks.sh
 
-# only if build succeeds
 after_success:
   - coverage report
-
