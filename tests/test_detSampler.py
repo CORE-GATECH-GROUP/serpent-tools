@@ -118,8 +118,3 @@ def _getExpectedAverages(d0, d1):
     errors = 0.5 * sqrt(square(d0.errors) + square(d1.errors))
 
     return tallies, errors
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

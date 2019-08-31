@@ -241,8 +241,3 @@ class BareBranchContainerTester(_BranchTestHelper):
         for attr in attrs:
             with self.assertRaises(AttributeError, msg='set ' + attr):
                 setattr(obj, attr, None)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

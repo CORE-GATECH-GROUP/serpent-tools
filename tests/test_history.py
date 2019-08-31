@@ -362,7 +362,3 @@ class HistMatlabReconvertTester(HistoryMatlabBase):
 
 
 del HistoryMatlabBase
-
-
-if __name__ == '__main__':
-    unittest.main()

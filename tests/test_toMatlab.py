@@ -221,7 +221,3 @@ class MixedCaseResults2MatlabTester(ResultToMatlabHelper):
 
 
 del Det2MatlabHelper, DepmtxMatlabHelper, ResultToMatlabHelper
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

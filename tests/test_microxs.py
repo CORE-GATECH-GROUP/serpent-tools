@@ -220,7 +220,3 @@ class TestMicroXSReader(unittest.TestCase):
         """getXS method: non-existing cross-sections."""
         with self.assertRaises(SerpentToolsException):
             self.reader.getXS('0', 10050, 205, 0)
-
-
-if __name__ == '__main__':
-    unittest.main()

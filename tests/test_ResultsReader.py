@@ -751,8 +751,3 @@ class ResADFTester(TestCase):
             1.19014E+15, 1.99543E+14, 1.19014E+15, 1.99543E+14]),
             univ.gc['dfSurfInCurr'])
         self.assertTrue('dfSurfArea' not in univ.gcUnc)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

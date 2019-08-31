@@ -355,8 +355,3 @@ class TimeBinnedDetectorTester(TestCase):
         assert_equal(self.timeDet.tallies, expTallies)
         assert_equal(self.timeDet.errors, expErrors)
         assert_equal(self.timeDet.grids['T'], expTimeGrid)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

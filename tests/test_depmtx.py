@@ -324,8 +324,3 @@ class SparseReadDepmtxFuncTester(ReadDepmtxFuncTesterBase, DenseTesterMixin):
 
 
 del DepmtxTestHelper, DepmtxReaderTesterBase, ReadDepmtxFuncTesterBase
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

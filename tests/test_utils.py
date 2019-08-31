@@ -440,8 +440,3 @@ class PlotTestTester(TestCase):
                    title=title)
         plotAttrTest(self, ax, xlabel=newX, ylabel=newY,
                       xscale='log', yscale='log', title=title)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

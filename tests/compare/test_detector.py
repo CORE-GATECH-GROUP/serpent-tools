@@ -197,7 +197,3 @@ class DetectorReaderCompareTester(TallyModifier):
 
 
 del TallyModifier
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

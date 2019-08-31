@@ -73,8 +73,3 @@ class ResultsCompareTester(TestCaseWithLogCapture):
             partial=True)
         self.assertMsgInLogs(
             'ERROR', OUTSIDE_TOLS_KEY_FMT.format('uresAvail'), partial=True)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

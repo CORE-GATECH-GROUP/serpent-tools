@@ -165,8 +165,3 @@ class ConfigLoaderTester(TestCaseWithLogCapture):
         self._writeTestRemoveConfFile(badSettings, self.files['nested'],
                                       self.configSettings, False)
         self.assertMsgInLogs("ERROR", "bad setting", partial=True)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

@@ -107,8 +107,3 @@ class DepletedSamplerTester(TestCase):
         for name, mat in iteritems(self.sampler.materials):
             fromGetItem = self.sampler[name]
             self.assertIs(fromGetItem, mat, msg=name)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

@@ -231,8 +231,3 @@ class HomogUnivIntGroupsTester(TestCase):
         for attr in {'numGroups', 'numMicroGroups'}:
             expected = getattr(self, attr)
             setattr(self.univ, attr, func(expected))
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

@@ -88,8 +88,3 @@ class LoggingTester(TestCaseWithLogCapture):
         with self.assertRaises(AttributeError):
             newM = LoggerMixin()
             newM.msgInLogs("WARNING", message)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()
