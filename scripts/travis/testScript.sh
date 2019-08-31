@@ -15,23 +15,17 @@ else
     # Propagate error codes through pipes
     set -o pipefail
 fi
+
 #
 # Check if we are on travis
-# If so, we also can run our tests with coverage
-# If not, run with vanilla python
 #
 
 if [ $TRAVIS ]; then
-    PY_RUNNER="coverage run -a"
     if [ $TRAVIS_PULL_REQUEST != "false" ]; then
         # Run lint on the whole project later
         FLAKE_DIFF=0
     else
         TARGET=$TRAVIS_BRANCH
-    fi
-else
-    if [[ -z $PY_RUNNER ]]; then
-        PY_RUNNER="python"
     fi
 fi
 
@@ -43,7 +37,7 @@ echo "----------------------------------------"
 echo "Running all unit tests"
 echo "----------------------------------------"
 
-$PY_RUNNER setup.py test
+pytest -v
 
 echo "----------------------------------------"
 echo "Testing jupyter notebooks"
