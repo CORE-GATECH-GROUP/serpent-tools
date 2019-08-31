@@ -27,7 +27,7 @@ from serpentTools.utils import (
     formatPlot,
 )
 
-from serpentTools.tests.utils import plotTest, testPlotAttrs
+from tests import plotTest, plotAttrTest
 
 
 class VariableConverterTester(TestCase):
@@ -406,28 +406,28 @@ class PlotTestTester(TestCase):
 
     @plotTest
     def test_plotAttrs_gca(self):
-        """Test the testPlotAttrs without passing an axes object"""
+        """Test the plotAttrTest without passing an axes object"""
         self.buildPlot()
-        testPlotAttrs(self, xlabel=self.XLABEL, ylabel=self.YLABEL)
+        plotAttrTest(self, xlabel=self.XLABEL, ylabel=self.YLABEL)
 
     @plotTest
     def test_plotAttrs_fail(self):
-        """Test the failure modes of the testPlotAttrs function"""
+        """Test the failure modes of the plotAttrTest function"""
         ax = self.buildPlot()
         with assertRaisesRegex(self, AssertionError, 'xlabel'):
-            testPlotAttrs(self, ax, xlabel="Bad label")
+            plotAttrTest(self, ax, xlabel="Bad label")
         with assertRaisesRegex(self, AssertionError, 'ylabel'):
-            testPlotAttrs(self, ax, ylabel="Bad label")
+            plotAttrTest(self, ax, ylabel="Bad label")
         with assertRaisesRegex(self, AssertionError, 'xscale'):
-            testPlotAttrs(self, ax, xscale="log")
+            plotAttrTest(self, ax, xscale="log")
         with assertRaisesRegex(self, AssertionError, 'yscale'):
-            testPlotAttrs(self, ax, yscale="log")
+            plotAttrTest(self, ax, yscale="log")
         with assertRaisesRegex(self, AssertionError, 'legend text'):
-            testPlotAttrs(self, ax, legendLabels='bad text')
+            plotAttrTest(self, ax, legendLabels='bad text')
         with assertRaisesRegex(self, AssertionError, 'legend text'):
-            testPlotAttrs(self, ax, legendLabels=['1', '2'])
+            plotAttrTest(self, ax, legendLabels=['1', '2'])
         with assertRaisesRegex(self, AssertionError, 'title'):
-            testPlotAttrs(self, ax, title='Bad title')
+            plotAttrTest(self, ax, title='Bad title')
 
     @plotTest
     def test_formatPlot(self):
@@ -438,7 +438,7 @@ class PlotTestTester(TestCase):
         title = 'plot title'
         formatPlot(ax, xlabel=newX, ylabel=newY, loglog=True,
                    title=title)
-        testPlotAttrs(self, ax, xlabel=newX, ylabel=newY,
+        plotAttrTest(self, ax, xlabel=newX, ylabel=newY,
                       xscale='log', yscale='log', title=title)
 
 

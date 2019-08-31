@@ -4,7 +4,6 @@ Test the logging and messaging functions
 
 from unittest import TestCase
 from warnings import catch_warnings
-
 from serpentTools.messages import (
     deprecated, willChange,
     addHandler, removeHandler,
@@ -12,7 +11,8 @@ from serpentTools.messages import (
     debug, info, warning, error, critical,
 )
 from serpentTools.settings import rc
-from serpentTools.tests.utils import TestCaseWithLogCapture, LoggerMixin
+
+from tests import TestCaseWithLogCapture, LoggerMixin
 
 
 LOGGER_FUNCTIONS = [debug, info, warning, error, critical]

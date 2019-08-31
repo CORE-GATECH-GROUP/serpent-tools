@@ -2,9 +2,10 @@
 Test the comparison utilities for detectors
 """
 
-from serpentTools.tests.utils import TestCaseWithLogCapture
 from serpentTools.utils.compare import finalCompareMsg
 from serpentTools import readDataFile
+
+from tests import TestCaseWithLogCapture
 
 TEST_FILE = 'bwr_det0.m'
 DET_TO_MODIFY = 'xymesh'

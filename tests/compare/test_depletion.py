@@ -3,7 +3,7 @@ Test the comparisons of the depleted materials
 """
 
 import serpentTools
-from serpentTools.tests.utils import TestCaseWithLogCapture
+from tests import TestCaseWithLogCapture
 
 DATA_FILE = 'ref_dep.m'
 REF_MATERIAL = 'fuel'

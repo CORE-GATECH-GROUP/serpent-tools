@@ -8,12 +8,12 @@ from collections import OrderedDict
 from six import iteritems
 from numpy import arange, array
 from numpy.testing import assert_equal
-
 from serpentTools.parsers import read
 from serpentTools.data import getFile
 from serpentTools.objects.detectors import (
     CartesianDetector, HexagonalDetector, CylindricalDetector)
-from serpentTools.tests import compareDictOfArrays
+
+from tests import compareDictOfArrays
 
 
 class DetectorHelper(TestCase):

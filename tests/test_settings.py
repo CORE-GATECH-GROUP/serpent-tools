@@ -4,9 +4,9 @@ from unittest import TestCase
 
 import yaml
 import six
-
 from serpentTools import settings
-from serpentTools.tests.utils import TestCaseWithLogCapture
+
+from tests import TestCaseWithLogCapture
 
 
 class DefaultSettingsTester(TestCase):

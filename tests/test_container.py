@@ -6,10 +6,10 @@ from itertools import product
 from six import iteritems
 from numpy import arange, ndarray, float64
 from numpy.testing import assert_array_equal
-
 from serpentTools.objects.containers import HomogUniv
 from serpentTools.messages import SerpentToolsException
-from serpentTools.tests import compareDictOfArrays
+
+from tests import compareDictOfArrays
 
 NUM_GROUPS = 5
 

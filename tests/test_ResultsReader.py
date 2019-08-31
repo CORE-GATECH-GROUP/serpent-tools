@@ -13,9 +13,9 @@ from serpentTools.data import getFile, readDataFile
 from serpentTools.parsers import ResultsReader
 from serpentTools.messages import SerpentToolsException
 from serpentTools.utils import RESULTS_PLOT_XLABELS
-from serpentTools.tests.utils import (
+from tests import (
     plotTest,
-    testPlotAttrs,
+    plotAttrTest,
 )
 
 
@@ -689,7 +689,7 @@ class ResPlotTester(TestCase):
     def test_singlePlot(self):
         """Test the plot capabilities of the ResultsReader"""
         ax = self.reader.plot('absKeff', sigma=3)
-        testPlotAttrs(
+        plotAttrTest(
             self, ax, xlabel=RESULTS_PLOT_XLABELS['burnDays'],
             ylabel="absKeff$ \\pm 3\\sigma$",
         )
@@ -698,7 +698,7 @@ class ResPlotTester(TestCase):
         newLabel = 'Multiplication factor'
         self.reader.plot('burnup', {'absKeff': newLabel}, ax=ax, sigma=0,
                          logx=True)
-        testPlotAttrs(
+        plotAttrTest(
             self, ax, ylabel=newLabel, xscale='log',
             xlabel=RESULTS_PLOT_XLABELS['burnup'],
         )
@@ -706,7 +706,7 @@ class ResPlotTester(TestCase):
         ax.clear()
         self.reader.plot('burnStep', ['absKeff', 'totCpuTime'], ax=ax,
                          sigma=0, ylabel="ylabel")
-        testPlotAttrs(
+        plotAttrTest(
             self, ax, xlabel=RESULTS_PLOT_XLABELS['burnStep'],
             ylabel="ylabel", legendLabels=['absKeff', 'totCpuTime'],
         )
@@ -715,11 +715,11 @@ class ResPlotTester(TestCase):
     def test_rightPlot(self):
         """Test plotting on left and right y axis"""
         left, right = self.reader.plot('absKeff', sigma=0, right='totCpuTime')
-        testPlotAttrs(
+        plotAttrTest(
             self, left, ylabel='absKeff',
             legendLabels=['absKeff', 'totCpuTime [right]'],
         )
-        testPlotAttrs(
+        plotAttrTest(
             self, right, ylabel='totCpuTime',
         )
 

@@ -2,9 +2,9 @@
 Test object-level compare methods
 """
 
-from serpentTools.tests.utils import TestCaseWithLogCapture
 from serpentTools.data import readDataFile
 
+from tests import TestCaseWithLogCapture
 
 RES_DATA_FILE = 'pwr_res.m'
 # strings that should appear in specific logging messages after formatted
