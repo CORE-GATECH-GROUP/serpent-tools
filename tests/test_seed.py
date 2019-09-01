@@ -179,8 +179,3 @@ class SeedWriterErrorChecker(TestCase):
 
 
 del SeedFileHelper
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

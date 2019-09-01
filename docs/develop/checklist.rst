@@ -15,36 +15,65 @@ reviewing pull requests (PR):
 #. PR does not cause unit tests and builds to fail
 #. Changes are reflected in documentation - :ref:`documentation`
 
-
 .. _dev-ci
 
-Unit Tests and CI Testing
-=========================
+CI Testing
+==========
 
 We utilize `Travis <https://travis-ci.org/>`_ to perform our
 continuous integration, or :term:`CI`. 
+Two types of tests are run: unit tests and tests on the example
+notebooks. The former are used to perform more granular testing
+over the project, while the latter ensure our example notebooks
+are runnable.
+
+.. _dev-unittests
+
+Unit Tests
+----------
+
 Unit tests should cover all public methods and a sufficient
 set of use cases to reduce the amount of bugs that make it
 into releases.
+Unit tests are run using :term:`pytest` from the project directory::
 
-Our test suite can be run from the main directory of the
-project with
+    $ ls
+    examples/ LICENSE serpentTools/ tests/ ...
+    $ pytest
 
-.. code::
+If the ``pytest-cov`` package is installed, you can view the coverage, or
+how much of the project is touched by tests, with::
 
-    $ python setup.py test
+    $ pytest --cov=serpentTools
 
-Individual test files can also be run with
+It is always preferable to increase coverage to decreasing coverage, but minor
+deviations are acceptable. The coverage is not a factor in passing or failing
+CI, but substantial changes to the test suite should serve a valid purpose if
+the coverage does decrease.
 
-.. code::
+.. _dev-notebooks
 
-    $ python my_test_scipt.py
+Notebook Tests
+--------------
 
-We also utilize a :term:`linter` to analyze the project for
+We try to provide a :term:`Jupyter notebook` for each of the main readers
+in the package. These are converted to be used in our main documentation, and serve
+as a handy way for new users to discover the features provided with ``serpentTools``.
+In order to ensure that these are valid notebooks as changes are introduced, our :term:`CI`
+converts these to python scripts and runs them using 
+`the test notebooks script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/develop/scripts/travis/testNotebooks.sh>`_. 
+It is beneficial to run this script during major changes to the API, as well as correcting any
+errors or deprecated/removed features.
+
+.. _dev-lint
+
+Lint
+====
+
+We also recommend using a :term:`linter` to analyze the project for
 code that might induce errors and does not conform to our
 style guide - :ref:`code-style`. This is applied on proposed
 changes using `flake8 <http://flake8.pycqa.org/en/latest/index.html>`_.
-
 Code to be merged into this project should not cause any unit tests
 to break, nor introduce lint.
 If you are working on a feature/bug-fix branch, you can compare

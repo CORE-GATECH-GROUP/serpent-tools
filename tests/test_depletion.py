@@ -6,7 +6,6 @@ from numpy import array
 from numpy.testing import assert_equal
 
 from six import iteritems, BytesIO
-
 from serpentTools.data import getFile
 from serpentTools.settings import rc
 from serpentTools.parsers.depletion import (
@@ -14,9 +13,10 @@ from serpentTools.parsers.depletion import (
     prepToMatlab, deconvert,
 )
 from serpentTools.utils import DEPLETION_PLOT_LABELS
-from serpentTools.tests.utils import (
+
+from tests import (
     LoggerMixin, MatlabTesterHelper,
-    plotTest, testPlotAttrs,
+    plotTest, plotAttrTest,
 )
 
 
@@ -122,7 +122,7 @@ class DepletionTester(_DepletionTestHelper):
         """Test the basic functionality of the depletion plot"""
         mat = self.reader[self.MATERIAL]
         ax = mat.plot('days', 'adens', names='U235')
-        testPlotAttrs(
+        plotAttrTest(
             self, ax, xlabel=DEPLETION_PLOT_LABELS['days'],
             ylabel=DEPLETION_PLOT_LABELS['adens'],
             xscale='linear', yscale='linear',
@@ -132,7 +132,7 @@ class DepletionTester(_DepletionTestHelper):
 
         ax.clear()
         mat.plot('burnup', 'adens', names=['U235', 'Xe135'], loglog=True)
-        testPlotAttrs(
+        plotAttrTest(
             self, ax, xlabel=DEPLETION_PLOT_LABELS['burnup'],
             xscale='log', yscale='log', legendLabels=['U235', 'Xe135'],
         )
@@ -142,7 +142,7 @@ class DepletionTester(_DepletionTestHelper):
         mat = self.reader[self.MATERIAL]
         ax = mat.plot('days', 'adens', names='U235', legend=True,
                       labelFmt="{mat}-{iso}")
-        testPlotAttrs(
+        plotAttrTest(
             self, ax, legendLabels=[self.MATERIAL + '-U235'])
 
 
@@ -366,8 +366,3 @@ class DepMatlabExportNoConverter(DepMatlabExportHelper):
 
 
 del DepMatlabExportHelper
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

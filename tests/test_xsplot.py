@@ -756,7 +756,3 @@ class XSPlotTester(unittest.TestCase):
 """
         actual = self.reader.xsections['mfissile'].showMT(retstring=True)
         self.assertEqual(refString.rstrip(), actual.rstrip())
-
-
-if __name__ == '__main__':
-    unittest.main()

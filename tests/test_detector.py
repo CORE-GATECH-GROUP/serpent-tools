@@ -8,12 +8,12 @@ from collections import OrderedDict
 from six import iteritems
 from numpy import arange, array
 from numpy.testing import assert_equal
-
 from serpentTools.parsers import read
 from serpentTools.data import getFile
 from serpentTools.objects.detectors import (
     CartesianDetector, HexagonalDetector, CylindricalDetector)
-from serpentTools.tests import compareDictOfArrays
+
+from tests import compareDictOfArrays
 
 
 class DetectorHelper(TestCase):
@@ -355,8 +355,3 @@ class TimeBinnedDetectorTester(TestCase):
         assert_equal(self.timeDet.tallies, expTallies)
         assert_equal(self.timeDet.errors, expErrors)
         assert_equal(self.timeDet.grids['T'], expTimeGrid)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

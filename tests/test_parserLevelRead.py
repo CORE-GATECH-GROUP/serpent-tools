@@ -44,7 +44,3 @@ class TestReaderInfer(unittest.TestCase):
                               'File path: {}\nExpected: {}\nActual: {}'
                               .format(fileP, str(expectedReader), str(actual))
                               )
-
-
-if __name__ == '__main__':
-    unittest.main()

@@ -166,6 +166,3 @@ class YAxisLimitSetterTester(_AxLimitSetterHelper):
 
 
 del _AxLimitSetterHelper
-
-if __name__ == '__main__':
-    unittest.main()

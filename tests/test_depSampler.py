@@ -24,8 +24,8 @@ from serpentTools.messages import MismatchedContainersError, critical
 from serpentTools.data import getFile
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.samplers.depletion import DepletionSampler
-from serpentTools.tests import computeMeansErrors
-from serpentTools.tests.utils import TestCaseWithLogCapture
+
+from tests import computeMeansErrors, TestCaseWithLogCapture
 
 _testFileNames = {'0', '1', 'badInventory', 'longT', 'missingT'}
 DEP_FILES = {key: getFile('bwr_{}_dep.m'.format(key))
@@ -107,8 +107,3 @@ class DepletedSamplerTester(TestCase):
         for name, mat in iteritems(self.sampler.materials):
             fromGetItem = self.sampler[name]
             self.assertIs(fromGetItem, mat, msg=name)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

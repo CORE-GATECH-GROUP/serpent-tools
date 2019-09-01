@@ -49,8 +49,3 @@ class BaseCompareTester(TestCase):
             self.obj.compare(other, sigma=-1)
         with self.assertRaises(ValueError):
             self.obj.compare(other, lower=100, upper=1)
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

@@ -176,7 +176,3 @@ class BranchWithUncsTester(unittest.TestCase):
                 for act, exp, what in zip(actData, gcVals, ['val', 'unc']):
                     assert_allclose(act, exp, err_msg='{} {} {}'.format(
                         expKey, gcKey, what))
-
-
-if __name__ == '__main__':
-    unittest.main()

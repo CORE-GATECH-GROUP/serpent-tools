@@ -22,15 +22,14 @@ File Descriptions
 
 """
 from six import iteritems
-
 from numpy import square, sqrt
 from numpy.testing import assert_allclose
-
 from serpentTools.messages import MismatchedContainersError
 from serpentTools.data import getFile
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.samplers.detector import DetectorSampler
-from serpentTools.tests.utils import TestCaseWithLogCapture
+
+from tests import TestCaseWithLogCapture
 
 _DET_FILES = {
     'bwr0': 'bwr_0',
@@ -119,8 +118,3 @@ def _getExpectedAverages(d0, d1):
     errors = 0.5 * sqrt(square(d0.errors) + square(d1.errors))
 
     return tallies, errors
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

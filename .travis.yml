@@ -1,3 +1,9 @@
+# Use ubuntu 16.04 with xvfb service
+# https://docs.travis-ci.com/user/gui-and-headless-browsers/#using-services
+dist: xenial
+services:
+  - xvfb
+
 language: python
 python:
   - "3.6"
@@ -17,20 +23,10 @@ before_install:
 install:
   - bash scripts/travis/install.sh
 
-# use xvfb to give the plot functions something to use
-# PR 70
-# Travis - gui and headless browsers
-
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3
-
 # run
 script:
-  - bash scripts/travis/testScript.sh
+  - pytest --cov=serpentTools --cov-report= -v
+  - bash scripts/travis/testNotebooks.sh
 
-# only if build succeeds
 after_success:
   - coverage report
-

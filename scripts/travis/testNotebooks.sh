@@ -5,19 +5,31 @@
 
 # Must be run from the main directory of the project
 
+set -e
+
 if [ ! -d examples ]; then
 	echo 'Examples directory does not exist'
 	exit 1
 fi
 
-cd examples
-
 echo "jupyter version: $(jupyter --version)"
 echo "nbconvert version: $(jupyter nbconvert --version)"
 
-for nbFile in *.ipynb; do
-	jupyter nbconvert --to python $nbFile
-done
+# Make a temporary directory
+# Copy over python files
+
+tmp_dir=$(mktemp -d)
+orig_dir=$(pwd)
+
+# Remove temp dir on exit
+trap "rm -rf $tmp_dir && cd $orig_dir && echo Temporary directory $tmp_dir removed" EXIT
+
+cp examples/*py $tmp_dir
+cp examples/myConfig.yaml $tmp_dir
+
+jupyter nbconvert --to python --output-dir=$tmp_dir examples/*.ipynb
+
+cd $tmp_dir 
 
 for pyFile in *.py; do
 	# comment out the get_ipython functions
@@ -26,12 +38,9 @@ for pyFile in *.py; do
 	python $pyFile > $outFile
 	if [ $? == 0 ]; then
 		echo Script $pyFile passed
-		rm $pyFile $outFile
 	else
 		echo Script $pyFile failed
+        cat $outFile
 		exit 1
 	fi
 done
-
-cd ..
-

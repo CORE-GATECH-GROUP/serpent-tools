@@ -8,18 +8,16 @@ from itertools import product
 from six import iteritems, BytesIO
 from numpy import array, inf
 from numpy.testing import assert_allclose, assert_array_equal
-
 from serpentTools.data import getFile
 from serpentTools.parsers.sensitivity import SensitivityReader
 from serpentTools.utils import checkScipy
-from serpentTools.tests import compareDictOfArrays
-from serpentTools.tests.utils import (
-    plotTest, getLegendTexts, MatlabTesterHelper,
+
+from tests import (
+    plotTest, getLegendTexts, MatlabTesterHelper, compareDictOfArrays,
+    HAS_SCIPY,
 )
 
 TEST_FILE = getFile('bwr_sens0.m')
-
-HAS_SCIPY = checkScipy()
 
 
 class SensitivityTestHelper(TestCase):
@@ -366,8 +364,3 @@ class UnconvertedSens2MatlabTester(Sens2MatlabHelper):
 
 
 del Sens2MatlabHelper
-
-
-if __name__ == '__main__':
-    from unittest import main
-    main()

@@ -6,10 +6,10 @@ from six import BytesIO, iteritems
 from numpy import arange
 from numpy.testing import assert_array_equal
 from serpentTools.objects import Detector
-from serpentTools.tests.utils import MatlabTesterHelper
 from serpentTools.data import getFile, readDataFile
 from serpentTools.parsers import DepmtxReader
 
+from tests import MatlabTesterHelper
 
 class Det2MatlabHelper(MatlabTesterHelper):
     """Helper class for testing detector to matlab conversion"""
@@ -221,7 +221,3 @@ class MixedCaseResults2MatlabTester(ResultToMatlabHelper):
 
 
 del Det2MatlabHelper, DepmtxMatlabHelper, ResultToMatlabHelper
-
-if __name__ == '__main__':
-    from unittest import main
-    main()
