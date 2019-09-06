@@ -20,6 +20,9 @@ Incompatible API Changes
   For example, values like ``infKinf`` are stored as scalars.
 * Setting ``expectGcu`` has been removed as :pull:`324` fixed how files without
   group constants are handled.
+* Keys to |BranchedUniv| objects stored in
+  :attr:`serpentTools.xs.BranchCollector.universes` are stored as strings,
+  rather than integers, e.g. ``0`` is replaced with ``"0"`` - :pull:`321`
 
 .. _v0.7.1
 
