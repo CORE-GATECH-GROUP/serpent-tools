@@ -96,7 +96,6 @@ class TestBadFiles(Serp2129Helper):
             for _line in range(5):
                 badObj.write(str(_line))
         badReader = ResultsReader(badFile)
-        badReader.settings['expectGcu'] = False
         with self.assertRaises(SerpentToolsException):
             badReader.read()
         remove(badFile)
@@ -608,7 +607,6 @@ class TestResultsNoBurnNoGcu(TestFilterResultsNoBurnup):
                                        'diffusion', 'eig', 'burnup-coeff']
             rc['xs.getInfXS'] = True  # only store inf cross sections
             rc['xs.getB1XS'] = False
-            rc['results.expectGcu'] = False
             self.reader = ResultsReader(self.file)
             self.reader.read()
 

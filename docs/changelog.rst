@@ -18,6 +18,8 @@ Incompatible API Changes
 
 * Values are stored in array form on |HomogUniv| when it makes sense.
   For example, values like ``infKinf`` are stored as scalars.
+* Setting ``expectGcu`` has been removed as :pull:`324` fixed how files without
+  group constants are handled.
 
 .. _v0.7.1
 

@@ -27,7 +27,7 @@ SETTING_DOC_FMTR = """.. _{tag}:
 
 """
 
-_DEPRECATED = {'results.expectGcu'}
+_DEPRECATED = set()
 
 SETTING_OPTIONS_FMTR = "Options: [{}]"
 defaultSettings = {
