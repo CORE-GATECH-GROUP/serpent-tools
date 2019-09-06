@@ -11,6 +11,7 @@ Next
 
 * Better handling of discontinuity factors
 * |HomogUniv| objects no longer automatically convert data to arrays
+* Serpent 2.1.31 is the default version for :ref:`serpentVersion` setting
 
 Incompatible API Changes
 ------------------------
