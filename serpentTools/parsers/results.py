@@ -50,6 +50,7 @@ MapStrVersions = {
     },
 }
 MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
+MapStrVersions['2.1.31'] = MapStrVersions['2.1.29']
 """
 Assigns search strings for different Serpent versions
 """

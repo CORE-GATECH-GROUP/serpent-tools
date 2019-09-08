@@ -8,8 +8,6 @@ Contents
 
 """
 from itertools import product
-from warnings import warn
-from numbers import Real
 
 from six import iteritems, PY2
 from matplotlib import pyplot
@@ -39,11 +37,6 @@ from serpentTools.messages import (
     critical,
     error,
 )
-
-if PY2:
-    from collections import Iterable
-else:
-    from collections.abc import Iterable
 
 SCATTER_MATS = set()
 SCATTER_ORDERS = 8
@@ -612,33 +605,6 @@ class HomogUniv(NamedObject):
     compareGCData.__doc__ = __docCompare.format(qty='gc')
 
 
-# remove for versions >= 0.8.0
-
-class _BranchContainerUnivDict(dict):
-    """
-    Workaround for supporting integer and string universe ids
-
-    Keys are of the form ``univID, index, burnup``
-    """
-
-    def __getitem__(self, key):
-        if not isinstance(key, Iterable):
-            raise KeyError(key)
-        if isinstance(key[0], Real) and key not in self:
-            warn("Universe ids are stored as unconverted strings, not int. "
-                 "Support for previous integer-access will be removed in "
-                 "future versions.",
-                 FutureWarning)
-            key = (str(key[0]), ) + key[1:]
-        return dict.__getitem__(self, key)
-
-    def get(self, key, default=None):
-        try:
-            return self[key]
-        except KeyError:
-            return default
-
-
 class BranchContainer(BaseObject):
     """
     Class that stores data for a single branch.
@@ -677,8 +643,7 @@ class BranchContainer(BaseObject):
         self.filePath = filePath
         self.branchID = branchID
         self.stateData = stateData
-        # Revert to dict for version >= 0.8.0
-        self.universes = _BranchContainerUnivDict()
+        self.universes = {}
         self.branchNames = branchNames
         self.__orderedUniverses = None
         self.__keys = set()

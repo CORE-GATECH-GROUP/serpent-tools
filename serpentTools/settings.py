@@ -27,7 +27,7 @@ SETTING_DOC_FMTR = """.. _{tag}:
 
 """
 
-_DEPRECATED = {'results.expectGcu'}
+_DEPRECATED = set()
 
 SETTING_OPTIONS_FMTR = "Options: [{}]"
 defaultSettings = {
@@ -106,8 +106,11 @@ defaultSettings = {
         'type': bool
     },
     'serpentVersion': {
-        'default': '2.1.30',
+        'default': '2.1.31',
         'options': ['2.1.29', '2.1.30', '2.1.31'],
+        # When adding new version of Serpent, add / update
+        # MapStrVersions with variables that indicate the start of specific
+        # data blocks / time parameters like burnup
         'description': 'Version of SERPENT',
         'type': str
     },

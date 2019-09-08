@@ -11,12 +11,18 @@ Next
 
 * Better handling of discontinuity factors
 * |HomogUniv| objects no longer automatically convert data to arrays
+* Serpent 2.1.31 is the default version for :ref:`serpentVersion` setting
 
 Incompatible API Changes
 ------------------------
 
 * Values are stored in array form on |HomogUniv| when it makes sense.
   For example, values like ``infKinf`` are stored as scalars.
+* Setting ``expectGcu`` has been removed as :pull:`324` fixed how files without
+  group constants are handled.
+* Keys to |BranchedUniv| objects stored in
+  :attr:`serpentTools.xs.BranchCollector.universes` are stored as strings,
+  rather than integers, e.g. ``0`` is replaced with ``"0"`` - :pull:`321`
 
 .. _v0.7.1
 
