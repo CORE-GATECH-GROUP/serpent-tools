@@ -203,7 +203,7 @@ class SampledDetector(SampledContainer, DetectorBase):
     @magicPlotDocDecorator
     def spreadPlot(self, xdim=None, fixed=None, ax=None, xlabel=None,
                    ylabel=None, logx=False, logy=False, loglog=False,
-                   autolegend=True):
+                   legend=True):
         """
         Plot the mean tally value against all sampled detector data.
 
@@ -219,8 +219,7 @@ class SampledDetector(SampledContainer, DetectorBase):
         {logx}
         {logy}
         {loglog}
-        autolegend: bool
-            If true, apply a label to this plot.
+        {legend}
 
         Returns
         -------
@@ -256,5 +255,5 @@ class SampledDetector(SampledContainer, DetectorBase):
 
         ax.plot(xdata, samplerData, label='Mean value - N={}'.format(N))
         formatPlot(ax, logx=logx, logy=logy, loglog=loglog, xlabel=xlabel,
-                   ylabel=ylabel, legend=autolegend)
+                   ylabel=ylabel, legend=legend)
         return ax
