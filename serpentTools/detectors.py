@@ -28,7 +28,7 @@ from numbers import Real
 from six import iteritems
 from numpy import (
     unique, empty, inf, hstack, arange, log, divide, asfortranarray,
-    ndarray, require
+    ndarray
 )
 from matplotlib.figure import Figure
 from matplotlib.patches import RegularPolygon

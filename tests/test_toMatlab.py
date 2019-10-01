@@ -32,7 +32,7 @@ class Det2MatlabHelper(MatlabTesterHelper):
     def setUp(self):
         MatlabTesterHelper.setUp(self)
 
-        from serpentTools.objects.detectors import deconvert, prepToMatlab
+        from serpentTools.detectors import deconvert, prepToMatlab
         # instance methods and/or rename them
         # potential issues sending putting many such functions in this
         # test suite
