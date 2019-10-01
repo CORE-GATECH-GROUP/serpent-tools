@@ -211,7 +211,7 @@ rst_prolog = """
 .. |HomogUniv-gc| replace:: :attr:`~serpentTools.objects.HomogUniv.gc`
 .. |HomogUniv-gcUnc| replace:: :attr:`~serpentTools.objects.HomogUniv.gcUnc`
 .. |ResultsReader| replace:: :class:`~serpentTools.ResultsReader`
-.. |Detector| replace:: :class:`~serpentTools.objects.Detector`
+.. |Detector| replace:: :class:`~serpentTools.Detector`
 .. |DetectorReader| replace:: :class:`~serpentTools.DetectorReader`
 .. |DepletionReader| replace:: :class:`~serpentTools.DepletionReader`
 .. |DepmtxReader| replace:: :class:`~serpentTools.DepmtxReader`

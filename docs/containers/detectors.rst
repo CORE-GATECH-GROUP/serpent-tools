@@ -11,12 +11,12 @@ Detectors
     columns of this array correspond to lower bound, upper bound,
     and mid-point of that energy group
 
-.. autoclass:: serpentTools.objects.Detector
+.. autoclass:: serpentTools.Detector
 
-.. autoclass:: serpentTools.objects.CartesianDetector
+.. autoclass:: serpentTools.CartesianDetector
 
-.. autoclass:: serpentTools.objects.HexagonalDetector
+.. autoclass:: serpentTools.HexagonalDetector
 
-.. autoclass:: serpentTools.objects.CylindricalDetector
+.. autoclass:: serpentTools.CylindricalDetector
 
-.. autoclass:: serpentTools.objects.SphericalDetector
+.. autoclass:: serpentTools.SphericalDetector

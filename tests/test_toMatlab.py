@@ -5,7 +5,7 @@ Tests for testing the MATLAB conversion functions
 from six import BytesIO, iteritems
 from numpy import arange
 from numpy.testing import assert_array_equal
-from serpentTools.objects import Detector
+from serpentTools import Detector
 from serpentTools.data import getFile, readDataFile
 from serpentTools.parsers import DepmtxReader
 

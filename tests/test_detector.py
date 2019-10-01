@@ -10,7 +10,7 @@ from numpy import arange, array
 from numpy.testing import assert_equal
 from serpentTools.parsers import read
 from serpentTools.data import getFile
-from serpentTools.objects.detectors import (
+from serpentTools.detectors import (
     CartesianDetector, HexagonalDetector, CylindricalDetector)
 
 from tests import compareDictOfArrays

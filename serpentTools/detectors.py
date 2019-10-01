@@ -1,0 +1,1330 @@
+"""
+Module containing classes for storing detector data.
+
+``SERPENT`` is capable of producing detectors, or tallies from MCNP,
+with a variety of bin structures. These include, but are not limited to,
+material regions, reaction types, energy bins, spatial meshes, and
+universe bins.
+
+The detectors contained in this module are tasked with storing such
+data and proving easy access to the data, as well as the underlying
+bins used to define the detector.
+
+Detector Types
+--------------
+
+* :class:`~serpentTools.objects.detectors.Detector`
+* :class:`~serpentTools.objects.detectors.CartesianDetector`
+* :class:`~serpentTools.objects.detectors.HexagonalDetector`
+* :class:`~serpentTools.objects.detectors.CylindricalDetector`
+* :class:`~serpentTools.objects.detectors.SphericalDetector`
+"""
+
+from collections.abc import Mapping
+from math import sqrt, pi
+from warnings import warn
+from numbers import Real
+
+from six import iteritems
+from numpy import (
+    unique, empty, inf, hstack, arange, log, divide, asfortranarray,
+    ndarray, require
+)
+from matplotlib.figure import Figure
+from matplotlib.patches import RegularPolygon
+from matplotlib.collections import PatchCollection
+from matplotlib.pyplot import gca
+
+from serpentTools.messages import (
+    warning, SerpentToolsException, error, BAD_OBJ_SUBJ,
+    debug,
+)
+from serpentTools.objects.base import NamedObject
+from serpentTools.plot import plot, cartMeshPlot
+from serpentTools.utils import (
+    magicPlotDocDecorator, formatPlot, setAx_xlims, setAx_ylims,
+    addColorbar, normalizerFactory, DETECTOR_PLOT_LABELS,
+    compareDictOfArrays,
+)
+from serpentTools.utils.compare import getLogOverlaps
+from serpentTools.io.hooks import matlabHook
+
+__all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
+           'CylindricalDetector', 'SphericalDetector']
+
+
+class Detector(NamedObject):
+    """Class for storing detector data with multiple bins
+
+    For detectors with spatial meshes, including rectilinear,
+    hexagonal, cylindrical, or spherical meshes, refer to companion
+    classes :class:`serpentTools.objects.CartesianDetector`,
+    :class:`serpentTools.objects.HexagonalDetector`,
+    :class:`serpentTools.objects.CylindricalDetector`, or
+    :class:`serpentTools.objects.SphericalDetector`
+
+    If simply the tally bins are available, it is recommended
+    to use the :meth:`fromTallyBins` class method. This will
+    reshape the data and separate the mean tally [second to last
+    column] and relative errors [last column].
+
+    Parameters
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray, optional
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray, optional
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray, optional
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : collections.OrderedDict, optional
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``
+    grids : dict, optional
+        Supplemental grids that may be supplied to this detector,
+        including energy points or spatial coordinates.
+
+    Attributes
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray or None
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray or float or None
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray or float or None
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : collections.OrderedDict or None
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``.
+    grids : dict
+        Dictionary containing grid information for binned quantities like
+        energy or time.
+    energy : numpy.ndarray or None
+        Potential underlying energy grid in MeV. Will be ``(n_ene, 3)``, where
+        ``n_ene`` is the number of values in the energy grid. Each
+        row ``energy[j]`` will be the low point, high point, and mid point
+        of the energy bin ``j``.
+
+    Raises
+    ------
+    ValueError
+        If some spatial grid is found in ``indexes`` during creation. This
+        class is ill-suited for these problems. Refer to the companion
+        classes mentioned above.
+    IndexError
+        If the shapes of ``bins``, ``tallies``, and ``errors`` are inconsistent
+    """
+
+    DET_COLS = (
+        'value', 'time', 'energy', 'universe', 'cell', 'material', 'lattice',
+        'reaction', 'zmesh', 'ymesh', 'xmesh', 'tally', 'error')
+
+    _CBAR_LABELS = {
+        'tallies': 'Tally data',
+        'errors': 'Relative Uncertainty',
+    }
+
+    def __init__(self, name, bins=None, tallies=None, errors=None,
+                 indexes=None, grids=None):
+        super().__init__(name)
+        self._bins = None
+        self._tallies = None
+        self._errors = None
+        self.bins = bins
+        self.tallies = tallies
+        self.errors = errors
+        self.indexes = indexes
+        self.grids = grids
+
+    @property
+    def bins(self):
+        return self._bins
+
+    @bins.setter
+    def bins(self, value):
+        if value is None:
+            self._bins = None
+            return
+
+        # Coerce to numpy array, check shape
+        # Ensure data is ordered columnwise,  and
+        # the array owns the underlying data
+        bins = asfortranarray(value).copy()
+        if len(bins.shape) != 2 or (
+                len(bins.shape) == 2 and bins.shape[1] not in {12, 13}):
+            raise ValueError(
+                "Data does not appear to be Serpent 2 detector data. Shape "
+                "should be (N, 12) or (N, 13), is {}".format(bins.shape))
+
+        # Check that this is not a Serpent 1 detector
+        if bins[0, -3] != int(bins[0, -3]) != 1:
+            raise ValueError(
+                "Data does not appear to be Serpent 2 detector data. Appears "
+                "to have a scores column, indicated unsupported Serpent 1 "
+                "data: {}.".format(bins[0, :12]))
+
+        self._bins = bins
+
+    @property
+    def tallies(self):
+        """Expected tally data in each bin"""
+        return self._tallies
+
+    @tallies.setter
+    def tallies(self, tallies):
+        if tallies is None:
+            self._tallies = tallies
+            return
+
+        if not isinstance(tallies, (Real, ndarray)):
+            raise TypeError("Tallies must be array or scalar, not {}".format(
+                type(tallies)))
+
+        if self._tallies is None:
+            self._tallies = tallies
+            return
+
+        # Handle scalar / single values arrays
+        # TODO Kind of clunky. Maybe a dedicated ScalarDetector?
+
+        if isinstance(tallies, Real):
+            if isinstance(self._tallies, Real):
+                self._tallies = tallies
+            else:
+                raise TypeError("Tallies are current array, not scalar")
+        else:
+            if isinstance(self._tallies, Real):
+                raise TypeError("Tallies are currently scalar, nor array")
+            if tallies.shape != self._tallies.shape:
+                raise IndexError(
+                    "Shape of tally data is not consistent. Should be {}, "
+                    "is {}".format(self._tallies.shape, tallies.shape))
+            self._tallies = tallies
+
+    @property
+    def errors(self):
+        """Relative uncertainty for each value in :attr:`tallies`"""
+        return self._errors
+
+    @errors.setter
+    def errors(self, errors):
+        if errors is None:
+            self._errors = errors
+            return
+
+        if not isinstance(errors, (Real, ndarray)):
+            raise TypeError(
+                "Tallies must be array or scalar, not {}".format(type(errors)))
+
+        if self._errors is None:
+            self._errors = errors
+            return
+
+        # Handle scalar / single values arrays
+        # TODO Kind of clunky. Maybe a dedicated ScalarDetector?
+
+        if isinstance(errors, Real):
+            if isinstance(self._errors, Real):
+                self._errors = errors
+            else:
+                raise TypeError("Tallies are current array, not scalar")
+        else:
+            if isinstance(self._errors, Real):
+                raise TypeError("Tallies are currently scalar, nor array")
+            if errors.shape != self._errors.shape:
+                raise IndexError(
+                    "Shape of tally data is not consistent. Should be {}, "
+                    "is {}".format(self._errors.shape, errors.shape))
+            self._errors = errors
+
+    @property
+    def energy(self):
+        return self.grids.get("E")
+
+    @property
+    def grids(self):
+        return self._grids
+
+    @grids.setter
+    def grids(self, grids):
+        if grids is None:
+            self._grids = {}
+        else:
+            if not isinstance(grids, Mapping):
+                raise TypeError(
+                    "Grids must be Mapping type, not {}".format(type(grids)))
+            self._grids = grids
+
+    @classmethod
+    def fromTallyBins(cls, name, bins, grids=None):
+        bins = asfortranarray(bins)
+        if len(bins.shape) != 2:
+            raise ValueError(
+                "Array does not appear to be Serpent tally data. Shape is {}, "
+                "should be 2D".format(bins.shape))
+
+        rows, cols = bins.shape
+        if cols not in (12, 13):
+            raise ValueError(
+                "Array does not appear to be Serpent tally data. Expected 12 "
+                " or 13 columns, not {}".format(cols))
+
+        if grids is None:
+            grids = {}
+        elif not isinstance(grids, Mapping):
+            raise TypeError("Grid data is not dictionary-like")
+
+        shape = []
+        tallyCol = cols - 2
+        errorCol = cols - 1
+        indexes = {}
+
+        if rows == 1:
+            # single tally value
+            # TODO: Maybe a ScalarDetector class?
+            tallies = bins[0, tallyCol]
+            errors = bins[0, errorCol]
+        else:
+            # See if the time column has been inserted
+            nameStart = 2 if cols == 12 else 1
+            for colIx, indexName in enumerate(cls.DET_COLS[nameStart:-2],
+                                              start=1):
+                uniqueVals = unique(bins[:, colIx])
+                if len(uniqueVals) > 1:
+                    indexes[indexName] = uniqueVals.astype(int) - 1
+                    shape.append(len(uniqueVals))
+            tallies = bins[:, tallyCol].reshape(shape)
+            errors = bins[:, errorCol].reshape(shape)
+        return cls(name, bins, tallies, errors, indexes, grids)
+
+    def slice(self, fixed, data='tallies'):
+        """
+        Return a view of the reshaped array where certain axes are fixed
+
+        Parameters
+        ----------
+        fixed: dict
+            dictionary to aid in the restriction on the multidimensional
+            array. Keys correspond to the various grids present in
+            :attr:`indexes` while the values are used to
+        data: {'tallies', 'errors'}
+            Which data set to slice
+
+        Returns
+        -------
+        :class:`numpy.ndarray`
+            View into the respective data where certain dimensions
+            have been removed
+
+        Raises
+        ------
+        AttributeError
+            If ``data`` is not supported
+
+        """
+        if data not in {"tallies", "errors"}:
+            raise AttributeError(
+                'Data argument {} not in allowed options'
+                '\ntallies, errors')
+        work = getattr(self, data)
+        if not fixed:
+            return work
+        return work[self._getSlices(fixed)]
+
+    def _getSlices(self, fixed):
+        """
+        Return a list of slice operators for each axis in reshaped data
+
+        Parameters
+        ----------
+        fixed: dict or None
+            Dictionary where keys are strings pointing to dimensions in
+        """
+        fixed = fixed if fixed is not None else {}
+        keys = set(fixed)
+        slices = tuple()
+        for key in self.indexes:
+            if key in keys:
+                slices += fixed[key],
+                keys.remove(key)
+            else:
+                slices += slice(0, self.indexes[key].size),
+        if any(keys):
+            warning(
+                'Could not find arguments in index that match the following'
+                ' requested slice keys: {}'.format(', '.join(keys)))
+        return slices
+
+    def _getGrid(self, qty):
+        grids = self._inGridsAs(qty)
+        if grids is not None:
+            lowBounds = grids[:, 0]
+            return hstack((lowBounds, grids[-1, 1]))
+        if qty not in self.indexes:
+            raise KeyError("No index {} found on detector. Bin indexes: {}"
+                           .format(qty, ', '.join(self.indexes.keys())))
+        bins = self.indexes[qty]
+        return hstack((bins, len(bins)))
+
+    def _dimInGrids(self, key):
+        return key[0].upper() in self.grids
+
+    def _inGridsAs(self, qty):
+        if self._dimInGrids(qty):
+            return self.grids[qty[0].upper()]
+        return None
+
+    def _getPlotXData(self, qty, ydata):
+        fallbackX = arange(len(ydata))
+        xlabel = DETECTOR_PLOT_LABELS.get(qty, 'Bin Index')
+        if qty is None:
+            return fallbackX, xlabel
+        xdata = self._inGridsAs(qty)
+        if xdata is not None:
+            return xdata[:, 0], xlabel
+        if qty in self.indexes:
+            return self.indexes[qty], xlabel
+        return fallbackX, xlabel
+
+    def _compare(self, other, lower, upper, sigma):
+        myShape = self.tallies.shape
+        otherShape = other.tallies.shape
+        if myShape != otherShape:
+            error("Detector tallies do not have identical shapes"
+                  + BAD_OBJ_SUBJ.format('tallies', myShape, otherShape))
+            return False
+        similar = compareDictOfArrays(self.grids, other.grids, 'grids',
+                                      lower=lower, upper=upper)
+
+        similar &= getLogOverlaps('tallies', self.tallies, other.tallies,
+                                  self.errors, other.errors, sigma,
+                                  relative=True)
+        return similar
+
+    @magicPlotDocDecorator
+    def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
+                     ylabel=None, steps=True, logx=True, logy=False,
+                     loglog=False, sigma=3, labels=None, legend=None, ncol=1,
+                     title=None, **kwargs):
+        """
+        Quick plot of the detector value as a function of energy.
+
+        Parameters
+        ----------
+        fixed: None or dict
+            Dictionary controlling the reduction in data
+        {ax}
+        normalize: bool
+            Normalize quantities per unit lethargy
+        {xlabel}
+        {ylabel}
+        steps: bool
+            Plot tally as constant inside bin
+        {logx}
+        {logy}
+        {loglog}
+        {sigma}
+        {labels}
+        {legend}
+        {ncol}
+        {title}
+        {kwargs} :py:func:`matplotlib.pyplot.plot` or
+            :py:func:`matplotlib.pyplot.errorbar`
+
+        Returns
+        -------
+        {rax}
+
+        Raises
+        ------
+        :class:`~serpentTools.SerpentToolsException`
+            if number of rows in data not equal to
+            number of energy groups
+
+        See Also
+        --------
+        * :meth:`slice`
+        """
+        slicedTallies = self.slice(fixed, 'tallies').copy()
+        if len(slicedTallies.shape) > 2:
+            raise SerpentToolsException(
+                'Sliced data cannot exceed 2-D for spectrum plot, not '
+                '{}'.format(slicedTallies.shape)
+            )
+        elif len(slicedTallies.shape) == 1:
+            slicedTallies = slicedTallies.reshape(slicedTallies.size, 1)
+        lowerE = self.grids['E'][:, 0]
+        if normalize:
+            lethBins = log(
+                divide(self.grids['E'][:, -1], lowerE))
+            for indx in range(slicedTallies.shape[1]):
+                scratch = divide(slicedTallies[:, indx], lethBins)
+                slicedTallies[:, indx] = scratch / scratch.max()
+
+        if steps:
+            if 'drawstyle' in kwargs:
+                debug('Defaulting to drawstyle specified in kwargs as {}'
+                      .format(kwargs['drawstyle']))
+            else:
+                kwargs['drawstyle'] = 'steps-post'
+
+        if sigma:
+            slicedErrors = sigma * self.slice(fixed, 'errors').copy()
+            slicedErrors = slicedErrors.reshape(slicedTallies.shape)
+            slicedErrors *= slicedTallies
+        else:
+            slicedErrors = None
+        ax = plot(lowerE, slicedTallies, ax=ax, labels=labels,
+                  yerr=slicedErrors, **kwargs)
+        if ylabel is None:
+            ylabel = 'Tally data'
+            ylabel += ' normalized per unit lethargy' if normalize else ''
+            ylabel += r' $\pm{}\sigma$'.format(sigma) if sigma else ''
+
+        if legend is None and labels:
+            legend = True
+        ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
+                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
+                        legend=legend, title=title)
+        return ax
+
+    @magicPlotDocDecorator
+    def plot(self, xdim=None, what='tallies', sigma=None, fixed=None, ax=None,
+             xlabel=None, ylabel=None, steps=False, labels=None, logx=False,
+             logy=False, loglog=False, legend=None, ncol=1, title=None,
+             **kwargs):
+        """
+        Simple plot routine for 1- or 2-D data
+
+        Parameters
+        ----------
+        xdim: None or str
+            If not None, use the array under this key in ``indexes`` as
+            the x axis
+        what: {'tallies', 'errors'}
+            Primary data to plot
+        {sigma}
+        fixed: None or dict
+            Dictionary controlling the reduction in data down to one dimension
+        {ax}
+        {xlabel} If ``xdim`` is given and ``xlabel`` is ``None``, then
+            ``xdim`` will be applied to the x-axis.
+        {ylabel}
+        steps: bool
+            If true, plot the data as constant inside the respective bins.
+            Sets ``drawstyle`` to be ``steps-post`` unless ``drawstyle``
+            given in ``kwargs``
+        {labels}
+        {logx}
+        {logy}
+        {loglog}
+        {legend}
+        {ncol}
+        {title}
+        {kwargs} :py:func:`~matplotlib.pyplot.plot` or
+            :py:func:`~matplotlib.pyplot.errorbar` function.
+
+        Returns
+        -------
+        {rax}
+
+        Raises
+        ------
+        :class:`~serpentTools.SerpentToolsException`
+            If data contains more than 2 dimensions
+
+        See Also
+        --------
+        * :meth:`slice`
+        * :meth:`spectrumPlot`
+          better options for plotting energy spectra
+        """
+
+        data = self.slice(fixed, what)
+        if len(data.shape) > 2:
+            raise SerpentToolsException(
+                'Data must be constrained to 1- or 2-D, not {}'
+                .format(data.shape))
+        elif len(data.shape) == 1:
+            data = data.reshape(data.size, 1)
+
+        if sigma:
+            if what != 'errors':
+                yerr = (self.slice(fixed, 'errors').reshape(data.shape)
+                        * data * sigma)
+            else:
+                warning(
+                    'Will not plot error bars on the error plot. Data to be '
+                    'plotted: {}.  Sigma: {}'.format(what, sigma))
+                yerr = None
+        else:
+            yerr = None
+
+        xdata, autoX = self._getPlotXData(xdim, data)
+        xlabel = xlabel or autoX
+        ylabel = ylabel or "Tally data"
+        ax = ax or gca()
+
+        if steps:
+            if 'drawstyle' in kwargs:
+                debug('Defaulting to drawstyle specified in kwargs as {}'
+                      .format(kwargs['drawstyle']))
+            else:
+                kwargs['drawstyle'] = 'steps-post'
+        ax = plot(xdata, data, ax, labels, yerr, **kwargs)
+
+        if legend is None and labels:
+            legend = True
+
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+                        xlabel=xlabel, ylabel=ylabel, legend=legend,
+                        title=title)
+        return ax
+
+    @magicPlotDocDecorator
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, cbarLabel=None, logColor=False, xlabel=None,
+                 ylabel=None, logx=False, logy=False, loglog=False,
+                 title=None, thresh=None, **kwargs):
+        """
+        Plot tally data as a function of two bin types on a cartesian mesh.
+
+        Parameters
+        ----------
+        xdim: str
+            Primary dimension - will correspond to x-axis on plot
+        ydim: str
+            Secondary dimension - will correspond to y-axis on plot
+        what: {'tallies', 'errors'}
+            Color meshes from tally data or uncertainties
+        fixed: None or dict
+            Dictionary controlling the reduction in data down to one dimension
+        {ax}
+        {cmap}
+        logColor: bool
+            If true, apply a logarithmic coloring to the data positive
+            data
+        {xlabel}
+        {ylabel}
+        {logx}
+        {logy}
+        {loglog}
+        {title}
+        {mthresh}
+        cbarLabel: str
+            Label to apply to colorbar. If not given, infer from ``what``
+        {kwargs} :py:func:`~matplotlib.pyplot.pcolormesh`
+
+        Returns
+        -------
+        {rax}
+
+        Raises
+        ------
+        :class:`serpentTools.SerpentToolsException`
+            If data to be plotted, with or without constraints, is not 1D
+        KeyError
+            If ``fixed`` is given and ``xdim`` or ``ydim`` are contained
+            in ``fixed``
+        AttributeError
+            If the data set by ``what`` not in the allowed selection
+        ValueError
+            If the data contains negative quantities and ``logColor`` is
+            ``True``
+
+        See Also
+        --------
+        * :meth:`slice`
+        * :func:`matplotlib.pyplot.pcolormesh`
+        """
+        if fixed:
+            if xdim in fixed:
+                raise KeyError("Cannot constrain {} and use as x data for "
+                               "plot".format(xdim))
+            if ydim in fixed:
+                raise KeyError("Cannot constrain {} and use as y data for "
+                               "plot".format(ydim))
+        data = self.slice(fixed, what)
+        if len(data.shape) != 2:
+            raise SerpentToolsException(
+                'Data must be 2D for mesh plot, currently is {}.\nConstraints:'
+                '{}'.format(data.shape, fixed)
+            )
+        xgrid = self._getGrid(xdim)
+        ygrid = self._getGrid(ydim)
+        if data.shape != (ygrid.size - 1, xgrid.size - 1):
+            data = data.T
+        if cbarLabel is None:
+            cbarLabel = self._CBAR_LABELS[what]
+        ax = cartMeshPlot(
+            data, xgrid, ygrid, ax, cmap, logColor,
+            cbarLabel=cbarLabel, thresh=thresh, **kwargs)
+        if xlabel is None:
+            xlabel = DETECTOR_PLOT_LABELS.get(xdim, xdim)
+        if ylabel is None:
+            ylabel = DETECTOR_PLOT_LABELS.get(ydim, ydim)
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
+                        xlabel=xlabel, ylabel=ylabel,
+                        title=title)
+        return ax
+
+    def _gather_matlab(self, reconvert):
+        """Gather bins and grids for exporting to matlab"""
+
+        converter = deconvert if reconvert else prepToMatlab
+
+        data = {
+            converter(self.name, 'bins'): self.bins,
+        }
+
+        for key, value in iteritems(self.grids):
+            data[converter(self.name, key)] = value
+
+        return data
+
+
+Detector.toMatlab = matlabHook
+
+
+class CartesianDetector(Detector):
+    """Class for storing detector data with Cartesian grid
+
+    If simply the tally bins are available, it is recommended
+    to use the :meth:`fromTallyBins` class method. This will
+    reshape the data and separate the mean tally [second to last
+    column] and relative errors [last column].
+
+    Parameters
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : dict or None
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``. Optional
+    grids : dict
+        Supplemental grids that may be supplied to this detector,
+        including energy points or spatial coordinates. Must
+        include spatial grids
+
+    Attributes
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : dict
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``.
+    energy : numpy.ndarray or None
+        Potential underlying energy grid in MeV. Will be ``(n_ene, 3)``, where
+        ``n_ene`` is the number of values in the energy grid. Each
+        row ``energy[j]`` will be the low point, high point, and mid point
+        of the energy bin ``j``.
+    x : numpy.ndarray
+        X grid
+    y : numpy.ndarray
+        Y grid
+    z : numpy.ndarray
+        Z grid
+
+    Raises
+    ------
+    IndexError
+        If the shapes of ``bins``, ``tallies``, and ``errors`` are inconsistent
+    """
+
+    def __init__(self, name, bins=None, tallies=None, errors=None,
+                 indexes=None, grids=None):
+        # Inspect x, y, and z grids
+
+        # Ensure data is ordered columnwise, and
+        # the array owns the underlying data
+        x = asfortranarray(grids["X"]).copy()
+        y = asfortranarray(grids["Y"]).copy()
+        z = asfortranarray(grids["Z"]).copy()
+
+        for grid, key in ((x, "x"), (y, "y"), (z, "z")):
+            if len(grid.shape) != 2 or grid.shape[1] != 3:
+                raise ValueError(
+                    "{} grid does not have the expected shape. Should be"
+                    "(N, 3) but is {}".format(key, grid.shape))
+        self._x = x
+        self._y = y
+        self._z = z
+
+        super().__init__(name, bins, tallies, errors, indexes, grids)
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, value):
+        value = asfortranarray(value)
+        if value.shape != self.x.shape:
+            raise ValueError(
+                "Expected shape of x grid to be {}, not {}".format(
+                    value.shape, self.x.shape))
+        self._x = value
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, value):
+        value = asfortranarray(value)
+        if value.shape != self.y.shape:
+            raise ValueError(
+                "Expected shape of y grid to be {}, not {}".format(
+                    value.shape, self.y.shape))
+        self._y = value
+
+    @property
+    def z(self):
+        return self._z
+
+    @z.setter
+    def z(self, value):
+        value = asfortranarray(value)
+        if value.shape != self.z.shape:
+            raise ValueError(
+                "Expected shape of z grid to be {}, not {}".format(
+                    value.shape, self.z.shape))
+        self._z = value
+
+    @magicPlotDocDecorator
+    def meshPlot(self, xdim='x', ydim='y', what='tallies', fixed=None, ax=None,
+                 cmap=None, cbarLabel=None, logColor=False, xlabel=None,
+                 ylabel=None, logx=False, logy=False, loglog=False,
+                 title=None, thresh=None, **kwargs):
+        """
+        Plot tally data as a function of two bin types on a cartesian mesh.
+
+        Parameters
+        ----------
+        xdim: str
+            Primary dimension - will correspond to x-axis on plot. Defaults
+            to "x"
+        ydim: str
+            Secondary dimension - will correspond to y-axis on plot. Defaults
+            to "y"
+        what: {'tallies', 'errors'}
+            Color meshes from tally data or uncertainties
+        fixed: None or dict
+            Dictionary controlling the reduction in data down to one dimension
+        {ax}
+        {cmap}
+        logColor: bool
+            If true, apply a logarithmic coloring to the data positive
+            data
+        {xlabel}
+        {ylabel}
+        {logx}
+        {logy}
+        {loglog}
+        {title}
+        {mthresh}
+        cbarLabel: str
+            Label to apply to colorbar. If not given, infer from ``what``
+        {kwargs} :py:func:`~matplotlib.pyplot.pcolormesh`
+
+        Returns
+        -------
+        {rax}
+
+        Raises
+        ------
+        :class:`serpentTools.SerpentToolsException`
+            If data to be plotted, with or without constraints, is not 1D
+        KeyError
+            If ``fixed`` is given and ``xdim`` or ``ydim`` are contained
+            in ``fixed``
+        AttributeError
+            If the data set by ``what`` not in the allowed selection
+        ValueError
+            If the data contains negative quantities and ``logColor`` is
+            ``True``
+
+        See Also
+        --------
+        * :meth:`slice`
+        * :func:`matplotlib.pyplot.pcolormesh`
+        """
+        super().meshPlot(
+            xdim=xdim, ydim=ydim, what=what, fixed=fixed, ax=ax,
+            cmap=cmap, cbarLabel=cbarLabel, logColor=logColor, xlabel=xlabel,
+            ylabel=ylabel, logx=logx, logy=logy, loglog=loglog,
+            title=title, thresh=thresh, **kwargs)
+
+
+class HexagonalDetector(Detector):
+    """Class for storing detector data with a hexagonal grid
+
+    If simply the tally bins are available, it is recommended
+    to use the :meth:`fromTallyBins` class method. This will
+    reshape the data and separate the mean tally [second to last
+    column] and relative errors [last column].
+
+    Parameters
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : dict
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``. Optional
+    grids : dict
+        Supplemental grids that may be supplied to this detector,
+        including energy points or spatial coordinates. Must include
+        COODS key with central coordinates of hexagonal bins
+    pitch : float or None
+        Center to center distance between adjacent hexagons
+    hexType : {2, 3} or None
+        Hexagon type.
+
+    Attributes
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    pitch : float or None
+        Center to center distance between hexagons. Must be set before
+        calling :meth:`hexPlot`
+    hexType : {2, 3} or None
+        Integer orientation, identical to Serpent detector structure. 2
+        corresponds to a hexagon with flat faces perpendicular to y-axis.
+        3 corresponds to a flat faces perpendicular to x-axis
+    errors : numpy.ndarray
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : dict
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``.
+    energy : numpy.ndarray or None
+        Potential underlying energy grid in MeV. Will be ``(n_ene, 3)``, where
+        ``n_ene`` is the number of values in the energy grid. Each
+        row ``energy[j]`` will be the low point, high point, and mid point
+        of the energy bin ``j``.
+    coords: numpy.ndarray
+        Centers of hexagonal meshes in XY plane
+    z : numpy.ndarray
+        Z Grid
+
+    """
+
+    DET_COLS = (
+        'value', 'time', 'energy', 'universe', 'cell', 'material', 'lattice',
+        'reaction', 'zmesh', 'ycoord', 'xcoord', 'tally', 'error')
+
+    def __init__(self, name, bins, tallies, errors, indexes, grids,
+                 pitch=None, hexType=None):
+        # TODO pass directly?
+        assert "Z" in grids
+        assert "COORD" in grids
+        super().__init__(name, bins, tallies, errors, indexes, grids)
+        self.pitch = pitch
+        self.hexType = hexType
+
+    @property
+    def pitch(self):
+        return self.__pitch
+
+    @pitch.setter
+    def pitch(self, value):
+        if value is None:
+            self._pitch = None
+        elif isinstance(value, Real):
+            if value <= 0:
+                raise ValueError("Pitch must be positive")
+            self._pitch = value
+        else:
+            raise TypeError(
+                "Cannot set pitch to {}. Must be None or real".format(
+                    type(value)))
+
+    @property
+    def hexType(self):
+        return self._hexType
+
+    @hexType.setter
+    def hexType(self, value):
+        if value is None or value in {2, 3}:
+            self._hexType = value
+        else:
+            raise ValueError(
+                "Hex type must be 2 or 3 or None, not {}".format(value))
+
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
+        opts = dict(what=what,
+                    fixed=fixed,
+                    ax=ax,
+                    cmap=cmap,
+                    logColor=logColor,
+                    xlabel=xlabel,
+                    logx=logx,
+                    logy=logy,
+                    loglog=loglog,
+                    title=title,
+                    **kwargs)
+        if any(arg in {"ycoord", "xcoord"} for arg in (xdim, ydim)):
+            warn("Use hexPlot if plotting xcoord vs ycoord")
+            return self.hexPlot(**opts)
+        return super().meshPlot(xdim, ydim, **opts)
+
+    meshPlot.__doc__ = Detector.meshPlot.__doc__
+
+    @magicPlotDocDecorator
+    def hexPlot(self, what='tallies', fixed=None, ax=None, cmap=None,
+                logColor=False, xlabel=None, ylabel=None, logx=False,
+                logy=False, loglog=False, title=None, normalizer=None,
+                cbarLabel=None, borderpad=2.5, **kwargs):
+        """
+        Create and return a hexagonal mesh plot.
+
+        Parameters
+        ----------
+        what: {'tallies', 'errors'}
+            Quantity to plot
+        fixed: None or dict
+            Dictionary of slicing arguments to pass to :meth:`slice`
+        {ax}
+        {cmap}
+        {logColor}
+        {xlabel}
+        {ylabel}
+        {logx}
+        {logy}
+        {loglog}
+        {title}
+        borderpad: int or float
+            Percentage of total plot to apply as a border. A value of
+            zero means that the extreme edges of the hexagons will touch
+            the x and y axis.
+        {kwargs} :class:`matplotlib.patches.RegularPolygon`
+
+        Raises
+        ------
+        AttributeError
+            If :attr:`pitch` and :attr:`hexType` are not set.
+        """
+        if self.pitch is None or self.hexType is None:
+            raise AttributeError(
+                "Need to set pitch and hexType before using hexPlot")
+        borderpad = max(0, float(borderpad))
+        if fixed and ('xcoord' in fixed or 'ycoord' in fixed):
+            raise KeyError("Refusing to restrict along one of the hexagonal "
+                           "dimensions {x/y}coord")
+
+        # TODO remove?
+        for key in {'color', 'fc', 'facecolor', 'orientation'}:
+            checkClearKwargs(key, 'hexPlot', **kwargs)
+        # ^^^^^^^^^
+        ec = kwargs.get('ec', None) or kwargs.get('edgecolor', None)
+        if ec is None:
+            ec = 'k'
+        kwargs['ec'] = kwargs['edgecolor'] = ec
+        if 'figure' in kwargs and kwargs['figure'] is not None:
+            fig = kwargs['figure']
+            if not isinstance(fig, Figure):
+                raise TypeError(
+                    "Expected 'figure' to be of type Figure, is {}"
+                    .format(type(fig)))
+            if len(fig.axes) != 1 and not ax:
+                raise TypeError("Don't know where to place the figure since"
+                                "'figure' argument has multiple axes.")
+            if ax and fig.axes and ax not in fig.axes:
+                raise IndexError("Passed argument for 'figure' and 'ax', "
+                                 "but ax is not attached to figure.")
+            ax = ax or (fig.axes[0] if fig.axes else gca())
+        alpha = kwargs.get('alpha', None)
+
+        ny = len(self.indexes['ycoord'])
+        nx = len(self.indexes['xcoord'])
+        data = self.slice(fixed, what)
+        if data.shape != (ny, nx):
+            raise IndexError("Constrained data does not agree with hexagonal "
+                             "grid structure. Coordinate grid: {}. "
+                             "Constrained shape: {}"
+                             .format((ny, nx), data.shape))
+        nItems = ny * nx
+        patches = empty(nItems, dtype=object)
+        values = empty(nItems)
+        coords = self.grids['COORD']
+
+        ax = ax or gca()
+        pos = 0
+        xmax, ymax = [-inf, ] * 2
+        xmin, ymin = [inf, ] * 2
+        radius = self.pitch / sqrt(3)
+        rotation = 0 if self.hexType == 2 else (pi / 2)
+
+        for xy, val in zip(coords, data.flat):
+            values[pos] = val
+            h = RegularPolygon(xy, 6, radius, rotation, **kwargs)
+            verts = h.get_verts()
+            vmins = verts.min(0)
+            vmaxs = verts.max(0)
+            xmax = max(xmax, vmaxs[0])
+            xmin = min(xmin, vmins[0])
+            ymax = max(ymax, vmaxs[1])
+            ymin = min(ymin, vmins[1])
+            patches[pos] = h
+            pos += 1
+        normalizer = normalizerFactory(values, normalizer, logColor,
+                                       coords[:, 0], coords[:, 1])
+        pc = PatchCollection(patches, cmap=cmap, alpha=alpha)
+        pc.set_array(values)
+        pc.set_norm(normalizer)
+        ax.add_collection(pc)
+
+        addColorbar(ax, pc, None, cbarLabel)
+
+        formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
+                   xlabel=xlabel or "X [cm]",
+                   ylabel=ylabel or "Y [cm]", title=title,
+                   )
+        setAx_xlims(ax, xmin, xmax, pad=borderpad)
+        setAx_ylims(ax, ymin, ymax, pad=borderpad)
+
+        return ax
+
+
+class CylindricalDetector(Detector):
+    """Class for storing detector data with a cylindrical mesh
+
+    If simply the tally bins are available, it is recommended
+    to use the :meth:`fromTallyBins` class method. This will
+    reshape the data and separate the mean tally [second to last
+    column] and relative errors [last column].
+
+    Parameters
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray, optional
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray, optional
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray, optional
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : collections.OrderedDict, optinal
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``
+    grids : dict, optional
+        Supplemental grids that may be supplied to this detector,
+        including energy points or spatial coordinates.
+
+    Attributes
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : collections.OrderedDict
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``.
+    energy : numpy.ndarray or None
+        Potential underlying energy grid in MeV. Will be ``(n_ene, 3)``, where
+        ``n_ene`` is the number of values in the energy grid. Each
+        row ``energy[j]`` will be the low point, high point, and mid point
+        of the energy bin ``j``.
+
+    """
+
+    # column indices in full (time-bin included) bins matrix
+    DET_COLS = (
+        'value', 'time', 'energy', 'universe', 'cell', 'material', 'lattice',
+        'reaction', 'zmesh', 'phi', 'rmesh', 'tally', 'error')
+
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
+        if any(arg in {"rmesh", "phi"} for arg in (xdim, ydim)):
+            warn("Cylindrical plotting is not fully supported. See GitHub "
+                 "issue 169")
+        return super().meshPlot(
+            xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
+            logColor=logColor, xlabel=xlabel, logx=logx, logy=logy,
+            loglog=loglog, title=title, **kwargs)
+
+    meshPlot.__doc__ = Detector.meshPlot.__doc__
+
+
+class SphericalDetector(Detector):
+    """Class for storing detector data with multiple bins
+
+    If simply the tally bins are available, it is recommended
+    to use the :meth:`fromTallyBins` class method. This will
+    reshape the data and separate the mean tally [second to last
+    column] and relative errors [last column].
+
+    Parameters
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : dict
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``. Optional
+    grids : dict
+        Supplemental grids that may be supplied to this detector,
+        including energy points or spatial coordinates.
+
+    Attributes
+    ----------
+    name : str
+        Name of this detector
+    bins : numpy.ndarray
+        Full 2D tally data from detector file, including tallies and
+        errors in last two columns
+    tallies : numpy.ndarray
+        Reshaped tally data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin.
+    errors : numpy.ndarray
+        Reshaped error data such that each dimension corresponds
+        to a unique bin, such as energy or spatial bin. Note:
+        this is a relative error as it would appear in the
+        output file
+    indexes : dict
+        Dictionary mapping the bin name to its corresponding
+        axis in :attr:`tallies` and :attr:`errors`, e.g.
+        ``{"energy": 0}``.
+    energy : numpy.ndarray or None
+        Potential underlying energy grid in MeV. Will be ``(n_ene, 3)``, where
+        ``n_ene`` is the number of values in the energy grid. Each
+        row ``energy[j]`` will be the low point, high point, and mid point
+        of the energy bin ``j``.
+    """
+
+    DET_COLS = (
+        'value', 'time', 'energy', 'universe', 'cell', 'material', 'lattice',
+        'reaction', 'theta', 'phi', 'rmesh', 'tally', 'error')
+
+    def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
+                 cmap=None, logColor=False, xlabel=None, ylabel=None,
+                 logx=False, logy=False, loglog=False, title=None, **kwargs):
+        if any(arg in {"theta", "phi", "rmesh"} for arg in (xdim, ydim)):
+            warn("Spherical mesh plotting is not fully supported.")
+        return super().meshPlot(
+            xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
+            logColor=logColor, xlabel=xlabel, logx=logx, logy=logy,
+            loglog=loglog, title=title, **kwargs)
+
+    meshPlot.__doc__ = Detector.meshPlot.__doc__
+
+
+def detectorFactory(name, bins, grids=None):
+    grids = {} if grids is None else grids
+    if "X" in grids:
+        detClass = CartesianDetector
+    elif "COORD" in grids:
+        detClass = HexagonalDetector
+    elif "R" in grids:
+        detClass = CylindricalDetector if "Z" in grids else SphericalDetector
+    else:
+        # fall back to base detector
+        detClass = Detector
+    return detClass.fromTallyBins(name, bins, grids)
+
+
+def checkClearKwargs(key, fName, **kwargs):
+    """Log a warning and clear non-None values from kwargs"""
+    if key in kwargs and kwargs[key] is not None:
+        warning("{} will be set by {}. Worry not.".format(key, fName))
+        kwargs[key] = None
+
+
+def deconvert(detectorName, quantity):
+    """Restore the original name of the detector data"""
+    return "DET{}{}".format(
+        detectorName, "" if quantity == "bins" else quantity)
+
+
+def prepToMatlab(detectorName, quantity):
+    """Create a name of a variable for MATLAB"""
+    return detectorName + "_" + quantity
