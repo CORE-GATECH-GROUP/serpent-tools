@@ -565,19 +565,11 @@ def checkClearKwargs(key, fName, **kwargs):
         kwargs[key] = None
 
 
-# Functions for converting varible names for matlab
-
-_DET_FMT_ORIG = "DET{}{}"
-_DET_FMT_CC = "{}_{}"
-
-
 def deconvert(detectorName, quantity):
     """Restore the original name of the detector data"""
-    if quantity == 'bins':
-        return _DET_FMT_ORIG.format(detectorName, '')
-    return _DET_FMT_ORIG.format(detectorName, quantity)
+    return "DET{}{}".format(detectorName, "" if quantity == "bins" else quantity)
 
 
 def prepToMatlab(detectorName, quantity):
     """Create a name of a variable for MATLAB"""
-    return _DET_FMT_CC.format(detectorName, quantity)
+    return detectorName + "_" + quantity
