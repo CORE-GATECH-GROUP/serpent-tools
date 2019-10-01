@@ -9,7 +9,7 @@ from matplotlib import pyplot
 
 from serpentTools.messages import (MismatchedContainersError, warning,
                                    SamplerError, SerpentToolsException)
-from serpentTools.utils import magicPlotDocDecorator
+from serpentTools.utils import magicPlotDocDecorator, formatPlot
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.objects.base import DetectorBase
 from serpentTools.samplers.base import (Sampler, SampledContainer,
@@ -255,12 +255,6 @@ class SampledDetector(SampledContainer, DetectorBase):
             ax.plot(xdata, plotData, **SPREAD_PLOT_KWARGS)
 
         ax.plot(xdata, samplerData, label='Mean value - N={}'.format(N))
-        if autolegend:
-            ax.legend()
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel or "Tally Data")
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        formatPlot(ax, logx=logx, logy=logy, loglog=loglog, xlabel=xlabel,
+                   ylabel=ylabel, legend=autolegend)
         return ax
