@@ -39,11 +39,20 @@ def extendFiles(files):
 
 
 class Sampler(object):
-    docFiles = """files: str or iterable
-            Single file or iterable (list) of files from which to read.
-            Supports file globs, ``*det0.m`` expands to all files that
-            end with ``det0.m``"""
-    docAttrs = """files: set
+    """Base class for reading multiple files of of a similar type
+
+    Parameters
+    ----------
+    files: str or iterable
+        Single file or iterable (list) of files from which to read.
+        Supports file globs, ``*det0.m`` expands to all files that
+        end with ``det0.m``
+parser: subclass of BaseReader
+        Class that will be used to read all files
+
+    Attributes
+    ----------
+    files: set
         Unordered set containing full paths of unique files read
     settings: dict
         Dictionary of sampler-wide settings
@@ -51,29 +60,13 @@ class Sampler(object):
         Unordered set of all parsers that were successful
     map: dict
         Dictionary where key, value pairs are files and their corresponding
-        parsers"""
-
-    __doc__ = """
-    Base class for reading multiple files of of a similar type
-
-    Parameters
-    ----------
-    {files:s}
-    parser: subclass of BaseReader
-        Class that will be used to read all files
-
-    Attributes
-    ----------
-    {attrs:s}
+        parsers
 
     Raises
     ------
     serpentTools.messages.SamplerError
         If ``parser`` is not a subclass of ``BaseReader``
-    """.format(files=docFiles, attrs=docAttrs)
-
-    docSkipChecks = """These tests can be skipped by setting
-    ``<sampler.skipPrecheck>`` to be ``False``"""
+    """
 
     def __init__(self, files, parser):
         if not issubclass(parser, BaseReader):
