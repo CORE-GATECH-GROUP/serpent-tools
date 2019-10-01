@@ -227,7 +227,7 @@ class SampledDetector(SampledContainer, DetectorBase):
 
         Raises
         ------
-        :class:`~serpentTools.SamplerError`
+        AttributeError
             If ``allTallies`` is None, indicating this object has been
             instructed to free up data from all sampled files
         :class:`~serpentTools.SerpentToolsException`
@@ -236,8 +236,9 @@ class SampledDetector(SampledContainer, DetectorBase):
 
         """
         if self.allTallies is None:
-            raise SamplerError("Data from all sampled files has been freed "
-                               "and cannot be used in this plot method")
+            raise AttributeError(
+                "allTallies is None, cannot plot all tally data")
+
         samplerData = self.slice(fixed, 'tallies')
         slices = self._getSlices(fixed)
         if len(samplerData.shape) != 1:
