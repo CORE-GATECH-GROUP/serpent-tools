@@ -416,36 +416,25 @@ class Detector(NamedObject):
                 ' requested slice keys: {}'.format(', '.join(keys)))
         return slices
 
-    def _getGrid(self, qty):
-        grids = self._inGridsAs(qty)
+    def _getPlotGrid(self, qty):
+        grids = self.grids.get(qty[0].upper())
         if grids is not None:
-            lowBounds = grids[:, 0]
-            return hstack((lowBounds, grids[-1, 1]))
-        if qty not in self.indexes:
+            return hstack((grids[:, 0], grids[-1, 1]))
+        bins = self.indexes.get(qty)
+        if bins is None:
             raise KeyError("No index {} found on detector. Bin indexes: {}"
                            .format(qty, ', '.join(self.indexes.keys())))
-        bins = self.indexes[qty]
         return hstack((bins, len(bins)))
-
-    def _dimInGrids(self, key):
-        return key[0].upper() in self.grids
-
-    def _inGridsAs(self, qty):
-        if self._dimInGrids(qty):
-            return self.grids[qty[0].upper()]
-        return None
 
     def _getPlotXData(self, qty, ydata):
         fallbackX = arange(len(ydata))
         xlabel = DETECTOR_PLOT_LABELS.get(qty, 'Bin Index')
         if qty is None:
             return fallbackX, xlabel
-        xdata = self._inGridsAs(qty)
+        xdata = self.grids.get(qty[0].upper())
         if xdata is not None:
             return xdata[:, 0], xlabel
-        if qty in self.indexes:
-            return self.indexes[qty], xlabel
-        return fallbackX, xlabel
+        return self.indexes.get(qty, fallbackX), xlabel
 
     def _compare(self, other, lower, upper, sigma):
         myShape = self.tallies.shape
@@ -711,8 +700,8 @@ class Detector(NamedObject):
                 'Data must be 2D for mesh plot, currently is {}.\nConstraints:'
                 '{}'.format(data.shape, fixed)
             )
-        xgrid = self._getGrid(xdim)
-        ygrid = self._getGrid(ydim)
+        xgrid = self._getPlotGrid(xdim)
+        ygrid = self._getPlotGrid(ydim)
         if data.shape != (ygrid.size - 1, xgrid.size - 1):
             data = data.T
         if cbarLabel is None:
@@ -755,6 +744,13 @@ class CartesianDetector(Detector):
     reshape the data and separate the mean tally [second to last
     column] and relative errors [last column].
 
+    .. note::
+
+        In order to get full functionality from this class,
+        :attr:`x`, :attr:`y`, and :attr:`z` must be set.
+        All grids are expected to be ``(N, 3)`` arrays, not
+        necessarily of equal shape.
+
     Parameters
     ----------
     name : str
@@ -774,22 +770,37 @@ class CartesianDetector(Detector):
         Dictionary mapping the bin name to its corresponding
         axis in :attr:`tallies` and :attr:`errors`, e.g.
         ``{"energy": 0}``. Optional
-    grids : dict
+    x : numpy.ndarray, optional
+        Directly set the x grid
+    y : numpy.ndarray, optional
+        Directly set the y grid
+    z : numpy.ndarray, optional
+        Directly set the z grid
+    grids : dict, optional
         Supplemental grids that may be supplied to this detector,
-        including energy points or spatial coordinates. Must
-        include spatial grids
+        including energy points or spatial coordinates. If spatial
+        grids are not provided directly with the ``x``, ``y``, or
+        ``z`` arguments, the grids will be pulled from this dictionary
+        in the following manner.
+
+        * Key ``"X"`` denotes the :attr:`x` grid
+        * Key ``"Y"`` denotes the :attr:`y` grid
+        * Key ``"Z"`` denotes the :attr:`z` grid
+
+        If the keys are not present, or the grids are directly provided,
+        no actions are taken.
 
     Attributes
     ----------
     name : str
         Name of this detector
-    bins : numpy.ndarray
+    bins : numpy.ndarray or None
         Full 2D tally data from detector file, including tallies and
         errors in last two columns
-    tallies : numpy.ndarray
+    tallies : numpy.ndarray or None
         Reshaped tally data such that each dimension corresponds
         to a unique bin, such as energy or spatial bin.
-    errors : numpy.ndarray
+    errors : numpy.ndarray or None
         Reshaped error data such that each dimension corresponds
         to a unique bin, such as energy or spatial bin. Note:
         this is a relative error as it would appear in the
@@ -803,39 +814,35 @@ class CartesianDetector(Detector):
         ``n_ene`` is the number of values in the energy grid. Each
         row ``energy[j]`` will be the low point, high point, and mid point
         of the energy bin ``j``.
-    x : numpy.ndarray
+    x : numpy.ndarray or None
         X grid
-    y : numpy.ndarray
+    y : numpy.ndarray or None
         Y grid
-    z : numpy.ndarray
+    z : numpy.ndarray or None
         Z grid
 
     Raises
     ------
-    IndexError
-        If the shapes of ``bins``, ``tallies``, and ``errors`` are inconsistent
+    ValueError
+        If the values for ``x``, ``y``, and ``z`` are not 2D arrays
+        with 3 columns
     """
 
     def __init__(self, name, bins=None, tallies=None, errors=None,
-                 indexes=None, grids=None):
-        # Inspect x, y, and z grids
-
-        # Ensure data is ordered columnwise, and
-        # the array owns the underlying data
-        x = asfortranarray(grids["X"]).copy()
-        y = asfortranarray(grids["Y"]).copy()
-        z = asfortranarray(grids["Z"]).copy()
-
-        for grid, key in ((x, "x"), (y, "y"), (z, "z")):
-            if len(grid.shape) != 2 or grid.shape[1] != 3:
-                raise ValueError(
-                    "{} grid does not have the expected shape. Should be"
-                    "(N, 3) but is {}".format(key, grid.shape))
-        self._x = x
-        self._y = y
-        self._z = z
-
+                 indexes=None, grids=None, x=None, y=None, z=None):
         super().__init__(name, bins, tallies, errors, indexes, grids)
+        self._x = None
+        self._y = None
+        self._z = None
+        x = x if x is not None else self.grids.get("X")
+        y = y if y is not None else self.grids.get("Y")
+        z = z if z is not None else self.grids.get("Z")
+        if x is not None:
+            self.x = x
+        if y is not None:
+            self.y = y
+        if z is not None:
+            self.z = z
 
     @property
     def x(self):
@@ -844,7 +851,12 @@ class CartesianDetector(Detector):
     @x.setter
     def x(self, value):
         value = asfortranarray(value)
-        if value.shape != self.x.shape:
+        if self._x is None:
+            if len(value.shape) != 2 or value.shape[1] != 3:
+                raise ValueError(
+                    "Expected shape of x grid to be (N, 3), not {}".format(
+                        value.shape))
+        elif value.shape != self._x.shape:
             raise ValueError(
                 "Expected shape of x grid to be {}, not {}".format(
                     value.shape, self.x.shape))
@@ -857,7 +869,12 @@ class CartesianDetector(Detector):
     @y.setter
     def y(self, value):
         value = asfortranarray(value)
-        if value.shape != self.y.shape:
+        if self._y is None:
+            if len(value.shape) != 2 or value.shape[1] != 3:
+                raise ValueError(
+                    "Expected shape of y grid to be (N, 3), not {}".format(
+                        value.shape))
+        elif value.shape != self._y.shape:
             raise ValueError(
                 "Expected shape of y grid to be {}, not {}".format(
                     value.shape, self.y.shape))
@@ -870,7 +887,12 @@ class CartesianDetector(Detector):
     @z.setter
     def z(self, value):
         value = asfortranarray(value)
-        if value.shape != self.z.shape:
+        if self._z is None:
+            if len(value.shape) != 2 or value.shape[1] != 3:
+                raise ValueError(
+                    "Expected shape of z grid to be (N, 3), not {}".format(
+                        value.shape))
+        elif value.shape != self._z.shape:
             raise ValueError(
                 "Expected shape of z grid to be {}, not {}".format(
                     value.shape, self.z.shape))
@@ -940,6 +962,22 @@ class CartesianDetector(Detector):
             ylabel=ylabel, logx=logx, logy=logy, loglog=loglog,
             title=title, thresh=thresh, **kwargs)
 
+    def _getPlotGrid(self, qty):
+        if qty is not None and hasattr(self, qty[0]):
+            grid = getattr(self, qty[0])
+            if grid is not None:
+                return hstack((grid[:, 0], grid[-1, 1]))
+            raise AttributeError("{} not set".format(qty[0], stacklevel=2))
+        return super()._getPlotGrid(qty)
+
+    def _getPlotXData(self, qty, ydata):
+        if qty is not None and hasattr(self, qty[0]):
+            grid = getattr(self, qty[0])
+            if grid is not None:
+                return grid[:, 0], DETECTOR_PLOT_LABELS.get(qty, "Bin Index")
+            raise AttributeError("{} not set".format(qty[0], stacklevel=2))
+        return super()._getPlotXData(qty, ydata)
+
 
 class HexagonalDetector(Detector):
     """Class for storing detector data with a hexagonal grid
@@ -949,42 +987,52 @@ class HexagonalDetector(Detector):
     reshape the data and separate the mean tally [second to last
     column] and relative errors [last column].
 
+    .. note::
+
+        In order to get full functionality from this class,
+        :attr:`z`, :attr:`centers`, :attr:`pitch`, and :attr:`hexType`
+        must be set.  This can be done by having ``"Z"`` and
+        ``"COORDS"`` as keys in ``grids`` and passing ``pitch`` and
+        ``hexType`` directly, or by setting the attributes directly.
+        Z grid is expected to be ``(N, 3)`` array.
+
     Parameters
     ----------
     name : str
         Name of this detector
-    bins : numpy.ndarray
+    bins : numpy.ndarray, optional
         Full 2D tally data from detector file, including tallies and
         errors in last two columns
-    tallies : numpy.ndarray
+    tallies : numpy.ndarray, optional
         Reshaped tally data such that each dimension corresponds
         to a unique bin, such as energy or spatial bin.
-    errors : numpy.ndarray
+    errors : numpy.ndarray, optional
         Reshaped error data such that each dimension corresponds
         to a unique bin, such as energy or spatial bin. Note:
         this is a relative error as it would appear in the
         output file
-    indexes : dict
+    indexes : dict, optional
         Dictionary mapping the bin name to its corresponding
         axis in :attr:`tallies` and :attr:`errors`, e.g.
-        ``{"energy": 0}``. Optional
-    grids : dict
+        ``{"energy": 0}``
+    grids : dict, optional
         Supplemental grids that may be supplied to this detector,
-        including energy points or spatial coordinates. Must include
-        COODS key with central coordinates of hexagonal bins
-    pitch : float or None
+        including energy points or spatial coordinates
+    pitch : float, optional
         Center to center distance between adjacent hexagons
-    hexType : {2, 3} or None
-        Hexagon type.
+    hexType : {2, 3}, optional
+        Integer orientation, identical to Serpent detector structure. 2
+        corresponds to a hexagon with flat faces perpendicular to y-axis.
+        3 corresponds to a flat faces perpendicular to x-axis
 
     Attributes
     ----------
     name : str
         Name of this detector
-    bins : numpy.ndarray
+    bins : numpy.ndarray or None
         Full 2D tally data from detector file, including tallies and
         errors in last two columns
-    tallies : numpy.ndarray
+    tallies : numpy.ndarray or None
         Reshaped tally data such that each dimension corresponds
         to a unique bin, such as energy or spatial bin.
     pitch : float or None
@@ -994,12 +1042,12 @@ class HexagonalDetector(Detector):
         Integer orientation, identical to Serpent detector structure. 2
         corresponds to a hexagon with flat faces perpendicular to y-axis.
         3 corresponds to a flat faces perpendicular to x-axis
-    errors : numpy.ndarray
+    errors : numpy.ndarray or None
         Reshaped error data such that each dimension corresponds
         to a unique bin, such as energy or spatial bin. Note:
         this is a relative error as it would appear in the
         output file
-    indexes : dict
+    indexes : dict or None
         Dictionary mapping the bin name to its corresponding
         axis in :attr:`tallies` and :attr:`errors`, e.g.
         ``{"energy": 0}``.
@@ -1008,9 +1056,9 @@ class HexagonalDetector(Detector):
         ``n_ene`` is the number of values in the energy grid. Each
         row ``energy[j]`` will be the low point, high point, and mid point
         of the energy bin ``j``.
-    coords: numpy.ndarray
+    coords: numpy.ndarray or None
         Centers of hexagonal meshes in XY plane
-    z : numpy.ndarray
+    z : numpy.ndarray or None
         Z Grid
 
     """
@@ -1019,18 +1067,41 @@ class HexagonalDetector(Detector):
         'value', 'time', 'energy', 'universe', 'cell', 'material', 'lattice',
         'reaction', 'zmesh', 'ycoord', 'xcoord', 'tally', 'error')
 
-    def __init__(self, name, bins, tallies, errors, indexes, grids,
-                 pitch=None, hexType=None):
-        # TODO pass directly?
-        assert "Z" in grids
-        assert "COORD" in grids
+    def __init__(self, name, bins=None, tallies=None, errors=None,
+                 indexes=None, grids=None, pitch=None, hexType=None):
+
         super().__init__(name, bins, tallies, errors, indexes, grids)
         self.pitch = pitch
         self.hexType = hexType
+        self._z = None
+
+        if grids is not None:
+            self.z = grids.get("Z")
+
+    @property
+    def z(self):
+        return self._z
+
+    @z.setter
+    def z(self, value):
+        if value is None:
+            return
+
+        value = asfortranarray(value)
+        if self._z is None:
+            if len(value.shape) != 2 or value.shape[1] != 3:
+                raise ValueError(
+                    "Expected shape of z grid to be (N, 3), not {}".format(
+                        value.shape))
+        elif value.shape != self._z.shape:
+            raise ValueError(
+                "Expected shape of z grid to be {}, not {}".format(
+                    value.shape, self.z.shape))
+        self._z = value
 
     @property
     def pitch(self):
-        return self.__pitch
+        return self._pitch
 
     @pitch.setter
     def pitch(self, value):
@@ -1115,7 +1186,7 @@ class HexagonalDetector(Detector):
         if self.pitch is None or self.hexType is None:
             raise AttributeError(
                 "Need to set pitch and hexType before using hexPlot")
-        borderpad = max(0, float(borderpad))
+
         if fixed and ('xcoord' in fixed or 'ycoord' in fixed):
             raise KeyError("Refusing to restrict along one of the hexagonal "
                            "dimensions {x/y}coord")
@@ -1188,6 +1259,8 @@ class HexagonalDetector(Detector):
                    xlabel=xlabel or "X [cm]",
                    ylabel=ylabel or "Y [cm]", title=title,
                    )
+
+        borderpad = max(0, float(borderpad))
         setAx_xlims(ax, xmin, xmax, pad=borderpad)
         setAx_ylims(ax, ymin, ymax, pad=borderpad)
 

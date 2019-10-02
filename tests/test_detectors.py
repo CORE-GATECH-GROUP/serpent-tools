@@ -32,7 +32,8 @@ def testDetectorProperties():
     assert (energyDet.energy == energies).all()
 
 
-def testCartesianDetector():
+@pytest.mark.parametrize("bare", [True, False])
+def testCartesianDetector(bare):
     xgrid = numpy.empty((4, 3))
     xgrid[:, 0] = range(-2, 2)
     xgrid[:, 1] = xgrid[:, 0] + 1
@@ -44,9 +45,18 @@ def testCartesianDetector():
     tallies = numpy.ones((4, 4))
     errors = numpy.ones_like(tallies)
 
-    detector = detectors.CartesianDetector(
-        "xy", bins=bins, tallies=tallies, errors=errors,
-        grids={"X": xgrid, "Y": ygrid, "Z": zgrid})
+    if bare:
+        detector = detectors.CartesianDetector("xy_bare")
+        detector.bins = bins
+        detector.tallies = tallies
+        detector.errors = errors
+        detector.x = xgrid.copy()
+        detector.y = ygrid.copy()
+        detector.z = zgrid.copy()
+    else:
+        detector = detectors.CartesianDetector(
+            "xy_full", bins=bins, tallies=tallies, errors=errors,
+            grids={"X": xgrid.copy(), "Y": ygrid.copy(), "Z": zgrid.copy()})
 
     # Modify the tally data
     detector.tallies *= 2
