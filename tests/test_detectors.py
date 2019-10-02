@@ -31,43 +31,61 @@ def testDetectorProperties():
 
     assert (energyDet.energy == energies).all()
 
+@pytest.fixture(scope="module")
+def meshedBinData():
+    bins = numpy.ones((25, 12), order="f")
+    bins[:, -1] = range(25)
+    bins[:, -2] = range(25)
+    bins[:, -3] = numpy.tile(range(5), 5)
+    bins[:, -4] = numpy.repeat(range(5), 5)
 
-@pytest.mark.parametrize("bare", [True, False])
-def testCartesianDetector(bare):
-    xgrid = numpy.empty((4, 3))
-    xgrid[:, 0] = range(-2, 2)
+    tallies = numpy.arange(25).reshape(5, 5)
+    errors = tallies.copy()
+
+    return bins, tallies, errors
+
+@pytest.mark.parametrize("how", ["bins", "grids", "bare", "init"])
+def testCartesianDetector(meshedBinData, how):
+
+    xgrid = numpy.empty((5, 3))
+    xgrid[:, 0] = range(5)
     xgrid[:, 1] = xgrid[:, 0] + 1
     xgrid[:, 2] = xgrid[:, 0] + 0.5
+
     ygrid = xgrid.copy()
+
     zgrid = numpy.array([[-1, 1, 0]])
 
-    bins = numpy.ones((16, 12))
-    tallies = numpy.ones((4, 4))
-    errors = numpy.ones_like(tallies)
+    bins, tallies, errors = meshedBinData
 
-    if bare:
+    grids = {"X": xgrid.copy(), "Y": ygrid.copy(), "Z": zgrid.copy()}
+
+    if how == "bare":
         detector = detectors.CartesianDetector("xy_bare")
         detector.bins = bins
         detector.tallies = tallies
         detector.errors = errors
-        detector.x = xgrid.copy()
-        detector.y = ygrid.copy()
-        detector.z = zgrid.copy()
-    else:
+        detector.x = grids["X"]
+        detector.y = grids["Y"]
+        detector.z = grids["Z"]
+    elif how == "grids":
         detector = detectors.CartesianDetector(
             "xy_full", bins=bins, tallies=tallies, errors=errors,
-            grids={"X": xgrid.copy(), "Y": ygrid.copy(), "Z": zgrid.copy()})
+            grids=grids)
+    elif how == "init":
+        detector = detectors.CartesianDetector(
+            "xy_full", bins=bins, tallies=tallies, errors=errors,
+            x=grids["X"], y=grids["Y"], z=grids["Z"])
+    elif how == "bins":
+        detector = detectors.CartesianDetector.fromTallyBins(
+            "xyBins", bins=bins, grids=grids)
 
     # Modify the tally data
-    detector.tallies *= 2
-    assert (detector.tallies == 2).all()
-    detector.tallies = detector.tallies / 2
-    assert (detector.tallies == 1).all()
+    detector.tallies = tallies * 2
+    assert (detector.tallies == tallies * 2).all()
 
-    detector.errors *= 2
-    assert (detector.errors == 2).all()
-    detector.errors = detector.errors / 2
-    assert (detector.errors == 1).all()
+    detector.errors = errors * 2
+    assert (detector.errors == errors * 2).all()
 
     assert (detector.x == xgrid).all()
     assert (detector.y == ygrid).all()
@@ -81,18 +99,12 @@ def testCartesianDetector(bare):
     detector.z *= 100
     assert (detector.z == zgrid * 100).all()
 
-@pytest.fixture(scope="module")
-def meshedBinData():
-    bins = numpy.ones((25, 12), order="f")
-    bins[:, -1] = range(25)
-    bins[:, -2] = range(25)
-    bins[:, -3] = numpy.tile(range(5), 5)
-    bins[:, -4] = numpy.repeat(range(5), 5)
+    # Test failure modes
 
-    tallies = numpy.arange(25).reshape(5, 5)
-    errors = tallies.copy()
-
-    return bins, tallies, errors
+    for gridk in ["x", "y", "z"]:
+        msg = ".*shape of {} grid".format(gridk)
+        with pytest.raises(ValueError, match=msg):
+            setattr(detector, gridk, [1, 2, 3])
 
 @pytest.mark.parametrize("how", ["grids", "bins", "bare", "init"])
 def testHexagonalDetector(meshedBinData, how):
