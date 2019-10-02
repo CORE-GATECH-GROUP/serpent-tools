@@ -171,11 +171,11 @@ class Detector(NamedObject):
                 "should be (N, 12) or (N, 13), is {}".format(bins.shape))
 
         # Check that this is not a Serpent 1 detector
-        if bins[0, -3] != int(bins[0, -3]) != 1:
+        if bins[0, -3] != 1:
             raise ValueError(
                 "Data does not appear to be Serpent 2 detector data. Appears "
                 "to have a scores column, indicated unsupported Serpent 1 "
-                "data: {}.".format(bins[0, :12]))
+                "data: {}.".format(bins[0]))
 
         self._bins = bins
 

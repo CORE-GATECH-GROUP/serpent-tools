@@ -36,8 +36,8 @@ def meshedBinData():
     bins = numpy.ones((25, 12), order="f")
     bins[:, -1] = range(25)
     bins[:, -2] = range(25)
-    bins[:, -3] = numpy.tile(range(5), 5)
-    bins[:, -4] = numpy.repeat(range(5), 5)
+    bins[:, -3] = numpy.tile(range(1, 6), 5)
+    bins[:, -4] = numpy.repeat(range(1, 6), 5)
 
     tallies = numpy.arange(25).reshape(5, 5)
     errors = tallies.copy()
@@ -204,3 +204,21 @@ def testHexagonalDetector(meshedBinData, how):
 
     with pytest.raises(ValueError, match="Expected shape of z"):
         detector.z = [[-1, 0, -0.5], [0, 1, 0.5]]
+
+
+@pytest.fixture(scope="module")
+def binsWithScores():
+    bins = numpy.ones((2, 13))
+    bins[0, -3] = 1.5
+    return bins
+
+def testNoScores(binsWithScores):
+
+    with pytest.raises(ValueError, match=".*scores"):
+        detectors.Detector("scored", bins=binsWithScores)
+
+    with pytest.raises(ValueError, match=".*scores"):
+        detectors.Detector("scored").bins = binsWithScores
+
+    with pytest.raises(ValueError, match=".*scores"):
+        detectors.Detector.fromTallyBins("scored", bins=binsWithScores)

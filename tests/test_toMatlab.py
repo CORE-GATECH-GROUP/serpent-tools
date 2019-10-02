@@ -3,7 +3,7 @@ Tests for testing the MATLAB conversion functions
 """
 
 from six import BytesIO, iteritems
-from numpy import arange
+from numpy import arange, ones
 from numpy.testing import assert_array_equal
 from serpentTools import Detector
 from serpentTools.data import getFile, readDataFile
@@ -11,13 +11,14 @@ from serpentTools.parsers import DepmtxReader
 
 from tests import MatlabTesterHelper
 
+
 class Det2MatlabHelper(MatlabTesterHelper):
     """Helper class for testing detector to matlab conversion"""
 
     NBINS = 10
     NCOLS = 12
     # approximate some detector data
-    BINS = arange(
+    BINS = ones(
         NCOLS * NBINS, dtype=float).reshape(NBINS, NCOLS)
     # emulate energy grid
     GRID = arange(3 * NBINS).reshape(NBINS, 3)
