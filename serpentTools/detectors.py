@@ -277,39 +277,86 @@ class Detector(NamedObject):
                 "Array does not appear to be Serpent tally data. Shape is {}, "
                 "should be 2D".format(bins.shape))
 
-        rows, cols = bins.shape
-        if cols not in (12, 13):
+        if bins.shape[1] not in (12, 13):
             raise ValueError(
                 "Array does not appear to be Serpent tally data. Expected 12 "
-                " or 13 columns, not {}".format(cols))
+                " or 13 columns, not {}".format(bins.shape[1]))
 
         if grids is None:
             grids = {}
         elif not isinstance(grids, Mapping):
             raise TypeError("Grid data is not dictionary-like")
 
+        det = cls(name, bins=bins, grids=grids)
+
+        tallies, errors, indexes = det.reshapedBins()
+
+        det.tallies = tallies
+        det.errors = errors
+        det.indexes = indexes
+
+        return det
+
+    def reshapedBins(self):
+        """Obtain multi-dimensional tally, error, and index data
+
+        Returns
+        -------
+        tallies : numpy.ndarray
+            Potentially multi-dimensional array corresponding to
+            tally data along each bin index
+        errors : numpy.ndarray
+            Potentially multi-dimensional array corresponding to
+            tally relative error along each bin index
+        indexes : dict
+            Dictionary mapping named bin information, e.g. ``"xmesh"``,
+            ``"energy"``, to axis in ``tallies`` and ``errors``
+
+        Examples
+        --------
+
+        A detector is created with a single bin with two bins values.
+        These could represent tallying two different reaction rates
+
+        >>> import numpy
+        >>> from serpentTools import Detector
+        >>> bins = numpy.ones((2, 12))
+        >>> bins[1, 0] = 2
+        >>> bins[1, 4] = 2
+        >>> bins[:, -2:] = [
+        ...     [5.0,  0.1],
+        ...     [10.0, 0.2]]
+        >>> det = Detector("reshape", bins=bins)
+        >>> tallies, errors, indexes = det.reshapedBins()
+        >>> tallies
+        array([5.0, 10.0])
+        >>> errors
+        array([0.1, 0.2])
+        >>> indexes
+        {"reaction: array([0, 1])}
+
+        """
+        assert self.bins is not None, "No bin data present on {}".format(self)
+
+        if self.bins.shape[0] == 1:
+            return self.bins[0, -2], self.bins[0, -1], {}
+
         shape = []
-        tallyCol = cols - 2
-        errorCol = cols - 1
         indexes = {}
 
-        if rows == 1:
-            # single tally value
-            # TODO: Maybe a ScalarDetector class?
-            tallies = bins[0, tallyCol]
-            errors = bins[0, errorCol]
-        else:
-            # See if the time column has been inserted
-            nameStart = 2 if cols == 12 else 1
-            for colIx, indexName in enumerate(cls.DET_COLS[nameStart:-2],
-                                              start=1):
-                uniqueVals = unique(bins[:, colIx])
-                if len(uniqueVals) > 1:
-                    indexes[indexName] = uniqueVals.astype(int) - 1
-                    shape.append(len(uniqueVals))
-            tallies = bins[:, tallyCol].reshape(shape)
-            errors = bins[:, errorCol].reshape(shape)
-        return cls(name, bins, tallies, errors, indexes, grids)
+        # See if the time column has been inserted
+        nameStart = 2 if self.bins.shape[1] == 12 else 1
+        for colIx, indexName in enumerate(self.DET_COLS[nameStart:-2],
+                                          start=1):
+            uniqueVals = unique(self.bins[:, colIx])
+            if len(uniqueVals) > 1:
+                indexes[indexName] = uniqueVals.astype(int) - 1
+                shape.append(len(uniqueVals))
+
+        tallies = self.bins[:, -2].reshape(shape)
+        errors = self.bins[:, -1].reshape(shape)
+
+        return tallies, errors, indexes
 
     def slice(self, fixed, data='tallies'):
         """
