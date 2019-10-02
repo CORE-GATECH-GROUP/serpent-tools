@@ -28,7 +28,7 @@ from numbers import Real
 from six import iteritems
 from numpy import (
     unique, empty, inf, hstack, arange, log, divide, asfortranarray,
-    ndarray
+    ndarray, asarray,
 )
 from matplotlib.figure import Figure
 from matplotlib.patches import RegularPolygon
@@ -1015,15 +1015,17 @@ class HexagonalDetector(Detector):
         Dictionary mapping the bin name to its corresponding
         axis in :attr:`tallies` and :attr:`errors`, e.g.
         ``{"energy": 0}``
-    grids : dict, optional
-        Supplemental grids that may be supplied to this detector,
-        including energy points or spatial coordinates
+    centers : numpy.ndarray, optional
+        ``(N, 2)`` array with centers of each hexagonal element
     pitch : float, optional
         Center to center distance between adjacent hexagons
     hexType : {2, 3}, optional
         Integer orientation, identical to Serpent detector structure. 2
         corresponds to a hexagon with flat faces perpendicular to y-axis.
         3 corresponds to a flat faces perpendicular to x-axis
+    grids : dict, optional
+        Supplemental grids that may be supplied to this detector,
+        including energy points or spatial coordinates.
 
     Attributes
     ----------
@@ -1068,15 +1070,30 @@ class HexagonalDetector(Detector):
         'reaction', 'zmesh', 'ycoord', 'xcoord', 'tally', 'error')
 
     def __init__(self, name, bins=None, tallies=None, errors=None,
-                 indexes=None, grids=None, pitch=None, hexType=None):
+                 indexes=None, z=None, centers=None, pitch=None, hexType=None, grids=None):
 
         super().__init__(name, bins, tallies, errors, indexes, grids)
-        self.pitch = pitch
-        self.hexType = hexType
-        self._z = None
 
-        if grids is not None:
-            self.z = grids.get("Z")
+        if pitch is not None:
+            self.pitch = pitch
+        else:
+            self._pitch = None
+
+        if hexType is not None:
+            self.hexType = hexType
+        else:
+            self._hexType = None
+
+        self._z = None
+        self._centers = None
+
+        z = z if z is not None else self.grids.get("Z")
+        if z is not None:
+            self.z = z
+
+        centers = centers if centers is not None else self.grids.get("COORDS")
+        if centers is not None:
+            self.centers = centers
 
     @property
     def z(self):
@@ -1084,9 +1101,6 @@ class HexagonalDetector(Detector):
 
     @z.setter
     def z(self, value):
-        if value is None:
-            return
-
         value = asfortranarray(value)
         if self._z is None:
             if len(value.shape) != 2 or value.shape[1] != 3:
@@ -1105,16 +1119,14 @@ class HexagonalDetector(Detector):
 
     @pitch.setter
     def pitch(self, value):
-        if value is None:
-            self._pitch = None
-        elif isinstance(value, Real):
+        if isinstance(value, Real):
             if value <= 0:
                 raise ValueError("Pitch must be positive")
-            self._pitch = value
         else:
             raise TypeError(
-                "Cannot set pitch to {}. Must be None or real".format(
+                "Cannot set pitch to {}. Must be positive value".format(
                     type(value)))
+        self._pitch = value
 
     @property
     def hexType(self):
@@ -1122,11 +1134,30 @@ class HexagonalDetector(Detector):
 
     @hexType.setter
     def hexType(self, value):
-        if value is None or value in {2, 3}:
-            self._hexType = value
-        else:
+        if value not in {2, 3}:
             raise ValueError(
-                "Hex type must be 2 or 3 or None, not {}".format(value))
+                "Hex type must be 2 or 3, not {}".format(value))
+        self._hexType = value
+
+    @property
+    def centers(self):
+        return self._centers
+
+    @centers.setter
+    def centers(self, value):
+        value = asarray(value)
+
+        if self._centers is None:
+            if len(value.shape) != 2 or value.shape[1] != 2:
+                raise ValueError(
+                    "Expected centers to have shape (N, 2), got {}".format(
+                        value.shape))
+        else:
+            if value.shape != self._centers.shape:
+                raise ValueError(
+                    "Expected centers to have shape {}, got {}".format(
+                        self._centers.shape, value.shape))
+        self._centers = value
 
     def meshPlot(self, xdim, ydim, what='tallies', fixed=None, ax=None,
                  cmap=None, logColor=False, xlabel=None, ylabel=None,
@@ -1190,6 +1221,8 @@ class HexagonalDetector(Detector):
         if fixed and ('xcoord' in fixed or 'ycoord' in fixed):
             raise KeyError("Refusing to restrict along one of the hexagonal "
                            "dimensions {x/y}coord")
+        if not isinstance(borderpad, Real) or borderpad < 0:
+            raise ValueError("borderpad should be postive, not {}".format(borderpad))
 
         # TODO remove?
         for key in {'color', 'fc', 'facecolor', 'orientation'}:
@@ -1222,19 +1255,17 @@ class HexagonalDetector(Detector):
                              "grid structure. Coordinate grid: {}. "
                              "Constrained shape: {}"
                              .format((ny, nx), data.shape))
-        nItems = ny * nx
-        patches = empty(nItems, dtype=object)
-        values = empty(nItems)
-        coords = self.grids['COORD']
+        patches = empty(ny * nx, dtype=object)
+        values = empty(ny * nx)
+        coords = self.centers
 
         ax = ax or gca()
-        pos = 0
         xmax, ymax = [-inf, ] * 2
         xmin, ymin = [inf, ] * 2
         radius = self.pitch / sqrt(3)
         rotation = 0 if self.hexType == 2 else (pi / 2)
 
-        for xy, val in zip(coords, data.flat):
+        for pos, (xy, val) in enumerate(zip(coords, data.flat)):
             values[pos] = val
             h = RegularPolygon(xy, 6, radius, rotation, **kwargs)
             verts = h.get_verts()
@@ -1245,7 +1276,7 @@ class HexagonalDetector(Detector):
             ymax = max(ymax, vmaxs[1])
             ymin = min(ymin, vmins[1])
             patches[pos] = h
-            pos += 1
+
         normalizer = normalizerFactory(values, normalizer, logColor,
                                        coords[:, 0], coords[:, 1])
         pc = PatchCollection(patches, cmap=cmap, alpha=alpha)
@@ -1257,10 +1288,8 @@ class HexagonalDetector(Detector):
 
         formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
                    xlabel=xlabel or "X [cm]",
-                   ylabel=ylabel or "Y [cm]", title=title,
-                   )
+                   ylabel=ylabel or "Y [cm]", title=title)
 
-        borderpad = max(0, float(borderpad))
         setAx_xlims(ax, xmin, xmax, pad=borderpad)
         setAx_ylims(ax, ymin, ymax, pad=borderpad)
 

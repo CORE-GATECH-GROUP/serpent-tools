@@ -80,3 +80,115 @@ def testCartesianDetector(bare):
     assert (detector.y == ygrid * 100).all()
     detector.z *= 100
     assert (detector.z == zgrid * 100).all()
+
+@pytest.fixture(scope="module")
+def meshedBinData():
+    bins = numpy.ones((25, 12), order="f")
+    bins[:, -1] = range(25)
+    bins[:, -2] = range(25)
+    bins[:, -3] = numpy.tile(range(5), 5)
+    bins[:, -4] = numpy.repeat(range(5), 5)
+
+    tallies = numpy.arange(25).reshape(5, 5)
+    errors = tallies.copy()
+
+    return bins, tallies, errors
+
+@pytest.mark.parametrize("how", ["grids", "bins", "bare", "init"])
+def testHexagonalDetector(meshedBinData, how):
+    centers = numpy.array([
+        [-3.000000E+00, -1.732051E+00],
+        [-2.500000E+00, -8.660254E-01],
+        [-2.000000E+00, 0.000000E+00],
+        [-1.500000E+00, 8.660254E-01],
+        [-1.000000E+00, 1.732051E+00],
+        [-2.000000E+00, -1.732051E+00],
+        [-1.500000E+00, -8.660254E-01],
+        [-1.000000E+00, 0.000000E+00],
+        [-5.000000E-01, 8.660254E-01],
+        [0.000000E+00, 1.732051E+00],
+        [-1.000000E+00, -1.732051E+00],
+        [-5.000000E-01, -8.660254E-01],
+        [0.000000E+00, 0.000000E+00],
+        [5.000000E-01, 8.660254E-01],
+        [1.000000E+00, 1.732051E+00],
+        [0.000000E+00, -1.732051E+00],
+        [5.000000E-01, -8.660254E-01],
+        [1.000000E+00, 0.000000E+00],
+        [1.500000E+00, 8.660254E-01],
+        [2.000000E+00, 1.732051E+00],
+        [1.000000E+00, -1.732051E+00],
+        [1.500000E+00, -8.660254E-01],
+        [2.000000E+00, 0.000000E+00],
+        [2.500000E+00, 8.660254E-01],
+        [3.000000E+00, 1.732051E+00],
+    ])
+    z = numpy.array([[0, 0, 0]])
+
+    bins, tallies, errors = meshedBinData
+
+    pitch = 1.0
+    hexType = 2
+
+    if how == "init":
+        detector = detectors.HexagonalDetector(
+            "hexInit", bins=bins, tallies=tallies, errors=errors,
+            z=z, centers=centers, pitch=pitch, hexType=hexType)
+    elif how == "grids":
+        detector = detectors.HexagonalDetector(
+            "hexGrids", bins=bins, tallies=tallies, errors=errors,
+            grids={"Z": z, "COORDS": centers})
+    elif how == "bins":
+        detector = detectors.HexagonalDetector.fromTallyBins(
+            "hexBins", bins, grids={"Z": z, "COORDS": centers})
+    elif how == "bare":
+        detector = detectors.HexagonalDetector("hexBins")
+        detector.bins = bins
+        detector.tallies = tallies
+        detector.errors = errors
+        detector.z = z
+        detector.centers = centers
+
+    if how != "init":
+        detector.pitch = pitch
+        detector.hexType = hexType
+
+    assert (detector.bins == bins).all()
+    assert (detector.tallies == tallies).all()
+    assert (detector.errors == errors).all()
+    assert (detector.z == z).all()
+    assert (detector.centers == centers).all()
+    assert detector.pitch == pitch
+    assert detector.hexType == hexType
+
+    detector.tallies = detector.tallies * 2
+    detector.errors = detector.errors * 2
+    detector.z = detector.z * 2
+    detector.centers = detector.centers * 2
+    detector.pitch = detector.pitch * 2
+
+    assert (detector.tallies == tallies * 2).all()
+    assert (detector.errors == errors * 2).all()
+    assert (detector.z == z * 2).all()
+    assert (detector.centers == centers * 2).all()
+    assert detector.pitch == pitch * 2
+
+    # Test failure modes
+
+    with pytest.raises(ValueError, match="Hex type"):
+        detector.hexType = -1
+
+    with pytest.raises(ValueError, match="Pitch must be positive"):
+        detector.pitch = 0
+
+    with pytest.raises(ValueError, match="Pitch must be positive"):
+        detector.pitch = -1
+
+    with pytest.raises(TypeError, match="Cannot set pitch"):
+        detector.pitch = [1, 2]
+
+    with pytest.raises(ValueError, match="Expected centers"):
+        detector.centers = detector.centers[:5]
+
+    with pytest.raises(ValueError, match="Expected shape of z"):
+        detector.z = [[-1, 0, -0.5], [0, 1, 0.5]]
