@@ -1112,7 +1112,7 @@ class HexagonalDetector(Detector):
         if z is not None:
             self.z = z
 
-        centers = centers if centers is not None else self.grids.get("COORDS")
+        centers = centers if centers is not None else self.grids.get("COORD")
         if centers is not None:
             self.centers = centers
 
@@ -1250,9 +1250,11 @@ class HexagonalDetector(Detector):
         kwargs.setdefault("edgecolor", "k")
         alpha = kwargs.get('alpha')
 
-        ny = len(self.indexes['ycoord'])
-        nx = len(self.indexes['xcoord'])
         data = self.slice(fixed, what)
+
+        ny = getattr(self, what).shape[self.indexes.index("ycoord")]
+        nx = getattr(self, what).shape[self.indexes.index("xcoord")]
+
         if data.shape != (ny, nx):
             raise IndexError("Constrained data does not agree with hexagonal "
                              "grid structure. Coordinate grid: {}. "

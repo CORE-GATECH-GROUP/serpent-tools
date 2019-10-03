@@ -158,10 +158,10 @@ def testHexagonalDetector(meshedBinData, how):
     elif how == "grids":
         detector = detectors.HexagonalDetector(
             "hexGrids", bins=bins, tallies=tallies, errors=errors,
-            grids={"Z": z, "COORDS": centers})
+            grids={"Z": z, "COORD": centers})
     elif how == "bins":
         detector = detectors.HexagonalDetector.fromTallyBins(
-            "hexBins", bins, grids={"Z": z, "COORDS": centers})
+            "hexBins", bins, grids={"Z": z, "COORD": centers})
     elif how == "bare":
         detector = detectors.HexagonalDetector("hexBins")
         detector.bins = bins
