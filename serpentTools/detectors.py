@@ -57,10 +57,10 @@ class Detector(NamedObject):
 
     For detectors with spatial meshes, including rectilinear,
     hexagonal, cylindrical, or spherical meshes, refer to companion
-    classes :class:`serpentTools.objects.CartesianDetector`,
-    :class:`serpentTools.objects.HexagonalDetector`,
-    :class:`serpentTools.objects.CylindricalDetector`, or
-    :class:`serpentTools.objects.SphericalDetector`
+    classes :class:`serpentTools.CartesianDetector`,
+    :class:`serpentTools.HexagonalDetector`,
+    :class:`serpentTools.CylindricalDetector`, or
+    :class:`serpentTools.SphericalDetector`
 
     If simply the tally bins are available, it is recommended
     to use the :meth:`fromTallyBins` class method. This will
@@ -185,7 +185,6 @@ class Detector(NamedObject):
 
     @property
     def tallies(self):
-        """Expected tally data in each bin"""
         return self._tallies
 
     @tallies.setter
@@ -221,7 +220,6 @@ class Detector(NamedObject):
 
     @property
     def errors(self):
-        """Relative uncertainty for each value in :attr:`tallies`"""
         return self._errors
 
     @errors.setter
@@ -293,6 +291,29 @@ class Detector(NamedObject):
 
     @classmethod
     def fromTallyBins(cls, name, bins, grids=None):
+        """Create a detector instance from 2D detector data
+
+        Parameters
+        ----------
+        name : str
+            Name of this detector
+        bins : numpy.ndarray
+            2D array taken from Serpent. Expected to have
+            either 12 or 13 columns, where the latter indicates
+            a time bin has been added.
+        grids : dict, optional
+            Dictionary of underlying energy, space, and/or time data.
+
+        Returns
+        -------
+        Detector
+
+        Raises
+        ------
+        ValueError
+            If the tally data does not appear to be Serpent 2 tally data
+
+        """
         bins = asfortranarray(bins)
         if len(bins.shape) != 2:
             raise ValueError(
