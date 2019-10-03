@@ -30,7 +30,6 @@ from numpy import (
     unique, empty, inf, hstack, arange, log, divide, asfortranarray,
     ndarray, asarray,
 )
-from matplotlib.figure import Figure
 from matplotlib.patches import RegularPolygon
 from matplotlib.collections import PatchCollection
 from matplotlib.pyplot import gca
@@ -411,6 +410,8 @@ class Detector(NamedObject):
                 'Data argument {} not in allowed options'
                 '\ntallies, errors')
         work = getattr(self, data)
+        if work is None:
+            raise AttributeError("{} not setup on {}".format(data, self))
         if not fixed:
             return work
         return work[self._getSlices(fixed)]
@@ -615,6 +616,9 @@ class Detector(NamedObject):
             raise AttributeError(
                 "indexes not setup. Unsure how to slice and plot")
 
+        if sigma and what == "errors":
+            raise ValueError("Refusing to plot error bars on uncertainties")
+
         data = self.slice(fixed, what)
         if len(data.shape) > 2:
             raise SerpentToolsException(
@@ -624,14 +628,8 @@ class Detector(NamedObject):
             data = data.reshape(data.size, 1)
 
         if sigma:
-            if what != 'errors':
-                yerr = (self.slice(fixed, 'errors').reshape(data.shape)
-                        * data * sigma)
-            else:
-                warning(
-                    'Will not plot error bars on the error plot. Data to be '
-                    'plotted: {}.  Sigma: {}'.format(what, sigma))
-                yerr = None
+            yerr = (self.slice(fixed, 'errors').reshape(data.shape)
+                    * data * sigma)
         else:
             yerr = None
 
@@ -641,11 +639,8 @@ class Detector(NamedObject):
         ax = ax or gca()
 
         if steps:
-            if 'drawstyle' in kwargs:
-                debug('Defaulting to drawstyle specified in kwargs as {}'
-                      .format(kwargs['drawstyle']))
-            else:
-                kwargs['drawstyle'] = 'steps-post'
+            kwargs.setdefault("drawstyle", "steps-post")
+
         ax = plot(xdata, data, ax, labels, yerr, **kwargs)
 
         if legend is None and labels:
@@ -1095,7 +1090,8 @@ class HexagonalDetector(Detector):
         'reaction', 'zmesh', 'ycoord', 'xcoord', 'tally', 'error')
 
     def __init__(self, name, bins=None, tallies=None, errors=None,
-                 indexes=None, z=None, centers=None, pitch=None, hexType=None, grids=None):
+                 indexes=None, z=None, centers=None, pitch=None, hexType=None,
+                 grids=None):
 
         super().__init__(name, bins, tallies, errors, indexes, grids)
 
@@ -1239,38 +1235,20 @@ class HexagonalDetector(Detector):
         AttributeError
             If :attr:`pitch` and :attr:`hexType` are not set.
         """
-        if self.pitch is None or self.hexType is None:
-            raise AttributeError(
-                "Need to set pitch and hexType before using hexPlot")
+        if self.centers is None or self.pitch is None or self.hexType is None:
+            raise AttributeError("centers, pitch, and hexType not set")
 
         if fixed and ('xcoord' in fixed or 'ycoord' in fixed):
             raise KeyError("Refusing to restrict along one of the hexagonal "
                            "dimensions {x/y}coord")
-        if not isinstance(borderpad, Real) or borderpad < 0:
-            raise ValueError("borderpad should be postive, not {}".format(borderpad))
 
-        # TODO remove?
-        for key in {'color', 'fc', 'facecolor', 'orientation'}:
-            checkClearKwargs(key, 'hexPlot', **kwargs)
-        # ^^^^^^^^^
-        ec = kwargs.get('ec', None) or kwargs.get('edgecolor', None)
-        if ec is None:
-            ec = 'k'
-        kwargs['ec'] = kwargs['edgecolor'] = ec
-        if 'figure' in kwargs and kwargs['figure'] is not None:
-            fig = kwargs['figure']
-            if not isinstance(fig, Figure):
-                raise TypeError(
-                    "Expected 'figure' to be of type Figure, is {}"
-                    .format(type(fig)))
-            if len(fig.axes) != 1 and not ax:
-                raise TypeError("Don't know where to place the figure since"
-                                "'figure' argument has multiple axes.")
-            if ax and fig.axes and ax not in fig.axes:
-                raise IndexError("Passed argument for 'figure' and 'ax', "
-                                 "but ax is not attached to figure.")
-            ax = ax or (fig.axes[0] if fig.axes else gca())
-        alpha = kwargs.get('alpha', None)
+        if not isinstance(borderpad, Real) or borderpad < 0:
+            raise ValueError(
+                "borderpad should be postive, not {}".format(borderpad))
+
+        kwargs.setdefault("ec", "k")
+        kwargs.setdefault("edgecolor", "k")
+        alpha = kwargs.get('alpha')
 
         ny = len(self.indexes['ycoord'])
         nx = len(self.indexes['xcoord'])
@@ -1280,6 +1258,7 @@ class HexagonalDetector(Detector):
                              "grid structure. Coordinate grid: {}. "
                              "Constrained shape: {}"
                              .format((ny, nx), data.shape))
+
         patches = empty(ny * nx, dtype=object)
         values = empty(ny * nx)
         coords = self.centers
@@ -1484,13 +1463,6 @@ def detectorFactory(name, bins, grids=None):
         # fall back to base detector
         detClass = Detector
     return detClass.fromTallyBins(name, bins, grids)
-
-
-def checkClearKwargs(key, fName, **kwargs):
-    """Log a warning and clear non-None values from kwargs"""
-    if key in kwargs and kwargs[key] is not None:
-        warning("{} will be set by {}. Worry not.".format(key, fName))
-        kwargs[key] = None
 
 
 def deconvert(detectorName, quantity):
