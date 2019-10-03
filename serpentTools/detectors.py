@@ -83,10 +83,9 @@ class Detector(NamedObject):
         to a unique bin, such as energy or spatial bin. Note:
         this is a relative error as it would appear in the
         output file
-    indexes : collections.OrderedDict, optional
-        Dictionary mapping the bin name to its corresponding
-        axis in :attr:`tallies` and :attr:`errors`, e.g.
-        ``{"energy": 0}``
+    indexes : iterable of string, optional
+        Iterable naming the bins that correspond to reshaped
+        :attr:`tally` and :attr:`errors`.
     grids : dict, optional
         Supplemental grids that may be supplied to this detector,
         including energy points or spatial coordinates.
@@ -106,10 +105,14 @@ class Detector(NamedObject):
         to a unique bin, such as energy or spatial bin. Note:
         this is a relative error as it would appear in the
         output file
-    indexes : collections.OrderedDict or None
-        Dictionary mapping the bin name to its corresponding
-        axis in :attr:`tallies` and :attr:`errors`, e.g.
-        ``{"energy": 0}``.
+    indexes : tuple or None
+        Iterable naming the bins that correspond to reshaped
+        :attr:`tally` and :attr:`errors`. The tuple
+        ``(energy, ymesh, xmesh)`` indicates that :attr:`tallies`
+        should have three dimensions corresponding to various
+        energy, y-position, and x-position bins. Must be set
+        after :attr:`tallies` or :attr:`errors` and agree with
+        the shape of each
     grids : dict
         Dictionary containing grid information for binned quantities like
         energy or time.
@@ -147,7 +150,9 @@ class Detector(NamedObject):
         self.bins = bins
         self.tallies = tallies
         self.errors = errors
-        self.indexes = indexes
+        self._indexes = None
+        if indexes is not None:
+            self.indexes = indexes
         self.grids = grids
 
     @property
@@ -269,6 +274,24 @@ class Detector(NamedObject):
                     "Grids must be Mapping type, not {}".format(type(grids)))
             self._grids = grids
 
+    @property
+    def indexes(self):
+        return self._indexes
+
+    @indexes.setter
+    def indexes(self, ix):
+        if self._tallies is None:
+            if self._errors is None:
+                raise AttributeError("Tally and error attributes not set")
+            nItems = len(self._errors.shape)
+        else:
+            nItems = len(self._tallies.shape)
+        if len(ix) != nItems:
+            raise ValueError(
+                "Expected {} items for indexes, got {}".format(
+                    nItems, len(ix)))
+        self._indexes = tuple(ix)
+
     @classmethod
     def fromTallyBins(cls, name, bins, grids=None):
         bins = asfortranarray(bins)
@@ -308,9 +331,9 @@ class Detector(NamedObject):
         errors : numpy.ndarray
             Potentially multi-dimensional array corresponding to
             tally relative error along each bin index
-        indexes : dict
-            Dictionary mapping named bin information, e.g. ``"xmesh"``,
-            ``"energy"``, to axis in ``tallies`` and ``errors``
+        indexes : list of str
+            Ordering of named bin information, e.g. ``"xmesh"``,
+            ``"energy"``, corresponding to axis in ``tallies`` and ``errors``
 
         Examples
         --------
@@ -333,7 +356,7 @@ class Detector(NamedObject):
         >>> errors
         array([0.1, 0.2])
         >>> indexes
-        {"reaction: array([0, 1])}
+        ["reaction", ]
 
         """
         assert self.bins is not None, "No bin data present on {}".format(self)
@@ -342,7 +365,7 @@ class Detector(NamedObject):
             return self.bins[0, -2], self.bins[0, -1], {}
 
         shape = []
-        indexes = {}
+        indexes = []
 
         # See if the time column has been inserted
         nameStart = 2 if self.bins.shape[1] == 12 else 1
@@ -350,7 +373,7 @@ class Detector(NamedObject):
                                           start=1):
             uniqueVals = unique(self.bins[:, colIx])
             if len(uniqueVals) > 1:
-                indexes[indexName] = uniqueVals.astype(int) - 1
+                indexes.append(indexName)
                 shape.append(len(uniqueVals))
 
         tallies = self.bins[:, -2].reshape(shape)
@@ -401,7 +424,6 @@ class Detector(NamedObject):
         fixed: dict or None
             Dictionary where keys are strings pointing to dimensions in
         """
-        fixed = fixed if fixed is not None else {}
         keys = set(fixed)
         slices = tuple()
         for key in self.indexes:
@@ -409,7 +431,7 @@ class Detector(NamedObject):
                 slices += fixed[key],
                 keys.remove(key)
             else:
-                slices += slice(0, self.indexes[key].size),
+                slices += slice(None),
         if any(keys):
             warning(
                 'Could not find arguments in index that match the following'
@@ -420,21 +442,18 @@ class Detector(NamedObject):
         grids = self.grids.get(qty[0].upper())
         if grids is not None:
             return hstack((grids[:, 0], grids[-1, 1]))
-        bins = self.indexes.get(qty)
-        if bins is None:
-            raise KeyError("No index {} found on detector. Bin indexes: {}"
-                           .format(qty, ', '.join(self.indexes.keys())))
-        return hstack((bins, len(bins)))
+        nItems = self.tallies.shape[self.indexes.index(qty)]
+        return arange(nItems + 1)
 
     def _getPlotXData(self, qty, ydata):
-        fallbackX = arange(len(ydata))
+        binIndex = arange(len(ydata))
         xlabel = DETECTOR_PLOT_LABELS.get(qty, 'Bin Index')
         if qty is None:
-            return fallbackX, xlabel
+            return binIndex, xlabel
         xdata = self.grids.get(qty[0].upper())
         if xdata is not None:
             return xdata[:, 0], xlabel
-        return self.indexes.get(qty, fallbackX), xlabel
+        return binIndex, xlabel
 
     def _compare(self, other, lower, upper, sigma):
         myShape = self.tallies.shape
@@ -548,9 +567,9 @@ class Detector(NamedObject):
 
         Parameters
         ----------
-        xdim: None or str
-            If not None, use the array under this key in ``indexes`` as
-            the x axis
+        xdim: str, optional
+            Plot the data corresponding to changing this bin,
+            e.g. ``"energy"``. Must exist in :attr:`indexes`
         what: {'tallies', 'errors'}
             Primary data to plot
         {sigma}
@@ -582,6 +601,8 @@ class Detector(NamedObject):
         ------
         :class:`~serpentTools.SerpentToolsException`
             If data contains more than 2 dimensions
+        AttributeError
+            If plot data or :attr:`indexes` set up.
 
         See Also
         --------
@@ -589,6 +610,10 @@ class Detector(NamedObject):
         * :meth:`spectrumPlot`
           better options for plotting energy spectra
         """
+
+        if xdim is not None and fixed and self.indexes is None:
+            raise AttributeError(
+                "indexes not setup. Unsure how to slice and plot")
 
         data = self.slice(fixed, what)
         if len(data.shape) > 2:

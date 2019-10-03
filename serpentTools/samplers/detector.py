@@ -109,8 +109,9 @@ class SampledDetector(Detector):
         Array of tally data for each individual detector
     allErrors : numpy.ndarray or iterable of arrays
         Array of absolute tally errors for individual detectors
-    indexes : collections.OrderedDict, optional
-        Dictionary indicating the ordering of underlying indices
+    indexes : iterable of string, optional
+        Iterable naming the bins that correspond to reshaped
+        :attr:`tally` and :attr:`errors`.
     grids : dict, optional
         Additional grid information, like spatial or energy-wise
         grid information.
@@ -134,8 +135,14 @@ class SampledDetector(Detector):
         to :attr:`allTallies`
     grids : dict or None
         Dictionary of additional grid information
-    indexes : collections.OrderedDict or None
-        Underlying indices used in constructing the tally data
+    indexes : tuple or None
+        Iterable naming the bins that correspond to reshaped
+        :attr:`tally` and :attr:`errors`. The tuple
+        ``(energy, ymesh, xmesh)`` indicates that :attr:`tallies`
+        should have three dimensions corresponding to various
+        energy, y-position, and x-position bins. Must be set
+        after :attr:`tallies` or :attr:`errors` and agree with
+        the shape of each
 
     See Also
     --------
@@ -312,12 +319,10 @@ class SampledDetector(Detector):
             if indexes is None and d.indexes is not None:
                 indexes = d.indexes
             else:
-                # Iterate over all indexes
-                for key, refIx in iteritems(indexes):
-                    thisIndex = d.indexes.get(key)
-                    if thisIndex is None:
-                        raise KeyError(
-                            "Detector {} is missing {} index".format(d, key))
+                if d.indexes != indexes:
+                    raise KeyError(
+                        "Detector indexes do not agree. Found {} and "
+                        "{}".format(d.indexes, indexes))
 
             # Inspect tally structure via grids
             if d.grids and not grids:

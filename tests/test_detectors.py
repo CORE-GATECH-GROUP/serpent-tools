@@ -31,6 +31,13 @@ def testDetectorProperties():
 
     assert (energyDet.energy == energies).all()
 
+    # Test setting indexes
+
+    detector.indexes = tuple(range(len(tallies.shape)))
+
+    with pytest.raises(ValueError, match="indexes"):
+        detector.indexes = detector.indexes[:1]
+
 @pytest.fixture(scope="module")
 def meshedBinData():
     bins = numpy.ones((25, 12), order="f")
@@ -105,6 +112,13 @@ def testCartesianDetector(meshedBinData, how):
         msg = ".*shape of {} grid".format(gridk)
         with pytest.raises(ValueError, match=msg):
             setattr(detector, gridk, [1, 2, 3])
+
+    # Test setting indexes
+
+    detector.indexes = tuple(range(len(tallies.shape)))
+
+    with pytest.raises(ValueError, match="indexes"):
+        detector.indexes = detector.indexes[:1]
 
 @pytest.mark.parametrize("how", ["grids", "bins", "bare", "init"])
 def testHexagonalDetector(meshedBinData, how):
