@@ -6,24 +6,32 @@ import numpy
 import pytest
 from serpentTools import detectors
 
+@pytest.fixture(scope="module")
+def meshedBinData():
+    bins = numpy.ones((25, 12), order="f")
+    bins[:, -1] = range(25)
+    bins[:, -2] = range(25)
+    bins[:, -3] = numpy.tile(range(1, 6), 5)
+    bins[:, -4] = numpy.repeat(range(1, 6), 5)
 
-def testDetectorProperties():
-    bins = numpy.ones((25, 12))
-    tallies = numpy.ones((5, 5))
-    errors = numpy.ones_like(tallies)
+    tallies = numpy.arange(25).reshape(5, 5)
+    errors = tallies.copy()
+
+    return bins, tallies, errors
+
+
+def testDetectorProperties(meshedBinData):
+    bins, tallies, errors = meshedBinData
+
     detector = detectors.Detector(
         "test", bins=bins, tallies=tallies, errors=errors)
 
     # Modify the tally data
-    detector.tallies *= 2
-    assert (detector.tallies == 2).all()
-    detector.tallies = detector.tallies / 2
-    assert (detector.tallies == 1).all()
+    detector.tallies = detector.tallies * 2
+    assert (detector.tallies == tallies * 2).all()
 
-    detector.errors *= 2
-    assert (detector.errors == 2).all()
-    detector.errors = detector.errors / 2
-    assert (detector.errors == 1).all()
+    detector.errors = detector.errors * 2
+    assert (detector.errors == errors * 2).all()
 
     energies = numpy.arange(bins.shape[0] * 3).reshape(bins.shape[0], 3)
     energyDet = detectors.Detector(
@@ -37,19 +45,6 @@ def testDetectorProperties():
 
     with pytest.raises(ValueError, match="indexes"):
         detector.indexes = detector.indexes[:1]
-
-@pytest.fixture(scope="module")
-def meshedBinData():
-    bins = numpy.ones((25, 12), order="f")
-    bins[:, -1] = range(25)
-    bins[:, -2] = range(25)
-    bins[:, -3] = numpy.tile(range(1, 6), 5)
-    bins[:, -4] = numpy.repeat(range(1, 6), 5)
-
-    tallies = numpy.arange(25).reshape(5, 5)
-    errors = tallies.copy()
-
-    return bins, tallies, errors
 
 @pytest.mark.parametrize("how", ["bins", "grids", "bare", "init"])
 def testCartesianDetector(meshedBinData, how):
