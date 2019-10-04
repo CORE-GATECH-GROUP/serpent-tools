@@ -10,7 +10,7 @@ from numpy.testing import assert_allclose
 from serpentTools.settings import rc
 from serpentTools.data import getFile
 from serpentTools.parsers import BranchingReader
-from serpentTools.objects.containers import BranchContainer
+from serpentTools.objects import BranchContainer, UnivTuple
 from serpentTools.messages import SerpentToolsException
 
 
@@ -23,7 +23,7 @@ class _BranchTesterHelper(unittest.TestCase):
         cls.expectedBranches = {('nom', 'nom', 'nom')}
         cls.expectedUniverses = {
             # universe id, burnup, step
-            ("0", 0, 0),
+            UnivTuple("0", 0, 0, None),
         }
         with rc:
             rc['serpentVersion'] = '2.1.29'
@@ -67,7 +67,7 @@ class BranchTester(_BranchTesterHelper):
         """Verify that the correct universes are present."""
         for branchID, branch in self.reader.iterBranches():
             self.assertSetEqual(
-                self.expectedUniverses, set(branch.universes),
+                self.expectedUniverses, set(branch),
                 'Branch {}'.format(branchID))
 
 
@@ -78,9 +78,9 @@ class BranchContainerTester(_BranchTesterHelper):
     def setUpClass(cls):
         _BranchTesterHelper.setUpClass()
         cls.refBranchID = ('nom', 'nom', 'nom')
-        cls.refUnivKey = ("0", 0, 0)
+        cls.refUnivKey = ("0", 0, 0, None)
         cls.refBranch = cls.reader.branches[cls.refBranchID]
-        cls.refUniv = cls.refBranch.universes[cls.refUnivKey]
+        cls.refUniv = cls.refBranch[cls.refUnivKey]
 
     def test_loadedUniv(self):
         """Verify the reference universe has the correct data loaded"""
@@ -110,19 +110,6 @@ class BranchContainerTester(_BranchTesterHelper):
         with self.assertRaises(SerpentToolsException):
             self.refBranch.getUniv(key[0])
 
-    def test_cannotAddBurnupDays(self):
-        """
-        Verify that a universe cannot be added with burnup of opposite units.
-        """
-        containerWithBU = BranchContainer(None, None, None, None)
-        containerWithBU.addUniverse(101, 10, 1)
-        containerWithDays = BranchContainer(None, None, None, None)
-        containerWithDays.addUniverse(101, -10, 1)
-        with self.assertRaises(SerpentToolsException):
-            containerWithBU.addUniverse(101, -10, 1)
-        with self.assertRaises(SerpentToolsException):
-            containerWithDays.addUniverse(101, 10, 1)
-
 
 class BranchWithUncsTester(unittest.TestCase):
     """Tester that just tests a small file with uncertainties"""
@@ -149,7 +136,7 @@ class BranchWithUncsTester(unittest.TestCase):
             ],
         },
     }
-    BRANCH_UNIVKEY = ("0", 0, 0)
+    BRANCH_UNIVKEY = ("0", 0, 0, None)
 
     def setUp(self):
         fp = getFile('demo_uncs.coe')
@@ -162,9 +149,9 @@ class BranchWithUncsTester(unittest.TestCase):
         for expKey, expSubData in iteritems(self.BRANCH_DATA):
             self.assertTrue(expKey in self.reader.branches, msg=expKey)
             actBranch = self.reader.branches[expKey]
-            self.assertTrue(self.BRANCH_UNIVKEY in actBranch.universes,
+            self.assertTrue(self.BRANCH_UNIVKEY in actBranch,
                             msg=self.BRANCH_UNIVKEY)
-            univ = actBranch.universes[self.BRANCH_UNIVKEY]
+            univ = actBranch[self.BRANCH_UNIVKEY]
             for gcKey, gcVals in iteritems(expSubData):
                 actData = univ.get(gcKey, True)
                 for act, exp, what in zip(actData, gcVals, ['val', 'unc']):

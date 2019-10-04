@@ -4,7 +4,7 @@ from six import iteritems
 from numpy import array
 
 from serpentTools.utils import splitValsUncs
-from serpentTools.objects.containers import BranchContainer
+from serpentTools.objects import BranchContainer, UnivTuple, HomogUniv
 from serpentTools.parsers.base import XSReader
 from serpentTools.messages import debug, error
 
@@ -22,8 +22,7 @@ class BranchingReader(XSReader):
     ----------
     branches: dict
         Dictionary of branch names and their corresponding
-        :py:class:`~serpentTools.objects.containers.BranchContainer`
-        objects
+        :class:`~serpentTools.objects.BranchContainer` objects
     """
 
     def __init__(self, filePath):
@@ -112,15 +111,18 @@ class BranchingReader(XSReader):
         """Add universe data to this branch at this burnup."""
         unvID, numVariables = self._advance()
         numVariables = int(numVariables)
-        univ = branch.addUniverse(unvID, burnup, burnupIndex - 1)
+        if burnup < 0:
+            key = UnivTuple(unvID, None, burnupIndex - 1, -burnup)
+        else:
+            key = UnivTuple(unvID, burnup, burnupIndex - 1, None)
+        univ = HomogUniv(*key)
+        branch[key] = univ
         for step in range(numVariables):
             splitList = self._advance(
                 possibleEndOfFile=(step == numVariables - 1))
             varName = splitList[0]
             varValues = [float(xx) for xx in splitList[2:]]
             if not varValues:
-                debug("No data present for variable {}. Skipping"
-                      .format(varName))
                 continue
             if self._checkAddVariable(varName):
                 if self._hasUncs:

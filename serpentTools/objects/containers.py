@@ -3,19 +3,20 @@ Custom-built containers for storing data from serpent outputs
 
 Contents
 --------
-* :py:class:`~serpentTools.objects.containers.HomogUniv`
-* :py:class:`~serpentTools.objects.containers.BranchContainer`
+* :class:`~serpentTools.objects.containers.HomogUniv`
+* :class:`~serpentTools.objects.containers.BranchContainer`
 
 """
 from itertools import product
 from collections import namedtuple
 
+from six import iteritems
 from matplotlib import pyplot
 from numpy import arange, hstack, ndarray, zeros_like
 from six import iteritems
 
 from serpentTools.settings import rc
-from serpentTools.objects.base import NamedObject, BaseObject
+from serpentTools.objects.base import NamedObject
 from serpentTools.utils import (
     convertVariableName,
     getKeyMatchingShapes,
@@ -33,7 +34,6 @@ from serpentTools.objects.base import (DEF_COMP_LOWER,
 from serpentTools.messages import (
     warning,
     SerpentToolsException,
-    debug,
     info,
     critical,
     error,
@@ -68,11 +68,11 @@ Attributes
 ----------
 universe : str
     Universe from Serpent input
-burnup : float
+burnup : float or None
     Burnup for this universe [MWd/kgU]
 step : int
     Burnup step
-days : float
+days : float or None
     Burnup day
 
 Example
@@ -401,7 +401,7 @@ class HomogUniv(NamedObject):
 
         See Also
         --------
-        * :py:meth:`serpentTools.objects.containers.HomogUniv.get`
+        * :meth:`serpentTools.objects.containers.HomogUniv.get`
 
         """
         qtys = [qtys, ] if isinstance(qtys, str) else qtys
@@ -638,14 +638,22 @@ class HomogUniv(NamedObject):
     compareGCData.__doc__ = __docCompare.format(qty='gc')
 
 
-class BranchContainer(BaseObject):
+class BranchContainer(dict):
     """
     Class that stores data for a single branch.
 
-    The :py:class:`~serpentTools.parsers.branching.BranchingReader` stores
+    This container acts like a dictionary, mapping
+    :class:`~serpentTools.objects.UnivTuple` to
+    :class:`~serpentTools.objects.HomogUniv` corresponding
+    to a specific branch state. As such, there is no
+    need for the :attr:`universes` dictionary that previously
+    served this purpose. However, it is provided for compatibility
+    but will be removed after 0.9.0
+
+    The :class:`~serpentTools.BranchingReader` stores
     branch variables and branched group constant data inside these
     container objects. These are used in turn to create
-    :py:class:`~serpentTools.objects.containers.HomogUniv` objects for storing
+    :class:`~serpentTools.objects.HomogUniv` objects for storing
     group constant data.
 
     Parameters
@@ -665,112 +673,73 @@ class BranchContainer(BaseObject):
         Name: value pairs for the variables defined on each
         branch card
     universes: dict
-        Dictionary storing the homogenized universe objects.
-        Keys are tuples of
-        ``(universeID, burnup, burnIndex)``
+
+        .. deprecated:: 0.8.0
+           Treat this object as the universes dictionary instead
     """
-    __mismatchedBurnup = ("Was not expecting a {} value of burnup. "
-                          "Expect burnup in units of {}")
 
     def __init__(self, filePath, branchID, branchNames, stateData):
+        dict.__init__(self)
         self.filePath = filePath
         self.branchID = branchID
         self.stateData = stateData
-        self.universes = {}
         self.branchNames = branchNames
-        self.__orderedUniverses = None
-        self.__keys = set()
-        self.__hasDays = None
+        self._orderedUniverses = None
+
+    @property
+    def universes(self):
+        # For compatibility, remove after 0.9.0
+        return self
 
     def __str__(self):
         return '<BranchContainer for {} from {}>'.format(
             ', '.join(self.branchNames), self.filePath)
 
-    def __contains__(self, item):
-        return item in self.__keys or item in self.stateData
-
     @property
     def orderedUniv(self):
         """Universe keys sorted by ID and by burnup"""
-        if not any(self.universes):
+        if not any(self):
             raise SerpentToolsException(
                 'No universes stored on branch {}'.format(str(self))
             )
-        if self.__orderedUniverses is None:
-            self.__orderedUniverses = tuple(sorted(
-                self.__keys, key=lambda tpl: (tpl[0], tpl[2])
+        if self._orderedUniverses is None:
+            self._orderedUniverses = tuple(sorted(
+                self, key=lambda tpl: (tpl.universe, tpl.step)
             ))
-        return self.__orderedUniverses
+        return self._orderedUniverses
 
-    def addUniverse(self, univID, burnup=0, burnIndex=0, burnDays=0):
-        """
-        Add a universe to this branch.
+    def __setitem__(self, key, value):
+        if not isinstance(value, HomogUniv):
+            raise TypeError("{} {}".format(key, type(value)))
+        if not isinstance(key, UnivTuple):
+            key = UnivTuple(*key)
+        dict.__setitem__(self, key, value)
 
-        Data for the universes are produced at specific points in time.
-        The additional arguments help track of when the data for this
-        universe were created.
-        A negative value of ``burnup`` indicates the units on burnup are
-        really ``days``. Therefore, the value of ``burnDays`` and ``burnup``
-        will be swapped.
+    def update(self, other):
+        """Update with contents of another BranchContainer"""
+        # Check before making any changes
+        temp = {}
+        for key, univ in iteritems(dict(other)):
+            if not isinstance(univ, HomogUniv):
+                raise TypeError("{} {}".format(key, type(univ)))
+            temp[UnivTuple(*key)] = univ
 
-        .. warning::
+        dict.update(self, temp)
 
-            This method will overwrite data for universes that already exist
-
-        Parameters
-        ----------
-        univID: int or str
-            Identifier for this universe
-        burnup: float or int
-
-        Raises
-        ------
-        :class:`serpentTools.SerpentToolsException`
-            If passed a value of ``burnDays`` and set up to work with burnup,
-            or vice versa
-        """
-        if self.__hasDays is None and burnup:
-            self.__hasDays = burnup < 0
-        if burnup < 0:
-            if not self.__hasDays:
-                raise SerpentToolsException(self.__mismatchedBurnup.format(
-                    'negative', 'MWd/kgU'))
-            burnup, burnDays = None if burnup else 0, - burnup
-        else:
-            if self.__hasDays and not burnDays:
-                raise SerpentToolsException(self.__mismatchedBurnup.format(
-                    'positive', 'days'))
-            burnDays = None if burnup else 0
-        newUniv = HomogUniv(univID, burnup, burnIndex, burnDays)
-        key = (univID, burnup or burnDays, burnIndex)
-        if key in self.__keys:
-            warning('Overwriting existing universe {} in {}'
-                    .format(key, str(self)))
-        else:
-            self.__keys.add(key)
-        self.universes[key] = newUniv
-        return newUniv
-
-    def getUniv(self, univID, burnup=None, index=None):
+    def getUniv(self, univID, burnup=None, index=None, days=None):
         """
         Return a specific universe given the ID and time of interest
-
-        If burnup and index are given, burnup is used to search
-
-        ..warning::
-
-            Future versions will store read and store universes from
-            coefficient files as generic strings, without integer
-            conversion
 
         Parameters
         ----------
         univID: str
             Unique ID for the desired universe
-        burnup: float or int
+        burnup: float, optional
             Burnup [MWd/kgU] of the desired universe
-        index: int
+        index: int, optional
             Point of interest in the burnup index
+        days : float, optional
+            Point in time [d] for the desired universe
 
         Returns
         -------
@@ -786,22 +755,16 @@ class BranchContainer(BaseObject):
         """
         if burnup is None and index is None:
             raise SerpentToolsException('Burnup or index are required inputs')
-        searchIndex = 2 if index is not None else 1
-        searchValue = index if index is not None else burnup
-        for key in self.__keys:
-            if key[0] == univID and key[searchIndex] == searchValue:
-                debug('Found universe that matches with keys {}'
-                      .format(key))
-                return self.universes[key]
-        searchName = 'burnup' + ('' if index is None else ' index')
-        raise KeyError(
-            'Could not find a universe that matched requested universe {} and '
-            '{} {}'.format(univID, searchName, searchValue))
 
-    @property
-    def hasDays(self):
-        """Returns True if the burnups in the file are in units of days"""
-        if self.__hasDays is None:
-            raise AttributeError("Need to load at least one universe with "
-                                 "non-zero burnup first.""")
-        return self.__hasDays
+        searchKey = UnivTuple(univID, burnup, index, days)
+
+        for key, universe in iteritems(self):
+            for uItem, sItem in zip(key, searchKey):
+                if sItem is None:
+                    continue
+                if uItem != sItem:
+                    break
+            else:
+                return universe
+        raise KeyError(
+            "Could not find a universe matching {}".format(searchKey))
