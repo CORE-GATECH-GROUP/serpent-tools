@@ -3,13 +3,14 @@ Tests for testing the MATLAB conversion functions
 """
 
 from six import BytesIO, iteritems
-from numpy import arange
+from numpy import arange, ones
 from numpy.testing import assert_array_equal
-from serpentTools.objects import Detector
+from serpentTools import Detector
 from serpentTools.data import getFile, readDataFile
 from serpentTools.parsers import DepmtxReader
 
 from tests import MatlabTesterHelper
+
 
 class Det2MatlabHelper(MatlabTesterHelper):
     """Helper class for testing detector to matlab conversion"""
@@ -17,7 +18,7 @@ class Det2MatlabHelper(MatlabTesterHelper):
     NBINS = 10
     NCOLS = 12
     # approximate some detector data
-    BINS = arange(
+    BINS = ones(
         NCOLS * NBINS, dtype=float).reshape(NBINS, NCOLS)
     # emulate energy grid
     GRID = arange(3 * NBINS).reshape(NBINS, 3)
@@ -32,7 +33,7 @@ class Det2MatlabHelper(MatlabTesterHelper):
     def setUp(self):
         MatlabTesterHelper.setUp(self)
 
-        from serpentTools.objects.detectors import deconvert, prepToMatlab
+        from serpentTools.detectors import deconvert, prepToMatlab
         # instance methods and/or rename them
         # potential issues sending putting many such functions in this
         # test suite

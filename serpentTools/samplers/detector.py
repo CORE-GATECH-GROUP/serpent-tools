@@ -1,24 +1,22 @@
 """
 Class to read and process a batch of similar detector files
 """
-from six import iteritems
-from six.moves import range
+from collections import defaultdict
+import warnings
 
-from numpy import empty, empty_like, square, sqrt, sum, where
+from six import iteritems
+from numpy import empty, square, sqrt, allclose, asarray
 from matplotlib import pyplot
 
-from serpentTools.messages import (MismatchedContainersError, warning,
-                                   SamplerError, SerpentToolsException)
-from serpentTools.utils import magicPlotDocDecorator
+from serpentTools.messages import SerpentToolsException
+from serpentTools.utils import magicPlotDocDecorator, formatPlot
 from serpentTools.parsers.detector import DetectorReader
-from serpentTools.objects.base import DetectorBase
-from serpentTools.samplers.base import (Sampler, SampledContainer,
-                                        SPREAD_PLOT_KWARGS)
+from serpentTools.detectors import Detector
+from serpentTools.samplers.base import Sampler, SPREAD_PLOT_KWARGS
 
 
 class DetectorSampler(Sampler):
-    __doc__ = """
-    Class responsible for reading multiple detector files
+    """Class responsible for reading multiple detector files
 
     The following checks are performed to ensure that all detectors are
     of similar structure and content
@@ -26,19 +24,32 @@ class DetectorSampler(Sampler):
         1. Each parser must have the same detectors
         2. The reshaped tally data must be of the same size for all detectors
 
-    {skip:s}
+    These tests can be skipped by settings ``<sampler.skipPrecheck>`` to be
+    ``False``.
 
     Parameters
     ----------
-    {files:s}
+    files: str or iterable
+        Single file or iterable (list) of files from which to read.
+        Supports file globs, ``*det0.m`` expands to all files that
+        end with ``det0.m``
 
     Attributes
     ----------
-    {detAttrs:s}
-    {samplerAttrs:s}
+    detectors : dict
+        Dictionary of key, values pairs for detector names and corresponding
+        :class:`~serpentTools.samplers.SampledDetector` instances
+    files: set
+        Unordered set containing full paths of unique files read
+    settings: dict
+        Dictionary of sampler-wide settings
+    parsers: set
+        Unordered set of all parsers that were successful
+    map: dict
+        Dictionary where key, value pairs are files and their corresponding
+        parsers
 
-    """.format(detAttrs=DetectorReader.docAttrs, samplerAttrs=Sampler.docAttrs,
-               files=Sampler.docFiles, skip=Sampler.docSkipChecks)
+    """
 
     def __init__(self, files):
         self.detectors = {}
@@ -69,18 +80,16 @@ class DetectorSampler(Sampler):
                 self._raiseErrorMsgFromDict(misMatches, 'shape', 'detector')
 
     def _process(self):
-        numParsers = len(self.parsers)
+        individualDetectors = defaultdict(list)
         for parser in self:
             for detName, detector in parser.iterDets():
-                if detName not in self.detectors:
-                    self.detectors[detName] = SampledDetector(detName,
-                                                              numParsers)
-                self.detectors[detName].loadFromContainer(detector)
-        for _detName, sampledDet in self.iterDets():
-            sampledDet.finalize()
+                individualDetectors[detName].append(detector)
+        for name, detList in iteritems(individualDetectors):
+            self.detectors[name] = SampledDetector.fromDetectors(
+                name, detList)
 
     def _free(self):
-        for _detName, sampledDet in self.iterDets():
+        for sampledDet in self.detectors.values():
             sampledDet.free()
 
     def iterDets(self):
@@ -88,122 +97,124 @@ class DetectorSampler(Sampler):
             yield name, detector
 
 
-class SampledDetector(SampledContainer, DetectorBase):
-    __doc__ = """
+class SampledDetector(Detector):
+    """
     Class to store aggregated detector data
-
-    .. note ::
-
-        :py:func:`~serpentTools.samplers.detector.SampledDetector.free`
-        sets ``allTallies``, ``allErrors``, and ``allScores`` to
-        ``None``. {free:s}
 
     Parameters
     ----------
-    {detParams:s}
-    numFiles: int
-        Number of files that have been/will be read
+    name : str
+        Name of the detector to be sampled
+    allTallies : numpy.ndarray or iterable of arrays
+        Array of tally data for each individual detector
+    allErrors : numpy.ndarray or iterable of arrays
+        Array of absolute tally errors for individual detectors
+    indexes : iterable of string, optional
+        Iterable naming the bins that correspond to reshaped
+        :attr:`tally` and :attr:`errors`.
+    grids : dict, optional
+        Additional grid information, like spatial or energy-wise
+        grid information.
 
     Attributes
     ----------
-    {detAttrs:s}
+    name : str
+        Name of this detector
+    tallies : numpy.ndarray
+        Average of tallies from all detectors
+    errors : numpy.ndarray
+        Uncertainty on :attr:`tallies` after propagating uncertainty from all
+        individual detectors
+    deviation : numpy.ndarray
+        Deviation across all tallies
+    allTallies : numpy.ndarray
+        Array of tally data from sampled detectors. First dimension is the
+        file index ``i``, followed by the tally array for detector ``i``.
+    allErrors : numpy.ndarray
+        Array of uncertainties for sampled detectors. Structure is identical
+        to :attr:`allTallies`
+    grids : dict or None
+        Dictionary of additional grid information
+    indexes : tuple or None
+        Iterable naming the bins that correspond to reshaped
+        :attr:`tally` and :attr:`errors`. The tuple
+        ``(energy, ymesh, xmesh)`` indicates that :attr:`tallies`
+        should have three dimensions corresponding to various
+        energy, y-position, and x-position bins. Must be set
+        after :attr:`tallies` or :attr:`errors` and agree with
+        the shape of each
 
+    See Also
+    --------
+    :meth:`fromDetectors`
 
-    """.format(detAttrs=DetectorBase.baseAttrs, free=SampledContainer.docFree,
-               detParams=DetectorBase.baseParams)
+    """
 
-    def __init__(self, name, numFiles):
-        SampledContainer.__init__(self, numFiles, DetectorBase)
-        DetectorBase.__init__(self, name)
-        self.allTallies = None
-        self.allErrors = None
-        self.allScores = None
+    def __init__(self, name, allTallies, allErrors, indexes=None, grids=None):
+        # average tally data, propagate uncertainty
+        self._allTallies = allTallies
+        self._allErrors = allErrors
+        tallies = self.allTallies.mean(axis=0)
 
-    def _isReshaped(self):
-        return True
+        # propagate absolute uncertainty
+        # assume no covariance
+        inner = square(allErrors).sum(axis=0)
+        errors = sqrt(inner) / allTallies.shape[0]
+        nz = tallies.nonzero()
+        errors[nz] /= tallies[nz]
 
-    def _loadFromContainer(self, detector):
-        """
-        Load data from a detector
+        Detector.__init__(self, name, tallies=tallies, errors=errors,
+                          grids=grids, indexes=indexes)
+        self.deviation = self.allTallies.std(axis=0)
 
-        Parameters
-        ----------
-        detector
+    @property
+    def allTallies(self):
+        return self._allTallies
 
-        Returns
-        -------
+    @allTallies.setter
+    def allTallies(self, tallies):
+        if tallies is None:
+            self._allTallies = None
+            return
 
-        """
-        if detector.name != self.name:
-            warning("Attempting to read from detector with dissimilar names: "
-                    "Base: {}, incoming: {}".format(self.name, detector.name))
-        if not self._index:
-            self.__shape = tuple([self.N] + list(detector.tallies.shape))
-            self.__allocate(detector.scores is not None)
-        if self.__shape[1:] != detector.tallies.shape:
-            raise MismatchedContainersError(
-                "Incoming detector {} tally data shape does not match "
-                "sampled shape. Base: {}, incoming: {}".format(
-                    detector.name, self.__shape[1:], detector.tallies.shape))
-        self.__load(detector.tallies, detector.errors, detector.scores,
-                    detector.name)
-        if self.indexes is None:
-            self.indexes = detector.indexes
-        if not self.grids:
-            self.grids = detector.grids
+        tallies = asarray(tallies)
 
-    def __allocate(self, scoreFlag):
-        self.allTallies = empty(self.__shape)
-        self.allErrors = empty_like(self.allTallies)
-        if scoreFlag:
-            self.allScores = empty_like(self.allTallies)
+        if self._allTallies is None:
+            self._allTallies = tallies
+            return
 
-    def free(self):
-        self.allTallies = None
-        self.allScores = None
-        self.allErrors = None
+        if tallies.shape != self._tallies.shape:
+            raise ValueError("Expected shape to be {}, is {}".format(
+                self._allTallies.shape, tallies.shape))
 
-    def __load(self, tallies, errors, scores, oName):
-        index = self._index
-        otherHasScores = scores is not None
-        selfHasScores = self.allScores is not None
-        if otherHasScores and selfHasScores:
-            self.allScores[index, ...] = scores
-        elif otherHasScores and not selfHasScores:
-            warning("Incoming detector {} has score data, while base does "
-                    "not. Skipping score data".format(oName))
-        elif not otherHasScores and selfHasScores:
-            raise MismatchedContainersError(
-                "Incoming detector {} does not have score data, while base "
-                "does.".format(oName)
-            )
-        self.allTallies[index] = tallies
-        self.allErrors[index] = tallies * errors
+        self._allTallies = tallies
 
-    def _finalize(self):
-        if self.allTallies is None:
-            raise SamplerError(
-                "Detector data has not been loaded and cannot be processed")
-        N = self._index
-        self.tallies = self.allTallies[:N].mean(axis=0)
-        self.__computeErrors(N)
+    @property
+    def allErrors(self):
+        return self._allErrors
 
-        self.scores = (self.allScores[:N].mean(
-            axis=0) if self.allScores is not None else None)
-        self._map = {'tallies': self.tallies, 'errors': self.errors,
-                     'scores': self.scores}
+    @allErrors.setter
+    def allErrors(self, errors):
+        if errors is None:
+            self._allErrors = None
+            return
 
-    def __computeErrors(self, N):
-        nonZeroT = where(self.tallies > 0)
-        zeroIndx = where(self.tallies == 0)
-        self.errors = sqrt(sum(square(self.allErrors), axis=0)) / N
-        self.errors[nonZeroT] /= self.tallies[nonZeroT]
-        self.errors[zeroIndx] = 0
+        errors = asarray(errors)
+
+        if self._allErrors is None:
+            self._allErrors = errors
+            return
+
+        if errors.shape != self._errors.shape:
+            raise ValueError("Expected shape to be {}, is {}".format(
+                self._allErrors.shape, errors.shape))
+
+        self._allErrors = errors
 
     @magicPlotDocDecorator
     def spreadPlot(self, xdim=None, fixed=None, ax=None, xlabel=None,
                    ylabel=None, logx=False, logy=False, loglog=False,
-                   autolegend=True):
+                   legend=True):
         """
         Plot the mean tally value against all sampled detector data.
 
@@ -219,8 +230,7 @@ class SampledDetector(SampledContainer, DetectorBase):
         {logx}
         {logy}
         {loglog}
-        autolegend: bool
-            If true, apply a label to this plot.
+        {legend}
 
         Returns
         -------
@@ -228,7 +238,7 @@ class SampledDetector(SampledContainer, DetectorBase):
 
         Raises
         ------
-        :class:`~serpentTools.SamplerError`
+        AttributeError
             If ``allTallies`` is None, indicating this object has been
             instructed to free up data from all sampled files
         :class:`~serpentTools.SerpentToolsException`
@@ -237,8 +247,9 @@ class SampledDetector(SampledContainer, DetectorBase):
 
         """
         if self.allTallies is None:
-            raise SamplerError("Data from all sampled files has been freed "
-                               "and cannot be used in this plot method")
+            raise AttributeError(
+                "allTallies is None, cannot plot all tally data")
+
         samplerData = self.slice(fixed, 'tallies')
         slices = self._getSlices(fixed)
         if len(samplerData.shape) != 1:
@@ -248,19 +259,98 @@ class SampledDetector(SampledContainer, DetectorBase):
         xdata, autoX = self._getPlotXData(xdim, samplerData)
         xlabel = xlabel or autoX
         ax = ax or pyplot.gca()
-        N = self._index
-        allTallies = self.allTallies.copy(order='F')
-        for n in range(N):
-            plotData = allTallies[n][slices]
-            ax.plot(xdata, plotData, **SPREAD_PLOT_KWARGS)
+        for data in self.allTallies:
+            ax.plot(xdata, data[slices], **SPREAD_PLOT_KWARGS)
 
-        ax.plot(xdata, samplerData, label='Mean value - N={}'.format(N))
-        if autolegend:
-            ax.legend()
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel or "Tally Data")
-        if loglog or logx:
-            ax.set_xscale('log')
-        if loglog or logy:
-            ax.set_yscale('log')
+        ax.plot(xdata, samplerData, label='Mean value - N={}'.format(
+            self.allTallies.shape[0]))
+        formatPlot(ax, logx=logx, logy=logy, loglog=loglog, xlabel=xlabel,
+                   ylabel=ylabel, legend=legend)
         return ax
+
+    @classmethod
+    def fromDetectors(cls, name, detectors):
+        """
+        Create a :class:`SampledDetector` from similar detectors
+
+        Parameters
+        ----------
+        name : str
+            Name of this detector
+        detectors : iterable of :class:`serpentTools.Detector`
+            Iterable that contains detectors to be averaged. These
+            should be structured identically, in shape of the tally
+            data and the underlying grids and indexes.
+
+        Returns
+        -------
+        SampledDetector
+
+        Raises
+        ------
+        TypeError
+            If something other than a :class:`serpentTools.Detector` is found
+        ValueError
+            If tally data are not shaped consistently
+        KeyError
+            If some grid or index information is missing
+        AttributeError
+            If one detector is missing grids entirely but grids are
+            present on other grids
+        """
+        shape = None
+        indexes = None
+        grids = {}
+        differentGrids = set()
+
+        for d in detectors:
+            if not isinstance(d, Detector):
+                raise TypeError(
+                    "All items should be Detector. Found {}".format(type(d)))
+
+            if shape is None:
+                shape = d.tallies.shape
+            elif shape != d.tallies.shape:
+                raise ValueError(
+                    "Shapes do not agree. Found {} and {}".format(
+                        shape, d.tallies.shape))
+
+            # Inspect tally structure via indexes
+            if indexes is None and d.indexes is not None:
+                indexes = d.indexes
+            else:
+                if d.indexes != indexes:
+                    raise KeyError(
+                        "Detector indexes do not agree. Found {} and "
+                        "{}".format(d.indexes, indexes))
+
+            # Inspect tally structure via grids
+            if d.grids and not grids:
+                grids = d.grids
+            elif not d.grids and grids:
+                raise AttributeError(
+                    "Detector {} is missing grid structure".format(d))
+            elif d.grids and grids:
+                for key, refGrid in iteritems(grids):
+                    thisGrid = d.grids.get(key)
+                    if thisGrid is None:
+                        raise KeyError(
+                            "Detector {} is missing {} grid".format(d, key))
+                    if not allclose(refGrid, thisGrid):
+                        differentGrids.add(key)
+
+        if differentGrids:
+            warnings.warn(
+                "Found some potentially different grids {}".format(
+                    ", ".join(differentGrids)), RuntimeWarning)
+
+        shape = (len(detectors), ) + shape
+
+        allTallies = empty(shape)
+        allErrors = empty(shape)
+
+        for ix, d in enumerate(detectors):
+            allTallies[ix] = d.tallies
+            allErrors[ix] = d.tallies * d.errors
+
+        return cls(name, allTallies, allErrors, indexes=indexes, grids=grids)

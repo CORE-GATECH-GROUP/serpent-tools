@@ -1,17 +1,19 @@
 """Parser responsible for reading the ``*det<n>.m`` files"""
 
+from warnings import warn
 from six import iteritems
 from numpy import empty
 
 from serpentTools.utils import str2vec
 from serpentTools.utils.compare import getKeyMatchingShapes
 from serpentTools.engines import KeywordParser
-from serpentTools.objects.detectors import detectorFactory
+from serpentTools.detectors import detectorFactory
 from serpentTools.parsers.base import BaseReader
-from serpentTools.messages import error, debug, warning, SerpentToolsException
-from serpentTools.settings import rc
+from serpentTools.messages import SerpentToolsException
 
 
+# After py2 removal, subclass this from collections.abc.Mapping
+# Gain full dictionary-like behavior by defining a few methods
 class DetectorReader(BaseReader):
     """
     Parser responsible for reading and working with detector files.
@@ -23,63 +25,63 @@ class DetectorReader(BaseReader):
 
     Attributes
     ----------
-    {attrs:s}
-    """
-    docAttrs = """detectors: dict
+    detectors : dict
         Dictionary where key, value pairs correspond to detector names
         and their respective :class:`~serpentTools.objects.detector.Detector`
-        representations."""
-    __doc__ = __doc__.format(attrs=docAttrs)
+        instances
+    """
 
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'detector')
         self.detectors = {}
-        if not self.settings['names']:
-            self._loadAll = True
-        else:
-            self._loadAll = False
-        self.__numCols = 13 if rc['serpentVersion'][0] == '1' else 12
 
     def __getitem__(self, name):
         """Retrieve a detector from :attr:`detectors`"""
         return self.detectors[name]
 
+    def __len__(self):
+        return len(self.detectors)
+
+    def __contains__(self, key):
+        return key in self.detectors
+
+    def __iter__(self):
+        return iter(self.detectors)
+
     def iterDets(self):
         """Yield name, detector pairs by iterating over :attr:`detectors`."""
-        for name, detector in iteritems(self.detectors):
-            yield name, detector
+        for key, det in iteritems(self.detectors):
+            yield key, det
 
     def _read(self):
         """Read the file and store the detectors."""
-        recentName = None
-        lenRecent = 0
-        recentGrids = {}
-        keys = ['DET']
-        separators = ['\n', '];']
-        with KeywordParser(self.filePath, keys, separators) as parser:
+        currentName = ""
+        grids = {}
+        bins = None
+        with KeywordParser(self.filePath, ["DET"], ["\n", "];"]) as parser:
             for chunk in parser.yieldChunks():
                 name, data = cleanDetChunk(chunk)
-                if recentName is None or name[:lenRecent] != recentName:
-                    if recentName is not None:
-                        self.__processDet(recentName, recentGrids)
-                    recentName = name
-                    lenRecent = len(name)
-                    recentGrids = {'tally': data}
-                    continue
-                gridName = name[lenRecent:]
-                recentGrids[gridName] = data
-            self.__processDet(recentName, recentGrids)
+                if currentName and name[:len(currentName)] != currentName:
+                    self._processDet(currentName, bins, grids)
+                    bins = data
+                    grids = {}
+                    currentName = name
+                elif bins is None:
+                    currentName = name
+                    bins = data
+                else:
+                    gridName = name[len(currentName):]
+                    grids[gridName] = data
+            self._processDet(currentName, bins, grids)
 
-    def __processDet(self, name, grids):
+    def _processDet(self, name, bins, grids):
         """Add this detector with it's grid data to the reader."""
-        if not self._loadAll and name in self.settings['names']:
-            debug("Skipping detector {} due to setting <detector.names>"
-                  .format(name))
+        if self.settings['names'] and name in self.settings['names']:
             return
         if name in self.detectors:
             raise KeyError("Detector {} already stored on reader"
                            .format(name))
-        self.detectors[name] = detectorFactory(name, grids)
+        self.detectors[name] = detectorFactory(name, bins, grids)
 
     def _precheck(self):
         """ Count how many detectors are in the file."""
@@ -90,11 +92,11 @@ class DetectorReader(BaseReader):
                     continue
                 if 'DET' in sline[0]:
                     return
-        error("No detectors found in {}".format(self.filePath))
+        warn("No detectors in pre-checking {}".format(self.filePath))
 
     def _postcheck(self):
         if not self.detectors:
-            warning("No detectors stored from file {}".format(self.filePath))
+            warn("No detectors stored from file {}".format(self.filePath))
 
     def _compare(self, other, lower, upper, sigma):
         """Compare two detector readers."""
@@ -114,8 +116,8 @@ class DetectorReader(BaseReader):
         """Collect data from all detectors for exporting to matlab"""
         data = {}
 
-        for detector in self.detectors.values():
-            data.update(detector._gather_matlab(reconvert))
+        for det in self.detectors.values():
+            data.update(det._gather_matlab(reconvert))
 
         return data
 

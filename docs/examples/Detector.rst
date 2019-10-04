@@ -1,13 +1,13 @@
-.. |DetBins| replace:: :attr:`~serpentTools.objects.Detector.bins`
-.. |DetIndx| replace:: :attr:`~serpentTools.objects.Detector.indexes`
-.. |DetTallies| replace:: :attr:`~serpentTools.objects.Detector.tallies`
-.. |DetErrors| replace:: :attr:`~serpentTools.objects.Detector.errors`
-.. |DetGrids| replace:: :attr:`~serpentTools.objects.Detector.grids`
-.. |DetSlice| replace:: :meth:`~serpentTools.objects.Detector.slice`
-.. |plot| replace:: :meth:`~serpentTools.objects.Detector.plot`
-.. |mesh| replace:: :meth:`~serpentTools.objects.Detector.meshPlot`
-.. |spectrum| replace:: :meth:`~serpentTools.objects.Detector.spectrumPlot`
-.. |hexDet| replace:: :class:`~serpentTools.objects.HexagonalDetector` 
+.. |DetBins| replace:: :attr:`~serpentTools.Detector.bins`
+.. |DetIndx| replace:: :attr:`~serpentTools.Detector.indexes`
+.. |DetTallies| replace:: :attr:`~serpentTools.Detector.tallies`
+.. |DetErrors| replace:: :attr:`~serpentTools.Detector.errors`
+.. |DetGrids| replace:: :attr:`~serpentTools.Detector.grids`
+.. |DetSlice| replace:: :meth:`~serpentTools.Detector.slice`
+.. |plot| replace:: :meth:`~serpentTools.Detector.plot`
+.. |mesh| replace:: :meth:`~serpentTools.Detector.meshPlot`
+.. |spectrum| replace:: :meth:`~serpentTools.Detector.spectrumPlot`
+.. |hexDet| replace:: :class:`~serpentTools.HexagonalDetector` 
 
 .. _detector-example:
 
@@ -46,10 +46,10 @@ lattice bins.
     >>> pin = serpentTools.readDataFile(pinFile)
     >>> bwr = serpentTools.readDataFile(bwrFile)
     >>> print(pin.detectors)
-    {'nodeFlx': <serpentTools.objects.Detector object at 0x7f6df2162b70>}
+    {'nodeFlx': <serpentTools.Detector object at 0x7f6df2162b70>}
     >>> print(bwr.detectors)
-    {'xymesh': <serpentTools.objects.Detector object at 0x7f6df2162a90>, 
-     'spectrum': <serpentTools.objects.Detector object at 0x7f6df2162b00>}
+    {'xymesh': <serpentTools.Detector object at 0x7f6df2162a90>, 
+     'spectrum': <serpentTools.Detector object at 0x7f6df2162b00>}
 
 These detectors were defined for a single fuel pin with 16 axial layers
 and a separate BWR assembly, with a description of the detectors provided in
@@ -103,11 +103,6 @@ Here, only three columns, shown as rows for readability, are changing:
 -  column 10: tally column
 -  column 11: errors
 
-.. note::
-
-    For SERPENT-1, there would be an additional column 12 that
-    contained the scores for each bin
-
 Detectors can also be obtained by indexing into the |DetectorReader|, as
 
 .. code::
@@ -115,14 +110,11 @@ Detectors can also be obtained by indexing into the |DetectorReader|, as
     >>> nf = pin['nodeFlx']
     >>> assert nf is nodeFlx
 
-Once each detector is given this binned tally data, the
-:meth:`~serpentTools.objects.Detector.reshape`
-method is called to recast the
-|DetTallies|, |DetErrors|, and, if applicable,
-the :attr:`~serpentTools.objects.Detector.scores` columns into
-individual, multidimensional arrays. For this case,
-since the only variable bin quantity is that of the universe, these
-will all be 1D arrays.
+Tally data is reshaped corresponding to the bin information provided
+by Serpent. The tally and errors columns are recast into multi-dimensional
+arrays where each dimension is some unique bin type like energy or spatial
+bin index. For this case, since the only variable bin quantity is that
+of the universe, the ``tallies`` and ``errors`` attributes will be 1D arrays.
 
 .. code:: 
     
@@ -138,36 +130,21 @@ will all be 1D arrays.
            0.00251, 0.00282, 0.00307, 0.00359, 0.00415, 0.00511, 0.00687,
            0.00809, 0.01002])
 
-Bin information is retained through the |DetIndx| attribute. This is an 
-:class:`~collections.OrderedDict` as the keys are placed according to their column
-position. These positions can be found in the SERPENT Manual, and are
-provided in the ``DET_COLS`` tuple.
-
 .. note:: 
     
     Python and numpy arrays are zero-indexed, meaning the first item
     is accessed with ``array[0]``, rather than ``array[1]``.
 
+Bin information is retained through the |DetIndx| attribute.
+Each entry indicates what bin type is changing along that dimension of
+``tallies`` and ``errors``.  Here, ``universe`` is the first item and
+indicates that the first dimension of ``tallies`` and ``errors`` 
+corresponds to a changing universe bin.
+
 .. code:: 
-    
-    >>> from serpentTools.objects import DET_COLS
-    >>> print(DET_COLS)
-    ('value', 'energy', 'universe', 'cell', 'material', 'lattice', 'reaction',
-    'zmesh', 'ymesh', 'xmesh', 'tally', 'error', 'scores')
-    >>> print(DET_COLS.index('cell'))
-    3
+
     >>> nodeFlx.indexes
-    OrderedDict([('universe',
-                  array([ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15]))])
-
-Each item in the |DetIndx| ordered dictionary corresponds to the
-unique values of that bin in the original |DetBins| array. Here,
-``universe`` is the first item and contains an equal number of elements
-to the size of the first (and only) axis in the ``nodeFlx`` tally matrix
-
-.. code:: 
-
-    >>> assert nodeFlx.indexes['universe'].size == nodeFlx.tallies.size
+    ("universe", )
 
 For detectors that include some grid matrices, such as spatial or energy
 meshes ``DET<name>E``, these arrays are stored in the |DetGrids| dictionary
@@ -175,7 +152,7 @@ meshes ``DET<name>E``, these arrays are stored in the |DetGrids| dictionary
 .. code:: 
     
     >>> spectrum = bwr.detectors['spectrum']
-    >>> print(spectrum.grids['E'][:5, :])
+    >>> print(spectrum.grids['E'][:5])
     [[1.00002e-11 4.13994e-07 2.07002e-07]
      [4.13994e-07 5.31579e-07 4.72786e-07]
      [5.31579e-07 6.25062e-07 5.78320e-07]
@@ -196,33 +173,30 @@ fission and capture rates (two ``dr`` arguments) in an XY mesh.
 .. code:: 
     
     >>> xy = bwr.detectors['xymesh']
-    >>> for key in xy.indexes:
-    ...     print(key, xy.indexes[key])
-    energy [0 1]
-    ymesh [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
-    xmesh [ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19]
+    >>> xy.indexes
+    ('energy', 'ymesh', 'xmesh')
 
 Traversing the first axis in the |DetTallies| array corresponds to
-changing the value of the ``reaction``. The second axis corresponds to
+changing the value of the ``energy``. The second axis corresponds to
 changing ``ymesh`` values, and the final axis reflects changes in
 ``xmesh``.
 
 .. code:: 
     
     >>> print(xy.bins.shape)
-    >>> print(xy.tallies.shape)
-    >>> print(xy.bins[:5, 10])
-    >>> print(xy.tallies[0, 0, :5])
     (800, 12)
+    >>> print(xy.tallies.shape)
     (2, 20, 20)
+    >>> print(xy.bins[:5, 10])
     [8.19312e+17 7.18519e+17 6.90079e+17 6.22241e+17 5.97257e+17]
+    >>> print(xy.tallies[0, 0, :5])
     [8.19312e+17 7.18519e+17 6.90079e+17 6.22241e+17 5.97257e+17]
 
 Slicing
 ~~~~~~~
 
-As the detectors produced by SERPENT can contain multiple bin types, as
-seen in ``DET_COLS``, obtaining data from the tally data can become
+As the detectors produced by SERPENT can contain multiple bin types,
+obtaining data from the tally data can become
 complicated. This retrieval can be simplified using the |DetSlice| method. 
 This method takes an argument indicating what bins (keys in |DetIndx|)
 to fix at what position.
@@ -236,9 +210,7 @@ reaction tally is stored in column 1.
 
 .. code:: 
     
-    >>> print(spectrum.indexes['reaction'])
     >>> spectrum.slice({'reaction': 1})[:20]
-    [0 1]
     array([3.66341e+22, 6.53587e+20, 3.01655e+20, 1.51335e+20, 3.14546e+20,
            7.45742e+19, 4.73387e+20, 2.82554e+20, 9.89379e+19, 9.49670e+19,
            8.98272e+19, 2.04606e+20, 3.58272e+19, 1.44708e+20, 7.25499e+19,
@@ -492,8 +464,8 @@ from hexagonal detectors in
     >>> hexFile = 'hexplot_det0.m'
     >>> hexR = serpentTools.readDataFile(hexFile)
     >>> hexR.detectors
-    {'hex2': <serpentTools.objects.HexagonalDetector at 0x7f1ad03d5da0>,
-    'hex3': <serpentTools.objects.HexagonalDetector at 0x7f1ad03d5c88>}
+    {'hex2': <serpentTools.HexagonalDetector at 0x7f1ad03d5da0>,
+    'hex3': <serpentTools.HexagonalDetector at 0x7f1ad03d5c88>}
 
 Here, two |hexDet| objects are produced, with similar
 |DetTallies| and slicing methods as demonstrated above.
@@ -535,12 +507,11 @@ Here, two |hexDet| objects are produced, with similar
             [ 3.       ,  1.732051 ]]),
      'Z': array([[0., 0., 0.]])}
     >>> hex2.indexes
-    OrderedDict([('ycoord', array([0, 1, 2, 3, 4])),
-                 ('xcoord', array([0, 1, 2, 3, 4]))])
+    ('ycoord', 'xcoord')
 
 Creating hexagonal mesh plots with these objects requires setting the
-:attr:`~serpentTools.objects.HexagonalDetector.pitch`
-and :attr:`~serpentTools.objects.HexagonalDetector.hexType` attributes.
+:attr:`~serpentTools.HexagonalDetector.pitch`
+and :attr:`~serpentTools.HexagonalDetector.hexType` attributes.
 
 .. code:: 
     

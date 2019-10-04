@@ -8,6 +8,6 @@ Provided objects:
 import six
 
 if six.PY2:
-    from collections import Iterable, Callable
+    from collections import Iterable, Callable, Mapping
 else:
-    from collections.abc import Iterable, Callable
+    from collections.abc import Iterable, Callable, Mapping

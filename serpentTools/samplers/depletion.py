@@ -36,15 +36,25 @@ class DepletionSampler(DepPlotMixin, Sampler):
     2. Metadata keys are consistent for all parsers
     3. Isotope names and ZZAAA metadata are equal for all parsers
 
-    {skip:s}
+    These tests can be skipped by settings ``<sampler.skipPrecheck>`` to be
+    ``False``.
 
     Parameters
     ----------
-    {files:s}
+    files: str or iterable
+        Single file or iterable (list) of files from which to read.
+        Supports file globs, ``*dep.m`` expands to all files that
+        end with ``dep.m``
 
     Attributes
     ----------
-    {depAttr:s}
+    materials: dict
+        Dictionary with material names as keys and the corresponding
+        :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
+        for that material as values
+    metadata: dict
+        Dictionary with file-wide data names as keys and the
+        corresponding data, e.g. ``'zai'``: [list of zai numbers]
     metadataUncs: dict
         Dictionary containing uncertainties in file-wide metadata,
         such as burnup schedule
@@ -52,10 +62,17 @@ class DepletionSampler(DepPlotMixin, Sampler):
         Dictionary where key, value pairs are name of metadata and
         metadata arrays for all runs. Arrays with be of one greater dimension,
         as the first index corresponds to the file index.
-    {samplerAttr:s}
+    files: set
+        Unordered set containing full paths of unique files read
+    settings: dict
+        Dictionary of sampler-wide settings
+    parsers: set
+        Unordered set of all parsers that were successful
+    map: dict
+        Dictionary where key, value pairs are files and their corresponding
+        parsers
 
-    """.format(files=Sampler.docFiles, samplerAttr=Sampler.docAttrs,
-               skip=Sampler.docSkipChecks, depAttr=DepletionReader.docAttrs)
+    """
 
     def __init__(self, files):
         self.materials = {}

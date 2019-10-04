@@ -33,14 +33,14 @@ from _version import get_versions
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
+    'sphinx.ext.autosummary',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
-    'sphinx.ext.extlinks']
+    'sphinx.ext.extlinks',
+    'matplotlib.sphinxext.plot_directive',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -188,9 +188,12 @@ texinfo_documents = [
 ]
 
 # -- Options for auto documentation --------------------------------------
-autodoc_default_options = {
-    'members': 'inherited-members',
-}
+
+# Autogenerate stub files for autosummary
+autosummary_generate = True
+
+autodoc_mock_imports = ["serpentTools"]
+
 
 # -- Links to external documentation
 intersphinx_mapping = {
@@ -211,7 +214,7 @@ rst_prolog = """
 .. |HomogUniv-gc| replace:: :attr:`~serpentTools.objects.HomogUniv.gc`
 .. |HomogUniv-gcUnc| replace:: :attr:`~serpentTools.objects.HomogUniv.gcUnc`
 .. |ResultsReader| replace:: :class:`~serpentTools.ResultsReader`
-.. |Detector| replace:: :class:`~serpentTools.objects.Detector`
+.. |Detector| replace:: :class:`~serpentTools.Detector`
 .. |DetectorReader| replace:: :class:`~serpentTools.DetectorReader`
 .. |DepletionReader| replace:: :class:`~serpentTools.DepletionReader`
 .. |DepmtxReader| replace:: :class:`~serpentTools.DepmtxReader`

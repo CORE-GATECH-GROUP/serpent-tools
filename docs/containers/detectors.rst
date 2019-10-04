@@ -1,8 +1,15 @@
 .. _api-detectors:
 
+.. currentmodule:: serpentTools
+
 
 Detectors
 ---------
+
+.. warning::
+
+    Serpent 1 detectors are not supported as of 0.8.0
+
 
 .. note::
 
@@ -11,12 +18,14 @@ Detectors
     columns of this array correspond to lower bound, upper bound,
     and mid-point of that energy group
 
-.. autoclass:: serpentTools.objects.Detector
 
-.. autoclass:: serpentTools.objects.CartesianDetector
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+    :template: mydetector.rst
 
-.. autoclass:: serpentTools.objects.HexagonalDetector
-
-.. autoclass:: serpentTools.objects.CylindricalDetector
-
-.. autoclass:: serpentTools.objects.SphericalDetector
+    Detector
+    CartesianDetector
+    HexagonalDetector
+    CylindricalDetector
+    SphericalDetector

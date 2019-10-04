@@ -10,7 +10,7 @@ from numpy import arange, array
 from numpy.testing import assert_equal
 from serpentTools.parsers import read
 from serpentTools.data import getFile
-from serpentTools.objects.detectors import (
+from serpentTools.detectors import (
     CartesianDetector, HexagonalDetector, CylindricalDetector)
 
 from tests import compareDictOfArrays
@@ -51,13 +51,7 @@ class DetectorHelper(TestCase):
         """Verify that the detector tally index is properly constructed."""
         for detName, expectedIndex in iteritems(self.EXPECTED_INDEXES):
             actualIndex = self.detectors[detName].indexes
-            expectedKeys = list(expectedIndex.keys())
-            actualKeys = list(actualIndex.keys())
-            self.assertListEqual(actualKeys, expectedKeys)
-            for key in expectedIndex:
-                assert_equal(
-                    actualIndex[key], expectedIndex[key],
-                    err_msg="Key: {}, Detector: {}".format(key, detName))
+            self.assertEqual(actualIndex, expectedIndex)
 
     def test_detectorSlice(self):
         """Verify that the detector slicing is working well."""
@@ -119,11 +113,7 @@ class CartesianDetectorTester(DetectorHelper):
     EXPECTED_GRIDS = {
         DET_NAME: _EXPECTED_GRIDS
     }
-    _INDEXES = OrderedDict([
-        ['reaction', arange(2)],
-        ['ymesh', arange(5)],
-        ['xmesh', arange(5)],
-    ])
+    _INDEXES = ("reaction", "ymesh", "xmesh")
     EXPECTED_INDEXES = {DET_NAME: _INDEXES}
 
     SLICING = {DET_NAME: {
@@ -165,10 +155,7 @@ class HexagonalDetectorTester(DetectorHelper):
         'hex2': HexagonalDetector,
         'hex3': HexagonalDetector,
     }
-    _INDEXES = OrderedDict([
-        ['ycoord', arange(5)],
-        ['xcoord', arange(5)],
-    ])
+    _INDEXES = ("ycoord", "xcoord")
     EXPECTED_INDEXES = {'hex2': _INDEXES}
     EXPECTED_INDEXES['hex3'] = EXPECTED_INDEXES['hex2']
 
@@ -252,10 +239,7 @@ class CylindricalDetectorTester(DetectorHelper):
         'Z': array([[0.00000E+00, 0.00000E+00, 0.00000E+00]])
     }
     EXPECTED_GRIDS = {DET_NAME: _EXPECTED_GRIDS}
-    _INDEXES = OrderedDict([
-        ['phi', arange(4)],
-        ['rmesh', arange(5)],
-    ])
+    _INDEXES = ("phi", "rmesh")
     EXPECTED_INDEXES = {DET_NAME: _INDEXES}
 
     SLICING = {

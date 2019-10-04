@@ -63,8 +63,4 @@ ENV/
 # pycharm
 .idea/*
 
-# vim
-.*.swp
-
-# Ctag file
-tags
+/docs/*/generated/
