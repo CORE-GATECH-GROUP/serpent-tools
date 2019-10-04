@@ -12,6 +12,7 @@ from collections import namedtuple
 
 from matplotlib import pyplot
 from numpy import arange, hstack, ndarray, zeros_like
+from six import iteritems
 
 from serpentTools.settings import rc
 from serpentTools.objects.base import NamedObject, BaseObject
@@ -203,11 +204,9 @@ class HomogUniv(NamedObject):
     def __str__(self):
         extras = []
         if self.bu is not None:
-            extras.append('burnup: {:5.3f} MWd/kgu'.format(self.bu))
-        if self.step:
-            extras.append('step: {}'.format(self.step))
+            extras.append('burnup: {:11.5E} MWd/kgU'.format(self.bu))
         if self.day is not None:
-            extras.append('{:5.3f} days'.format(self.day))
+            extras.append('{:11.5E} days'.format(self.day))
         if extras:
             extras = ': ' + ', '.join(extras)
         return '<{} {}{}>'.format(self.__class__.__name__, self.name,
