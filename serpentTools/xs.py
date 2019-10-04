@@ -503,12 +503,12 @@ class BranchCollector(object):
         branch = self._branches[branchKey]
         univs = set()
         _burnups = set()
-        for unID, bu, ix in branch.universes:
+        for (unID, bu, ix, day), universe in iteritems(branch):
             univs.add(unID)
-            _burnups.add(bu)
+            _burnups.add(bu if day is None else day)
         self._burnups = tuple(sorted(_burnups))
         self.univIndex = tuple(sorted(univs))
-        return branch.universes[unID, bu, ix]
+        return universe
 
     @staticmethod
     def _getXsSizes(sampleUniv):
@@ -558,7 +558,7 @@ class BranchCollector(object):
 
         univAxis = self._axis[1:]
         # Create all the univIndex
-        for univIndex, univID in enumerate(self.univIndex):
+        for univID in self.univIndex:
             self.universes[univID] = BranchedUniv(univID, self, univAxis)
         for xsKey, xsMat in iteritems(self.xsTables):
             for univIndex, univID in enumerate(self.univIndex):
