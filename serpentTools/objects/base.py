@@ -132,7 +132,7 @@ class NamedObject(BaseObject):
     """Class for named objects like materials and detectors."""
 
     def __init__(self, name):
-        super().__init__()
+        BaseObject.__init__(self)
         self.name = name
 
     def __str__(self):

@@ -20,7 +20,6 @@ Detector Types
 * :class:`~serpentTools.objects.detectors.SphericalDetector`
 """
 
-from collections.abc import Mapping
 from math import sqrt, pi
 from warnings import warn
 from numbers import Real
@@ -47,6 +46,8 @@ from serpentTools.utils import (
 )
 from serpentTools.utils.compare import getLogOverlaps
 from serpentTools.io.hooks import matlabHook
+# PY2 compatibility
+from serpentTools._compat import Mapping
 
 __all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
            'CylindricalDetector', 'SphericalDetector']
@@ -142,7 +143,7 @@ class Detector(NamedObject):
 
     def __init__(self, name, bins=None, tallies=None, errors=None,
                  indexes=None, grids=None):
-        super().__init__(name)
+        NamedObject.__init__(self, name)
         self._bins = None
         self._tallies = None
         self._errors = None
@@ -871,7 +872,7 @@ class CartesianDetector(Detector):
 
     def __init__(self, name, bins=None, tallies=None, errors=None,
                  indexes=None, grids=None, x=None, y=None, z=None):
-        super().__init__(name, bins, tallies, errors, indexes, grids)
+        Detector.__init__(self, name, bins, tallies, errors, indexes, grids)
         self._x = None
         self._y = None
         self._z = None
@@ -997,8 +998,8 @@ class CartesianDetector(Detector):
         * :meth:`slice`
         * :func:`matplotlib.pyplot.pcolormesh`
         """
-        super().meshPlot(
-            xdim=xdim, ydim=ydim, what=what, fixed=fixed, ax=ax,
+        Detector.meshPlot(
+            self, xdim=xdim, ydim=ydim, what=what, fixed=fixed, ax=ax,
             cmap=cmap, cbarLabel=cbarLabel, logColor=logColor, xlabel=xlabel,
             ylabel=ylabel, logx=logx, logy=logy, loglog=loglog,
             title=title, thresh=thresh, **kwargs)
@@ -1009,7 +1010,7 @@ class CartesianDetector(Detector):
             if grid is not None:
                 return hstack((grid[:, 0], grid[-1, 1]))
             raise AttributeError("{} not set".format(qty[0], stacklevel=2))
-        return super()._getPlotGrid(qty)
+        return Detector._getPlotGrid(self, qty)
 
     def _getPlotXData(self, qty, ydata):
         if qty is not None and hasattr(self, qty[0]):
@@ -1017,7 +1018,7 @@ class CartesianDetector(Detector):
             if grid is not None:
                 return grid[:, 0], DETECTOR_PLOT_LABELS.get(qty, "Bin Index")
             raise AttributeError("{} not set".format(qty[0], stacklevel=2))
-        return super()._getPlotXData(qty, ydata)
+        return Detector._getPlotXData(self, qty, ydata)
 
 
 class HexagonalDetector(Detector):
@@ -1114,7 +1115,7 @@ class HexagonalDetector(Detector):
                  indexes=None, z=None, centers=None, pitch=None, hexType=None,
                  grids=None):
 
-        super().__init__(name, bins, tallies, errors, indexes, grids)
+        Detector.__init__(self, name, bins, tallies, errors, indexes, grids)
 
         if pitch is not None:
             self.pitch = pitch
@@ -1218,7 +1219,7 @@ class HexagonalDetector(Detector):
         if any(arg in {"ycoord", "xcoord"} for arg in (xdim, ydim)):
             warn("Use hexPlot if plotting xcoord vs ycoord")
             return self.hexPlot(**opts)
-        return super().meshPlot(xdim, ydim, **opts)
+        return Detector.meshPlot(self, xdim, ydim, **opts)
 
     meshPlot.__doc__ = Detector.meshPlot.__doc__
 
@@ -1392,8 +1393,8 @@ class CylindricalDetector(Detector):
         if any(arg in {"rmesh", "phi"} for arg in (xdim, ydim)):
             warn("Cylindrical plotting is not fully supported. See GitHub "
                  "issue 169")
-        return super().meshPlot(
-            xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
+        return Detector.meshPlot(
+            self, xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
             logColor=logColor, xlabel=xlabel, logx=logx, logy=logy,
             loglog=loglog, title=title, **kwargs)
 
@@ -1466,8 +1467,8 @@ class SphericalDetector(Detector):
                  logx=False, logy=False, loglog=False, title=None, **kwargs):
         if any(arg in {"theta", "phi", "rmesh"} for arg in (xdim, ydim)):
             warn("Spherical mesh plotting is not fully supported.")
-        return super().meshPlot(
-            xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
+        return Detector.meshPlot(
+            self, xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
             logColor=logColor, xlabel=xlabel, logx=logx, logy=logy,
             loglog=loglog, title=title, **kwargs)
 

@@ -32,7 +32,7 @@ class DetectorReader(BaseReader):
     """
 
     def __init__(self, filePath):
-        super().__init__(filePath, 'detector')
+        BaseReader.__init__(self, filePath, 'detector')
         self.detectors = {}
 
     def __getitem__(self, name):

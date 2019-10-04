@@ -53,7 +53,7 @@ class DetectorSampler(Sampler):
 
     def __init__(self, files):
         self.detectors = {}
-        super().__init__(files, DetectorReader)
+        Sampler.__init__(self, files, DetectorReader)
 
     def __getitem__(self, name):
         """Retrieve a detector from :attr:`detectors`."""
@@ -163,8 +163,8 @@ class SampledDetector(Detector):
         nz = tallies.nonzero()
         errors[nz] /= tallies[nz]
 
-        super().__init__(name, tallies=tallies, errors=errors,
-                         grids=grids, indexes=indexes)
+        Detector.__init__(self, name, tallies=tallies, errors=errors,
+                          grids=grids, indexes=indexes)
         self.deviation = self.allTallies.std(axis=0)
 
     @property
