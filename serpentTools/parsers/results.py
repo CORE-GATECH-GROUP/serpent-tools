@@ -11,7 +11,7 @@ from matplotlib.pyplot import gca
 
 from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
-from serpentTools.objects.containers import HomogUniv
+from serpentTools.objects.containers import HomogUniv, UnivTuple
 from serpentTools.parsers.base import XSReader
 from serpentTools.parsers._collections import RES_DATA_NO_UNCS
 from serpentTools.objects.base import (DEF_COMP_LOWER,
@@ -145,6 +145,15 @@ class ResultsReader(XSReader):
     """
     Parser responsible for reading and working with result files.
 
+    When inspecting keys of :attr:`universes`, it is preferable to use
+    an attribute based approach rather than positional. For example::
+
+        >>> for key in res.universes:
+        ...     break
+        >>> key.universe
+        # rather than
+        >>> key[0]
+
     Attributes
     ------------
     metadata: dict
@@ -158,8 +167,9 @@ class ResultsReader(XSReader):
         Some variables also contain uncertainties.
         e.g., 'absKeff': [[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]]
     universes: dict
-        Dictionary of universe names and their corresponding
-        :py:class:`~serpentTools.objects.containers.HomogUniv`
+        Dictionary of universe identifiers
+        :class:`~serpentTools.objects.UnivTuple` and their corresponding
+        :class:`~serpentTools.objects.HomogUniv`
         objects. The keys describe a unique state:
         'universe', burnup (MWd/kg), burnup index, time (days)
         ('0', 0.0, 0, 0.0).
@@ -243,11 +253,10 @@ class ResultsReader(XSReader):
             self._univlist.append(varVals)
 
     def _storeUnivData(self, varNameSer, varVals):
-        """Process universes' data"""
+        """Process universes data"""
         brState = self._getBUstate()  # obtain the branching tuple
         if brState not in self.universes:
-            self.universes[brState] = \
-                HomogUniv(brState[0], brState[1], brState[2], brState[3])
+            self.universes[brState] = HomogUniv(*brState)
         if varNameSer == self._keysVersion['univ']:
             return
 
@@ -310,7 +319,7 @@ class ResultsReader(XSReader):
                 burnup = self.resdata[varPyBU][-1]
         else:
             burnup = self._counter['meta'] - 1
-        return self._univlist[-1], burnup, burnIdx, days
+        return UnivTuple(self._univlist[-1], burnup, burnIdx, days)
 
     def _getVarName(self, tline):
         """Obtains the variable name and converts it to a python-style name."""
@@ -340,23 +349,20 @@ class ResultsReader(XSReader):
         """
         Return a specific universe given the ID and time of interest
 
-        If more than one time parameter is given, the hierarchy of search is:
-        index (highest priority), burnup, timeDays (lowest priority)
-
         Parameters
         ----------
         univ: str
             Unique str for the desired universe
-        burnup: float or int
+        burnup: float or int, optional
             Burnup [MWd/kgU] of the desired universe
-        timeDays: float or int
+        timeDays: float or int, optional
             Time [days] of the desired universe
-        index: int
+        index: int, optinal
             Point of interest in the burnup/days index
 
         Returns
         -------
-        :py:class:`~serpentTools.objects.containers.HomogUniv`
+        :class:`~serpentTools.objects.HomogUniv`
             Requested universe
 
         Raises
@@ -369,18 +375,25 @@ class ResultsReader(XSReader):
         if index is None and burnup is None and timeDays is None:
             raise SerpentToolsException(
                 'Burnup, time or index are required inputs')
-        searchIndex = (2 if index is not None else 1 if burnup is not None
-                       else 3)
-        searchValue = (index if index is not None
-                       else burnup if burnup is not None else timeDays)
-        for key, dictUniv in iteritems(self.universes):
-            if key[0] == univ and key[searchIndex] == searchValue:
-                return self.universes[key]
-        searchName = ('index ' if index else 'burnup ' if burnup
-                      else 'timeDays ')
+
+        searchKey = UnivTuple(univ, burnup, index, timeDays)
+
+        # check if key is exactly present
+
+        universe = self.universes.get(searchKey)
+        if universe is not None:
+            return universe
+
+        for key, universe in iteritems(self.universes):
+            for uItem, sItem in zip(key, searchKey):
+                if sItem is None:
+                    continue
+                elif uItem != sItem:
+                    break
+            else:
+                return universe
         raise KeyError(
-            'Could not find a universe that matched requested universe {} and '
-            '{} {}'.format(univ, searchName, searchValue))
+            "Could not find a universe that matches {}".format(searchKey))
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a results file."""
@@ -831,10 +844,10 @@ class ResultsReader(XSReader):
         numAppearances = {}
 
         for key in self.universes:
-            if key[0] not in numAppearances:
-                numAppearances[key[0]] = 1
+            if key.universe not in numAppearances:
+                numAppearances[key.universe] = 1
                 continue
-            numAppearances[key[0]] += 1
+            numAppearances[key.universe] += 1
         # check to make sure all universes appear an identical
         # number of times
         burnupVals = set(numAppearances.values())
@@ -851,8 +864,8 @@ class ResultsReader(XSReader):
         for univKey, univ in iteritems(self.universes):
 
             # position in matrix
-            uIndex = univOrder.index(univKey[0])
-            bIndex = univKey[2]
+            uIndex = univOrder.index(univKey.universe)
+            bIndex = univKey.step
 
             for expName, uncName in zip(
                     ('infExp', 'b1Exp', 'gc'), ('infUnc', 'b1Unc', 'gcUnc')):
