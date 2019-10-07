@@ -311,14 +311,14 @@ class ResultsReader(XSReader):
             else:
                 days = self.resdata[varPyDays][-1]
         else:
-            days = self._counter['meta'] - 1
+            days = 0
         if varPyBU in self.resdata.keys():
             if burnIdx > 0:
                 burnup = self.resdata[varPyBU][-1, 0]
             else:
                 burnup = self.resdata[varPyBU][-1]
         else:
-            burnup = self._counter['meta'] - 1
+            burnup = 0
         return UnivTuple(self._univlist[-1], burnup, burnIdx, days)
 
     def _getVarName(self, tline):
