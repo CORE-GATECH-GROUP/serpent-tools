@@ -12,6 +12,8 @@ Next
 * Better handling of discontinuity factors
 * |HomogUniv| objects no longer automatically convert data to arrays
 * Serpent 2.1.31 is the default version for :ref:`serpentVersion` setting
+* :class:`~serpentTools.objects.BranchContainer` now inherits from
+  :class:`dict`
 
 Incompatible API Changes
 ------------------------
@@ -23,6 +25,10 @@ Incompatible API Changes
 * Keys to |BranchedUniv| objects stored in
   :attr:`serpentTools.xs.BranchCollector.universes` are stored as strings,
   rather than integers, e.g. ``0`` is replaced with ``"0"`` - :pull:`321`
+* Keys to |HomogUniv| instances stored on
+  :class:`~serpentTools.objects.BranchContainer` are now
+  :class:`~serpentTools.objects.UnivTuple`, or tuples with
+  ``universe, burnup, step, days`` - :pull:`344`
 
 .. _v0.7.1
 
