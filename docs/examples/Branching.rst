@@ -43,21 +43,23 @@ Basic Operation
     >>> branchFile = 'demo.coe'
     >>> r0 = serpentTools.readDataFile(branchFile)
 
-The branches are stored in custom |BranchContainer| objects in the
-:attr:`~serpentTools.BranchingReader.branches` dictionary
+The branches are stored in custom dictionary-like |BranchContainer|
+objects in the :attr:`~serpentTools.BranchingReader.branches` dictionary
 
 .. code:: 
     
-    >>> r0.branches
-    {('B1000', 'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b42978>,
-     ('B1000', 'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b58a58>,
-     ('B1000', 'nom'): <serpentTools.objects.BranchContainer at 0x7fa068aac860>,
-     ('B750', 'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b3a908>,
-     ('B750', 'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b509e8>,
-     ('B750', 'nom'): <serpentTools.objects.BranchContainer at 0x7fa068a9c860>,
-     ('nom', 'FT1200'): <serpentTools.objects.BranchContainer at 0x7fa068b33898>,
-     ('nom', 'FT600'): <serpentTools.objects.BranchContainer at 0x7fa068b47978>,
-     ('nom', 'nom'): <serpentTools.objects.BranchContainer at 0x7fa068a8b860>}
+    >>> r0.branches.keys()
+    dict_keys([
+        ('nom', 'nom'),
+        ('B750', 'nom'),
+        ('B1000', 'nom'),
+        ('nom', 'FT1200'),
+        ('B750', 'FT1200'),
+        ('B1000', 'FT1200'),
+        ('nom', 'FT600'),
+        ('B750', 'FT600'),
+        ('B1000', 'FT600')
+    ])
 
 Here, the keys are tuples of strings indicating what
 perturbations/branch states were applied for each ``SERPENT`` solution.
@@ -94,54 +96,44 @@ Group Constant Data
     Group constants are converted from ``SERPENT_STYLE`` to
     ``mixedCase`` to fit the overall style of the project.
 
-The |BranchContainer| stores group constant data in |HomogUniv| objects in the 
-:attr:`~serpentTools.objects.BranchContainer.universes` dictionary
+The |BranchContainer| stores group constant data in |HomogUniv| objects as a dictionary.
 
 .. code:: 
     
-    >>> for key in b0.universes:
+    >>> for key in b0:
     ...     print(key)
-    ('0", 1.0, 1)
-    ('10", 1.0, 1)
-    ('20", 1.0, 1)
-    ('30", 1.0, 1)
-    ('20", 0, 0)
-    ('40", 0, 0)
-    ('20", 10.0, 2)
-    ('10", 10.0, 2)
-    ('0", 0, 0)
-    ('10", 0, 0)
-    ('0", 10.0, 2)
-    ('30", 0, 0)
-    ('40", 10.0, 2)
-    ('40", 1.0, 1)
-    ('30", 10.0, 2)
+    UnivTuple(universe='0', burnup=0.0, step=0, days=None)
+    UnivTuple(universe='10', burnup=0.0, step=0, days=None)
+    UnivTuple(universe='20', burnup=0.0, step=0, days=None)
+    UnivTuple(universe='30', burnup=0.0, step=0, days=None)
+    UnivTuple(universe='40', burnup=0.0, step=0, days=None)
+    UnivTuple(universe='0', burnup=1.0, step=1, days=None)
+    UnivTuple(universe='10', burnup=1.0, step=1, days=None)
+    UnivTuple(universe='20', burnup=1.0, step=1, days=None)
+    UnivTuple(universe='30', burnup=1.0, step=1, days=None)
+    UnivTuple(universe='40', burnup=1.0, step=1, days=None)
+    UnivTuple(universe='0', burnup=10.0, step=2, days=None)
+    UnivTuple(universe='10', burnup=10.0, step=2, days=None)
+    UnivTuple(universe='20', burnup=10.0, step=2, days=None)
+    UnivTuple(universe='30', burnup=10.0, step=2, days=None)
+    UnivTuple(universe='40', burnup=10.0, step=2, days=None)
 
-The keys here are vectors indicating the universe ID, burnup, and burnup
-index corresponding to the point in the burnup schedule. ``SERPENT``
-prints negative values of burnup to indicate units of days, which is
-reflected in the :attr:`~serpentTools.objects.BranchContainer.hasDays`
-attribute. ``hasDays-> True`` indicates
-that the values of burnup, second item in the above tuple, are in terms
-of days, not MWd/kgU.
+The keys here are :class:`~serpentTools.objects.UnivTuple` instances
+indicating the universe ID, and point in the burnup schedule.
 These universes can be obtained by indexing this dictionary, or by using
 the :meth:`~serpentTools.objects.BranchContainer.getUniv` method
 
 .. code:: 
     
-    >>> univ0 = b0.universes["0", 1, 1]
+    >>> univ0 = b0["0", 1, 1, None]
     >>> print(univ0)
     <HomogUniv 0: burnup: 1.000 MWd/kgu, step: 1>
-    >>> print(univ0.name)
-    0
-    >>> print(univ0.bu)
-    1.0
-    >>> print(univ0.step)
-    1
-    >>> print(univ0.day)
-    None
-    >>> print(b0.hasDays)
-    False
+    >>> univ0.name, univ0.bu, univ0.step, univ0.day
+    ('0', 1.0, 1, None)
+    >>> univ1 = b0.getUniv('0', burnup=1)
+    >>> univ2 = b0.getUniv('0', index=1)
+    >>> univ0 is univ1 is univ2
+    True
 
 Group constant data is spread out across the following sub-dictionaries:
 
@@ -209,7 +201,7 @@ bin-index.
 
 .. code:: 
     
-    >>> univ0.plot(['infFiss', 'b1Tot'], loglog=False, xlabel="Energy Group");
+    >>> univ0.plot(['infFiss', 'b1Tot'], loglog=False);
 
 .. image:: Branching_files/Branching_33_0.png
 
