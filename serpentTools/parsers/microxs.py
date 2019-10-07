@@ -1,5 +1,7 @@
 """Parser responsible for reading the ``mdx[i].m`` files"""
 
+from collections import namedtuple
+
 from numpy import array
 
 from serpentTools.engines import KeywordParser
@@ -10,6 +12,39 @@ from serpentTools.utils import (
 from serpentTools.parsers.base import BaseReader
 
 from serpentTools.messages import SerpentToolsException
+
+
+MicroXSTuple = namedtuple("MicroXSTuple", ["zai", "mt", "metastable"])
+
+try:
+    MicroXSTuple.__doc__ = """Convenient indexer for microscopic cross sections
+
+Using attributes is recommended over positions, although both are
+identical. The former is more likely to be consistent across future
+versions.
+
+Attributes
+----------
+zai : int
+   Isotope ZZAAAI identifier, e.g. ``922350``
+mt : int
+    Reaction MT, e.g. ``18``
+metastable : int
+    0 if reaction results in a metastable isotope, 1 otherwise
+
+Example
+-------
+
+>>> mx = MicroXSTuple(922380, 18, 0)
+>>> mx.zai
+922390
+>>> mx.mt == mx[1]
+True
+
+"""
+except AttributeError:
+    # can't set namedtuple docs for PY2
+    pass
 
 
 class MicroXSReader(BaseReader):
@@ -42,14 +77,19 @@ class MicroXSReader(BaseReader):
         corresponding group-wise flux uncertainty values.
         e.g., ``fluxRatio['0']= [0.00023, 0.00042]``
     xsVal: dict
-        Nested dictionary with universes as as keys, e.g. '0'.
-        The values are nested dictionary with tuples as keys
-        (isotope, reaction, flag) and group xs as values.
+        Expected value on microscopic cross sections, sorted by
+        universe then by isotope, reaction, and metastable flag.
+        Nested dictionary with universes as keys, e.g. '0'.
+        The values are nested dictionary with :class:`MicroXSTuple`
+        as keys (isotope, reaction, flag) and group xs as values.
         e.g., ``(922350, 18, 0)``
     xsUnc: dict
-        Nested dictionary with universes as as keys, e.g. '0'.
-        The values are nested dictionary with tuples as keys
-        (isotope, reaction, flag) and group xs uncertainties.
+        Uncertainties on microscopic cross sections, sorted by
+        universe then by isotope, reaction, and metastable flag.
+        Nested dictionary with universes as keys, e.g. '0'.
+        The values are nested dictionary with :class:`MicroXSTuple`
+        as keys (isotope, reaction, flag) and group xs as values.
+        e.g., ``(922350, 18, 0)``
 
     Parameters
     ----------
@@ -58,9 +98,8 @@ class MicroXSReader(BaseReader):
 
     Raises
     ------
-    SerpentToolsException:
-                            No results exist in the file
-                            No results are collected
+    SerpentToolsException
+        No results exist in the file, or no results are collected
     IOError: file is unexpectedly closes while reading
     """
 
@@ -133,8 +172,8 @@ class MicroXSReader(BaseReader):
             if len(tline.split()) > 3:
                 values = str2vec(tline)
                 # isotope, reaction type and isomeric state
-                reactionData = (int(values[0]), int(values[1]), int(values[2]))
-                currXS[reactionData], currUnc[reactionData] = splitValsUncs(
+                reactionKey = MicroXSTuple(*(int(x) for x in values[:3]))
+                currXS[reactionKey], currUnc[reactionKey] = splitValsUncs(
                     values[3:])
         self.xsVal[univ] = currXS
         self.xsUnc[univ] = currUnc

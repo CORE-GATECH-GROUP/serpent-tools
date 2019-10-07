@@ -8,10 +8,11 @@ Contents
 
 """
 from itertools import product
+from collections import namedtuple
 
-from six import iteritems, PY2
 from matplotlib import pyplot
 from numpy import arange, hstack, ndarray, zeros_like
+from six import iteritems
 
 from serpentTools.settings import rc
 from serpentTools.objects.base import NamedObject, BaseObject
@@ -51,8 +52,42 @@ HOMOG_VAR_TO_ATTR = {
     'MACRO_E': 'groups', 'MACRO_NG': 'numGroups'}
 
 __all__ = (
-    'HomogUniv', 'BranchContainer',
+    'HomogUniv', 'BranchContainer', "UnivTuple"
 )
+
+UnivTuple = namedtuple("UnivTuple", ["universe", "burnup", "step", "days"])
+
+try:
+    UnivTuple.__doc__ = """Convenient identifier for universes
+
+Properties can be accessed by position or by attribute name.
+The latter is preferable as it will be consistent across
+potential API changes
+
+Attributes
+----------
+universe : str
+    Universe from Serpent input
+burnup : float
+    Burnup for this universe [MWd/kgU]
+step : int
+    Burnup step
+days : float
+    Burnup day
+
+Example
+-------
+
+>>> x = UnivTuple("0", 0.1, 1, 10.0)
+>>> x.universe
+"0"
+>>> x[0] == x.universe
+True
+
+"""
+except AttributeError:
+    # Can't set docs for namedtuples in PY2
+    pass
 
 
 class HomogUniv(NamedObject):
@@ -121,7 +156,7 @@ class HomogUniv(NamedObject):
                 "Will not create universe with negative burnup\n{}"
                 .format(', '.join(tail)))
         NamedObject.__init__(self, name)
-        if step is not None and step == 0:
+        if step == 0:
             bu = bu if bu is not None else 0.0
             day = day if day is not None else 0.0
         self.bu = bu
@@ -169,11 +204,9 @@ class HomogUniv(NamedObject):
     def __str__(self):
         extras = []
         if self.bu is not None:
-            extras.append('burnup: {:5.3f} MWd/kgu'.format(self.bu))
-        if self.step:
-            extras.append('step: {}'.format(self.step))
+            extras.append('burnup: {:11.5E} MWd/kgU'.format(self.bu))
         if self.day is not None:
-            extras.append('{:5.3f} days'.format(self.day))
+            extras.append('{:11.5E} days'.format(self.day))
         if extras:
             extras = ': ' + ', '.join(extras)
         return '<{} {}{}>'.format(self.__class__.__name__, self.name,

@@ -15,7 +15,7 @@ from serpentTools.parsers.fissionMatrix import FissionMatrixReader
 from serpentTools.parsers.history import HistoryReader
 from serpentTools.parsers.xsplot import XSPlotReader
 from serpentTools.parsers.sensitivity import SensitivityReader
-from serpentTools.parsers.microxs import MicroXSReader
+from serpentTools.parsers.microxs import MicroXSReader, MicroXSTuple
 from serpentTools.parsers.depmatrix import DepmtxReader, readDepmtx
 from serpentTools.io.hooks import matlabHook
 
@@ -57,7 +57,7 @@ __all__ = ['read',
            'BumatReader', 'ResultsReader', 'FissionMatrixReader',
            'MicroXSReader', 'SensitivityReader', 'XSPlotReader',
            'HistoryReader', 'DepmtxReader',
-           'depmtx', 'readDepmtx',
+           'depmtx', 'readDepmtx', "MicroXSTuple",
            ]
 
 
