@@ -204,14 +204,22 @@ class ResultsReader(XSReader):
 
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'results')
-        self._counter = {'meta': 0, 'rslt': 0}
-        self._numUniverses = 0
-        self._univlist = []
-        self.metadata, self.resdata, self.universes = {}, {}, {}
-        self._varTypeLookup = {}
+
+        self.metadata = {}
+        self.resdata = {}
+        self.universes = {}
 
     def _read(self):
         """Read through the results file and store requested data."""
+
+        self._counter = {'meta': 0, 'rslt': 0}
+        self._univlist = []
+        self._varTypeLookup = {}
+
+        self.metadata.clear()
+        self.resdata.clear()
+        self.universes.clear()
+
         with open(self.filePath, 'r') as fObject:
             for tline in fObject:
                 self._processResults(tline)
@@ -459,8 +467,8 @@ class ResultsReader(XSReader):
     def _postcheck(self):
         self._inspectData()
         self._cleanMetadata()
-        del self._varTypeLookup
-        self._univList = []
+        del (self._varTypeLookup, self._burnupKeys, self._keysVersion,
+             self._counter, self._univlist)
 
     def _compare(self, other, lower, upper, sigma):
         similar = self.compareMetadata(other)
