@@ -13,6 +13,12 @@ Next
 * |HomogUniv| objects no longer automatically convert data to arrays
 * Serpent 2.1.31 is the default version for :ref:`serpentVersion` setting
 
+Bug Fixes
+---------
+
+* Burnup and days are properly set on homogenized universes when reading a
+  result file with multiple universes but no burnup
+
 Incompatible API Changes
 ------------------------
 
