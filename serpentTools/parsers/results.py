@@ -45,7 +45,7 @@ MapStrVersions = {
     '2.1.29': {
         'meta': 'VERSION ', 'rslt': 'MIN_MACROXS',
         'univ': 'GC_UNIVERSE_NAME', 'days': 'BURN_DAYS',
-        'burn': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
+        'burnup': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
         'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E'],
     },
 }
@@ -204,15 +204,22 @@ class ResultsReader(XSReader):
 
     def __init__(self, filePath):
         XSReader.__init__(self, filePath, 'results')
-        self.__serpentVersion = rc['serpentVersion']
-        self._counter = {'meta': 0, 'rslt': 0}
-        self._numUniverses = 0
-        self._univlist = []
-        self.metadata, self.resdata, self.universes = {}, {}, {}
-        self._varTypeLookup = {}
+
+        self.metadata = {}
+        self.resdata = {}
+        self.universes = {}
 
     def _read(self):
         """Read through the results file and store requested data."""
+
+        self._counter = {'meta': 0, 'rslt': 0}
+        self._univlist = []
+        self._varTypeLookup = {}
+
+        self.metadata.clear()
+        self.resdata.clear()
+        self.universes.clear()
+
         with open(self.filePath, 'r') as fObject:
             for tline in fObject:
                 self._processResults(tline)
@@ -303,22 +310,24 @@ class ResultsReader(XSReader):
     def _getBUstate(self):
         """Define unique branch state"""
         burnIdx = self._counter['rslt'] - 1
-        varPyDays = convertVariableName(self._keysVersion['days'])  # Py style
-        varPyBU = convertVariableName(self._keysVersion['burn'])
-        if varPyDays in self.resdata.keys():
-            if burnIdx > 0:
-                days = self.resdata[varPyDays][-1, 0]
-            else:
-                days = self.resdata[varPyDays][-1]
+        dayVec = self.resdata.get(self._burnupKeys["days"])
+
+        if dayVec is None:
+            days = 0
+        elif burnIdx:
+            days = dayVec[-1, 0]
         else:
-            days = self._counter['meta'] - 1
-        if varPyBU in self.resdata.keys():
-            if burnIdx > 0:
-                burnup = self.resdata[varPyBU][-1, 0]
-            else:
-                burnup = self.resdata[varPyBU][-1]
+            days = dayVec[0]
+
+        burnupVec = self.resdata.get(self._burnupKeys["burnup"])
+
+        if burnupVec is None:
+            burnup = 0
+        elif burnIdx:
+            burnup = burnupVec[-1, 0]
         else:
-            burnup = self._counter['meta'] - 1
+            burnup = burnupVec[-1]
+
         return UnivTuple(self._univlist[-1], burnup, burnIdx, days)
 
     def _getVarName(self, tline):
@@ -397,13 +406,20 @@ class ResultsReader(XSReader):
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a results file."""
-        if self.__serpentVersion in MapStrVersions:
-            self._keysVersion = MapStrVersions[self.__serpentVersion]
-        else:
+        serpentV = rc['serpentVersion']
+        keys = MapStrVersions.get(serpentV)
+
+        if keys is None:
             warning("SERPENT {} is not supported by the "
-                    "ResultsReader".format(self.__serpentVersion))
+                    "ResultsReader".format(serpentV))
             warning("  Attemping to read anyway. Please report strange "
                     "behaviors/failures to developers.")
+            keys = MapStrVersions[max(MapStrVersions)]
+
+        self._keysVersion = keys
+
+        self._burnupKeys = {k: convertVariableName(keys[k]) for k in {"days", "burnup"}}
+
         univSet = set()
         verWarning = True
         with open(self.filePath) as fid:
@@ -415,11 +431,11 @@ class ResultsReader(XSReader):
                 if verWarning and self._keysVersion['meta'] in tline:
                     verWarning = False
                     varType, varVals = self._getVarValues(tline)  # version
-                    if self.__serpentVersion not in varVals:
+                    if serpentV not in varVals:
                         warning("SERPENT {} found in {}, but version {} is "
                                 "defined in settings"
                                 .format(varVals, self.filePath,
-                                        self.__serpentVersion))
+                                        serpentV))
                         warning("  Attemping to read anyway. Please report "
                                 "strange behaviors/failures to developers.")
                 if self._keysVersion['univ'] in tline:
@@ -451,8 +467,8 @@ class ResultsReader(XSReader):
     def _postcheck(self):
         self._inspectData()
         self._cleanMetadata()
-        del self._varTypeLookup
-        self._univList = []
+        del (self._varTypeLookup, self._burnupKeys, self._keysVersion,
+             self._counter, self._univlist)
 
     def _compare(self, other, lower, upper, sigma):
         similar = self.compareMetadata(other)
