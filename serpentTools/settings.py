@@ -364,7 +364,7 @@ class UserSettingsLoader(dict):
            """
         keywords = self['xs.variableGroups']
         extras = self['xs.variableExtras']
-        serpentVersion = self['serpentVersion']
+        serpentVersion = self['serpentVersion'].replace(".", "-")
         if not (keywords or extras):  # return empty set and don't read
             return set()
         variables = set(extras) if extras else set()
