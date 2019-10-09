@@ -1,3 +1,12 @@
+.. _vars-2-1-31:
+
+----------
+``2.1.31``
+----------
+
+Variable groups for Serpent 2.1.31 are identical to those from 
+Serpent 2.1.30
+
 .. _vars-2-1-30:
 
 ----------

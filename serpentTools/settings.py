@@ -364,7 +364,7 @@ class UserSettingsLoader(dict):
            """
         keywords = self['xs.variableGroups']
         extras = self['xs.variableExtras']
-        serpentVersion = self['serpentVersion']
+        serpentVersion = self['serpentVersion'].replace(".", "-")
         if not (keywords or extras):  # return empty set and don't read
             return set()
         variables = set(extras) if extras else set()
@@ -376,10 +376,12 @@ class UserSettingsLoader(dict):
         thisVersion = groups.get(serpentVersion, {})
         baseGroups = groups['base']
         for key in keywords:
-            if key in thisVersion:
-                variables.update(thisVersion[key])
-            elif key in baseGroups:
-                variables.update(baseGroups[key])
+            versionVars = thisVersion.get(key)
+            baseVars = baseGroups.get(key)
+            if versionVars:
+                variables.update(versionVars)
+            elif baseVars:
+                variables.update(baseVars)
         return variables
 
     def loadYaml(self, filePath, strict=True):
