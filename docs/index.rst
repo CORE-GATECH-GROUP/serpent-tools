@@ -51,7 +51,7 @@ using :term:`SERPENT`.
    install
    changelog
    examples/index
-   readers/index
+   readers.rst
    containers/index
    utilities/index
    samplers/index
