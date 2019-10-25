@@ -109,7 +109,7 @@ def debug(message):
 
 
 def info(message):
-    """Log an info message, e.g. status update."""
+    """Log an info message"""
     __logger__.info('%s', message)
 
 
