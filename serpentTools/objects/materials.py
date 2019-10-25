@@ -382,7 +382,7 @@ class DepletedMaterial(DepletedMaterialBase):
         else:
             if isinstance(names, str):
                 names = [names, ]
-            if isinstance(zai, str):
+            if isinstance(zai, (int, str)):
                 zai = [zai, ]
         yVals = self.getValues(xUnits, yUnits, xVals, names, zai)
         ax = ax or pyplot.gca()
