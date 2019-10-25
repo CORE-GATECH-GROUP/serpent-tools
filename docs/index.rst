@@ -54,8 +54,8 @@ using :term:`SERPENT`.
    readers.rst
    containers.rst
    samplers.rst
+   settings.rst
    utilities/index
-   settingsTop
    variableGroupsTop
    command-line
    develop/index
