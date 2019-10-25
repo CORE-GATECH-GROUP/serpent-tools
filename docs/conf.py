@@ -20,8 +20,7 @@
 import os
 import sys
 
-sys.path.append(os.path.abspath('../serpentTools/'))
-from _version import get_versions
+sys.path.append(os.path.abspath('..'))
 
 # -- General configuration ------------------------------------------------
 
@@ -52,18 +51,7 @@ master_doc = 'index'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-v = get_versions()['version']
-# Strip out all after the commit offset and hash
-if 'dirty' in v:
-    v = v[:v.find('dirty') - 1]
-# full release number, including alpha/beta/rc tags and versioneer offsets
-release = v
-if '+' in v:
-    v = v[:v.find('+')]
-# shorter version M.m.p
-version = v
-
-del get_versions, v
+version = "0.8.0"
 
 # General information about the project.
 project = 'serpentTools'
@@ -192,8 +180,9 @@ texinfo_documents = [
 # Autogenerate stub files for autosummary
 autosummary_generate = True
 
-autodoc_mock_imports = ["serpentTools"]
-
+autodoc_default_options = {
+    'members': True,
+}
 
 # -- Links to external documentation
 intersphinx_mapping = {
