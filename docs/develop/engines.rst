@@ -1,15 +1,14 @@
 .. _parser-engines:
 
-===============
 Parsing Engines
 ===============
 
-The 
-:class:`serpentTools.engines.KeywordParser` and
-:class:`serpentTools.engines.PatternReader`
+.. currentmodule:: serpentTools.engines
+
+The :class:`KeywordParser` and :class:`PatternReader`
 contained in ``serpentTools/engines.py`` are part of the 
 `drewtils <https://github.com/drewejohnson/drewtils>`_ v0.1.9 package and
-are provided under the following license:
+are provided under the following license::
 
 The MIT License (MIT)
 
@@ -47,8 +46,18 @@ help break up these files into more digestible pieces.
     :py:class:`~serpentTools.parsers.branching.BranchingReader` are not
     well suited for this type of parsing.
 
-.. autoclass:: serpentTools.engines.KeywordParser
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+    :template: myclass.rst
 
-.. autoclass:: serpentTools.engines.PatternReader
+    KeywordParser
+    PatternReader
+
+.. currentmodule:: serpentTools.parsers.base
+
+The :class:`CSCStreamProcessor` is provided to help with reading
+sparse matrices provided by Serpent. These are current found in the
+depletion and fission matrix files.
 
 .. autoclass:: serpentTools.parsers.base.CSCStreamProcessor
