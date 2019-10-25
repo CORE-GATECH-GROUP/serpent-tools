@@ -18,7 +18,6 @@ without any loss of comprehension.
     codestyle.rst
     plotting.rst
     utils.rst
-    plot-routines.rst
     converter.rst
     engines.rst
     documentation.rst
