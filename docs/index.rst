@@ -52,7 +52,7 @@ using :term:`SERPENT`.
    changelog
    examples/index
    readers.rst
-   containers/index
+   containers.rst
    utilities/index
    samplers/index
    settingsTop
