@@ -53,8 +53,8 @@ using :term:`SERPENT`.
    examples/index
    readers.rst
    containers.rst
+   samplers.rst
    utilities/index
-   samplers/index
    settingsTop
    variableGroupsTop
    command-line
