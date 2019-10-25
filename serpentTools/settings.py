@@ -277,6 +277,20 @@ class UserSettingsLoader(dict):
         dict.__init__(self, self._defaultLoader.retrieveDefaults())
 
     def __enter__(self):
+        """Use as a context manager to easily reset settings
+
+        Examples
+        --------
+        >>> rc["serpentVersion"] = "2.1.30"
+        >>> rc["serpentVersion"]
+        "2.1.30"
+        >>> with rc:
+        ...     rc["serpentVersion"] = "2.1.29"
+        ...     print(rc["serpentVersion"])
+        "2.1.29"
+        >>> rc["serpentVersion"]
+        "2.1.30"
+        """
         self.__inside = True
         return self
 
@@ -293,7 +307,8 @@ class UserSettingsLoader(dict):
         ----------
         name: str
             Full name of the setting
-        value: value to be set
+        value: str
+            value to be set
 
         Raises
         ------
