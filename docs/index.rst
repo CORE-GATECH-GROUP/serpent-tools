@@ -51,11 +51,12 @@ using :term:`SERPENT`.
    install
    changelog
    examples/index
-   readers/index
-   containers/index
+   readers.rst
+   containers.rst
+   samplers.rst
+   settings.rst
+   misc.rst
    utilities/index
-   samplers/index
-   settingsTop
    variableGroupsTop
    command-line
    develop/index

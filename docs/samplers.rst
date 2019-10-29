@@ -10,9 +10,15 @@ When generating input files for such runs, it is key that each have a unique ran
 This can be facilitated with the :func:`~serpentTools.seed.seedFiles` function, or through
 the command line with :ref:`cli-seed`.
 
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+.. currentmodule:: serpentTools.samplers
 
-   sample-detector.rst
-   sample-depletion.rst
+.. autosummary::
+    :toctree: generated
+    :nosignatures:
+    :template: myclass.rst
+
+    DetectorSampler
+    SampledDetector
+    DepletionSampler
+    SampledDepletedMaterial
+

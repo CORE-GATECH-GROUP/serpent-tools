@@ -63,4 +63,4 @@ ENV/
 # pycharm
 .idea/*
 
-/docs/*/generated/
+/docs/**/generated/
