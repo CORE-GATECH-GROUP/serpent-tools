@@ -53,7 +53,7 @@ support the command line sub-command :ref:`cli-seed`.
 .. autosummary::
     :toctree: generated
     :nosignatures:
-    :template: myfunctions.rst
+    :template: myfunction.rst
 
     seedFiles
     generateSeed
