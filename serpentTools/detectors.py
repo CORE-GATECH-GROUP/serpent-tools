@@ -447,6 +447,9 @@ class Detector(NamedObject):
         fixed: dict or None
             Dictionary where keys are strings pointing to dimensions in
         """
+        if fixed is None:
+            return (slice(None), ) * len(self.indexes)
+
         keys = set(fixed)
         slices = tuple()
         for key in self.indexes:
