@@ -385,9 +385,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             plotData = self._slice(data, rows, cols)[0]
             ax.plot(xVals, plotData, **sampleKwargs)
 
-        ax.plot(
-            xVals, primaryData, label='Mean value - N={}'.format(self._index),
-            **meanKwargs)
+        ax.plot(xVals, primaryData, label='Mean value', **meanKwargs)
 
         ax = sigmaLabel(ax, xlabel or DEPLETION_PLOT_LABELS[xUnits],
                         ylabel or DEPLETION_PLOT_LABELS[yUnits])

@@ -276,8 +276,7 @@ class SampledDetector(Detector):
         for data in self.allTallies:
             ax.plot(xdata, data[slices], **sampleKwargs)
 
-        ax.plot(xdata, samplerData, label='Mean value - N={}'.format(
-            self.allTallies.shape[0]), **meanKwargs)
+        ax.plot(xdata, samplerData, label='Mean value', **meanKwargs)
         formatPlot(ax, logx=logx, logy=logy, loglog=loglog, xlabel=xlabel,
                    ylabel=ylabel, legend=legend)
         return ax
