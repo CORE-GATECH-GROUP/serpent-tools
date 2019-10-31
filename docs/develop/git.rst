@@ -70,50 +70,24 @@ Following a release, the following actions should be performed:
 .. _dev-commitMessages:
 
 Commit Messages
----------------
+===============
 
-Helpful and detailed commit messages can make searching for changes easier and 
-accelerate the review process.
-Here is the sections `straight from the git documentation <https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project>`_ on commit messages:
+When possible, please provide commit messages that:
 
-.. highlights::
+* have a initial single summary line (~<50 characters),
+* followed by a blank line,
+* followed by as detailed of a description as possible wrapped
+  to ~70 characters wide
 
-    The last thing to keep in mind is the commit message. 
-    Getting in the habit of creating quality commit messages makes using 
-    and collaborating with Git a lot easier. As a general rule, your
-    messages should start with a single line that’s no more than about 
-    50 characters and that describes the changeset concisely, followed 
-    by a blank line, followed by a more detailed explanation.
-    The Git project requires that the more detailed explanation include 
-    your motivation for the change and contrast its implementation with 
-    previous behavior — this is a good guideline to follow.
-    It’s also a good idea to use the imperative present tense in these 
-    messages. In other words, use commands.
-    Instead of “I added tests for” or “Adding tests for,” use “Add tests for.” 
+Helpful and detailed commit messages can make searching for
+changes easier and accelerate the review process.
+As an added benefit, if your pull request is a single commit,
+GitHub will automatically populate the request summary with your
+commit message!
 
-Here is a useful template for a good commit message via 
-`Tim Pope <https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_
+Other references:
 
-.. code-block:: none
-
-    Capitalized, short (50 chars or less) summary
-
-    More detailed explanatory text, if necessary.  Wrap it to about 72
-    characters or so.  In some contexts, the first line is treated as the
-    subject of an email and the rest of the text as the body.  The blank
-    line separating the summary from the body is critical (unless you omit
-    the body entirely); tools like rebase can get confused if you run the
-    two together.
-
-    Write your commit message in the imperative: "Fix bug" and not "Fixed bug"
-    or "Fixes bug."  This convention matches up with commit messages generated
-    by commands like git merge and git revert.
-
-    Further paragraphs come after blank lines.
-
-    - Bullet points are okay, too
-
-    - Typically a hyphen or asterisk is used for the bullet, followed by a
-        single space, with blank lines in between, but conventions vary here
-
-      - Use a hanging indent
+* `git documentation on commit messages
+  <https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project>`_
+* `Good example commit message - Tim Pope
+  <https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html>`_
