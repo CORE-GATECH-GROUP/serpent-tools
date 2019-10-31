@@ -27,6 +27,11 @@ Changelog
   :class:`~serpentTools.objects.UnivTuple`
 * Keys for microscopic cross sections in ``MicroXSReader.xsVal`` and
   ``MicroXSReader.xsUnc`` are :class:`~serpentTools.MicroXSTuple`
+* Spread plots for sampled detector and depletion containers allow
+  changing how the mean data and sampled data are plotted by passing
+  dictionary of matplotlib commands, e.g.
+  ``meanKwargs={"c": "r", "marker": x"}`` would plot the mean data in
+  red with crosses as markers.
 
 .. _v0.8.0-bug:
 
