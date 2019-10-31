@@ -183,7 +183,7 @@ class SampledDetector(Detector):
             self._allTallies = tallies
             return
 
-        if tallies.shape != self._tallies.shape:
+        if tallies.shape != self._allTallies.shape:
             raise ValueError("Expected shape to be {}, is {}".format(
                 self._allTallies.shape, tallies.shape))
 
@@ -205,7 +205,7 @@ class SampledDetector(Detector):
             self._allErrors = errors
             return
 
-        if errors.shape != self._errors.shape:
+        if errors.shape != self._allErrors.shape:
             raise ValueError("Expected shape to be {}, is {}".format(
                 self._allErrors.shape, errors.shape))
 
