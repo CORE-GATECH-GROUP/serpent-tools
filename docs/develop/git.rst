@@ -4,6 +4,17 @@
 Version Control
 ===============
 
+``serpentTools`` uses :term:`git` for version control. All the source
+code can be found at https://github.com/CORE-GATECH-GROUP/serpent-tools.
+Two main branches are provided: ``master`` and ``develop``, and the
+`git flow <https://nvie.com/posts/a-successful-git-branching-model/>`_ branching
+model is followed.
+The ``master`` branch should be considered stable and updated coincident with
+each release.
+The ``develop`` branch is updated with more frequency as features are introduced.
+This is the main branch of the project, and features should be introduced off
+of this branch.
+
 ``serpentTools`` follows the `semantic versioning <https://semver.org/>`_
 system, where the version number as found in ``setup.py``,
 ``serpentTools/__init__.py``, and ``docs/conf.py`` has the following form:
@@ -41,11 +52,6 @@ If a message is used, the messages should be a brief message describing the chan
 On the release page, a more detail list of changes, such as pull requests and issues closed, 
 should be listed.
 
-In the future, python installers such as 
-`python wheels <https://pythonwheels.com/>`_ can be built by running ``python setup.py bdist_wheel``.
-These can be manually uploaded to the release page, or the 
-`python package index <https://pypi.python.org/pypi>`_ for users who only want the python
-files without examples or documentation.
 Before and after a release, the project version number should be updated in the
 following places:
 
@@ -53,6 +59,13 @@ following places:
 2. ``serpentTools/__init__.py``
 3. ``docs/conf.py``
 
+Following a release, the following actions should be performed:
+
+1. Archived and installable python files should be created
+2. Archived and installable python files should be uploaded to the
+   `python package index <https://pypi.python.org/pypi>`_
+3. The tag should be pushed to GitHub and marked as a release, including information
+   on the changes introduced in this release
 
 .. _dev-commitMessages:
 
