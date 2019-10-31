@@ -304,7 +304,8 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         return ax
 
     @magicPlotDocDecorator
-    def spreadPlot(self, xUnits, yUnits, isotope, timePoints=None, ax=None,
+    def spreadPlot(self, xUnits, yUnits, isotope=None, zai=None,
+                   timePoints=None, ax=None,
                    xlabel=None, ylabel=None, logx=False, logy=False,
                    loglog=False, legend=True):
         """
@@ -312,13 +313,15 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         Parameters
         ----------
-        xUnits: str
+        xUnits : str
             name of x value to obtain, e.g. ``'days'``, ``'burnup'``
-        yUnits: str
+        yUnits : str
             name of y value to return, e.g. ``'adens'``, ``'burnup'``
-        isotope: str
+        isotope : str, optional
             Plot data for this isotope
-        timePoints: list or None
+        zai : int, optional
+            Plot data for this isotope. Not allowed if ``isotope`` given.
+        timePoints : list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
         {ax}
@@ -347,13 +350,21 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         if not self.allData:
             raise SamplerError("Data from all sampled files has been freed "
                                "and cannot be used in this plot method")
+        if isotope is not None and zai is not None:
+            raise ValueError("Please specify isotope name or zai, not both")
+        elif isotope is None and zai is None:
+            raise ValueError("Isotope name or zai needed")
+
         ax = ax or pyplot.gca()
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))
         xVals = timePoints if timePoints is not None else (
             self.days if xUnits == 'days' else self.burnup)
-        rows = self._getRowIndices([isotope])
+        if isotope is not None:
+            rows = self._getRowIndices("names", [isotope])
+        else:
+            rows = self._getRowIndices("zai", [zai])
         cols = self._getColIndices(xUnits, timePoints)
         primaryData = self._slice(self.data[yUnits], rows, cols)[0]
         N = self._index
