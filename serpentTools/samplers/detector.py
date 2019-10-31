@@ -244,15 +244,6 @@ class SampledDetector(Detector):
         -------
         {rax}
 
-        Raises
-        ------
-        AttributeError
-            If ``allTallies`` is None, indicating this object has been
-            instructed to free up data from all sampled files
-        :class:`~serpentTools.SerpentToolsException`
-            If data to be plotted, after applying ``fixed``, is not
-            one dimensional
-
         """
         if self.allTallies is None:
             raise AttributeError(

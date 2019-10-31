@@ -344,16 +344,6 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         -------
         {rax}
 
-        Raises
-        ------
-        :class:`~serpentTools.SamplerError`
-            If ``self.allData`` is empty. Sampler was instructed to
-            free all materials and does not retain data from all containers
-
-        See Also
-        --------
-        :meth:`~serpentTools.samplers.depletion.SampledDepletedMaterial.plot`
-
         """
         if not self.allData:
             raise SamplerError("Data from all sampled files has been freed "
