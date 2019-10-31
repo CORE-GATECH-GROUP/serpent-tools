@@ -98,8 +98,7 @@ class DetectorSampler(Sampler):
 
 
 class SampledDetector(Detector):
-    """
-    Class to store aggregated detector data
+    """Class to store aggregated detector data
 
     Parameters
     ----------
@@ -165,7 +164,8 @@ class SampledDetector(Detector):
 
         Detector.__init__(self, name, tallies=tallies, errors=errors,
                           grids=grids, indexes=indexes)
-        self.deviation = self.allTallies.std(axis=0)
+
+        self._deviation = None
 
     @property
     def allTallies(self):
@@ -210,6 +210,36 @@ class SampledDetector(Detector):
                 self._allErrors.shape, errors.shape))
 
         self._allErrors = errors
+
+    @property
+    def deviation(self):
+        if self._deviation is not None:
+            return self._deviation
+        if self.allTallies is not None:
+            return self.allTallies.std(axis=0)
+        return None
+
+    @deviation.setter
+    def deviation(self, dev):
+        if dev is None:
+            self._deviation = None
+            return
+
+        dev = asarray(dev)
+        if self.deviation is not None and dev.shape != self.deviation.shape:
+            raise ValueError(
+                "Deviation shape should be {}, is {}".format(
+                    self.deviation.shape, dev.shape))
+        elif self.tallies is not None and dev.shape != self.tallies.shape:
+            raise ValueError(
+                "Deviation shape {} incompatible with tally shape {}"
+                .format(dev.shape, self.tallies.shape))
+        elif (self.allTallies is not None
+              and dev.shape != self.allTallies.shape[1:]):
+            raise ValueError(
+                "Deviation shape {} incompatible with tally shape {}"
+                .format(dev.shape, self.allTallies.shape))
+        self._deviation = dev
 
     @magicPlotDocDecorator
     def spreadPlot(self, xdim=None, fixed=None, ax=None, xlabel=None,
