@@ -4,41 +4,39 @@
 Version Control
 ===============
 
-This project utilizes `versioneer <https://github.com/warner/python-versioneer>`_
-to update the project version based on release and commit history.
-Using this tool allows the project version to match :pep:`440` style versions, with
-minor exceptions for developer (non-public release) versions.
-For public releases, where sufficient changes have been made through added features,
-bug fixes, or wholesale changes, the version will be of the form ``major.release.patch``.
-Changes in ``major`` indicate vast user-facing changes to
-the core functionality and/or API, while changes to ``release`` indicate a 
-new feature added or substantial improvement that does not alter the user-facing API.
-In the event of bug fixes or minor tweaks, the ``patch`` number should be incremented.
+``serpentTools`` follows the `semantic versioning <https://semver.org/>`_
+system, where the version number as found in ``setup.py``,
+``serpentTools/__init__.py``, and ``docs/conf.py`` has the following form:
+``major.minor.patch``, e.g. ``0.8.0`` or ``1.1.20``. Each of the numbers
+should be incremented prior to new releases with the following designation:
 
-For non-public releases, e.g. the develop branch, ``versioneer`` includes some additional
-information in the project version. Here, the version is of the form
-``major.minor.patch[+/-]N.commit[.dirty]``.
-``[+/-]N`` indicates that this version is ``N`` commits ahead of or behind the latest
-public release, and ``commit`` is the short version of the latest commit on the branch for this 
-version. ``dirty`` will be present if the current version has uncommitted changes.
-This level of precision with respect to versioning allows for easy identification if
-people are working on multiple branches and/or having issues.
+1. Changes that are not backwards compatible should be denoted by
+   incrementing the major number.
+2. Changes that are backwards compatible and introduce sufficient new features
+   to the API should be denoted by incrementing the minor number.
+3. Changes that are largely internal and not recognizable by end-users should
+   be denoted by incrementing the patch number
+
+.. note::
+
+    Until a stable 1.0.0 release, the positions are essentially shifted,
+    e.g. the version is ``0.major.minor``
+
+.. _dev-release:
 
 Releases
 ========
 
 Releases should be done with `git tags <https://git-scm.com/docs/git-tag>`_ from the master branch 
 and then pushed to GitHub. 
-``versioneer`` works by locating these tags in the git history, and works best with annotated tags,
-which can be created with::
+Annotated tags should be used and can be created with::
 
     git tag -a <version>
     git tag -s <version>
     git tag -m <msg> <version>
 
 Pushing these tags to GitHub creates a new 
-`release <https://github.com/CORE-GATECH-GROUP/serpent-tools/releases>`_, and
-shares the tag with all who have cloned the repository.
+`release <https://github.com/CORE-GATECH-GROUP/serpent-tools/releases>`_.
 If a message is used, the messages should be a brief message describing the changes on this tag.
 On the release page, a more detail list of changes, such as pull requests and issues closed, 
 should be listed.
@@ -48,6 +46,12 @@ In the future, python installers such as
 These can be manually uploaded to the release page, or the 
 `python package index <https://pypi.python.org/pypi>`_ for users who only want the python
 files without examples or documentation.
+Before and after a release, the project version number should be updated in the
+following places:
+
+1. ``setup.py``
+2. ``serpentTools/__init__.py``
+3. ``docs/conf.py``
 
 
 .. _dev-commitMessages:

@@ -17,6 +17,9 @@ assignees: ''
 
 ## Versions
 
+Please provide the following:
+
 * Version  from ``serpentTools.__version__``
 * Python version - ``python --version``
 * IPython or Jupyter version if applicable
+* If using the development version, the output from ``git describe``
