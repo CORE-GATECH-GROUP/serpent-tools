@@ -5,13 +5,16 @@
 # sdist: create a source distribution and install from that
 # bdist_wheel: create a wheel and install from that
 
-if [[ -z $ST_INSTALL ]]; then exit; fi
-
 set -ev
 set -o pipefail
 
-ST_VERSION=$(python setup.py version | grep Version | cut -d" " -f 2)
-echo $ST_VERSION
+# Run only for CI builds
+if [[ $CI != true ]]; then
+    echo Instal script only meant to be run for CI testing
+    exit 1
+fi
+
+if [[ -z $ST_INSTALL ]]; then exit 1; fi
 
 case $ST_INSTALL in
     'setup')
@@ -19,18 +22,17 @@ case $ST_INSTALL in
         ;;
     'sdist')
         python setup.py sdist
-        pip install dist/serpentTools-${ST_VERSION}.tar.gz
+        pip install dist/serpentTools-*.tar.gz
         ;;
     'bdist_wheel')
         python setup.py bdist_wheel
-        easy_install dist/serpentTools-${ST_VERSION}*whl
+        easy_install dist/serpentTools-*whl
         ;;
     'bdist_egg')
         python setup.py bdist_egg
-        easy_install dist/serpentTools-${ST_VERSION}*egg
+        easy_install dist/serpentTools-*egg
         ;;
     *)
         echo No install option
         exit 1
 esac
-                
