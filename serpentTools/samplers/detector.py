@@ -12,7 +12,7 @@ from serpentTools.messages import SerpentToolsException
 from serpentTools.utils import magicPlotDocDecorator, formatPlot
 from serpentTools.parsers.detector import DetectorReader
 from serpentTools.detectors import Detector
-from serpentTools.samplers.base import Sampler, SPREAD_PLOT_KWARGS
+from serpentTools.samplers.base import Sampler
 
 
 class DetectorSampler(Sampler):
@@ -212,7 +212,8 @@ class SampledDetector(Detector):
         self._allErrors = errors
 
     @magicPlotDocDecorator
-    def spreadPlot(self, xdim=None, fixed=None, ax=None, xlabel=None,
+    def spreadPlot(self, xdim=None, fixed=None, sampleKwargs=None,
+                   meanKwargs=None, ax=None, xlabel=None,
                    ylabel=None, logx=False, logy=False, loglog=False,
                    legend=True):
         """
@@ -224,6 +225,13 @@ class SampledDetector(Detector):
             Bin index to place on the x-axis
         fixed: None or dict
             Dictionary controlling the reduction in data down to one dimension
+        sampleKwargs : dict, optional
+            Additional matplotlib-acceptable arguments to be passed into the
+            plot when plotting data from unique runs, e.g.
+            ``{"c": k, "alpha": 0.5}``.
+        meanKwargs : dict, optional
+            Additional matplotlib-acceptable argumentst to be used when
+            plotting the mean value, e.g. ``{"c": "b", "marker": "o"}``
         {ax}
         {xlabel}
         {ylabel}
@@ -258,12 +266,18 @@ class SampledDetector(Detector):
                     samplerData.shape))
         xdata, autoX = self._getPlotXData(xdim, samplerData)
         xlabel = xlabel or autoX
+
+        if sampleKwargs is None:
+            sampleKwargs = {"c": "k", "alpha": 0.5, "marker": ""}
+        if meanKwargs is None:
+            meanKwargs = {"c": "#0173b2", "marker": "o"}
+
         ax = ax or pyplot.gca()
         for data in self.allTallies:
-            ax.plot(xdata, data[slices], **SPREAD_PLOT_KWARGS)
+            ax.plot(xdata, data[slices], **sampleKwargs)
 
         ax.plot(xdata, samplerData, label='Mean value - N={}'.format(
-            self.allTallies.shape[0]))
+            self.allTallies.shape[0]), **meanKwargs)
         formatPlot(ax, logx=logx, logy=logy, loglog=loglog, xlabel=xlabel,
                    ylabel=ylabel, legend=legend)
         return ax
