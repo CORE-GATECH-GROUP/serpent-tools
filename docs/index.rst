@@ -44,7 +44,7 @@ using :term:`SERPENT`.
     <https://doi.org/10.5281/zenodo.1301036>`_,".
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    overview
