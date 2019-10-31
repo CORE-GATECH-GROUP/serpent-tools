@@ -16,7 +16,7 @@ from serpentTools.utils import (
 from serpentTools.objects.materials import DepletedMaterialBase
 from serpentTools.parsers.depletion import DepletionReader, DepPlotMixin
 from serpentTools.samplers.base import (
-    Sampler, SampledContainer, SPREAD_PLOT_KWARGS,
+    Sampler, SampledContainer,
 )
 
 CONSTANT_MDATA = ('names', 'zai')
@@ -305,6 +305,7 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
     @magicPlotDocDecorator
     def spreadPlot(self, xUnits, yUnits, isotope=None, zai=None,
+                   sampleKwargs=None, meanKwargs=None,
                    timePoints=None, ax=None,
                    xlabel=None, ylabel=None, logx=False, logy=False,
                    loglog=False, legend=True):
@@ -321,6 +322,13 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             Plot data for this isotope
         zai : int, optional
             Plot data for this isotope. Not allowed if ``isotope`` given.
+        sampleKwargs : dict, optional
+            Additional matplotlib-acceptable arguments to be passed into the
+            plot when plotting data from unique runs, e.g.
+            ``{"c": k, "alpha": 0.5}``.
+        meanKwargs : dict, optional
+            Additional matplotlib-acceptable argumentst to be used when
+            plotting the mean value, e.g. ``{"c": "b", "marker": "o"}``
         timePoints : list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
@@ -355,6 +363,11 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         elif isotope is None and zai is None:
             raise ValueError("Isotope name or zai needed")
 
+        if sampleKwargs is None:
+            sampleKwargs = {"c": "k", "alpha": 0.5, "marker": ""}
+        if meanKwargs is None:
+            meanKwargs = {"c": "#0173b2", "marker": "o"}
+
         ax = ax or pyplot.gca()
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
@@ -367,15 +380,18 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
             rows = self._getRowIndices("zai", [zai])
         cols = self._getColIndices(xUnits, timePoints)
         primaryData = self._slice(self.data[yUnits], rows, cols)[0]
-        N = self._index
-        sampledData = self.allData[yUnits][:N]
-        for n in range(N):
-            plotData = self._slice(sampledData[n], rows, cols)[0]
-            ax.plot(xVals, plotData, **SPREAD_PLOT_KWARGS)
-        ax.plot(xVals, primaryData, label='Mean value')
+
+        for data in self.allData[yUnits][:self._index]:
+            plotData = self._slice(data, rows, cols)[0]
+            ax.plot(xVals, plotData, **sampleKwargs)
+
+        ax.plot(
+            xVals, primaryData, label='Mean value - N={}'.format(self._index),
+            **meanKwargs)
 
         ax = sigmaLabel(ax, xlabel or DEPLETION_PLOT_LABELS[xUnits],
                         ylabel or DEPLETION_PLOT_LABELS[yUnits])
+
         formatPlot(ax, legend=legend, logx=logx, logy=logy, loglog=loglog)
         return ax
 
