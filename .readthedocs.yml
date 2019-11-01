@@ -1,0 +1,21 @@
+# Config file for read the docs
+# See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+
+version : 2
+
+sphinx:
+    configuration: docs/conf.py
+    fail_on_warning: true
+    builder: html
+
+# Build only pdf
+formats: 
+    - pdf
+
+# Configure python environment
+python:
+    version: 3.5
+    install:
+        - requirements: requirements.txt
+        - requirements: docs/requirements.txt
+    system_packages: true
