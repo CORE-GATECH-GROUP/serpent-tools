@@ -16,7 +16,7 @@ from serpentTools.utils import (
 from serpentTools.objects.materials import DepletedMaterialBase
 from serpentTools.parsers.depletion import DepletionReader, DepPlotMixin
 from serpentTools.samplers.base import (
-    Sampler, SampledContainer, SPREAD_PLOT_KWARGS,
+    Sampler, SampledContainer,
 )
 
 CONSTANT_MDATA = ('names', 'zai')
@@ -304,7 +304,9 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         return ax
 
     @magicPlotDocDecorator
-    def spreadPlot(self, xUnits, yUnits, isotope, timePoints=None, ax=None,
+    def spreadPlot(self, xUnits, yUnits, isotope=None, zai=None,
+                   sampleKwargs=None, meanKwargs=None,
+                   timePoints=None, ax=None,
                    xlabel=None, ylabel=None, logx=False, logy=False,
                    loglog=False, legend=True):
         """
@@ -312,13 +314,22 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
 
         Parameters
         ----------
-        xUnits: str
+        xUnits : str
             name of x value to obtain, e.g. ``'days'``, ``'burnup'``
-        yUnits: str
+        yUnits : str
             name of y value to return, e.g. ``'adens'``, ``'burnup'``
-        isotope: str
+        isotope : str, optional
             Plot data for this isotope
-        timePoints: list or None
+        zai : int, optional
+            Plot data for this isotope. Not allowed if ``isotope`` given.
+        sampleKwargs : dict, optional
+            Additional matplotlib-acceptable arguments to be passed into the
+            plot when plotting data from unique runs, e.g.
+            ``{"c": k, "alpha": 0.5}``.
+        meanKwargs : dict, optional
+            Additional matplotlib-acceptable argumentst to be used when
+            plotting the mean value, e.g. ``{"c": "b", "marker": "o"}``
+        timePoints : list or None
             If given, select the time points according to those
             specified here. Otherwise, select all points
         {ax}
@@ -333,38 +344,42 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         -------
         {rax}
 
-        Raises
-        ------
-        :class:`~serpentTools.SamplerError`
-            If ``self.allData`` is empty. Sampler was instructed to
-            free all materials and does not retain data from all containers
-
-        See Also
-        --------
-        :meth:`~serpentTools.samplers.depletion.SampledDepletedMaterial.plot`
-
         """
         if not self.allData:
             raise SamplerError("Data from all sampled files has been freed "
                                "and cannot be used in this plot method")
+        if isotope is not None and zai is not None:
+            raise ValueError("Please specify isotope name or zai, not both")
+        elif isotope is None and zai is None:
+            raise ValueError("Isotope name or zai needed")
+
+        if sampleKwargs is None:
+            sampleKwargs = {"c": "k", "alpha": 0.5, "marker": ""}
+        if meanKwargs is None:
+            meanKwargs = {"c": "#0173b2", "marker": "o"}
+
         ax = ax or pyplot.gca()
         if xUnits not in ('days', 'burnup'):
             raise KeyError("Plot method only uses x-axis data from <days> "
                            "and <burnup>, not {}".format(xUnits))
         xVals = timePoints if timePoints is not None else (
             self.days if xUnits == 'days' else self.burnup)
-        rows = self._getRowIndices([isotope])
+        if isotope is not None:
+            rows = self._getRowIndices("names", [isotope])
+        else:
+            rows = self._getRowIndices("zai", [zai])
         cols = self._getColIndices(xUnits, timePoints)
         primaryData = self._slice(self.data[yUnits], rows, cols)[0]
-        N = self._index
-        sampledData = self.allData[yUnits][:N]
-        for n in range(N):
-            plotData = self._slice(sampledData[n], rows, cols)[0]
-            ax.plot(xVals, plotData, **SPREAD_PLOT_KWARGS)
-        ax.plot(xVals, primaryData, label='Mean value')
+
+        for data in self.allData[yUnits][:self._index]:
+            plotData = self._slice(data, rows, cols)[0]
+            ax.plot(xVals, plotData, **sampleKwargs)
+
+        ax.plot(xVals, primaryData, label='Mean value', **meanKwargs)
 
         ax = sigmaLabel(ax, xlabel or DEPLETION_PLOT_LABELS[xUnits],
                         ylabel or DEPLETION_PLOT_LABELS[yUnits])
+
         formatPlot(ax, legend=legend, logx=logx, logy=logy, loglog=loglog)
         return ax
 

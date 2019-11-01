@@ -14,11 +14,6 @@ from serpentTools.parsers.base import BaseReader
 
 MISSING_KEY_FLAG = "<missing>"
 
-SPREAD_PLOT_KWARGS = {
-    'c': 'k',
-    'alpha': 0.5
-}
-
 
 def extendFiles(files):
     """Return a set of files where some may contain * globs"""
@@ -47,7 +42,7 @@ class Sampler(object):
         Single file or iterable (list) of files from which to read.
         Supports file globs, ``*det0.m`` expands to all files that
         end with ``det0.m``
-parser: subclass of BaseReader
+    parser: subclass of BaseReader
         Class that will be used to read all files
 
     Attributes
