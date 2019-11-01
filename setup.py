@@ -9,8 +9,6 @@ except ImportError:
     warnings.warn('Installing with distutils. Use of setuptools is preferred')
     HAS_SETUPTOOLS = False
 
-import versioneer
-
 
 DATA_EXTS = {'*.m', '*.coe'}
 
@@ -44,6 +42,8 @@ with open('./requirements.txt') as req:
 
 pythonRequires = '>=2.7,!=3.0,!=3.1,!=3.2,!=3.3,!=3.4'
 
+version = "0.8.0rc0"
+
 setupArgs = {
     'name': 'serpentTools',
     'packages': ['serpentTools', 'serpentTools.parsers', 'serpentTools.utils',
@@ -59,12 +59,11 @@ setupArgs = {
     'classifiers': classifiers,
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',
-    'version': versioneer.get_version(),
+    'version': version,
     'package_data': {
         'serpentTools.data': ['data/{}'.format(ext) for ext in DATA_EXTS],
     },
     'include_package_data': True,
-    'cmdclass': versioneer.get_cmdclass(),
     'data_files': [
         ('serpentTools', ['serpentTools/variables.yaml', ]),
         ('serpentTools/data', getDataFiles()),
@@ -82,4 +81,4 @@ if not HAS_SETUPTOOLS:
     warnings.warn(
         'The following packages are required to use serpentTools version '
         '{}:\n{}\nPlease ensure they are installed prior to use'
-        .format(versioneer.get_version(), '\n'.join(installRequires)))
+        .format(version, '\n'.join(installRequires)))
