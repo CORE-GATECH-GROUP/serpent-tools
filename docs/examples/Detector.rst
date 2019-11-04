@@ -311,7 +311,7 @@ used in conjunction with the above options to format the mesh plots.
 +------------------+--------------------------------------------------------+
 | ``cbarLabel``    | Label to apply to the colorbar                         |
 +------------------+--------------------------------------------------------+
-| ``logScale``     | If true, use a logarithmic scale for the colormap      |
+| ``logColor``     | If true, use a logarithmic scale for the colormap      |
 +------------------+--------------------------------------------------------+
 | ``normalizer``   | Apply a custom non-linear normalizer to the colormap   |
 +------------------+--------------------------------------------------------+
