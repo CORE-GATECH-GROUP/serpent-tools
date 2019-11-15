@@ -12,7 +12,7 @@ import warnings
 import logging
 from logging import Handler
 from logging.config import dictConfig
-from serpentTools._compat import Callable
+from six.moves.collections_abc import Callable
 
 from numpy import ndarray
 

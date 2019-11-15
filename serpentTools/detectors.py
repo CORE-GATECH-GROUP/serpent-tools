@@ -25,6 +25,7 @@ from warnings import warn
 from numbers import Real
 
 from six import iteritems
+from six.moves.collections_abc import Mapping
 from numpy import (
     unique, empty, inf, hstack, arange, log, divide, asfortranarray,
     ndarray, asarray,
@@ -46,8 +47,6 @@ from serpentTools.utils import (
 )
 from serpentTools.utils.compare import getLogOverlaps
 from serpentTools.io.hooks import matlabHook
-# PY2 compatibility
-from serpentTools._compat import Mapping
 
 __all__ = ['Detector', 'CartesianDetector', 'HexagonalDetector',
            'CylindricalDetector', 'SphericalDetector']
