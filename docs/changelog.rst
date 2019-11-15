@@ -6,6 +6,21 @@
 Changelog
 =========
 
+.. _v0.8.1:
+
+:release-tag:`0.8.1`
+====================
+
+* Use ``six>=1.13.0``
+* Use ``yaml>=5.1.1``
+
+.. _v0.8.1-bug:
+
+Bug Fixes
+---------
+
+* Fix :ref:`detector-names` setting
+
 .. _v0.8.0:
 
 :release-tag:`0.8.0`
