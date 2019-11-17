@@ -7,7 +7,8 @@ from numpy import (
     equal, asarray,
 )
 
-from serpentTools._compat import Iterable
+from six.moves.collections_abc import Iterable
+
 from serpentTools.messages import (
     error,
     logIdentical,

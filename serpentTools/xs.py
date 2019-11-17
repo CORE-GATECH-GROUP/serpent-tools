@@ -8,9 +8,9 @@ from warnings import warn
 
 from six import iteritems
 from six.moves import range
+from six.moves.collections_abc import Iterable
 from numpy import empty, nan, array, ndarray
 
-from serpentTools._compat import Iterable
 from serpentTools import BranchingReader
 
 __all__ = [

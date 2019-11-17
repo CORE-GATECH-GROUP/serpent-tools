@@ -9,9 +9,9 @@ from abc import ABCMeta, abstractmethod
 import re
 
 from six import add_metaclass
+from six.moves.collections_abc import Callable
 
 from numpy import array
-from serpentTools._compat import Callable
 from serpentTools.messages import info
 from serpentTools.settings import rc
 from serpentTools.objects.base import BaseObject
