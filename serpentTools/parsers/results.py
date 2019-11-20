@@ -2,7 +2,6 @@
 from collections import OrderedDict
 from numbers import Real
 import re
-from six import iteritems
 
 from numpy import array, vstack, empty
 from cycler import cycler
@@ -393,7 +392,7 @@ class ResultsReader(XSReader):
         if universe is not None:
             return universe
 
-        for key, universe in iteritems(self.universes):
+        for key, universe in self.universes.items():
             for uItem, sItem in zip(key, searchKey):
                 if sItem is None:
                     continue
@@ -456,7 +455,7 @@ class ResultsReader(XSReader):
                 .format(self.filePath, self._numUniv,
                         self._counter['rslt'], self._counter['meta']))
         if not self.resdata and not self.metadata:
-            for keys, dictUniv in iteritems(self.universes):
+            for keys, dictUniv in self.universes.items():
                 if dictUniv.hasData():
                     return
             raise SerpentToolsException(
@@ -603,7 +602,7 @@ class ResultsReader(XSReader):
         """Replace some items in metadata dictionary with easier data types."""
         mdata = self.metadata
         origKeys = set(mdata.keys())
-        for converter, keys in iteritems(METADATA_CONV):
+        for converter, keys in METADATA_CONV.items():
             for key in keys:
                 if key in origKeys:
                     mdata[key] = converter(mdata[key])
@@ -736,7 +735,7 @@ class ResultsReader(XSReader):
         """Simple, unformatted plot with dictionary of keys"""
         # get plot data
         xvals = self.resdata[x][:, 0]
-        for resKey, label in iteritems(y):
+        for resKey, label in y.items():
             ydata = self.resdata[resKey]
             if ydata.shape[0] != xvals.size and ydata.size != xvals.size:
                 raise ValueError(
@@ -843,10 +842,10 @@ class ResultsReader(XSReader):
         if reconvert:
             varFunc = getSerpentCaseName
             out = {
-                varFunc(key): value for key, value in iteritems(self.metadata)
+                varFunc(key): value for key, value in self.metadata.items()
             }
             out.update({
-                varFunc(key): value for key, value in iteritems(self.resdata)
+                varFunc(key): value for key, value in self.resdata.items()
             })
         else:
             out = {}
@@ -877,7 +876,7 @@ class ResultsReader(XSReader):
 
         univData = {func('universes'): univOrder}
 
-        for univKey, univ in iteritems(self.universes):
+        for univKey, univ in self.universes.items():
 
             # position in matrix
             uIndex = univOrder.index(univKey.universe)
@@ -910,7 +909,7 @@ def getSerpentCaseName(name):
 def gatherPairedUnivData(universe, uIndex, bIndex, shapeStart, convFunc,
                          expD, uncD, univData):
     """Helper function to update universe dictionary for exporting"""
-    for xsKey, xsVal in iteritems(expD):
+    for xsKey, xsVal in expD.items():
         outKey = convFunc(xsKey)
         if outKey not in univData:
             if isinstance(xsVal, Real):

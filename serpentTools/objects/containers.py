@@ -10,10 +10,8 @@ Contents
 from itertools import product
 from collections import namedtuple
 
-from six import iteritems
 from matplotlib import pyplot
 from numpy import arange, hstack, ndarray, zeros_like
-from six import iteritems
 
 from serpentTools.settings import rc
 from serpentTools.objects.base import NamedObject
@@ -491,7 +489,7 @@ class HomogUniv(NamedObject):
             "{k}": key, "{u}": self.name, "{i}": self.step,
             "{b}": self.bu, "{d}": self.day
         }
-        for lookF, value in iteritems(mapping):
+        for lookF, value in mapping.items():
             label = label.replace(lookF, str(value))
         return label
 
@@ -719,7 +717,7 @@ class BranchContainer(dict):
         """Update with contents of another BranchContainer"""
         # Check before making any changes
         temp = {}
-        for key, univ in iteritems(dict(other)):
+        for key, univ in dict(other).items():
             if not isinstance(univ, HomogUniv):
                 raise TypeError("{} {}".format(key, type(univ)))
             temp[UnivTuple(*key)] = univ
@@ -758,7 +756,7 @@ class BranchContainer(dict):
 
         searchKey = UnivTuple(univID, burnup, index, days)
 
-        for key, universe in iteritems(self):
+        for key, universe in self.items():
             for uItem, sItem in zip(key, searchKey):
                 if sItem is None:
                     continue

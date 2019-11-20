@@ -2,7 +2,6 @@
 import os
 from warnings import warn
 
-from six import iteritems
 from yaml import safe_load
 
 from serpentTools import messages, __path__
@@ -220,7 +219,7 @@ class DefaultSettingsLoader(dict):
     def _load():
         """Load the default setting objects."""
         defaults = {}
-        for name, value in iteritems(defaultSettings):
+        for name, value in defaultSettings.items():
             if 'options' in value:
                 options = (value['default'] if value['options'] == 'default'
                            else value['options'])
@@ -243,7 +242,7 @@ class DefaultSettingsLoader(dict):
 
     def retrieveDefaults(self):
         """Return a dictionary with the default settings."""
-        return {key: setting.default for key, setting in iteritems(self)}
+        return {key: setting.default for key, setting in self.items()}
 
     def validateSetting(self, name, value):
         """Validate the setting.
@@ -296,7 +295,7 @@ class UserSettingsLoader(dict):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.__inside__ = False
-        for key, originalValue in iteritems(self.__originals):
+        for key, originalValue in self.__originals.items():
             self[key] = originalValue
         self.__originals = {}
 
@@ -360,7 +359,7 @@ class UserSettingsLoader(dict):
         settingsPreffix = (
             [settingsPreffix] if isinstance(settingsPreffix, str)
             else settingsPreffix)
-        for setting, value in iteritems(self):
+        for setting, value in self.items():
             settingPath = setting.split('.')
             if settingPath[0] in settingsPreffix:
                 name = settingPath[1]
@@ -428,7 +427,7 @@ class UserSettingsLoader(dict):
         messages.debug('Loading settings onto object with strict:{}'
                        .format(strict))
 
-        for key, value in iteritems(configSettings):
+        for key, value in configSettings.items():
             if isinstance(value, dict):
                 self.__recursiveLoad(value, strict, key)
             else:
@@ -436,7 +435,7 @@ class UserSettingsLoader(dict):
         messages.info('Done')
 
     def __recursiveLoad(self, curLevel, strict, preset):
-        for nextLevelKey, nextLevel in iteritems(curLevel):
+        for nextLevelKey, nextLevel in curLevel.items():
             newSettingName = preset + '.' + nextLevelKey
             if isinstance(nextLevel, dict):
                 self.__recursiveLoad(nextLevel, strict, newSettingName)

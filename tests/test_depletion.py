@@ -5,7 +5,7 @@ from os import remove
 from numpy import array
 from numpy.testing import assert_equal
 
-from six import iteritems, BytesIO
+from io import BytesIO
 from serpentTools.data import getFile
 from serpentTools.settings import rc
 from serpentTools.parsers.depletion import (
@@ -101,7 +101,7 @@ class DepletionTester(_DepletionTestHelper):
         expectedKeys = set(expectedMetadata)
         actualKeys = set(self.reader.metadata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
-        for key, expectedValue in iteritems(expectedMetadata):
+        for key, expectedValue in expectedMetadata.items():
             assert_equal(self.reader.metadata[key], expectedValue)
 
     def test_ReadMaterials(self):
@@ -113,7 +113,7 @@ class DepletionTester(_DepletionTestHelper):
         """Verify the getitem approach to obtaining materials."""
         with self.assertRaises(KeyError):
             self.reader['this should not work']
-        for name, mat in iteritems(self.reader.materials):
+        for name, mat in self.reader.materials.items():
             fromGetItem = self.reader[name]
             self.assertIs(mat, fromGetItem, msg=mat)
 
@@ -280,7 +280,7 @@ class DepletionUtilTester(TestCase):
             'TOT_ING_TOX': ('total', 'ING_TOX'),
             'MAT_FUEL_2_H': ('FUEL_2', 'H'),
         }
-        for matVar, (expName, expVar) in iteritems(valid):
+        for matVar, (expName, expVar) in valid.items():
             actName, actVar = getMaterialNameAndVariable(matVar)
             self.assertEqual(expName, actName, msg=matVar)
             self.assertEqual(expVar, actVar, msg=matVar)
@@ -316,8 +316,8 @@ class DepMatlabExportHelper(MatlabTesterHelper):
 
     def check(self, loaded):
         """Check the contents of the data loaded from the .mat file"""
-        for materialName, material in iteritems(self.reader.materials):
-            for variableName, data in iteritems(material.data):
+        for materialName, material in self.reader.materials.items():
+            for variableName, data in material.data.items():
                 expectedName = self.constructExpectedVarName(
                     materialName, variableName)
 
@@ -333,7 +333,7 @@ class DepMatlabExportHelper(MatlabTesterHelper):
                     err_msg="{} {}".format(materialName, variableName))
 
     def checkMetadata(self, loaded):
-        for key, data in iteritems(self.reader.metadata):
+        for key, data in self.reader.metadata.items():
             expected = key.upper() if self.RECONVERT else key
             assert expected in loaded, (
                 "Missing {} from metadata".format(expected))

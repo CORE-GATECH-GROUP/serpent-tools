@@ -4,7 +4,6 @@ Class to read Sensitivity file
 from collections import OrderedDict
 from itertools import product
 
-from six import iteritems
 from numpy import transpose, hstack
 from matplotlib.pyplot import gca
 
@@ -159,7 +158,7 @@ class SensitivityReader(BaseReader):
         if self.zais:
             old = self.zais
             self.zais = OrderedDict()
-            for key, value in iteritems(old):
+            for key, value in old.items():
                 if key == 'total':
                     self.zais[key] = value
                     continue
@@ -382,13 +381,13 @@ class SensitivityReader(BaseReader):
         out = {}
         reconvNameIx = 1 if reconvert else 0
         # get basic indexing
-        for attr, reconvNameTpl in iteritems(self._RECONVERT_ATTR_MAP):
+        for attr, reconvNameTpl in self._RECONVERT_ATTR_MAP.items():
             out[reconvNameTpl[reconvNameIx]] = getattr(self, attr)
         # ordered dictionary -> vectors
-        for attr, reconvNameTpl in iteritems(self._RECONVERT_LIST_MAP):
+        for attr, reconvNameTpl in self._RECONVERT_LIST_MAP.items():
             out[reconvNameTpl[reconvNameIx]] = list(getattr(self, attr).keys())
         sensFmt, eneSensFmt = self._RECONVERT_SENS_FMT[reconvNameIx]
-        for key, sensMat in iteritems(self.sensitivities):
+        for key, sensMat in self.sensitivities.items():
             out[sensFmt.format(key)] = sensMat
             out[eneSensFmt.format(key)] = self.energyIntegratedSens[key]
         return out

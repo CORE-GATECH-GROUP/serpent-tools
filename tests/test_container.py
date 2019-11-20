@@ -3,7 +3,6 @@
 from unittest import TestCase
 from itertools import product
 
-from six import iteritems
 from numpy import arange, ndarray, float64
 from numpy.testing import assert_array_equal
 from serpentTools.objects.containers import HomogUniv
@@ -42,9 +41,9 @@ class _HomogUnivTestHelper(TestCase):
         self.gcUnc = self.gc = {'cmmTranspX': vec, 'impKeff': testK}
         self.expAttrs = {'groups': groupStructure, 'numGroups': NUM_GROUPS}
         # Use addData
-        for key, value in iteritems(attrs):
+        for key, value in attrs.items():
             self.univ.addData(key, value)
-        for key, value in iteritems(rawData):
+        for key, value in rawData.items():
             self.univ.addData(key, value, uncertainty=False)
             self.univ.addData(key, value, uncertainty=True)
 
@@ -87,7 +86,7 @@ class _HomogUnivTestHelper(TestCase):
 
     def test_attributes(self):
         """ Get metaData from corresponding dictionary"""
-        for key, value in iteritems(self.expAttrs):
+        for key, value in self.expAttrs.items():
             actual = getattr(self.univ, key)
             if isinstance(value, ndarray):
                 assert_array_equal(value, actual, err_msg=key)

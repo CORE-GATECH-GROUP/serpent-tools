@@ -3,7 +3,6 @@ import re
 from warnings import warn
 
 from matplotlib import pyplot
-from six import iteritems
 
 from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
@@ -250,7 +249,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             error("No materials obtained from {}".format(self.filePath))
             return
 
-        for mKey, mat in iteritems(self.materials):
+        for mKey, mat in self.materials.items():
             assert isinstance(mat, DepletedMaterial), (
                 'Unexpected key {}: {} in materials dictionary'.format(
                     mKey, type(mat))
@@ -269,7 +268,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         return similar
 
     def _comparePrecheckMetadata(self, other):
-        for key, myVec in iteritems(self.metadata):
+        for key, myVec in self.metadata.items():
             otherVec = other.metadata[key]
             if len(myVec) != len(otherVec):
                 error("Stopping comparison early due to mismatched {} vectors"
@@ -438,10 +437,10 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             converter = prepToMatlab
 
         data = {k.upper() if reconvert else k: v
-                for k, v in iteritems(self.metadata)}
+                for k, v in self.metadata.items()}
 
-        for matName, material in iteritems(self.materials):
-            for varName, varData in iteritems(material.data):
+        for matName, material in self.materials.items():
+            for varName, varData in material.data.items():
                 data[converter(matName, varName)] = varData
 
         return data

@@ -3,10 +3,8 @@ Class responsible for reading multiple depletion files
 and obtaining true uncertainties
 """
 from math import fabs
-from six import iteritems
-from six.moves import range
-from numpy import zeros, zeros_like
 
+from numpy import zeros, zeros_like
 from matplotlib import pyplot
 
 from serpentTools.messages import SamplerError, warning
@@ -94,7 +92,7 @@ class DepletionSampler(DepPlotMixin, Sampler):
     def _checkMetadata(self):
         misMatch = {}
         for parser in self:
-            for key, value in iteritems(parser.metadata):
+            for key, value in parser.metadata.items():
                 valCheck = (tuple(value) if key in CONSTANT_MDATA
                             else value.size)
                 if key not in misMatch:
@@ -103,7 +101,7 @@ class DepletionSampler(DepPlotMixin, Sampler):
                     misMatch[key][valCheck] = {parser.filePath}
                 else:
                     misMatch[key][valCheck].add(parser.filePath)
-        for mKey, matches in iteritems(misMatch):
+        for mKey, matches in misMatch.items():
             if len(matches) > 1:
                 self._raiseErrorMsgFromDict(matches, 'values',
                                             '{} metadata'.format(mKey))
@@ -113,7 +111,7 @@ class DepletionSampler(DepPlotMixin, Sampler):
             if not self.metadata:
                 self.__allocateMetadata(parser.metadata)
             self._copyMetadata(parser.metadata, N)
-            for matName, material in iteritems(parser.materials):
+            for matName, material in parser.materials.items():
                 if matName in self.materials:
                     sampledMaterial = self.materials[matName]
                 else:
@@ -125,7 +123,7 @@ class DepletionSampler(DepPlotMixin, Sampler):
         self._finalize()
 
     def _finalize(self):
-        for _matName, material in iteritems(self.materials):
+        for _matName, material in self.materials.items():
             material.finalize()
         for key in VARIED_MDATA:
             allData = self.allMdata[key]
@@ -146,12 +144,12 @@ class DepletionSampler(DepPlotMixin, Sampler):
 
     def _free(self):
         self.allMdata = {}
-        for _mName, material in iteritems(self.materials):
+        for _mName, material in self.materials.items():
             material.free()
 
     def iterMaterials(self):
         """Yields material names and objects"""
-        for name, material in iteritems(self.materials):
+        for name, material in self.materials.items():
             yield name, material
 
 
@@ -201,18 +199,18 @@ class SampledDepletedMaterial(SampledContainer, DepletedMaterialBase):
         if container.name != self.name:
             warning("Attempting to store data from material {} onto "
                     "sampled material {}".format(self.name, container.name))
-        for varName, varData in iteritems(container.data):
+        for varName, varData in container.data.items():
             if not self.allData:
                 self.__allocateLike(container)
             self.allData[varName][self._index] = varData
 
     def __allocateLike(self, container):
-        for varName, varData in iteritems(container.data):
+        for varName, varData in container.data.items():
             shape = tuple([self.N] + list(varData.shape))
             self.allData[varName] = zeros(shape)
 
     def _finalize(self):
-        for varName, varData in iteritems(self.allData):
+        for varName, varData in self.allData.items():
             self.data[varName] = varData.mean(axis=0)
             self.uncertainties[varName] = varData.std(axis=0)
 

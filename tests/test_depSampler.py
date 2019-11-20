@@ -16,7 +16,6 @@ File Descriptions
 """
 from unittest import TestCase
 
-from six import iteritems
 from numpy import where, fabs, ndarray
 from numpy.testing import assert_allclose
 
@@ -71,7 +70,7 @@ class DepletedSamplerTester(TestCase):
         """
         errMsg = "{varN} {qty} for material {matN}"
         for name, material in self.sampler.iterMaterials():
-            for varName, varData in iteritems(material.data):
+            for varName, varData in material.data.items():
                 r0 = self.reader0.materials[name].data[varName]
                 r1 = self.reader1.materials[name].data[varName]
                 samplerUnc = material.uncertainties[varName]
@@ -104,6 +103,6 @@ class DepletedSamplerTester(TestCase):
         """Verify the getitem method for extracting materials."""
         with self.assertRaises(KeyError):
             self.sampler['this should fail']
-        for name, mat in iteritems(self.sampler.materials):
+        for name, mat in self.sampler.materials.items():
             fromGetItem = self.sampler[name]
             self.assertIs(fromGetItem, mat, msg=name)

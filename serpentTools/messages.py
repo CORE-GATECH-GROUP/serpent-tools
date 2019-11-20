@@ -12,7 +12,7 @@ import warnings
 import logging
 from logging import Handler
 from logging.config import dictConfig
-from six.moves.collections_abc import Callable
+from collections.abc import Callable
 
 from numpy import ndarray
 

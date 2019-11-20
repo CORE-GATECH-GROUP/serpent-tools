@@ -5,8 +5,6 @@ of the same type and obtaining true standard deviations
 from glob import glob
 from os.path import exists
 
-from six import iteritems
-
 from serpentTools.settings import rc
 from serpentTools.messages import (warning, debug, MismatchedContainersError,
                                    error, SamplerError, info)
@@ -146,7 +144,7 @@ class Sampler(object):
     def _raiseErrorMsgFromDict(misMatches, header, objName):
         msg = 'Files do not contain a consistent set of {}'.format(objName)
         critMsgs = [msg, header + ": Parser files"]
-        for key, values in iteritems(misMatches):
+        for key, values in misMatches.items():
             critMsgs.append('{}: {}'.format(key, ', '.join(values)))
         error('\n'.join(str(item) for item in critMsgs))
         raise MismatchedContainersError(msg)

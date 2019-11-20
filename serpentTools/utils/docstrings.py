@@ -3,8 +3,6 @@ Utilities for modifying docstrings
 """
 from textwrap import dedent
 
-from six import iteritems
-
 __all__ = [
     'magicPlotDocDecorator',
     'compareDocDecorator',
@@ -157,7 +155,7 @@ def compareDocReplacer(doc):
     if not doc:
         return ""
     doc = dedent(doc)
-    for magic, replace in iteritems(COMPARE_DOC_MAPPING):
+    for magic, replace in COMPARE_DOC_MAPPING.items():
         lookF = '{' + magic + '}'
         if lookF in doc:
             doc = doc.replace(lookF, dedent(replace))

@@ -3,14 +3,12 @@
 import os
 import unittest
 
-from six import iteritems
-
 from numpy.testing import assert_allclose
 
 from serpentTools.settings import rc
 from serpentTools.data import getFile
 from serpentTools.parsers import BranchingReader
-from serpentTools.objects import BranchContainer, UnivTuple
+from serpentTools.objects import UnivTuple
 from serpentTools.messages import SerpentToolsException
 
 
@@ -90,7 +88,7 @@ class BranchContainerTester(_BranchTesterHelper):
             'infS3': [9.84645E-3, -1.92215E-3, 1.36850E-4, 2.63834E-2],
             'cmmDiffcoefY': [1.56742E+00, 4.13948E-01]
         }
-        for name, valList in iteritems(assortedExpected):
+        for name, valList in assortedExpected.items():
             assert_allclose(self.refUniv.get(name), valList,
                             err_msg='Error in value: {}'.format(name))
 
@@ -146,13 +144,13 @@ class BranchWithUncsTester(unittest.TestCase):
     def test_valsWithUncs(self):
         """Test that the branches and the uncertainties are present"""
         self.assertTrue(self.reader.hasUncs)
-        for expKey, expSubData in iteritems(self.BRANCH_DATA):
+        for expKey, expSubData in self.BRANCH_DATA.items():
             self.assertTrue(expKey in self.reader.branches, msg=expKey)
             actBranch = self.reader.branches[expKey]
             self.assertTrue(self.BRANCH_UNIVKEY in actBranch,
                             msg=self.BRANCH_UNIVKEY)
             univ = actBranch[self.BRANCH_UNIVKEY]
-            for gcKey, gcVals in iteritems(expSubData):
+            for gcKey, gcVals in expSubData.items():
                 actData = univ.get(gcKey, True)
                 for act, exp, what in zip(actData, gcVals, ['val', 'unc']):
                     assert_allclose(act, exp, err_msg='{} {} {}'.format(

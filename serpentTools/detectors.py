@@ -23,9 +23,8 @@ Detector Types
 from math import sqrt, pi
 from warnings import warn
 from numbers import Real
+from collections.abc import Mapping
 
-from six import iteritems
-from six.moves.collections_abc import Mapping
 from numpy import (
     unique, empty, inf, hstack, arange, log, divide, asfortranarray,
     ndarray, asarray,
@@ -771,7 +770,7 @@ class Detector(NamedObject):
             converter(self.name, 'bins'): self.bins,
         }
 
-        for key, value in iteritems(self.grids):
+        for key, value in self.grids.items():
             data[converter(self.name, key)] = value
 
         return data

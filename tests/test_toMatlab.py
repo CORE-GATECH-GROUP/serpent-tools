@@ -2,7 +2,8 @@
 Tests for testing the MATLAB conversion functions
 """
 
-from six import BytesIO, iteritems
+from io import BytesIO
+
 from numpy import arange, ones
 from numpy.testing import assert_array_equal
 from serpentTools import Detector
@@ -105,7 +106,7 @@ class DepmtxMatlabHelper(MatlabTesterHelper):
         self.reader.toMatlab(self.outFile, self.RECONVERT)
         written = loadmat(self.outFile)
         self.assertEqual(self.reader.deltaT, written['t'])
-        for expKey, expValue in iteritems(self.expected):
+        for expKey, expValue in self.expected.items():
             self.assertTrue(expKey in written, msg=expKey)
             assert_array_equal(expValue, written[expKey], err_msg=expKey)
 
@@ -155,7 +156,7 @@ class ResultToMatlabHelper(MatlabTesterHelper):
 
     def test_gatheredMetadata(self):
         """Test the writing of metadata to matlab"""
-        for origKey, expValue in iteritems(self.reader.metadata):
+        for origKey, expValue in self.reader.metadata.items():
             expKey = self.convertFunc(origKey)
             self.assertTrue(expKey in self.gathered, msg=origKey)
             actual = self.gathered[expKey]
@@ -171,7 +172,7 @@ class ResultToMatlabHelper(MatlabTesterHelper):
 
     def test_dumpedResdata(self):
         """Test the writing of results data to matlab"""
-        for origKey, expValue in iteritems(self.reader.resdata):
+        for origKey, expValue in self.reader.resdata.items():
             expKey = self.convertFunc(origKey)
             self.assertTrue(expKey in self.gathered, msg=origKey)
             self.checkMaybe1DArrays(expValue, self.gathered[expKey], origKey)
@@ -184,7 +185,7 @@ class ResultToMatlabHelper(MatlabTesterHelper):
         self.assertTrue(burnIxKey in self.gathered)
         univOrder = tuple(self.gathered[univIxKey])
         burnOrder = tuple(self.gathered[burnIxKey].flatten())
-        for univKey, universe in iteritems(self.reader.universes):
+        for univKey, universe in self.reader.universes.items():
             self.assertTrue(univKey[0] in univOrder,
                             msg="{} // {}".format(univKey, univOrder))
             uIndex = univOrder.index(univKey[0])
@@ -204,7 +205,7 @@ class ResultToMatlabHelper(MatlabTesterHelper):
         """
         Check the contents of a specific subset of group constant dictionaries
         """
-        for origKey, expValue in iteritems(expGcD):
+        for origKey, expValue in expGcD.items():
             uncValue = uncGcD[origKey]
             expKey = self.convertFunc(origKey)
             self.assertTrue(expKey in self.gathered, msg=origKey)

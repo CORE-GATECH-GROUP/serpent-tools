@@ -6,7 +6,6 @@ from unittest import TestCase
 
 from numpy import array
 from numpy.testing import assert_array_equal
-from six import iteritems
 
 from serpentTools.settings import rc
 from serpentTools.data import getFile, readDataFile
@@ -196,7 +195,7 @@ class TesterCommonResultsReader(TestCase):
         expectedKeys = set(self.expectedMetadata)
         actualKeys = set(self.reader.metadata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
-        for key, expectedValue in iteritems(self.expectedMetadata):
+        for key, expectedValue in self.expectedMetadata.items():
             if isinstance(expectedValue, str):
                 self.assertSetEqual(set(self.reader.metadata[key]),
                                     set(expectedValue))

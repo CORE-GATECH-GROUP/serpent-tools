@@ -3,7 +3,7 @@ File for testing the history reader
 """
 
 import unittest
-from six import iteritems
+
 from numpy import array
 from numpy.testing import assert_array_equal
 
@@ -218,10 +218,10 @@ _EXPECTED_ARRAY_TAILS = {
 }
 
 EXPECTED_ARRAY_HEADS = {key: array(value)
-                        for key, value in iteritems(_EXPECTED_ARRAY_HEADS)}
+                        for key, value in _EXPECTED_ARRAY_HEADS.items()}
 
 EXPECTED_ARRAY_TAILS = {key: array(value)
-                        for key, value in iteritems(_EXPECTED_ARRAY_TAILS)}
+                        for key, value in _EXPECTED_ARRAY_TAILS.items()}
 
 del _EXPECTED_ARRAY_HEADS, _EXPECTED_ARRAY_TAILS
 
@@ -260,25 +260,25 @@ class HistoryTester(HistoryHelper):
 
     def test_sizes(self):
         """Verify the arrays are of the correct size."""
-        for key, shape in iteritems(EXPECTED_ARRAYS_SHAPE):
+        for key, shape in EXPECTED_ARRAYS_SHAPE.items():
             self.assertTupleEqual(shape, self.arrays[key].shape,
                                   msg=key)
 
     def test_getItem(self):
         """Verify the getitem indexing is functional."""
-        for key, readerArray in iteritems(self.arrays):
+        for key, readerArray in self.arrays.items():
             self.assertIs(readerArray, self.reader[key], msg=key)
 
     def test_arrayHeads(self):
         """Verify the first few lines of each array are correct."""
-        for key, expectedArray in iteritems(EXPECTED_ARRAY_HEADS):
+        for key, expectedArray in EXPECTED_ARRAY_HEADS.items():
             numRows = expectedArray.shape[0]
             actual = self.arrays[key][:numRows]
             assert_array_equal(expectedArray, actual, err_msg=key)
 
     def test_arrayTails(self):
         """Verify the last few lines of each array are correct."""
-        for key, expectedArray in iteritems(EXPECTED_ARRAY_TAILS):
+        for key, expectedArray in EXPECTED_ARRAY_TAILS.items():
             numRows = expectedArray.shape[0]
             actual = self.arrays[key][-numRows:]
             assert_array_equal(expectedArray, actual, err_msg=key)
@@ -320,7 +320,7 @@ class HistoryMatlabBase(HistoryHelper):
             varFunc = self.reader.ioReconvertName
         else:
             varFunc = self.reader.ioConvertName
-        for origKey, actValue in iteritems(self.arrays):
+        for origKey, actValue in self.arrays.items():
             expKey = varFunc(origKey)
             msg = "{} -> {}".format(origKey, expKey)
             self.assertTrue(expKey in gathered, msg=msg)
@@ -333,7 +333,7 @@ class HistoryMatlabBase(HistoryHelper):
             convFun = self.reader.ioReconvertName
         else:
             convFun = self.reader.ioConvertName
-        for origKey, expKey in iteritems(self.CONV_KEYS):
+        for origKey, expKey in self.CONV_KEYS.items():
             msg = '{} -> {}'.format(origKey, expKey)
             self.assertEqual(expKey, convFun(origKey), msg=msg)
 

@@ -8,8 +8,6 @@ from os import path
 from shutil import copy
 import random
 
-from six.moves import range
-
 from serpentTools.messages import info
 
 __all__ = ['seedFiles', 'generateSeed']

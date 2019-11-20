@@ -1,6 +1,5 @@
 """Parser responsible for reading the ``*coe.m`` files"""
 
-from six import iteritems
 from numpy import array
 
 from serpentTools.utils import splitValsUncs
@@ -134,7 +133,7 @@ class BranchingReader(XSReader):
 
     def iterBranches(self):
         """Iterate over branches yielding paired branch IDs and containers"""
-        for bID, b in iteritems(self.branches):
+        for bID, b in self.branches.items():
             yield bID, b
 
     def _precheck(self):
