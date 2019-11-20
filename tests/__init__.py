@@ -8,7 +8,6 @@ from logging import NOTSET
 
 from numpy import stack
 from numpy.testing import assert_allclose
-from six import iteritems
 from serpentTools.messages import (
     DictHandler, __logger__, removeHandler, addHandler,
 )
@@ -91,7 +90,7 @@ def compareDictOfArrays(expected, actual, fmtMsg=None, rtol=0, atol=0,
                        .format(', '.join(in2Not1)))
         if errMsg:
             raise AssertionError(errMsg)
-    for key, value in iteritems(expected):
+    for key, value in expected.items():
         actualValue = actual[key]
         assert_allclose(value, actualValue, rtol=rtol, atol=atol,
                         err_msg=fmtMsg.format(key=key))

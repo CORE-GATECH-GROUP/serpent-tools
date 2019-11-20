@@ -2,8 +2,6 @@
 
 from re import compile
 
-from six import iteritems
-
 from serpentTools.messages import warning, willChange
 from serpentTools.parsers.base import MaterialReader
 
@@ -76,7 +74,7 @@ class BumatReader(MaterialReader):
             if getattr(self, attr) is None:
                 warning("Value of {} is None".format(attr))
         noNucs = set()
-        for mname, subDict in iteritems(self.materials):
+        for mname, subDict in self.materials.items():
             if not subDict['nuclides']:
                 noNucs.add(mname)
         if noNucs:

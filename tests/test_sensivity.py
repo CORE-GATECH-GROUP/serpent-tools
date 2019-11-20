@@ -4,13 +4,12 @@ Test the sensitivity reader
 from unittest import TestCase, skipUnless
 from collections import OrderedDict
 from itertools import product
+from io import BytesIO
 
-from six import iteritems, BytesIO
 from numpy import array, inf
 from numpy.testing import assert_allclose, assert_array_equal
 from serpentTools.data import getFile
 from serpentTools.parsers.sensitivity import SensitivityReader
-from serpentTools.utils import checkScipy
 
 from tests import (
     plotTest, getLegendTexts, MatlabTesterHelper, compareDictOfArrays,
@@ -164,7 +163,7 @@ class SensitivityTester(SensitivityTestHelper):
 
     def test_parameters(self):
         expected = {'nMat': 1, 'nEne': 2, 'nZai': 2, 'nPert': 7, 'latGen': 14}
-        for key, value in iteritems(expected):
+        for key, value in expected.items():
             actual = getattr(self.reader, key)
             self.assertEqual(value, actual,
                              msg="Parameter: {}".format(key))
@@ -292,31 +291,31 @@ class Sens2MatlabHelper(MatlabTesterHelper, SensitivityTestHelper):
     def setUp(self):
         convertIx = int(self.RECONVERT)
         self.attrMap = {
-            key: value[convertIx] for key, value in iteritems(
-                SensitivityReader._RECONVERT_ATTR_MAP)}
+            key: value[convertIx]
+            for key, value in SensitivityReader._RECONVERT_ATTR_MAP.items()}
         self.listMap = {
-            key: value[convertIx] for key, value in iteritems(
-                SensitivityReader._RECONVERT_LIST_MAP)}
+            key: value[convertIx]
+            for key, value in SensitivityReader._RECONVERT_LIST_MAP.items()}
         self.sensFmts = SensitivityReader._RECONVERT_SENS_FMT[convertIx]
         MatlabTesterHelper.setUp(self)
 
     def _testGathered(self, gathered):
         """Test the contents of the gathered data"""
         # attributes
-        for attr, expKey in iteritems(self.attrMap):
+        for attr, expKey in self.attrMap.items():
             self.assertTrue(expKey in gathered, msg=expKey)
             expVal = getattr(self.reader, attr)
             actVal = gathered[expKey]
             assert_array_equal(actVal, expVal, err_msg=expKey)
 
         # lists -> compare against ordered dictionaries
-        for attr, expKey in iteritems(self.listMap):
+        for attr, expKey in self.listMap.items():
             self.assertTrue(expKey in gathered, msg=expKey)
             expVal = list(getattr(self.reader, attr).keys())
             actVal = gathered[expKey]
             assert_array_equal(actVal, expVal, err_msg=expKey)
 
-        for sensKey, expSens in iteritems(self.reader.sensitivities):
+        for sensKey, expSens in self.reader.sensitivities.items():
             expEneSens = self.reader.energyIntegratedSens[sensKey]
             sensName, eneName = [fmt.format(sensKey) for fmt in self.sensFmts]
             self.assertTrue(sensName in gathered,

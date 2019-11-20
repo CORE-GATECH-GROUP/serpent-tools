@@ -5,10 +5,8 @@ branching file
 
 from itertools import product
 from warnings import warn
+from collections.abc import Iterable
 
-from six import iteritems
-from six.moves import range
-from six.moves.collections_abc import Iterable
 from numpy import empty, nan, array, ndarray
 
 from serpentTools import BranchingReader
@@ -90,7 +88,7 @@ class BranchedUniv(object):
 
     def items(self):
         """Iterate over names of cross sections and associated objects"""
-        for name, obj in iteritems(self.xsTables):
+        for name, obj in self.xsTables.items():
             yield name, obj
 
     @property
@@ -474,14 +472,14 @@ class BranchCollector(object):
         # Will send off views of this to each universe container
         numUniv = len(self.univIndex)
         numBurnup = len(self._burnups)
-        for key, size in iteritems(xsSizes):
+        for key, size in xsSizes.items():
             shape = self._shapes + [numUniv, numBurnup, size]
             self.xsTables[key] = empty(shape)
 
         missing = self._populateXsTable()
         if missing:
             items = ["{}: {}".format(str(k), str(v))
-                     for k, v in iteritems(missing)]
+                     for k, v in missing.items()]
             msg = ("The following branch states and indexes are "
                    "unaccounted for:\n{}".format("\n".join(items)))
             warn(msg, RuntimeWarning)
@@ -503,7 +501,7 @@ class BranchCollector(object):
         branch = self._branches[branchKey]
         univs = set()
         _burnups = set()
-        for (unID, bu, ix, day), universe in iteritems(branch):
+        for (unID, bu, ix, day), universe in branch.items():
             univs.add(unID)
             _burnups.add(bu if day is None else day)
         self._burnups = tuple(sorted(_burnups))
@@ -515,7 +513,7 @@ class BranchCollector(object):
         sizes = {}
         for gcAttr in ('infExp', 'b1Exp', 'gc'):
             attr = getattr(sampleUniv, gcAttr)
-            for key, value in iteritems(attr):
+            for key, value in attr.items():
                 sizes[key] = value.size
         return sizes
 
@@ -560,7 +558,7 @@ class BranchCollector(object):
         # Create all the univIndex
         for univID in self.univIndex:
             self.universes[univID] = BranchedUniv(univID, self, univAxis)
-        for xsKey, xsMat in iteritems(self.xsTables):
+        for xsKey, xsMat in self.xsTables.items():
             for univIndex, univID in enumerate(self.univIndex):
                 self.universes[univID][xsKey] = xsMat[univIndex]
 

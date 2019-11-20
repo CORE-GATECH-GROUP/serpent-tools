@@ -5,7 +5,6 @@ from unittest import TestCase
 
 from collections import OrderedDict
 
-from six import iteritems
 from numpy import arange, array
 from numpy.testing import assert_equal
 from serpentTools.parsers import read
@@ -31,7 +30,7 @@ class DetectorHelper(TestCase):
         self.assertSetEqual(
             expectedNames, actualNames,
             msg="Failure reading detectors from {}".format(self.FILE_PATH))
-        for name, cls in iteritems(self.EXPECTED_DETECTORS):
+        for name, cls in self.EXPECTED_DETECTORS.items():
             actualDet = self.detectors[name]
             self.assertIsInstance(
                 actualDet, cls, msg="{} is {}, should be {}: - {}"
@@ -41,7 +40,7 @@ class DetectorHelper(TestCase):
     def test_detectorGrids(self):
         """Verify that all grids are loaded."""
         baseMsg = "Key: {key}"
-        for detName, gridDict in iteritems(self.EXPECTED_GRIDS):
+        for detName, gridDict in self.EXPECTED_GRIDS.items():
             msg = baseMsg + "  Reading: " + self.__class__.__name__
             actualGrids = self.detectors[detName].grids
             compareDictOfArrays(
@@ -49,13 +48,13 @@ class DetectorHelper(TestCase):
 
     def test_detectorIndex(self):
         """Verify that the detector tally index is properly constructed."""
-        for detName, expectedIndex in iteritems(self.EXPECTED_INDEXES):
+        for detName, expectedIndex in self.EXPECTED_INDEXES.items():
             actualIndex = self.detectors[detName].indexes
             self.assertEqual(actualIndex, expectedIndex)
 
     def test_detectorSlice(self):
         """Verify that the detector slicing is working well."""
-        for detName, params in iteritems(self.SLICING):
+        for detName, params in self.SLICING.items():
             fixed = params['fixed']
             expectedTallies = params['tallies']
             expectedErrors = params['errors']
@@ -77,7 +76,7 @@ class DetectorHelper(TestCase):
 
     def test_getitem(self):
         """Verify the getitem method for extracting detectors."""
-        for name, det in iteritems(self.reader.detectors):
+        for name, det in self.reader.detectors.items():
             fromGetItem = self.reader[name]
             self.assertIs(fromGetItem, det, msg=name)
         with self.assertRaises(KeyError):

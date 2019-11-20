@@ -2,7 +2,6 @@
 Improved processing of depletion matrix files
 """
 import re
-from six.moves import range
 
 from numpy import empty, empty_like, longfloat, zeros
 

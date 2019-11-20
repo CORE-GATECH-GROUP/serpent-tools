@@ -6,6 +6,14 @@
 Changelog
 =========
 
+.. _vnext:
+
+Next
+====
+
+* Python 2 support has been dropped.
+* Add support for installing and testing against Python 3.7
+
 .. _v0.8.1:
 
 :release-tag:`0.8.1`

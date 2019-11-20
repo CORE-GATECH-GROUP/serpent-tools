@@ -32,17 +32,17 @@ classifiers = [
     'License :: OSI Approved :: MIT License',
     'Natural Language :: English',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3.5',
     'Programming Language :: Python :: 3.6'
+    'Programming Language :: Python :: 3.7'
 ]
 
 with open('./requirements.txt') as req:
     installRequires = req.read()
 
-pythonRequires = '>=2.7,!=3.0,!=3.1,!=3.2,!=3.3,!=3.4'
+pythonRequires = ">=3.5,<3.8"
 
-version = "0.8.1"
+version = "0.9.0a"
 
 setupArgs = {
     'name': 'serpentTools',

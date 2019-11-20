@@ -4,7 +4,6 @@ Class to read and process a batch of similar detector files
 from collections import defaultdict
 import warnings
 
-from six import iteritems
 from numpy import empty, square, sqrt, allclose, asarray
 from matplotlib import pyplot
 
@@ -68,14 +67,14 @@ class DetectorSampler(Sampler):
         for parser in self.parsers:
             if sizes is None:
                 sizes = {det: {} for det in parser.detectors}
-            for detName, det in iteritems(parser.detectors):
+            for detName, det in parser.detectors.items():
                 level = sizes[detName]
                 shape = det.tallies.shape
                 if shape not in level:
                     level[shape] = {parser.filePath}
                 else:
                     level[shape].add(parser.filePath)
-        for detName, misMatches in iteritems(sizes):
+        for detName, misMatches in sizes.items():
             if len(misMatches) > 1:
                 self._raiseErrorMsgFromDict(misMatches, 'shape', 'detector')
 
@@ -84,7 +83,7 @@ class DetectorSampler(Sampler):
         for parser in self:
             for detName, detector in parser.iterDets():
                 individualDetectors[detName].append(detector)
-        for name, detList in iteritems(individualDetectors):
+        for name, detList in individualDetectors.items():
             self.detectors[name] = SampledDetector.fromDetectors(
                 name, detList)
 
@@ -93,7 +92,7 @@ class DetectorSampler(Sampler):
             sampledDet.free()
 
     def iterDets(self):
-        for name, detector in iteritems(self.detectors):
+        for name, detector in self.detectors.items():
             yield name, detector
 
 
@@ -365,7 +364,7 @@ class SampledDetector(Detector):
                 raise AttributeError(
                     "Detector {} is missing grid structure".format(d))
             elif d.grids and grids:
-                for key, refGrid in iteritems(grids):
+                for key, refGrid in grids.items():
                     thisGrid = d.grids.get(key)
                     if thisGrid is None:
                         raise KeyError(

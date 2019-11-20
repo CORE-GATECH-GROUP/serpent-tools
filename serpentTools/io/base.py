@@ -2,8 +2,7 @@
 Classes for converting readers and containers to other data types
 """
 
-from abc import ABCMeta, abstractmethod
-from six import add_metaclass
+from abc import ABC, abstractmethod
 from serpentTools.utils import checkScipy
 
 __all__ = [
@@ -11,8 +10,7 @@ __all__ = [
 ]
 
 
-@add_metaclass(ABCMeta)
-class BaseConverter(object):
+class BaseConverter(ABC):
     """
     Base class for setting up conversion routines
 

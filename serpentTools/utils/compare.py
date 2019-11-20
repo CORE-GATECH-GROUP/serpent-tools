@@ -1,13 +1,13 @@
 """
 Comparison utilities
 """
+from collections.abc import Iterable
+
 from numpy.core.defchararray import equal as charEqual
 from numpy import (
     fabs, zeros_like, ndarray, array, greater, multiply, subtract,
     equal, asarray,
 )
-
-from six.moves.collections_abc import Iterable
 
 from serpentTools.messages import (
     error,

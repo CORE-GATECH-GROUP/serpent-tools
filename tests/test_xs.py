@@ -3,7 +3,7 @@ Test the branching collector
 """
 
 from unittest import TestCase
-from six import iteritems
+
 from numpy import ones, array, arange, nan
 from numpy.testing import assert_array_equal
 from serpentTools.xs import BranchCollector
@@ -155,10 +155,10 @@ Burnup: {b}""".strip()
     def test_xsTables(self):
         """Verify that group constants are placed correctly"""
         # dig through the XS_MAP
-        for pertKey, pertMap in iteritems(self.XS_MAP):
-            for gcKey, gcMap in iteritems(pertMap):
-                for burnup, burnMap in iteritems(gcMap):
-                    for univID, expGC in iteritems(burnMap):
+        for pertKey, pertMap in self.XS_MAP.items():
+            for gcKey, gcMap in pertMap.items():
+                for burnup, burnMap in gcMap.items():
+                    for univID, expGC in burnMap.items():
                         self.compareGroupConstant(
                             expGC, pertKey, univID, gcKey, burnup)
 

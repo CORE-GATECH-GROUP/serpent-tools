@@ -21,7 +21,6 @@ File Descriptions
     tolerance can still be achieved.
 
 """
-from six import iteritems
 from numpy import square, sqrt
 from numpy.testing import assert_allclose
 from serpentTools.messages import MismatchedContainersError
@@ -38,7 +37,7 @@ _DET_FILES = {
     'smallxy': 'bwr_smallxy'
 }
 DET_FILES = {key: getFile(val + '_det0.m')
-             for key, val in iteritems(_DET_FILES)}
+             for key, val in _DET_FILES.items()}
 
 SQRT2 = sqrt(2)
 
@@ -106,7 +105,7 @@ class DetSamplerTester(TestCaseWithLogCapture):
 
     def test_getitem(self):
         """Verify the getitem method for retrieving detectors works."""
-        for name, det in iteritems(self.sampler.detectors):
+        for name, det in self.sampler.detectors.items():
             fromGetItem = self.sampler[name]
             self.assertIs(det, fromGetItem, msg=name)
         with self.assertRaises(KeyError):

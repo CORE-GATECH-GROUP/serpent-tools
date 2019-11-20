@@ -6,7 +6,6 @@ from unittest import TestCase
 
 from numpy import arange, ndarray, array, ones, ones_like, zeros_like
 from numpy.testing import assert_array_equal
-from six import iteritems, assertRaisesRegex
 
 from serpentTools.utils import (
     convertVariableName,
@@ -40,7 +39,7 @@ class VariableConverterTester(TestCase):
             "INF_KINF": "infKinf",
             "ADJ_PERT_KEFF_SENS": "adjPertKeffSens",
         }
-        for serpentStyle, expected in iteritems(testCases):
+        for serpentStyle, expected in testCases.items():
             actual = convertVariableName(serpentStyle)
             self.assertEqual(expected, actual, msg=serpentStyle)
 
@@ -414,19 +413,19 @@ class PlotTestTester(TestCase):
     def test_plotAttrs_fail(self):
         """Test the failure modes of the plotAttrTest function"""
         ax = self.buildPlot()
-        with assertRaisesRegex(self, AssertionError, 'xlabel'):
+        with self.assertRaisesRegex(AssertionError, 'xlabel'):
             plotAttrTest(self, ax, xlabel="Bad label")
-        with assertRaisesRegex(self, AssertionError, 'ylabel'):
+        with self.assertRaisesRegex(AssertionError, 'ylabel'):
             plotAttrTest(self, ax, ylabel="Bad label")
-        with assertRaisesRegex(self, AssertionError, 'xscale'):
+        with self.assertRaisesRegex(AssertionError, 'xscale'):
             plotAttrTest(self, ax, xscale="log")
-        with assertRaisesRegex(self, AssertionError, 'yscale'):
+        with self.assertRaisesRegex(AssertionError, 'yscale'):
             plotAttrTest(self, ax, yscale="log")
-        with assertRaisesRegex(self, AssertionError, 'legend text'):
+        with self.assertRaisesRegex(AssertionError, 'legend text'):
             plotAttrTest(self, ax, legendLabels='bad text')
-        with assertRaisesRegex(self, AssertionError, 'legend text'):
+        with self.assertRaisesRegex(AssertionError, 'legend text'):
             plotAttrTest(self, ax, legendLabels=['1', '2'])
-        with assertRaisesRegex(self, AssertionError, 'title'):
+        with self.assertRaisesRegex(AssertionError, 'title'):
             plotAttrTest(self, ax, title='Bad title')
 
     @plotTest
@@ -439,4 +438,4 @@ class PlotTestTester(TestCase):
         formatPlot(ax, xlabel=newX, ylabel=newY, loglog=True,
                    title=title)
         plotAttrTest(self, ax, xlabel=newX, ylabel=newY,
-                      xscale='log', yscale='log', title=title)
+                     xscale='log', yscale='log', title=title)
