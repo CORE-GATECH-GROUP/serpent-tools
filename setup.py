@@ -33,8 +33,8 @@ classifiers = [
     'Natural Language :: English',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6'
-    'Programming Language :: Python :: 3.7'
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
 ]
 
 with open('./requirements.txt') as req:
@@ -42,7 +42,7 @@ with open('./requirements.txt') as req:
 
 pythonRequires = ">=3.5,<3.8"
 
-version = "0.9.0"
+version = "0.10.0.dev0"
 
 setupArgs = {
     'name': 'serpentTools',
