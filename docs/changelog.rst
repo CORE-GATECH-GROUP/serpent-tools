@@ -6,10 +6,10 @@
 Changelog
 =========
 
-.. _vnext:
+.. _v0.9.0:
 
-Next
-====
+:release-tag:`0.9.0`
+====================
 
 * Python 2 support has been dropped.
 * Add support for installing and testing against Python 3.7
