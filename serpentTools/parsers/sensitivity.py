@@ -230,16 +230,44 @@ class SensitivityReader(BaseReader):
                 continue
             if line[:3] == 'ADJ':
                 fullVarName = line.split()[0]
-                split = fullVarName.split('_')
-                pertIndx = split.index('PERT')
-                sensIndx = split.index('SENS')
-                varName = '_'.join(split[pertIndx + 1: sensIndx])
-                isEnergyIntegrated = split[-2:] == ['E', 'INT']
+                nameProps = self._getAdjVarProps(fullVarName.split("_"))
+                varName = nameProps.get("name")
+
+                if varName is None:
+                    raise ValueError(
+                        "Cannot get response name from {}".format(fullVarName))
+
+                isEnergyIntegrated = nameProps.get("energyFlag", False)
+                latentGen = nameProps.get("latent")
+
             elif varName is not None:
-                self.__addSens(varName, str2vec(line), isEnergyIntegrated)
+                self.__addSens(
+                    varName, str2vec(line), isEnergyIntegrated, latentGen)
                 varName = None
 
-    def __addSens(self, varName, vec, isEnergyIntegrated):
+    @staticmethod
+    def _getAdjVarProps(parts):
+        props = {}
+        nameStart = None
+
+        for ix, word in enumerate(parts):
+            if word == "PERT":
+                nameStart = ix + 1
+            elif word == "SENS":
+                if nameStart is None:
+                    raise ValueError(
+                        "Cannot get response name from {}".format(parts))
+                props["name"] = "_".join(parts[nameStart:ix])
+            elif word == "INT":
+                props["energyFlag"] = (parts[ix - 1] == "E")
+            elif word == "GEN":
+                props["latent"] = int(parts[ix - 1])
+
+        return props
+
+    def __addSens(self, varName, vec, isEnergyIntegrated, latentGen):
+        if latentGen is not None:
+            return
         dest = (self.energyIntegratedSens if isEnergyIntegrated
                 else self.sensitivities)
         newShape = [2, self.nPert, self.nZai, self.nMat]
