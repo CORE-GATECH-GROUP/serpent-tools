@@ -144,18 +144,18 @@ class SensitivityReader(BaseReader):
                 if not throughParams:
                     chunk0 = chunk[0]
                     if 'Number' in chunk0:
-                        self.__processNumChunk(chunk)
+                        self._processNumChunk(chunk)
                     elif 'included' in chunk0:
                         what = chunk0.split()[1]
-                        self.__processIndexChunk(what, chunk)
+                        self._processIndexChunk(what, chunk)
                     elif 'energy' in chunk0:
-                        self.__processEnergyChunk(chunk)
+                        self._processEnergyChunk(chunk)
                     elif 'latent' in chunk0:
                         split = chunk0.split()
                         self.latGen = int(split[split.index('latent') - 1])
                         throughParams = True
                     continue
-                self.__processSensChunk(chunk)
+                self._processSensChunk(chunk)
         if self.zais:
             old = self.zais
             self.zais = OrderedDict()
@@ -165,7 +165,7 @@ class SensitivityReader(BaseReader):
                     continue
                 self.zais[int(key)] = value
 
-    def __processNumChunk(self, chunk):
+    def _processNumChunk(self, chunk):
         chunk = [line for line in chunk if 'SENS' in line]
         for line in chunk:
             split = line.split()
@@ -177,7 +177,7 @@ class SensitivityReader(BaseReader):
                     'Attempted to set attribute {} from number block'.format(
                         attrN))
 
-    def __processIndexChunk(self, what, chunk):
+    def _processIndexChunk(self, what, chunk):
         key = what.lower()
         if key not in self._indxMap:
             raise SerpentToolsException(
@@ -204,7 +204,7 @@ class SensitivityReader(BaseReader):
         raise SerpentToolsException(
             "Unexpected index chunk {}".format(chunk))
 
-    def __processEnergyChunk(self, chunk):
+    def _processEnergyChunk(self, chunk):
         for line in chunk:
             if 'SENS' == line[:4]:
                 break
@@ -222,7 +222,7 @@ class SensitivityReader(BaseReader):
             warning("Unanticipated energy setting {}"
                     .format(splitLine[0]))
 
-    def __processSensChunk(self, chunk):
+    def _processSensChunk(self, chunk):
         varName = None
         isEnergyIntegrated = False
         varName = None
@@ -242,7 +242,7 @@ class SensitivityReader(BaseReader):
                 latentGen = nameProps.get("latent")
 
             elif varName is not None:
-                self.__addSens(
+                self._addSens(
                     varName, str2vec(line), isEnergyIntegrated, latentGen)
                 varName = None
 
@@ -266,7 +266,7 @@ class SensitivityReader(BaseReader):
 
         return props
 
-    def __addSens(self, varName, vec, isEnergyIntegrated, latentGen):
+    def _addSens(self, varName, vec, isEnergyIntegrated, latentGen):
         if latentGen is not None:
             return
         dest = (self.energyIntegratedSens if isEnergyIntegrated
