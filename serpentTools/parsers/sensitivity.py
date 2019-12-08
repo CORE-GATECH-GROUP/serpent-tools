@@ -56,44 +56,45 @@ class SensitivityReader(BaseReader):
 
     Parameters
     ----------
-    filePath: str
+    filePath : str
         Path to sensitivity file
 
     Attributes
     ----------
-    nMat: None or int
+    nMat : None or int
         Number of materials
-    nZai: None or int
+    nZai : None or int
         Number of perturbed isotopes
-    nPert: None or int
+    nPert : None or int
         Number of perturbations
-    nEne: None or int
+    nEne : None or int
         Number of energy groups
-    nMu: None or int
+    nMu : None or int
         Number of perturbed materials
-    materials: :py:class:`~collections.OrderedDict`
+    materials : :class:`~collections.OrderedDict`
         Ordered dictionary of materials that have
         been perturbed.
-    zais: :py:class:`~collections.OrderedDict`
+    zais : :class:`~collections.OrderedDict`
         Ordered dictionary of nuclides that
         have been perturbed
-    perts: :py:class:`~collections.OrderedDict`
+    perts : :class:`~collections.OrderedDict`
         Ordered dictionary of reactions that
         have been perturbed, e.g `'total xs'`
-    latGen: int
+    latGen : int
         Number of latent generations used to generate
         these sensitivities
-    energies: None or :py:class:`numpy.array`
+    energies : None or :class:`numpy.array`
         Array of energy bounds for the sensitivities, from
         lowest to highest
-    lethargyWidths: None or :py:class:`numpy.array`
+    lethargyWidths : None or :class:`numpy.array`
         Array of lethargy widths of each energy group.
-    sensitivities: dict
+    sensitivities : dict
         Dictionary of names of sensitivities and their corresponding
         arrays.
-    energyIntegratedSens: dict
+    energyIntegratedSens : dict
         Dictionary of names of the sensitivities that have been integrated
         against energy, and their corresponding arrays
+
     """
 
     _RECONVERT_ATTR_MAP = {
