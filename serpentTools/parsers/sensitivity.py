@@ -54,6 +54,13 @@ class SensitivityReader(BaseReader):
     The matrices in :attr:`energyIntegratedSens` will have the same
     structure, but with the :attr:`energies` dimension removed.
 
+
+    .. note::
+
+        Arrays generated using the history option ``sens opt history 1``
+        are not currently stored on the reader. See feature request
+        :issue:`367`
+
     Parameters
     ----------
     filePath : str
