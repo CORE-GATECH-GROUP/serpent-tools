@@ -52,7 +52,7 @@ master_doc = 'index'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-version = "0.9.0a"
+version = "0.9.1"
 
 # General information about the project.
 project = 'serpentTools'

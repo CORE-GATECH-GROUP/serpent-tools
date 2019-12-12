@@ -6,6 +6,22 @@
 Changelog
 =========
 
+
+.. _v0.9.1:
+
+:release-tag:`0.9.1`
+====================
+
+.. _v0.9.1-bugs:
+
+Bug Fixes
+---------
+
+* Sensitivity arrays generated with ``sens opt history 1`` will no longer
+  overwrite the primary result arrays - :pull:`366`. These arrays are not 
+  currently stored - :issue:`367`
+
+
 .. _v0.9.0:
 
 :release-tag:`0.9.0`
