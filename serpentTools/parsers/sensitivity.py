@@ -54,46 +54,54 @@ class SensitivityReader(BaseReader):
     The matrices in :attr:`energyIntegratedSens` will have the same
     structure, but with the :attr:`energies` dimension removed.
 
+
+    .. note::
+
+        Arrays generated using the history option ``sens opt history 1``
+        are not currently stored on the reader. See feature request
+        :issue:`367`
+
     Parameters
     ----------
-    filePath: str
+    filePath : str
         Path to sensitivity file
 
     Attributes
     ----------
-    nMat: None or int
+    nMat : None or int
         Number of materials
-    nZai: None or int
+    nZai : None or int
         Number of perturbed isotopes
-    nPert: None or int
+    nPert : None or int
         Number of perturbations
-    nEne: None or int
+    nEne : None or int
         Number of energy groups
-    nMu: None or int
+    nMu : None or int
         Number of perturbed materials
-    materials: :py:class:`~collections.OrderedDict`
+    materials : :class:`~collections.OrderedDict`
         Ordered dictionary of materials that have
         been perturbed.
-    zais: :py:class:`~collections.OrderedDict`
+    zais : :class:`~collections.OrderedDict`
         Ordered dictionary of nuclides that
         have been perturbed
-    perts: :py:class:`~collections.OrderedDict`
+    perts : :class:`~collections.OrderedDict`
         Ordered dictionary of reactions that
         have been perturbed, e.g `'total xs'`
-    latGen: int
+    latGen : int
         Number of latent generations used to generate
         these sensitivities
-    energies: None or :py:class:`numpy.array`
+    energies : None or :class:`numpy.array`
         Array of energy bounds for the sensitivities, from
         lowest to highest
-    lethargyWidths: None or :py:class:`numpy.array`
+    lethargyWidths : None or :class:`numpy.array`
         Array of lethargy widths of each energy group.
-    sensitivities: dict
+    sensitivities : dict
         Dictionary of names of sensitivities and their corresponding
         arrays.
-    energyIntegratedSens: dict
+    energyIntegratedSens : dict
         Dictionary of names of the sensitivities that have been integrated
         against energy, and their corresponding arrays
+
     """
 
     _RECONVERT_ATTR_MAP = {
@@ -143,18 +151,18 @@ class SensitivityReader(BaseReader):
                 if not throughParams:
                     chunk0 = chunk[0]
                     if 'Number' in chunk0:
-                        self.__processNumChunk(chunk)
+                        self._processNumChunk(chunk)
                     elif 'included' in chunk0:
                         what = chunk0.split()[1]
-                        self.__processIndexChunk(what, chunk)
+                        self._processIndexChunk(what, chunk)
                     elif 'energy' in chunk0:
-                        self.__processEnergyChunk(chunk)
+                        self._processEnergyChunk(chunk)
                     elif 'latent' in chunk0:
                         split = chunk0.split()
                         self.latGen = int(split[split.index('latent') - 1])
                         throughParams = True
                     continue
-                self.__processSensChunk(chunk)
+                self._processSensChunk(chunk)
         if self.zais:
             old = self.zais
             self.zais = OrderedDict()
@@ -164,7 +172,7 @@ class SensitivityReader(BaseReader):
                     continue
                 self.zais[int(key)] = value
 
-    def __processNumChunk(self, chunk):
+    def _processNumChunk(self, chunk):
         chunk = [line for line in chunk if 'SENS' in line]
         for line in chunk:
             split = line.split()
@@ -176,7 +184,7 @@ class SensitivityReader(BaseReader):
                     'Attempted to set attribute {} from number block'.format(
                         attrN))
 
-    def __processIndexChunk(self, what, chunk):
+    def _processIndexChunk(self, what, chunk):
         key = what.lower()
         if key not in self._indxMap:
             raise SerpentToolsException(
@@ -203,7 +211,7 @@ class SensitivityReader(BaseReader):
         raise SerpentToolsException(
             "Unexpected index chunk {}".format(chunk))
 
-    def __processEnergyChunk(self, chunk):
+    def _processEnergyChunk(self, chunk):
         for line in chunk:
             if 'SENS' == line[:4]:
                 break
@@ -221,7 +229,7 @@ class SensitivityReader(BaseReader):
             warning("Unanticipated energy setting {}"
                     .format(splitLine[0]))
 
-    def __processSensChunk(self, chunk):
+    def _processSensChunk(self, chunk):
         varName = None
         isEnergyIntegrated = False
         varName = None
@@ -230,16 +238,44 @@ class SensitivityReader(BaseReader):
                 continue
             if line[:3] == 'ADJ':
                 fullVarName = line.split()[0]
-                split = fullVarName.split('_')
-                pertIndx = split.index('PERT')
-                sensIndx = split.index('SENS')
-                varName = '_'.join(split[pertIndx + 1: sensIndx])
-                isEnergyIntegrated = split[-2:] == ['E', 'INT']
+                nameProps = self._getAdjVarProps(fullVarName.split("_"))
+                varName = nameProps.get("name")
+
+                if varName is None:
+                    raise ValueError(
+                        "Cannot get response name from {}".format(fullVarName))
+
+                isEnergyIntegrated = nameProps.get("energyFlag", False)
+                latentGen = nameProps.get("latent")
+
             elif varName is not None:
-                self.__addSens(varName, str2vec(line), isEnergyIntegrated)
+                self._addSens(
+                    varName, str2vec(line), isEnergyIntegrated, latentGen)
                 varName = None
 
-    def __addSens(self, varName, vec, isEnergyIntegrated):
+    @staticmethod
+    def _getAdjVarProps(parts):
+        props = {}
+        nameStart = None
+
+        for ix, word in enumerate(parts):
+            if word == "PERT":
+                nameStart = ix + 1
+            elif word == "SENS":
+                if nameStart is None:
+                    raise ValueError(
+                        "Cannot get response name from {}".format(parts))
+                props["name"] = "_".join(parts[nameStart:ix])
+            elif word == "INT":
+                props["energyFlag"] = (parts[ix - 1] == "E")
+            elif word == "GEN":
+                props["latent"] = int(parts[ix - 1])
+
+        return props
+
+    def _addSens(self, varName, vec, isEnergyIntegrated, latentGen):
+        if latentGen is not None:
+            return
         dest = (self.energyIntegratedSens if isEnergyIntegrated
                 else self.sensitivities)
         newShape = [2, self.nPert, self.nZai, self.nMat]
