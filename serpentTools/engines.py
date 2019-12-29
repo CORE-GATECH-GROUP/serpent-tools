@@ -1,4 +1,4 @@
-# Copyright (c) Andrew Johnson, 2017
+# Copyright (c) Andrew Johnson, 2017-2019
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -17,7 +17,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-"""Classes for simple file processing"""
+"""Classes for simple file processing
+
+Part of ``drewtils 0.2.0rc0``, released under MIT License
+"""
 
 import re
 
@@ -27,21 +30,12 @@ __all__ = ['KeywordParser', 'PatternReader']
 class _TextProcessor(object):
     """Parent class for text processors."""
 
-    def __init__(self, path):
-        self.path = path
-        self._stream = None
+    def __init__(self, stream):
+        self.stream = stream
         self.line = ''
 
-    def __enter__(self):
-        self._stream = open(self.path, 'r')
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._stream.close()
-        self._stream = None
-
     def _step(self):
-        self.line = self._stream.readline()
+        self.line = self.stream.readline()
         return self.line
 
     def _match(self, regexp):
@@ -50,13 +44,9 @@ class _TextProcessor(object):
     def _search(self, regexp):
         return re.search(regexp, self.line)
 
-    def _checkOpen(self):
-        if self._stream is None:
-            raise IOError('Parse must be used in a with <> as <>: block')
-
     def seekToTop(self):
         """Reset the file pointer to the start of the file."""
-        self._stream.seek(0)
+        self.stream.seek(0)
 
 
 class KeywordParser(_TextProcessor):
@@ -65,46 +55,47 @@ class KeywordParser(_TextProcessor):
 
     Parameters
     ----------
-    filePath: str
-        Object to be read. Any object with ``read`` and ``close`` methods
-    keys: Iterable
+    stream : readable buffer
+        Stream to be processed.
+    keys : iterable of str
         List of keywords/phrases that will indicate the start of a chunk
-    separators: Iterable or None
+    separators : iterable of str, optional
         List of additional phrases that can separate two chunks.
         If not given, will default to empty line ``'\n'``.
-    eof: str
+    eof : str, optional
         String to indicate the end of the file
 
     Attributes
     ----------
-    line: str
+    line : str
         Most recently read line
+    stream : readable buffer
+        Stream that is currently processed
+
     """
 
-    def __init__(self, filePath, keys, separators=None, eof=''):
-        _TextProcessor.__init__(self, filePath)
-        self._startMatch = self._makeMatchFromIterable(keys)
-        separators = set(keys).union(
-            set(separators) if separators else set(['\n']))
-        self._endMatch = self._makeMatchFromIterable(separators)
+    def __init__(self, stream, keys, separators=None, eof=''):
+        super().__init__(stream)
+        self._startMatch = re.compile('|'.join([str(arg) for arg in keys]))
+        separators = set(keys).union(separators or {"\n"})
+        self._endMatch = re.compile('|'.join([str(arg) for arg in separators]))
         self._end = eof
 
-    def yieldChunks(self):
-        """
-        Return each chunk of text as a generator.
+    def __iter__(self):
+        """Yield all chunks in the stream
 
         Yields
         ------
-        list
-            The next chunk in the file.
+        list of str
+            Successive chunks of text
+
         """
-        self._checkOpen()
         chunk = []
         while self._step() != self._end:
             if self._match(self._endMatch):
                 if chunk:
                     yield chunk
-                chunk = ([self.line] if self._match(self._startMatch) else [])
+                chunk = [self.line] if self._match(self._startMatch) else []
             elif chunk:
                 chunk.append(self.line)
         if chunk:
@@ -120,11 +111,30 @@ class KeywordParser(_TextProcessor):
             List of key word argument chunks.
 
         """
-        return list(self.yieldChunks())
+        return list(self)
 
-    @staticmethod
-    def _makeMatchFromIterable(args):
-        return re.compile('|'.join([str(arg) for arg in args]))
+    @classmethod
+    def iterateOverFile(cls, filePath, *args, **kwargs):
+        """Iterate over all chunks in the file
+
+        Additional arguments will be passed to the constructor,
+        e.g. ``keys`` and ``separators``
+
+        Parameters
+        ----------
+        filepath : str
+            Name of file to be opened.
+
+        Yields
+        ------
+        list of str
+            Chunks of text bounded by input arguments
+
+        """
+        with open(filePath, "r") as stream:
+            parser = cls(stream, *args, **kwargs)
+            for item in parser:
+                yield item
 
 
 class PatternReader(_TextProcessor):
@@ -133,19 +143,20 @@ class PatternReader(_TextProcessor):
 
     Parameters
     ----------
-    filePath: str
-        path to the file that is to be read
+    stream : readable
+        Stream of content to be processed
 
     Attributes
     ----------
-    line: str
+    line : str
         Most recently read line
-    match: regular expression match or None
+    match : regular expression match or None
         Match from the most recently read line
+
     """
 
-    def __init__(self, filePath):
-        _TextProcessor.__init__(self, filePath)
+    def __init__(self, stream):
+        super().__init__(stream)
         self.match = None
 
     def searchFor(self, pattern):
@@ -154,14 +165,17 @@ class PatternReader(_TextProcessor):
 
         Parameters
         ----------
-        pattern: str or compiled regular expression
+        pattern : str or compiled regular expression
+            Pattern to be found in the stream. Will consume
+            lines in the stream until a match is found
+            or all lines have been exhausted
 
         Returns
         -------
-        bool: True if the pattern was found
+        bool
+            True if the pattern was found
 
         """
-        self._checkOpen()
         regexp = re.compile(pattern) if isinstance(pattern, str) else pattern
         while self._step():
             self.match = self._search(regexp)
@@ -175,13 +189,13 @@ class PatternReader(_TextProcessor):
 
         Parameters
         ----------
-        pattern: str or compiled regular expression
+        pattern : str or compiled regular expression
             Seek through the file and yield all match groups for lines that
             contain this patten.
 
         Yields
         ------
-        sequential match groups
+        regular expression match
 
         """
         while self.searchFor(pattern):
