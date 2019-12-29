@@ -7,10 +7,10 @@ from collections import OrderedDict
 
 from numpy import arange, array
 from numpy.testing import assert_equal
-from serpentTools.parsers import read
 from serpentTools.data import getFile
 from serpentTools.detectors import (
     CartesianDetector, HexagonalDetector, CylindricalDetector)
+from serpentTools import DetectorFile
 
 from tests import compareDictOfArrays
 
@@ -20,18 +20,17 @@ class DetectorHelper(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.reader = read(cls.FILE_PATH, 'det')
-        cls.detectors = cls.reader.detectors
+        cls.detfile = DetectorFile.fromSerpent(cls.FILE_PATH)
 
     def test_loadedDetectors(self):
         """Verify that all anticipated detectors are loaded."""
         expectedNames = set(self.EXPECTED_DETECTORS.keys())
-        actualNames = set(self.reader.detectors.keys())
+        actualNames = set(self.detfile.keys())
         self.assertSetEqual(
             expectedNames, actualNames,
             msg="Failure reading detectors from {}".format(self.FILE_PATH))
         for name, cls in self.EXPECTED_DETECTORS.items():
-            actualDet = self.detectors[name]
+            actualDet = self.detfile[name]
             self.assertIsInstance(
                 actualDet, cls, msg="{} is {}, should be {}: - {}"
                 .format(name, actualDet.__class__.__name__, cls,
@@ -42,14 +41,14 @@ class DetectorHelper(TestCase):
         baseMsg = "Key: {key}"
         for detName, gridDict in self.EXPECTED_GRIDS.items():
             msg = baseMsg + "  Reading: " + self.__class__.__name__
-            actualGrids = self.detectors[detName].grids
+            actualGrids = self.detfile[detName].grids
             compareDictOfArrays(
                 gridDict, actualGrids, testCase=self, fmtMsg=msg)
 
     def test_detectorIndex(self):
         """Verify that the detector tally index is properly constructed."""
         for detName, expectedIndex in self.EXPECTED_INDEXES.items():
-            actualIndex = self.detectors[detName].indexes
+            actualIndex = self.detfile[detName].indexes
             self.assertEqual(actualIndex, expectedIndex)
 
     def test_detectorSlice(self):
@@ -58,7 +57,7 @@ class DetectorHelper(TestCase):
             fixed = params['fixed']
             expectedTallies = params['tallies']
             expectedErrors = params['errors']
-            detector = self.detectors[detName]
+            detector = self.detfile[detName]
             tallies = detector.slice(fixed)
             errors = detector.slice(fixed, data='errors')
             for expected, actual, what in zip(
@@ -68,19 +67,13 @@ class DetectorHelper(TestCase):
                              err_msg="Detector {} {}\nFixed: {}"
                              .format(detName, what, fixed))
 
-    def test_iterDets(self):
-        """Verify the iterDets method is functional."""
-        for name, det in self.reader.iterDets():
-            self.assertIn(name, self.reader.detectors, msg=name)
-            self.assertIs(det, self.reader.detectors[name], msg=name)
-
     def test_getitem(self):
         """Verify the getitem method for extracting detectors."""
-        for name, det in self.reader.detectors.items():
-            fromGetItem = self.reader[name]
+        for name, det in self.detfile.items():
+            fromGetItem = self.detfile[name]
             self.assertIs(fromGetItem, det, msg=name)
         with self.assertRaises(KeyError):
-            self.reader['this should fail']
+            self.detfile['this should fail']
 
 
 class CartesianDetectorTester(DetectorHelper):
@@ -137,7 +130,7 @@ class CartesianDetectorTester(DetectorHelper):
     def test_sharedPlot(self):
         """Verify that the same axes object is returned on subsequent plots
         """
-        det = self.detectors[self.DET_NAME]
+        det = self.detfile[self.DET_NAME]
         # plot along two reactions with no axes call
         # ensure that returned objects are equal
         ax0 = det.plot(fixed={'reaction': 0, 'ymesh': 0})
@@ -307,7 +300,7 @@ class SingleTallyTester(TestCase):
     """Test storing detector data with a single tally"""
 
     def setUp(self):
-        self.detector = read(SINGLE_TALLY_FILE, 'det').detectors['one']
+        self.detector = DetectorFile.fromSerpent(SINGLE_TALLY_FILE)['one']
 
     def test_singleTally(self):
         """Test the conversion of a single tally to floats, not arrays"""
@@ -321,8 +314,8 @@ class TimeBinnedDetectorTester(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.reader = read(getFile('time_det0.m'), 'det')
-        cls.timeDet = cls.reader['FP']
+        cls.detfile = DetectorFile.fromSerpent(getFile('time_det0.m'))
+        cls.timeDet = cls.detfile['FP']
 
     def test_timeDetector(self):
         """Verify a simple time-binned detector is processed properly"""
