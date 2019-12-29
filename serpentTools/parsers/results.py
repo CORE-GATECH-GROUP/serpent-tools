@@ -1,17 +1,12 @@
 """Parser responsible for reading the ``*res.m`` files"""
-from collections import OrderedDict
 from numbers import Real
 import re
 
 from numpy import array, empty, asarray
-from cycler import cycler
-from matplotlib import rcParams
-from matplotlib.pyplot import gca
 
 from serpentTools.settings import rc
 from serpentTools.utils import convertVariableName
 from serpentTools.objects.containers import HomogUniv, UnivTuple
-from serpentTools.parsers.base import XSReader
 from serpentTools.parsers._collections import RES_DATA_NO_UNCS
 from serpentTools.objects.base import (DEF_COMP_LOWER,
                                        DEF_COMP_SIGMA, DEF_COMP_UPPER)
@@ -27,32 +22,12 @@ from serpentTools.utils import (
     VEC_REGEX,
     SCALAR_REGEX,
     FIRST_WORD_REGEX,
-    formatPlot,
-    placeLegend,
-    magicPlotDocDecorator,
     deconvertVariableName,
-    RESULTS_PLOT_XLABELS,
 )
 from serpentTools.messages import (
     warning, SerpentToolsException,
     info,
 )
-from serpentTools.io import MatlabConverter
-
-
-MapStrVersions = {
-    '2.1.29': {
-        'meta': 'VERSION ', 'rslt': 'MIN_MACROXS',
-        'univ': 'GC_UNIVERSE_NAME', 'days': 'BURN_DAYS',
-        'burnup': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
-        'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E'],
-    },
-}
-MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
-MapStrVersions['2.1.31'] = MapStrVersions['2.1.29']
-"""
-Assigns search strings for different Serpent versions
-"""
 
 METADATA_CONV = {
     int: {
@@ -192,55 +167,42 @@ class ListOfArrays(list):
         super().append(value)
 
 
-class ResultsReader(XSReader):
+class ResultsReader:
     """
     Parser responsible for reading and working with result files.
 
-    When inspecting keys of :attr:`universes`, it is preferable to use
-    an attribute based approach rather than positional. For example::
-
-        >>> for key in res.universes:
-        ...     break
-        >>> key.universe
-        # rather than
-        >>> key[0]
-
-    Attributes
-    ------------
-    metadata: dict
-        Dictionary with serpent descriptive variables as keys and the
-        corresponding description. Within the _res.m file this data is
-        printed multiple times, but contains the same description
-        and thus is stored only once. e.g., 'version': 'Serpent 2.1.29'
-    resdata: dict
-        Dictionary with serpent time-dependent variables as keys and the
-        corresponding values. The data is unique for each burnup step.
-        Some variables also contain uncertainties.
-        e.g., 'absKeff': [[9.91938E-01, 0.00145],[1.81729E-01, 0.00240]]
-    universes: dict
-        Dictionary of universe identifiers
-        :class:`~serpentTools.objects.UnivTuple` and their corresponding
-        :class:`~serpentTools.objects.HomogUniv`
-        objects. The keys describe a unique state:
-        'universe', burnup (MWd/kg), burnup index, time (days)
-        ('0', 0.0, 0, 0.0).
-        Burnup indexes are zero-indexed, meaning the first
-        step is index 0.
-
     Parameters
     ----------
-    filePath: str
-        path to the results file
+    version : str, optional
+        Serpent version string to be expected. If not given, defaults
+        to the latest version supported [2.1.31]
+    variableGroups : iterable of str, optional
+        Names of variable groups describing similar data, e.g. ``xs`` or
+        ``times``
+    variables : iterable of str, optional
+        Names of variables exactly how they apppear in the output file
+        to be processed, e.g. ``ANA_KEFF``
+    getInfXS : bool
+        Flag to process infinite medium homogenized universe data
+    getB1XS : bool
+        Flag to process critical leakage / B1 homogenized universe
+        data
 
-    Raises
-    ------
-    :class:`~serpentTools.SerpentToolsException`:
-        Serpent version is not supported,
-        No universes are found in the file,
-        No results are collected,
-        Corrupted results
+    Attributes
+    ----------
+    version : str
+        Serpent version anticipated by the reader.
+    variables : set of str
+        Names of variables as they would appear in the output file
+        to be parsed. If empty, all variables will be processed.
+        Otherwise, only those that appear in this set will be
+        processed
+    getInfXS : bool
+        Flag to process infinite medium homogenized universe data
+    getB1XS : bool
+        Flag to process critical leakage / B1 homogenized universe
+        data
 
-    IOError: file is unexpectedly closes while reading
     """
 
     __METADATA_COMP_SKIPS = {
@@ -253,28 +215,112 @@ class ResultsReader(XSReader):
     }
     """Metadata keys that will not be compared."""
 
-    def __init__(self, filePath):
-        XSReader.__init__(self, filePath, 'results')
+    def __init__(self, version=None, variableGroups=None, variables=None,
+                 getInfXS=True, getB1XS=True):
+        self.version = version or "2.1.31"
+        self._sectionStartWords = self._getSectionStartWords(self.version)
+        self._burnupKeys = {k: convertVariableName(self._sectionStartWords[k])
+                            for k in {"days", "burnup"}}
+        self.variables = self._expandVariables(variableGroups, variables)
+        self.getInfXS = getInfXS
+        self.getB1XS = getB1XS
 
-        self.metadata = {}
-        self.resdata = {}
-        self.universes = {}
+    def _getSectionStartWords(self, version):
+        versions = {"2.1.29", "2.1.30", "2.1.31"}
+        if version not in versions:
+            warning(
+                "Version {} not supported by {}. Must be one of {}".format(
+                    version, self.__class__.__name__, ", ".join(versions)))
+            warning(" Proceeding anyway. Please report strange behavior "
+                    "to developers")
+        return {
+            'meta': 'VERSION ', 'rslt': 'MIN_MACROXS',
+            'univ': 'GC_UNIVERSE_NAME', 'days': 'BURN_DAYS',
+            'burnup': 'BURNUP', 'infxs': 'INF_', 'b1xs': 'B1_',
+            'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E'],
+        }
 
-    def _read(self):
-        """Read through the results file and store requested data."""
+    @staticmethod
+    def _expandVariables(groups, named):
+        if groups is None and named is None:
+            return set()
+        with rc as temprc:
+            if groups is not None:
+                temprc["xs.variableGroups"] = groups
+            if named is not None:
+                temprc["xs.variableExtras"] = named
+            return temprc.expandVariables()
+
+    def _precheck(self, stream):
+        """Do a quick scan to ensure this looks like a results file."""
+        univSet = set()
+        verWarning = True
+        tline = stream.readline()
+        while tline:
+            if verWarning and self._sectionStartWords['meta'] in tline:
+                verWarning = False
+                varType, varVals = self._getVarValues(tline)  # version
+                if self.version not in varVals:
+                    warning("SERPENT {} found, but version {} is "
+                            "defined in settings"
+                            .format(varVals, self.version))
+                    warning("  Attemping to read anyway. Please report "
+                            "strange behaviors/failures to developers.")
+            elif self._sectionStartWords['univ'] in tline:
+                varType, varVals = self._getVarValues(tline)  # universe
+                if varVals in univSet:
+                    break
+                univSet.add(varVals)  # add the new universe
+            tline = stream.readline()
+        self._numUniv = len(univSet)
+
+    def processStream(self, stream):
+        """Update data dictionaries given a readable stream
+
+        Parameters
+        ----------
+        stream : io.TextIOBase
+            Readable stream of result data, like from an opened
+            result file.
+
+        Returns
+        -------
+        resdata : dict
+            Dictionary of result data, e.g. ``anaKeff``, to be
+            updated with the contents of ``stream``
+        universes : dict
+            Dictionary of homogenized universe data to be
+            updated with the contents of ``stream``
+        metadata : dict
+            Dictionary of metadata, e.g. ``version``, to be
+            updated with the contents of ``stream``
+
+        Raises
+        ------
+        AttributeError
+            If the stream is not seekable and therefore the number of
+            universes
+        """
+        if not stream.seekable():
+            # TODO Do we really need this?
+            raise AttributeError(
+                "Unable to rewind stream and count number of universes")
 
         self._counter = {'meta': 0, 'rslt': 0}
         self._univlist = []
         self._varTypeLookup = {}
         self._tempArrays = {}
 
-        self.metadata.clear()
-        self.resdata.clear()
-        self.universes.clear()
+        metadata = {}
+        universes = {}
+        resdata = {}
 
-        with open(self.filePath, 'r') as fObject:
-            for tline in fObject:
-                self._processResults(tline)
+        start = stream.tell()
+        self._precheck(stream)
+        stream.seek(start, 0)
+
+        for line in stream:
+            self._processResults(line, metadata, universes)
 
         while self._tempArrays:
             # Consume temporary arrays
@@ -283,11 +329,15 @@ class ResultsReader(XSReader):
 
             # Only insert first row if no burnup present
             if value.shape[0] == 1:
-                self.resdata[key] = value.reshape(value.size)
+                resdata[key] = value.reshape(value.size)
             else:
-                self.resdata[key] = value
+                resdata[key] = value
 
-    def _processResults(self, tline):
+        self._postcheck(resdata, universes, metadata)
+
+        return resdata, universes, metadata
+
+    def _processResults(self, tline, metadata, universes):
         """Performs the main processing of the results."""
         #  Not an empty line or a comment
         if (tline.strip() and '%' not in tline and '=' in tline
@@ -299,35 +349,51 @@ class ResultsReader(XSReader):
                 return
             varType, varVals = self._getVarValues(tline)  # values to be stored
             if self._posFile == 'meta':
-                self._storeMetaData(varNamePy, varType, varVals)
+                self._storeMetaData(metadata, varNamePy, varType, varVals)
             if self._posFile == 'rslt':
                 self._storeResData(varNamePy, varVals)
             if self._posFile == 'univ':
-                self._storeUnivData(varNameSer, varVals)
+                self._storeUnivData(universes, varNameSer, varVals)
 
     def _whereAmI(self, tline):
         """Identify the position in the file."""
-        if self._keysVersion['meta'] in tline:
+        if self._sectionStartWords['meta'] in tline:
             self._posFile = 'meta'
             self._counter['meta'] += 1
-        elif self._keysVersion['rslt'] in tline:
+        elif self._sectionStartWords['rslt'] in tline:
             self._posFile = 'rslt'
             if self._numUniv:
                 self._counter['rslt'] = (
                     (self._counter['meta'] - 1) // self._numUniv + 1)
                 return
             self._counter['rslt'] = self._counter['meta']
-        elif self._keysVersion['univ'] in tline:
+        elif self._sectionStartWords['univ'] in tline:
             self._posFile = 'univ'
             varType, varVals = self._getVarValues(tline)  # universe name
             self._univlist.append(varVals)
 
-    def _storeUnivData(self, varNameSer, varVals):
+    def _checkAddVariable(self, variableName):
+        """Check if the data for the variable should be stored"""
+        # no variables given -> get all
+        if not any(self.variables):
+            return True
+        # explicitly named
+        if variableName in self.variables:
+            return True
+        if self.getB1XS and variableName.replace('B1_', '') in self.variables:
+            return True
+        if (self.getInfXS and variableName.replace('INF_', '') in
+                self.variables):
+            return True
+        return False
+
+    def _storeUnivData(self, universes, varNameSer, varVals):
         """Process universes data"""
         brState = self._getBUstate()  # obtain the branching tuple
-        if brState not in self.universes:
-            self.universes[brState] = HomogUniv(*brState)
-        if varNameSer == self._keysVersion['univ']:
+        univ = universes.get(brState)
+        if univ is None:
+            univ = universes[brState] = HomogUniv(*brState)
+        if varNameSer == self._sectionStartWords['univ']:
             return
 
         # Get variable specificy type converter
@@ -337,9 +403,9 @@ class ResultsReader(XSReader):
         values, uncertainties = converter(varVals)
 
         # Values without uncertainties
-        self.universes[brState].addData(varNameSer, values, False)
+        univ.addData(varNameSer, values, False)
         if uncertainties is not None:
-            self.universes[brState].addData(varNameSer, uncertainties, True)
+            univ.addData(varNameSer, uncertainties, True)
 
     def _storeResData(self, varNamePy, varVals):
         """Process time-dependent results data"""
@@ -357,13 +423,13 @@ class ResultsReader(XSReader):
                     "Error in appending {}  into {} of resdata:\n{}"
                     .format(varNamePy, vals, str(ee)))
 
-    def _storeMetaData(self, varNamePy, varType, varVals):
+    def _storeMetaData(self, metadata, varNamePy, varType, varVals):
         """Store general descriptive data"""
         if varType == 'string':
-            self.metadata[varNamePy] = varVals
+            metadata[varNamePy] = varVals
         else:  # vector or scalar
             vals = str2vec(varVals)  # convert string to floats
-            self.metadata[varNamePy] = array(vals)  # overwrite existing data
+            metadata[varNamePy] = array(vals)  # overwrite existing data
 
     def _getBUstate(self):
         """Define unique branch state"""
@@ -412,99 +478,8 @@ class ResultsReader(XSReader):
             varVals = tline[sclMatch.span()[0] + 1:sclMatch.span()[1] - 2]
         return varType, varVals
 
-    def getUniv(self, univ, burnup=None, index=None, timeDays=None):
-        """
-        Return a specific universe given the ID and time of interest
-
-        Parameters
-        ----------
-        univ: str
-            Unique str for the desired universe
-        burnup: float or int, optional
-            Burnup [MWd/kgU] of the desired universe
-        timeDays: float or int, optional
-            Time [days] of the desired universe
-        index: int, optinal
-            Point of interest in the burnup/days index
-
-        Returns
-        -------
-        :class:`~serpentTools.objects.HomogUniv`
-            Requested universe
-
-        Raises
-        ------
-        KeyError:
-            If the requested universe could not be found
-        :class:`~serpentTools.SerpentToolsException`
-            If burnup, days and index are not given
-        """
-        if index is None and burnup is None and timeDays is None:
-            raise SerpentToolsException(
-                'Burnup, time or index are required inputs')
-
-        searchKey = UnivTuple(univ, burnup, index, timeDays)
-
-        # check if key is exactly present
-
-        universe = self.universes.get(searchKey)
-        if universe is not None:
-            return universe
-
-        for key, universe in self.universes.items():
-            for uItem, sItem in zip(key, searchKey):
-                if sItem is None:
-                    continue
-                elif uItem != sItem:
-                    break
-            else:
-                return universe
-        raise KeyError(
-            "Could not find a universe that matches {}".format(searchKey))
-
-    def _precheck(self):
-        """do a quick scan to ensure this looks like a results file."""
-        serpentV = rc['serpentVersion']
-        keys = MapStrVersions.get(serpentV)
-
-        if keys is None:
-            warning("SERPENT {} is not supported by the "
-                    "ResultsReader".format(serpentV))
-            warning("  Attemping to read anyway. Please report strange "
-                    "behaviors/failures to developers.")
-            keys = MapStrVersions[max(MapStrVersions)]
-
-        self._keysVersion = keys
-
-        self._burnupKeys = {k: convertVariableName(keys[k]) for k in {"days", "burnup"}}
-
-        univSet = set()
-        verWarning = True
-        with open(self.filePath) as fid:
-            if fid is None:
-                raise IOError("Attempting to read on a closed file.\n"
-                              "Parser: {}\nFile: {}"
-                              .format(self, self.filePath))
-            for tline in fid:
-                if verWarning and self._keysVersion['meta'] in tline:
-                    verWarning = False
-                    varType, varVals = self._getVarValues(tline)  # version
-                    if serpentV not in varVals:
-                        warning("SERPENT {} found in {}, but version {} is "
-                                "defined in settings"
-                                .format(varVals, self.filePath,
-                                        serpentV))
-                        warning("  Attemping to read anyway. Please report "
-                                "strange behaviors/failures to developers.")
-                if self._keysVersion['univ'] in tline:
-                    varType, varVals = self._getVarValues(tline)  # universe
-                    if varVals in univSet:
-                        break
-                    univSet.add(varVals)  # add the new universe
-            self._numUniv = len(univSet)
-
-    def _inspectData(self):
-        """ensure the parser grabbed expected materials."""
+    def _inspectData(self, results, universes, metadata):
+        """Ensure the parser grabbed expected materials."""
         obtainedRes = (self._counter['meta'] // self._numUniv if self._numUniv
                        else self._counter['meta'])
         if obtainedRes != self._counter['rslt']:
@@ -513,19 +488,17 @@ class ResultsReader(XSReader):
                 "{} time-points, and {} overall result points "
                 .format(self.filePath, self._numUniv,
                         self._counter['rslt'], self._counter['meta']))
-        if not self.resdata and not self.metadata:
-            for keys, dictUniv in self.universes.items():
+        if not results and not metadata:
+            for keys, dictUniv in universes.items():
                 if dictUniv.hasData():
                     return
             raise SerpentToolsException(
-                "metadata, resdata and universes are all empty "
-                "from {} and <results.expectGcu> is True"
-                .format(self.filePath))
+                "metadata, resdata and universes are all empty")
 
-    def _postcheck(self):
-        self._inspectData()
-        self._cleanMetadata()
-        del (self._varTypeLookup, self._burnupKeys, self._keysVersion,
+    def _postcheck(self, results, universes, metadata):
+        self._inspectData(results, universes, metadata)
+        self._cleanMetadata(metadata)
+        del (self._varTypeLookup, self._burnupKeys, self._sectionStartWords,
              self._counter, self._univlist, self._tempArrays)
 
     def _compare(self, other, lower, upper, sigma):
@@ -657,298 +630,14 @@ class ResultsReader(XSReader):
             similar &= myUniv.compare(otherUniv, lower, upper, sigma)
         return similar
 
-    def _cleanMetadata(self):
+    def _cleanMetadata(self, metadata):
         """Replace some items in metadata dictionary with easier data types."""
-        mdata = self.metadata
-        origKeys = set(mdata.keys())
+        origKeys = set(metadata.keys())
         for converter, keys in METADATA_CONV.items():
             for key in keys:
                 if key in origKeys:
-                    mdata[key] = converter(mdata[key])
+                    metadata[key] = converter(metadata[key])
                     origKeys.remove(key)
-
-    @magicPlotDocDecorator
-    def plot(self, x, y=None, right=None, sigma=3, ax=None, legend=None,
-             ncol=None, xlabel=True, ylabel=None, logx=False, logy=False,
-             loglog=False, rightlabel=None):
-        """
-        Plot quantities over time
-
-        Parameters
-        ----------
-        x: str or iterable of strings
-            ``y`` is not given, then plot these quantites against
-            burnup in days. Otherwise, plot this quantity as the x
-            axis with same rules as if called by ``plot('burndays', x)``.
-            Burnup options are ``{'burnup', 'days', 'burnDays', 'burnStep'}``
-        y: str or iterable of strings
-            Quantity or quantities to plot. For all entries, only
-            the first column, with respect to time, will be plotted.
-            If the second column exists, and sigma is > 0, that column
-            will be treated as the relative uncertainty for an
-            errorbar plot. If a dictionary is passed, then plots will
-            be labeled by the values of that dictionary, e.g.
-            ``{'anaKeff': $k_{eff}$}`` would plot the first column of
-            ``anaKeff`` with a ``LaTeX``-ready :math:`k_{eff}`
-        right: str or iterable of strings
-            Quantites to plot on the same plot, but with a different
-            y axis and common x axis. Same rules apply as for arguments
-            to ``y``. Each label will modified to have a unique identifier
-            indicating the plot uses the right y-axis
-        {ax}
-        {sigma}
-        {legend}
-        {ncol}
-        {xlabel}
-        {ylabel}
-        {logx}
-        logy: bool or list or tuple
-            Apply a log scale to the y-axis. If passing values to
-            ``right``, this can be a two item list or tuple,
-            corresponding to log-scaling the left and right axis,
-            respectively.
-        {loglog}
-        rlabel: str or None
-            If given and passing values to ``right``, use this to label
-            the y-axis.
-
-        Returns
-        -------
-        :class:`matplotlib.axes.Axes` or tuple of axes
-            If right is not given, then only the primary axes object
-            is returned. Otherwise, the primary and the "right"
-            axes object are returned
-
-        """
-
-        # cleanup some inputs
-        if y is None:
-            y = x
-            x = "burnDays"
-
-        sigma = max(int(sigma), 0)
-
-        y = self._expandPlotIterables(y)
-
-        if right is not None:
-            right = self._expandPlotIterables(right, ' [right]')
-
-        if xlabel is True:
-            xlabel = RESULTS_PLOT_XLABELS[x]
-
-        if len(y) == 1 and ylabel is None:
-            for ylabel in y.values():
-                break  # just need the first one
-            if sigma:
-                ylabel += r'$ \pm {}\sigma$'.format(sigma)
-
-        ax = ax or gca()
-
-        self._plot(x, y, ax, sigma)
-
-        if right is None:
-            formatPlot(ax, logx=logx, logy=logy, loglog=loglog,
-                       xlabel=xlabel, ylabel=ylabel, legend=legend,
-                       ncol=ncol)
-            return ax
-
-        # plot some other quantity on the same x axis
-        other = ax.twinx()
-
-        # update color cycle to not repeat
-        colors = rcParams['axes.prop_cycle'].by_key()['color']
-        colors = colors[len(y):] + colors[:len(y)]
-        other.set_prop_cycle(cycler('color', colors))
-
-        self._plot(x, right, other, sigma)
-
-        # formatting
-        if logy is None or isinstance(logy, bool):
-            logy = [logy, ] * 2
-
-        if loglog is None or isinstance(loglog, bool):
-            loglog = [loglog, None]
-
-        if legend or legend is None:
-            leftHandles, leftLabels = ax.get_legend_handles_labels()
-            rightHandles, rightLabels = other.get_legend_handles_labels()
-
-            placeLegend(ax, legend, ncol,
-                        (leftHandles + rightHandles,
-                         leftLabels + rightLabels))
-
-        if len(right) == 1 and rightlabel is None:
-            for rightlabel in right.values():
-                break  # just need the first one
-            if sigma:
-                rightlabel += r'$ \pm {}\sigma$'.format(sigma)
-
-        formatPlot(ax, logx=logx, logy=logy[0], loglog=loglog[0],
-                   legend=False, xlabel=xlabel, ylabel=ylabel)
-        formatPlot(other, logx=False, loglog=False, logy=logy[1],
-                   legend=False, ylabel=rightlabel.replace(' [right]', ''))
-
-        return ax, other
-
-    def _plot(self, x, y, ax, sigma):
-        """Simple, unformatted plot with dictionary of keys"""
-        # get plot data
-        xvals = self.resdata[x][:, 0]
-        for resKey, label in y.items():
-            ydata = self.resdata[resKey]
-            if ydata.shape[0] != xvals.size and ydata.size != xvals.size:
-                raise ValueError(
-                    "Quantity for {} has {} time points, not {} like {}"
-                    .format(resKey, ydata.shape[0], xvals.size, x))
-
-            # grab second column for uncertainty
-            if sigma and ydata.shape[1] > 1:
-                ax.errorbar(xvals, ydata[:, 0], label=label,
-                            yerr=ydata[:, 0] * sigma * ydata[:, 1],
-                            )
-            else:
-                ax.errorbar(xvals, ydata[:, 0], label=label,
-                            )
-
-    @staticmethod
-    def _expandPlotIterables(y, tail=''):
-        if isinstance(y, str):
-            return {y: "{}{}".format(y, tail)}
-        elif not isinstance(y, (dict, OrderedDict)):
-            return OrderedDict([[item, '{}{}'.format(item, tail)]
-                                for item in y])
-        return y
-
-    def toMatlab(self, fileP, reconvert=True, append=True,
-                 format='5', longNames=True, compress=True,
-                 oned='row'):
-        """
-        Write a binary MATLAB file from the contents of this reader
-
-        The group constant data will be presented as a multi-dimensional
-        array, rather than a stacked 2D matrix. The axis are ordered
-        ``burnup, universeIndex, group, value/uncertainty``
-
-        The ordering of the universes can be found in the ``'UNIVERSES'``
-        vector if ``reconvert==True``, otherwise ``'universes'``. Each
-        universe ID is present in this vector, ordered to their
-        position along the second axis in the matrix.
-
-        Parameters
-        ----------
-        fileP: str or file-like object
-            Name of the file to write
-        reconvert: bool
-            If this evaluates to true, convert values back into their
-            original form as they appear in the output file.
-        append: bool
-            If true and a file exists under ``output``, append to that file.
-            Otherwise the file will be overwritten
-        format: {'5', '4'}
-            Format of file to write. ``'5'`` for MATLAB 5 to 7.2, ``'4'`` for
-            MATLAB 4
-        longNames: bool
-            If true, allow variable names to reach 63 characters,
-            which works with MATLAB 7.6+. Otherwise, maximum length is
-            31 characters
-        compress: bool
-            If true, compress matrices on write
-        oned: {'row', 'col'}:
-            Write one-dimensional arrays as row vectors if
-            ``oned=='row'`` (default), or column vectors
-
-        Examples
-        --------
-
-        >>> import serpentTools
-        >>> from scipy.io import loadmat
-        >>> r = serpentTools.readDataFile('pwr_res.m')
-        # convert to original variable names
-        >>> r.toMatlab('pwr_res.mat', True)
-        >>> loaded = loadmat('pwr_res.mat')
-        >>> loaded['ABS_KEFF']
-        array([[0.991938, 0.00145 ],
-               [0.181729, 0.0024  ]])
-        >>> kinf = loaded['INF_KINF']
-        >>> kinf.shape
-        (2, 1, 1, 2)
-        >>> kinf[:, 0, 0, 0]
-        array([0.993385, 0.181451])
-        >>> tot = loaded['INF_TOT']
-        >>> tot.shape
-        (2, 1, 2, 2)
-        >>> tot[:, 0, :, 0]
-        array([[0.496553, 1.21388 ],
-               [0.481875, 1.30993 ]])
-        # use the universes key to identify ordering of universes
-        >>> loaded['UNIVERSES']
-        array([0])
-
-        Raises
-        ------
-        ImportError:
-            If :term:`scipy` is not installed
-
-        See Also
-        --------
-        * :func:`scipy.io.savemat`
-        """
-        converter = MatlabConverter(self, fileP)
-        return converter.convert(reconvert, append, format, longNames,
-                                 compress, oned)
-
-    def _gather_matlab(self, reconvert):
-        if reconvert:
-            varFunc = getSerpentCaseName
-            out = {
-                varFunc(key): value for key, value in self.metadata.items()
-            }
-            out.update({
-                varFunc(key): value for key, value in self.resdata.items()
-            })
-        else:
-            out = {}
-            varFunc = getMixedCaseName
-            out.update(self.metadata)
-            out.update(self.resdata)
-        out.update(self._gather_univdata(varFunc))
-        return out
-
-    def _gather_univdata(self, func):
-        numAppearances = {}
-
-        for key in self.universes:
-            if key.universe not in numAppearances:
-                numAppearances[key.universe] = 1
-                continue
-            numAppearances[key.universe] += 1
-        # check to make sure all universes appear an identical
-        # number of times
-        burnupVals = set(numAppearances.values())
-        if len(burnupVals) != 1:
-            raise SerpentToolsException(
-                "Universes appear a different number of times:\n{}"
-                .format(numAppearances))
-
-        shapeStart = burnupVals.pop(), len(numAppearances)
-        univOrder = tuple(sorted(numAppearances))
-
-        univData = {func('universes'): univOrder}
-
-        for univKey, univ in self.universes.items():
-
-            # position in matrix
-            uIndex = univOrder.index(univKey.universe)
-            bIndex = univKey.step
-
-            for expName, uncName in zip(
-                    ('infExp', 'b1Exp', 'gc'), ('infUnc', 'b1Unc', 'gcUnc')):
-                expD = getattr(univ, expName)
-                uncD = getattr(univ, uncName)
-                gatherPairedUnivData(univ, uIndex, bIndex, shapeStart, func,
-                                     expD, uncD, univData)
-
-        return univData
 
 
 def getMixedCaseName(name):

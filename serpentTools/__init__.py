@@ -2,6 +2,7 @@
 from serpentTools.detectors import *
 from serpentTools.detfile import DetectorFile
 from serpentTools.parsers import *
+from serpentTools.resultFile import ResultFile
 from serpentTools.messages import *
 from serpentTools.data import *
 from serpentTools.samplers import *

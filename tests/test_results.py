@@ -32,7 +32,7 @@ def multipleGcuNoBu():
 
 
 def test_multipleGcuNoBu(multipleGcuNoBu):
-    r = serpentTools.read(multipleGcuNoBu)
+    r = serpentTools.ResultFile.fromSerpent(multipleGcuNoBu)
     assert len(r.universes) == 3
     for key in r.universes:
         assert key.step == 0
