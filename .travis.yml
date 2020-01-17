@@ -12,10 +12,11 @@ python:
 env:
   global:
       - SERPENT_TOOLS_DATA=data/
-  - ST_INSTALL=setup
-  - ST_INSTALL=sdist
-  - ST_INSTALL=bdist_wheel
-  - ST_INSTALL=bdist_egg
+  jobs:
+      - ST_INSTALL=setup
+      - ST_INSTALL=sdist
+      - ST_INSTALL=bdist_wheel
+      - ST_INSTALL=bdist_egg
 
 before_install:
   - pip install -r requirements.txt -r requirements-test.txt
