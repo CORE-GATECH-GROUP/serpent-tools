@@ -10,6 +10,8 @@ python:
   - "3.5"
   - "3.7"
 env:
+  global:
+      - SERPENT_TOOLS_DATA=data/
   - ST_INSTALL=setup
   - ST_INSTALL=sdist
   - ST_INSTALL=bdist_wheel

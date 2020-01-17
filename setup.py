@@ -1,5 +1,3 @@
-from os.path import join
-from glob import glob
 try:
     from setuptools import setup
     HAS_SETUPTOOLS = True
@@ -8,18 +6,6 @@ except ImportError:
     from distutils.core import setup
     warnings.warn('Installing with distutils. Use of setuptools is preferred')
     HAS_SETUPTOOLS = False
-
-
-DATA_EXTS = {'*.m', '*.coe'}
-
-
-def getDataFiles():
-    """Return all matlab files from ``serpentTools/data``"""
-
-    files = []
-    for ext in DATA_EXTS:
-        files.extend(glob(join('serpentTools', 'data', ext)))
-    return files
 
 
 with open('README.rst') as readme:
@@ -47,7 +33,7 @@ version = "0.10.0.dev0"
 setupArgs = {
     'name': 'serpentTools',
     'packages': ['serpentTools', 'serpentTools.parsers', 'serpentTools.utils',
-                 'serpentTools.data', 'serpentTools.io',
+                 'serpentTools.io',
                  'serpentTools.objects', 'serpentTools.samplers'],
     'url': 'https://github.com/CORE-GATECH-GROUP/serpent-tools',
     'description': ('A suite of parsers designed to make interacting with '
@@ -60,14 +46,6 @@ setupArgs = {
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',
     'version': version,
-    'package_data': {
-        'serpentTools.data': ['data/{}'.format(ext) for ext in DATA_EXTS],
-    },
-    'include_package_data': True,
-    'data_files': [
-        ('serpentTools', ['serpentTools/variables.yaml', ]),
-        ('serpentTools/data', getDataFiles()),
-    ],
 }
 if HAS_SETUPTOOLS:
     setupArgs.update({
