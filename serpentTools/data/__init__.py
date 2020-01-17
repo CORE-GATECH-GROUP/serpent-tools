@@ -2,12 +2,12 @@
 Module for loading reference and example data files
 """
 
-from os.path import join, exists
+import os
+from os.path import exists
+import pathlib
 from warnings import warn
 
-from serpentTools import __path__, read
-
-_DATA_ROOT = join(__path__[0], 'data')
+from serpentTools import read
 
 __all__ = ['readDataFile', ]
 
@@ -16,27 +16,36 @@ def getFile(path):
     """
     Retrieve the path to one of the reference or example files
 
+    Relies on the environment variable ``SERPENT_TOOLS_DATA``
+    to find the data files.
+
     Parameters
     ----------
-    path: str
+    path : str
         The name of the file without any additional directory
         information
 
     Returns
     -------
-    str:
+    str
         Path to a data file that can be read with one of
         the readers or with :func:`serpentTools.read`
 
     Raises
     ------
-    IOError:
+    IOError
         If no match for ``path`` exists
     """
-    fullPath = join(_DATA_ROOT, path)
-    if not exists(fullPath):
-        raise IOError("File matching {} does not exist".format(path))
-    return fullPath
+    datadir = os.environ.get("SERPENT_TOOLS_DATA")
+    if datadir is None:
+        raise EnvironmentError("""serpentTools.data functions rely on the
+environment variable SERPENT_TOOLS_DATA to find data files. To use these
+functions for testing and examples, set this environment variable""")
+    fullPath = pathlib.Path(datadir) / path
+    if not fullPath.is_file():
+        raise FileNotFoundError(
+            "Data file {} could not be found in {}".format(path, datadir))
+    return str(fullPath)
 
 
 def readDataFile(path, **kwargs):
@@ -81,15 +90,8 @@ def readDataFile(path, **kwargs):
         # assume this is a example/test file contained in this project
         filePath = getFile(path)
     else:
-        _warnDataFilePurpose()
+        warn("Please use serpentTools.read as the primary read function. "
+             "readDataFile is intended for testing and example and may "
+             "be changed or removed in the future.")
         filePath = path
     return read(filePath, **kwargs)
-
-
-def _warnDataFilePurpose():
-    """
-    Issue a warning indicating that readDataFile is not primary read function.
-    """
-    warn("Please use serpentTools.read as the primary read function. "
-         "readDataFile is intended for testing and example and may "
-         "be changed or removed in the future.", UserWarning)
