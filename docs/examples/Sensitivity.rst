@@ -4,6 +4,20 @@
 
 .. _ex-sensitivity:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> sfile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "flattop_sens.m")
+
 Sensitivity Reader
 ==================
 
@@ -21,17 +35,11 @@ perturbations can be applied to specific materials and/or isotopes.
 The |SensitivityReader| is capable of reading this file and storing
 all the arrays and perturbation parameters contained therein. A basic
 plot method is also contained on the reader.
-.. note::
-
-   The preferred way to read your own output files is with the
-   |read-full| function. The |readData| function is used here
-   to make it easier to reproduce the examples
-
 
 .. code:: 
     
     >>> import serpentTools
-    >>> sens = serpentTools.readDataFile('flattop_sens.m')
+    >>> sens = serpentTools.read(sfile)
 
 The arrays that are stored in |sens| and |eneSens| 
 are stored under converted names. The original

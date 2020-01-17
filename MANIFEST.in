@@ -1,6 +1,7 @@
-include versioneer.py
-include serpentTools/_version.py
 include serpentTools/variables.yaml
-include serpentTools/data/*.m
-include serpentTools/data/*.coe
 include requirements.txt
+include LICENSE
+
+graft serpentTools
+
+global-exclude *.pyc

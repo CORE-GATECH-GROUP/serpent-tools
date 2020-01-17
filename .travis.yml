@@ -10,10 +10,13 @@ python:
   - "3.5"
   - "3.7"
 env:
-  - ST_INSTALL=setup
-  - ST_INSTALL=sdist
-  - ST_INSTALL=bdist_wheel
-  - ST_INSTALL=bdist_egg
+  global:
+      - SERPENT_TOOLS_DATA=data/
+  jobs:
+      - ST_INSTALL=setup
+      - ST_INSTALL=sdist
+      - ST_INSTALL=bdist_wheel
+      - ST_INSTALL=bdist_egg
 
 before_install:
   - pip install -r requirements.txt -r requirements-test.txt
@@ -25,6 +28,8 @@ install:
 
 # run
 script:
+  # Make data path absolute
+  - export SERPENT_TOOLS_DATA=$(pwd)/$SERPENT_TOOLS_DATA
   - pytest --cov=serpentTools --cov-report= -v
   - bash scripts/travis/testNotebooks.sh
 

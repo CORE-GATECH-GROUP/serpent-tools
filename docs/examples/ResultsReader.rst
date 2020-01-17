@@ -5,6 +5,20 @@
 
 .. _ex-results:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> resFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "InnerAssembly_res.m")
+
 ==============
 Results Reader
 ==============
@@ -21,21 +35,11 @@ The |ResultsReader| is capable of reading this file, and storing the data
 inside |HomogUniv| objects. Each such object has methods and attributes that
 should ease the analyses.
 
-.. note::
-
-   The preferred way to read your own output files is with the
-   |read-full| function. The |readData| function is used here
-   to make it easier to reproduce the examples
-
-
 .. code:: 
     
     >>> import numpy as np
     >>> import serpentTools
-    >>> from serpentTools.settings import rc
-
-    >>> resFile = 'InnerAssembly_res.m'
-    >>> res = serpentTools.readDataFile(resFile)
+    >>> res = serpentTools.read(resFile)
 
 Metadata
 ========
@@ -459,7 +463,7 @@ Furthermore, we instruct the read to no read critical spectrum cross sections::
 
     >>> rc['xs.getB1XS'] = False
     
-    >>> resFilt = serpentTools.readDataFile(resFile)
+    >>> resFilt = serpentTools.read(resFile)
     >>> resFilt.metadata.keys()
     dict_keys(['version', 'compileDate', 'debug', 'title', 'confidentialData',
     'inputFileName', 'workingDirectory', 'hostname', 'cpuType', 'cpuMhz',
@@ -476,7 +480,6 @@ Furthermore, we instruct the read to no read critical spectrum cross sections::
     'infS2', 'infS3', 'infS4', 'infS5', 'infS6', 'infS7'])
     >>> univ0Filt.b1Exp
     {}
-
 
 Conclusion
 ----------

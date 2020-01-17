@@ -8,6 +8,20 @@
 
 .. _ex-microXS:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> mdxFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "ref_mdx0.m")
+
 ==========================
 Micro cross section reader
 ==========================
@@ -28,17 +42,10 @@ and ease the analysis. Note: in order to obtain the micro depletion
 files, the user must set the ``mdep`` card in the input
 `file <http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_mdep>`__.
 
-.. note::
-
-   The preferred way to read your own output files is with the
-   |read-full| function. The |readData| function is used here
-   to make it easier to reproduce the examples
-
 .. code:: 
     
     >>> import serpentTools
-    >>> mdxFile = 'ref_mdx0.m'
-    >>> mdx = serpentTools.readDataFile(mdxFile)
+    >>> mdx = serpentTools.read(mdxFile)
 
 The fission yields read in from the file are stored in the |nfy|
 dictionary, where the keys represent a specific (parent, energy) pair
@@ -237,7 +244,7 @@ to store all the data from the output file.
 
 .. code:: 
     
-    >>> mdx = serpentTools.readDataFile(mdxFile)
+    >>> mdx = serpentTools.read(mdxFile)
     >>> # fission yields are not stored on the reader
     >>> mdx.nfy.keys()
     dict_keys([])
