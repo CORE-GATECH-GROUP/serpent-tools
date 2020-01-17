@@ -6,6 +6,14 @@
 Changelog
 =========
 
+.. _v0.10.0:
+
+0.10.0
+======
+
+* Data files used for testing and examples are now found using
+  the environment variable ``SERPENT_TOOLS_DATA`` and are no
+  longer distributed with the package.
 
 .. _v0.9.1:
 
