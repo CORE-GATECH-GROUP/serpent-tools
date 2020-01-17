@@ -46,6 +46,7 @@ setupArgs = {
     'keywords': 'SERPENT file parsers transport',
     'license': 'MIT',
     'version': version,
+    "include_package_data": True,
 }
 if HAS_SETUPTOOLS:
     setupArgs.update({
