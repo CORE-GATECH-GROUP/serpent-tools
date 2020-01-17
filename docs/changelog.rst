@@ -6,6 +6,18 @@
 Changelog
 =========
 
+.. _v0.9.2:
+
+0.9.2
+=====
+
+.. _v0.9.2-bugs:
+
+Bug Fixes
+---------
+
+* Detector reader can handle sequential detectors with very similar
+  names - :issue:`374`.
 
 .. _v0.9.1:
 
@@ -20,7 +32,6 @@ Bug Fixes
 * Sensitivity arrays generated with ``sens opt history 1`` will no longer
   overwrite the primary result arrays - :pull:`366`. These arrays are not 
   currently stored - :issue:`367`
-
 
 .. _v0.9.0:
 
