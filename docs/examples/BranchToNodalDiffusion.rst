@@ -12,6 +12,20 @@
 
 .. _branch-col-example:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> branchFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "demo.coe")
+
 Coefficient file to nodal diffusion cross sections
 ==================================================
 
@@ -35,8 +49,7 @@ across these perturbations, and this notebook will demonstrate using the
     >>> import numpy
     >>> import serpentTools
     >>> from serpentTools.xs import BranchCollector
-    >>> # use serpentTools.read for everything except following along with examples
-    >>> coe = serpentTools.readDataFile('demo.coe')
+    >>> coe = serpentTools.read(branchFile)
 
 This specific input file contained two perturbations: boron
 concentration and fuel temperature. Boron concentration had three

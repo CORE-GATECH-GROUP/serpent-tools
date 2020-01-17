@@ -1,12 +1,25 @@
 .. _depmtx-reader-ex:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> mtxFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "depmtx_ref.m")
+
 =======================
 Depletion Matrix Reader
 =======================
 
 The ``serpentTools`` package supports reading depletion matrix files, generated when
-``set depmtx 1`` is added to the input file.
-As of ``SERPENT`` 2.1.30, these files contain
+``set depmtx 1`` is added to the input file. As of ``SERPENT`` 2.1.30, these files contain
 
    1. The length of time for a depletion interval
    2. Vector of initial concentrations for all isotopes present in the
@@ -32,20 +45,14 @@ This document will demonstrate the |DepmtxReader|, designed to store such data.
 Basic Operation
 ===============
 
-.. note::
-
-   The preferred way to read your own output files is with the
-   |read-full| function. The |readData| function is used here
-   to make it easier to reproduce the examples
-
 .. code::
 
    >>> import serpentTools
-   >>> reader = serpentTools.readDataFile('depmtx_ref.m')
+   >>> reader = serpentTools.read(mtxFile)
    >>> reader
    <serpentTools.parsers.depmatrix.DepmtxReader at 0x7f0b1a9702b0>
 
-We not have access to all the data present in the fire directly on the reader.
+We now have access to all the data present in the file directly on the reader.
 
 .. code::
 

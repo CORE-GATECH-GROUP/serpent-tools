@@ -6,6 +6,20 @@
 
 .. _depletion-reader-ex:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> depFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "demo_dep.m")
+
 ================
 Depletion Reader
 ================
@@ -22,19 +36,7 @@ Each such object has methods and attributes that should ease analysis.
 .. code:: 
     
     >>> import serpentTools
-    >>> from serpentTools.settings import rc
-
-.. note::
-
-   The preferred way to read your own output files is with the
-   :func:`~serpentTools.read` function. The
-   :func:`~serpentTools.data.readDataFile` function is used here
-   to make it easier to reproduce the examples
-
-.. code:: 
-    
-    >>> depFile = 'demo_dep.m'
-    >>> dep = serpentTools.readDataFile(depFile)
+    >>> dep = serpentTools.read(depFile)
 
 The materials read in from the file are stored in the |materials| 
 dictionary, where the keys represent the name of specific materials, and
@@ -245,11 +247,12 @@ with ``bglass`` followed by at least one integer.
 
 .. code:: 
     
+    >>> from serpentTools.settings import rc
     >>> rc['depletion.processTotal'] = False
     >>> rc['depletion.metadataKeys'] = ['BU']
     >>> rc['depletion.materialVariables'] = ['ADENS']
     >>> rc['depletion.materials'] = [r'bglass\d+']
-    >>> bgReader = serpentTools.readDataFile(depFile)
+    >>> bgReader = serpentTools.read(depFile)
     >>> bgReader.materials.keys()
     dict_keys(['bglass0'])
     >>> bglass = bgReader.materials['bglass0']

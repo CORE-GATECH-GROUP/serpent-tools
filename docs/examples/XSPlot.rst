@@ -3,6 +3,20 @@
 
 .. _ex-xsplot:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> xfile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "plut_xs0.m")
+
 Cross Section Reader/Plotter
 ============================
 
@@ -16,16 +30,10 @@ as documented on the Serpent wiki. ``serpentTools`` can then read the
 output, figuring out its file type automatically as with other readers.
 Let’s plot some data used in the ``serpentTools`` regression suite.
 
-.. note::
-
-   The preferred way to read your own output files is with the
-   |read-full| function. The |readData| function is used here
-   to make it easier to reproduce the examples
-
 .. code:: 
     
     >>> import serpentTools
-    >>> xsreader = serpentTools.readDataFile('plut_xs0.m')
+    >>> xsreader = serpentTools.read(xfile)
 
 This file contains some cross sections from a Serpent case containing a
 chunk of plutonium metal reflected by beryllium. Let’s see what cross

@@ -3,9 +3,22 @@
 
 .. _branching-ex:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> branchFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "demo.coe")
+
 Branching Reader
 ================
-
 
 This notebook demonstrates the capability of the
 `serpentTools <https://github.com/CORE-GATECH-GROUP/serpent-tools>`_
@@ -24,12 +37,6 @@ Basic Operation
 
 .. note::
 
-   The preferred way to read your own output files is with the
-   |read-full| function. The |readData| function is used here
-   to make it easier to reproduce the examples
-
-.. note::
-
     Without modifying the settings, the
     |BranchingReader| assumes that all
     group constant data is presented without the associated uncertainties.
@@ -37,17 +44,13 @@ Basic Operation
     control operation
 
 
-.. code:: 
-    
-    >>> import serpentTools
-    >>> branchFile = 'demo.coe'
-    >>> r0 = serpentTools.readDataFile(branchFile)
-
 The branches are stored in custom dictionary-like |BranchContainer|
 objects in the :attr:`~serpentTools.BranchingReader.branches` dictionary
 
 .. code:: 
     
+    >>> import serpentTools
+    >>> r0 = serpentTools.read(branchFile)
     >>> r0.branches.keys()
     dict_keys([
         ('nom', 'nom'),

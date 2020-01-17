@@ -11,6 +11,23 @@
 
 .. _detector-example:
 
+.. note::
+
+    Data files, like the one used in this example, are not included with the
+    python distribution. They can be downloaded from the GitHub repository,
+    and accessed after setting the ``SERPENT_TOOLS_DATA`` environment
+    variable
+
+.. code::
+
+    >>> import os
+    >>> pinFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "fuelPin_det0.m")
+    >>> bwrFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     "bwr_det0.m")
+
 ===============
 Detector Reader
 ===============
@@ -26,25 +43,16 @@ One could define a detector that has a spatial mesh, ``dx/dy/dz/``, but
 also includes reaction and material bins, ``dr, dm``. Detectors are
 stored on the reader object in the 
 :attr:`~serpentTools.DetectorReader.detectors`
-dictionary as custom |Detector| objects. 
-Here, all energy and spatial grid data are stored,
-including other binning information such as reaction, universe, and
-lattice bins.
-
-.. note::
-
-   The preferred way to read your own output files is with the
-   |read-full| function. The |readData| function is used here
-   to make it easier to reproduce the examples
+dictionary as custom |Detector| objects. Here, all energy and spatial
+grid data are stored, including other binning information such as
+reaction, universe, and lattice bins.
 
 .. code:: 
     
     >>> from matplotlib import pyplot
     >>> import serpentTools
-    >>> pinFile = 'fuelPin_det0.m'
-    >>> bwrFile = 'bwr_det0.m'
-    >>> pin = serpentTools.readDataFile(pinFile)
-    >>> bwr = serpentTools.readDataFile(bwrFile)
+    >>> pin = serpentTools.read(pinFile)
+    >>> bwr = serpentTools.read(bwrFile)
     >>> print(pin.detectors)
     {'nodeFlx': <serpentTools.Detector object at 0x7f6df2162b70>}
     >>> print(bwr.detectors)
@@ -461,8 +469,10 @@ from hexagonal detectors in
 
 .. code:: 
     
-    >>> hexFile = 'hexplot_det0.m'
-    >>> hexR = serpentTools.readDataFile(hexFile)
+    >>> hexFile = os.path.join(
+    ...     os.environ["SERPENT_TOOLS_DATA"],
+    ...     'hexplot_det0.m')
+    >>> hexR = serpentTools.read(hexFile)
     >>> hexR.detectors
     {'hex2': <serpentTools.HexagonalDetector at 0x7f1ad03d5da0>,
     'hex3': <serpentTools.HexagonalDetector at 0x7f1ad03d5c88>}
