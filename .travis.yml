@@ -28,6 +28,8 @@ install:
 
 # run
 script:
+  # Make data path absolute
+  - export SERPENT_TOOLS_DATA=$(pwd)/$SERPENT_TOOLS_DATA
   - pytest --cov=serpentTools --cov-report= -v
   - bash scripts/travis/testNotebooks.sh
 
