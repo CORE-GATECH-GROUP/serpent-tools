@@ -1,12 +1,4 @@
-try:
-    from setuptools import setup
-    HAS_SETUPTOOLS = True
-except ImportError:
-    import warnings
-    from distutils.core import setup
-    warnings.warn('Installing with distutils. Use of setuptools is preferred')
-    HAS_SETUPTOOLS = False
-
+from setuptools import setup
 
 with open('README.rst') as readme:
     longDesc = readme.read()
@@ -47,17 +39,8 @@ setupArgs = {
     'license': 'MIT',
     'version': version,
     "include_package_data": True,
+    'python_requires': pythonRequires,
+    'install_requires': installRequires,
 }
-if HAS_SETUPTOOLS:
-    setupArgs.update({
-        'python_requires': pythonRequires,
-        'install_requires': installRequires,
-    })
 
 setup(**setupArgs)
-
-if not HAS_SETUPTOOLS:
-    warnings.warn(
-        'The following packages are required to use serpentTools version '
-        '{}:\n{}\nPlease ensure they are installed prior to use'
-        .format(version, '\n'.join(installRequires)))
