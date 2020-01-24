@@ -1,6 +1,0 @@
-# config file for coverage.py
-[run]
-branch = true
-source = serpentTools
-omit = serpentTools/_version.py
-
