@@ -8,38 +8,31 @@ Command Line Interface
 Provided you have installed according to :ref:`install`, you can
 access this interface with::
 
-    $ python -m serpentTools
+    $ serpentTools
 
-Where the above command is executed from the terminal, neglecting the ``$``.
+where the above command is executed from the terminal, neglecting the ``$``.
 More information can be found in :ref:`install_terminals`.
-
-.. note::
-    
-    Outputs here are accurate up to version ``0.6.1+12``
-    Please alert the developers if any major differences
-    are found, or a method to automatically update this
-    can be found
 
 Display the available options by passing the ``-h`` flag::
 
-    $ python -m serpentTools -h
-     usage: serpentTools [-h] [--version] [-v | -q] [-c CONFIG_FILE]
-                         {seed,list,to-matlab} ...
+    $ serpentTools -h
+    usage: serpentTools [-h] [--version] [-v | -q] [-c CONFIG_FILE]
+                        {seed,list,to-matlab} ...
 
-     optional arguments:
-       -h, --help            show this help message and exit
-       --version             show program's version number and exit
-       -v                    increase verbosity v: info, vv: debug
-       -q                    suppress warnings and errors q: error, qq: critical
-       -c CONFIG_FILE, --config-file CONFIG_FILE
-                             path to settings file
+    optional arguments:
+      -h, --help            show this help message and exit
+      --version             show program's version number and exit
+      -v                    increase verbosity v: info, vv: debug
+      -q                    suppress warnings and errors q: error, qq: critical
+      -c CONFIG_FILE, --config-file CONFIG_FILE
+                            path to settings file
 
-     sub-commands:
-       {seed,list,to-matlab}
-                             sub-command help
-         seed                copy an input file with unique random number seeds
-         list                show the default settings
-         to-matlab           convert output file to .mat file
+    sub-commands:
+      {seed,list,to-matlab}
+                            sub-command help
+        seed                copy an input file with unique random number seeds
+        list                show the default settings
+        to-matlab           convert output file to .mat file
 
 .. _cli-seed:
 
@@ -57,7 +50,7 @@ and new output directories are afforded to the user.
 
 .. code::
 
-    $ python -m serpentTools seed -h
+    $ serpentTools seed -h
     usage: serpentTools seed [-h] [--seed SEED] [-l LENGTH]
                              [--output-dir OUTPUT_DIR] [--link]
                              file N
@@ -87,7 +80,7 @@ SERPENT output files and convert them to binary ``.mat`` files. This relies upon
 
 .. code::
 
-    $ python -m serpentTools to-matlab -h
+    $ serpentTools to-matlab -h
     usage: serpentTools to-matlab [-h] [-o OUTPUT] [-a] [--format {4,5}] [-l]
                                   [--large] [--oned {col,row}]
                                   file
