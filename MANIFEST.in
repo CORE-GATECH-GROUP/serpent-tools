@@ -1,4 +1,5 @@
 include serpentTools/variables.yaml
+include pyproject.toml
 include requirements.txt
 include LICENSE
 

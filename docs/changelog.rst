@@ -14,6 +14,8 @@ Changelog
 * Data files used for testing and examples are now found using
   the environment variable ``SERPENT_TOOLS_DATA`` and are no
   longer distributed with the package.
+* Installation also provides a ``serpentTools`` executable that
+  can be used to access the :ref:`cli`
 
 .. _v0.9.1:
 
