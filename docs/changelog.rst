@@ -12,6 +12,8 @@ Changelog
 =====
 
 * Officially support installing under Python 3.8
+* Support for passing threshold values to hexagonal detector plots
+  - :issue:`351`
 
 .. _v0.9.2-bugs:
 
