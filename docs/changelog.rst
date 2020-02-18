@@ -18,6 +18,8 @@ Bug Fixes
 
 * Detector reader can handle sequential detectors with very similar
   names - :issue:`374`.
+* ``serpentTools`` doesn't make any modifications to the logging state,
+  other than introducing package-wide logger.
 
 .. _v0.9.1:
 
