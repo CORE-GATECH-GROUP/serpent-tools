@@ -204,10 +204,11 @@ def normalizerFactory(data, norm, logScale, xticks, yticks):
     if norm is not None:
         if isinstance(norm, Normalize):
             return norm
-        if issubclass(norm.__class__, Normalize):
-            return norm
-        if callable(norm):
+        elif callable(norm):
             return norm(data, xticks, yticks)
+        else:
+            raise TypeError("Normalizer {} not understood".format(norm))
+
     if logScale:
         if (data < 0).any():
             warning("Negative values will be excluded from logarithmic "
