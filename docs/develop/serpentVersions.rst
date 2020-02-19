@@ -115,7 +115,7 @@ Loading such a file would return a dictionary like::
      childV: {childV:{vx0, vx1, ...}}}
 
 
-.. _dev-sss-versions-newFormats
+.. _dev-sss-versions-newFormats:
 
 Versions with New File Formats
 ==============================

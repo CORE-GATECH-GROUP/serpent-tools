@@ -30,7 +30,7 @@ where ``"debug"`` can be one of ``"debug"``, ``"info"``, ``"warning"``,
 ``"error"`` or ``"critical"``.
 
 Alternatively, the level can be adjusting using the python 
-:module:`logging` module::
+:mod:`logging` module::
 
     >>> logging.getLogger("serpentTools").setLevel(logging.DEBUG)
 

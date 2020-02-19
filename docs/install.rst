@@ -82,7 +82,7 @@ Installing from a Release
 
     $ cd path/to/release
 
-4. Install using our `setup script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/setup.py>`_::
+4. Install using our setup script::
 
     $ python setup.py install
 
