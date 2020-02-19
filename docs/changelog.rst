@@ -11,6 +11,8 @@ Changelog
 0.9.2
 =====
 
+* Officially support installing under Python 3.8
+
 .. _v0.9.2-bugs:
 
 Bug Fixes
