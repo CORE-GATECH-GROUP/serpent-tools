@@ -113,7 +113,7 @@ Incompatible API Changes
 * Setting ``expectGcu`` has been removed as :pull:`324` fixed how files without
   group constants are handled.
 * Keys to |BranchedUniv| objects stored in
-  :attr:`serpentTools.BranchCollector.universes` are stored as strings,
+  :attr:`serpentTools.xs.BranchCollector.universes` are stored as strings,
   rather than integers, e.g. ``0`` is replaced with ``"0"`` - :pull:`321`
 * Keys to |HomogUniv| instances stored on
   :class:`~serpentTools.objects.BranchContainer` are now
