@@ -73,6 +73,7 @@ RESULTS_PLOT_XLABELS = {
     'burnStep': "Burnup step",
 }
 
+
 @magicPlotDocDecorator
 def formatPlot(
     ax,
@@ -178,19 +179,19 @@ def normalizerFactory(data, norm, logScale, xticks, yticks):
 
     Parameters
     ----------
-    data: :class:`numpy.ndarray`
+    data : :class:`numpy.ndarray`
         Data to be plotted and normalized
-    norm: None or callable or :class:`matplotlib.colors.Normalize`
+    norm : None or callable or :class:`matplotlib.colors.Normalize`
         If a ``Normalize`` object, then use this as the normalizer.
         If callable, set the normalizer with
         ``norm(data, xticks, yticks)``. If not None, set the
         normalizer to be based on the min and max of the data
-    logScale: bool
+    logScale : bool
         If this evaluates to true, construct a
         :class:`matplotlib.colors.LogNorm` with the minimum
         set to be the minimum of the positive values.
-    xticks: :class:`numpy.ndarray`
-    yticks: :class:`numpy.ndarray`
+    xticks : :class:`numpy.ndarray`
+    yticks : :class:`numpy.ndarray`
         Arrays ideally corresponding to the data. Used with callable
         `norm` function.
 
@@ -287,13 +288,13 @@ Set the {v} limits on an Axes object
 
 Parameters
 ----------
-ax: :class:`matplotlib.axes.Axes`
+ax : :class:`matplotlib.axes.Axes`
     Ax to be updated
-{v}min: float
+{v}min : float
     Current minimum extent of {v} axis
-{v}max: float
+{v}max : float
     Current maximum extent of {v} axis
-pad: float
+pad : float, optional
     Padding, in percent, to apply to each side of
     the current min and max
 """
