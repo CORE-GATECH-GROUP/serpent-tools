@@ -209,7 +209,7 @@ rst_prolog = """
 .. |DepletionReader| replace:: :class:`~serpentTools.DepletionReader`
 .. |DepmtxReader| replace:: :class:`~serpentTools.DepmtxReader`
 .. |BranchCollector| replace:: :class:`~serpentTools.BranchCollector`
-.. |BranchedUniv| replace:: :class:`~serpentTools.BranchedUniv`
+.. |BranchedUniv| replace:: :class:`~serpentTools.xs.BranchedUniv`
 .. |BranchingReader| replace:: :class:`~serpentTools.BranchingReader`
 .. |XSPlotReader| replace:: :class:`~serpentTools.XSPlotReader`
 .. |HistoryReader| replace:: :class:`~serpentTools.HistoryReader`

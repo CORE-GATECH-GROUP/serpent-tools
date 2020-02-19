@@ -5,7 +5,6 @@
 .. |BranchCol-axis| replace:: :attr:`~serpentTools.BranchCollector.axis`
 .. |BranchCol-universes| replace:: :attr:`~serpentTools.BranchCollector.universes`
 .. |BranchCol-univIndex| replace:: :attr:`~serpentTools.BranchCollector.univIndex`
-.. |BranchedUniv| replace:: :class:`~serpentTools.xs.BranchedUniv`
 .. |BranchedUniv-tables| replace:: :attr:`~serpentTools.xs.BranchedUniv.xsTables`
 .. |BranchedUniv-states| replace:: :attr:`~serpentTools.xs.BranchedUniv.states`
 .. |BranchedUniv-perturbations| replace:: :attr:`~serpentTools.xs.BranchedUniv.perturbations`
