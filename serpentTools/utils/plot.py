@@ -73,14 +73,20 @@ RESULTS_PLOT_XLABELS = {
     'burnStep': "Burnup step",
 }
 
-PLOT_FORMAT_DEFAULTS = {
-    'xlabel': None, 'ylabel': None, 'legend': True,
-    'loglog': None, 'logy': None, 'logx': None,
-    'ncol': 1, 'title': None}
-
-
 @magicPlotDocDecorator
-def formatPlot(ax, **kwargs):
+def formatPlot(
+    ax,
+    xlabel=None,
+    ylabel=None,
+    logx=False,
+    logy=False,
+    loglog=False,
+    title=None,
+    legend=True,
+    legendcols=1,
+    axkwargs=None,
+    legendkwargs=None,
+):
     """
     Apply a range of formatting options to the plot.
 
@@ -92,9 +98,20 @@ def formatPlot(ax, **kwargs):
     {loglog}
     {logx}
     {logy}
+    title : str, optional
+        Title to apply to this axes object
     {legend}
-    {ncol}
-    {title}
+    legendcols : int, optional
+        Number of columns to apply to the legend, if applicable
+    axkwargs : dict, optional
+        Additional keyword arguments to be passed to
+        :meth:`matplotlib.axes.Axes.set`. Values like ``xlabel``,
+        ``ylabel``, ``xscale``, ``yscale``, and title will be respected,
+        even though they are also arguments to this function
+    legendkwargs : dict, optional
+        Additional keyword arguments to be passed to
+        :meth:`matplotlib.axes.Axes.legend`. Values like ``title``
+        and ``ncol`` will be respected.
 
     Returns
     -------
@@ -110,31 +127,36 @@ def formatPlot(ax, **kwargs):
 
     if not isinstance(ax, Axes):
         raise TypeError("Expected {} got {}".format(type(Axes), type(ax)))
-    loglog = kwargs.get('loglog', PLOT_FORMAT_DEFAULTS['loglog'])
-    logx = kwargs.get('logx', PLOT_FORMAT_DEFAULTS['logx'])
-    logy = kwargs.get('logy', PLOT_FORMAT_DEFAULTS['logy'])
-    xlabel = kwargs.get('xlabel', PLOT_FORMAT_DEFAULTS['xlabel'])
-    ylabel = kwargs.get('ylabel', PLOT_FORMAT_DEFAULTS['ylabel'])
-    legend = kwargs.get('legend', PLOT_FORMAT_DEFAULTS['legend'])
-    title = kwargs.get('title', PLOT_FORMAT_DEFAULTS['title'])
-    ncol = kwargs.get('ncol', PLOT_FORMAT_DEFAULTS['ncol'])
+
+    axkwargs = {} if axkwargs is None else axkwargs
 
     if logx is None:
         logx = inferAxScale(ax, 'x')
     if logy is None:
         logy = inferAxScale(ax, 'y')
+
     if loglog or logx:
-        ax.set_xscale('log')
+        axkwargs.setdefault("xscale", "log")
     if loglog or logy:
-        ax.set_yscale('log')
+        axkwargs.setdefault("yscale", "log")
+
     if xlabel:
-        ax.set_xlabel(xlabel)
+        axkwargs.setdefault("xlabel", xlabel)
     if ylabel:
-        ax.set_ylabel(ylabel)
-    if legend or legend is None:
-        ax = placeLegend(ax, legend, ncol)
+        axkwargs.setdefault("ylabel", ylabel)
     if title:
-        ax.set_title(title)
+        axkwargs.setdefault("title", title)
+
+    ax.set(**axkwargs)
+
+    if not legend and legend is not None:
+        return ax
+
+    # format the legend
+    legendkwargs = {} if legendkwargs is None else legendkwargs
+    legendkwargs.setdefault("ncol", legendcols)
+
+    ax = placeLegend(ax, legend, **legendkwargs)
 
     return ax
 
@@ -196,41 +218,57 @@ def normalizerFactory(data, norm, logScale, xticks, yticks):
 
 
 @magicPlotDocDecorator
-def placeLegend(ax, legend, ncol=1, handles_labels=None):
-    """
-    Add a legend to the figure outside the plot.
+def placeLegend(ax, legend, handlesAndLabels=None, **kwargs):
+    """Add a legend to the axes instance.
+
+    A legend will be drawn if at least one of the following criteria
+    are met:
+
+    1. ``legend`` is not one of the supported string legend control
+       arguments that dictate where the legend should be placed
+    2. More than one item has been plotted
 
     Parameters
     ----------
     {ax}
     {legend}
-    {ncol}
+    handlesAndLabels : tuple (legend handles, labels), optional
+        Exact legend handles (graphical element) and labels (string
+        element) to be used in making the legend. If not provided,
+        will be fetched from
+        :meth:`matplotlib.axes.Axes.get_legend_handles_labels`
+    kwargs : dict, optional
+        Additional keyword arguments to be passed to
+        :meth:`matplotlib.axes.Axes.legend`, if applicable
 
     Returns
     -------
     {rax}
 
-    Raises
-    ------
-    KeyError
-        If ``key`` is not in :py:attr:`~serpentTools.plot.LEGEND_KWARGS`
     """
-    if handles_labels is None:
+#    import pdb
+#    pdb.set_trace()
+    if handlesAndLabels is None:
         handles, labels = ax.get_legend_handles_labels()
     else:
-        handles, labels = handles_labels
+        handles, labels = handlesAndLabels
     if not (handles and labels):
         return ax
-    # if no legend explicitely requested and only one
-    # item plotted, do not add a legend
+
     if legend is None and len(handles) == len(labels) == 1:
         return ax
-    ncol = max(1, int(ncol)) if ncol else 1
-    if not isinstance(legend, str):
-        ax.legend(handles, labels, ncol=ncol)
-        return ax
-    kwargs = LEGEND_KWARGS[legend]
-    ax.legend(handles, labels, borderaxespad=0., ncol=ncol, **kwargs)
+
+    extras = LEGEND_KWARGS.get(legend, {})
+    kwargs.update(extras)
+
+    # Some plot methods support ncols=None as input argument
+    # Maybe do some "smart" determination of number of columns?
+
+    ncol = kwargs.get("ncol", None)
+    if ncol is None:
+        kwargs["ncol"] = 1
+
+    ax.legend(handles, labels, **kwargs)
 
     return ax
 

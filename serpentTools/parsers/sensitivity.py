@@ -408,7 +408,7 @@ class SensitivityReader(BaseReader):
             'Sensitivity {} {}'.format(
                 'per unit lethargy' if normalize else '',
                 r'$\pm{}\sigma$'.format(sigma) if sigma else ''))
-        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
                         legend=legend, xlabel=xlabel, ylabel=ylabel.strip())
         return ax
 
