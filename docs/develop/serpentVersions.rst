@@ -24,7 +24,7 @@ Checklist
 =========
 
 #. Include the version as an option in the `serpentVersion` setting - :ref:`serpentVersion`
-#. Update the :ref:`defaultSettings` using the script ``docs/rstDefaultSettings.py``
+#. Update the :ref:`default-settings`
 #. Update |vars.yaml| to include the version and any new variable groups
    present in the results files - :ref:`dev-sss-versions-newVars`
 #. If |vars.yaml| is updated, update :ref:`variable-groups` using the script 

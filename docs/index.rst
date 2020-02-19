@@ -56,7 +56,7 @@ using :term:`SERPENT`.
    samplers.rst
    settings.rst
    misc.rst
-   variableGroupsTop
+   variableGroups
    command-line
    develop/index
    license

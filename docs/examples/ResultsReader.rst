@@ -435,7 +435,7 @@ User Defined Settings
 The user is able to filter the required information by using the
 |rc| settings object.
 A detailed description on how to use the settings can be found on:
-:ref:`defaultSettings`.
+:ref:`default-settings`.
 
 .. code:: 
 

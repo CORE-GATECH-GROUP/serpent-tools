@@ -83,7 +83,7 @@ extracted from the results and coefficient files.
 2. :ref:`xs-variableGroups`: Select keywords that represent blocks of
    common variables
 
-These variable groups are described in :ref:`varialble-groups` 
+These variable groups are described in :ref:`variable-groups` 
 and rely upon the ``SERPENT`` version to properly expand the groups.
 
 .. code:: 

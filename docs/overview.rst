@@ -22,7 +22,7 @@ would return a |ResultsReader|
 
 Some file-types have an additional reader that is capable of reading 
 multiple files and computing actual uncertainties. These ``samplers``
-are detailed in :ref:`samplerAPI` and listed under the supported files.
+are detailed in :ref:`samplers` and listed under the supported files.
 
 Many of the readers have examples present in the :ref:`ex-toctree`
 section. Each example is present as a :term:`Jupyter notebook`
