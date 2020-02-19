@@ -1,6 +1,7 @@
 """
 Utilties for assisting with plots
 """
+from matplotlib import pyplot
 from matplotlib.axes import Axes
 from matplotlib.colors import Normalize, LogNorm
 
@@ -272,26 +273,31 @@ def _set_ax_lims(ax, vmin, vmax, xory, pad):
     return func(vmin - offset, vmax + offset)
 
 
-def addColorbar(ax, mappable, norm, cbarLabel=None):
+def addColorbar(ax, mappable, norm=None, cbarLabel=None):
     """
     Quick utility to add a colorbar to an axes object
 
+    The color bar is placed adjacent to the provided
+    axes argument, rather than in the provided space.
+
     Parameters
     ----------
-    mappable: iterable
-        Collection of meshes, patches, or values that are used to construct
-        the colorbar.
-    norm: None or :class:`matplotlib.colors.Normalize` subclass
-        Normalizer for this plot
-    cbarLabel: None or str
+    mappable : iterable
+        Collection of meshes, patches, or values that are used to
+        construct the colorbar.
+    norm : :class:`matplotlib.colors.Normalize`, optional
+        Normalizer for this plot. Can be a subclass like
+        :class:`matplotlib.colors.LogNorm`
+    cbarLabel : str, optional
         If given, place this as the y-label for the colorbar
 
     Returns
     -------
     :class:`matplotlib.colorbar.Colorbar`
         The colorbar that was added
+
     """
-    cbar = ax.figure.colorbar(mappable, norm=norm)
-    if cbarLabel is not None:
+    cbar = pyplot.colorbar(mappable, ax=ax, norm=norm)
+    if cbarLabel:
         cbar.ax.set_ylabel(cbarLabel)
     return cbar

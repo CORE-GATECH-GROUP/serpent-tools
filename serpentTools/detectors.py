@@ -1347,7 +1347,7 @@ class HexagonalDetector(Detector):
         pc.set_norm(normalizer)
         ax.add_collection(pc)
 
-        addColorbar(ax, pc, None, cbarLabel)
+        addColorbar(ax, pc, cbarLabel=cbarLabel)
 
         formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
                    xlabel=xlabel or "X [cm]",

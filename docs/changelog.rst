@@ -24,6 +24,8 @@ Bug Fixes
   names - :issue:`374`.
 * ``serpentTools`` doesn't make any modifications to the logging state,
   other than introducing package-wide logger.
+* Colorbars for mesh plots are placed next to their corresponding
+  plot, rather than near the last drawn plot - :issue:`372`
 
 .. _v0.9.1:
 
