@@ -278,7 +278,7 @@ Pending Deprecations
 * :pull:`174` - Added parent object ``BaseObject`` with basic comparison
   method from which all objects inherit. Comparison method contains
   upper and lower bounds for values w/o uncertainties, :pull:`191`
-* :pull:`196` - Add comparison methods for |resultReader| and
+* :pull:`196` - Add comparison methods for |ResultsReader| and
   |HomogUniv| objects
 * :pull:`228` - Add comparison methods for |DetectorReader| and
   |Detector| objects
@@ -320,7 +320,7 @@ Deprecations
   files with unique random seeds - :mod:`serpentTools.seed`
 * :pull:`229` - :meth:`serpentTools.SensitivityReader.plot`
   now respects the option to not set x nor y labels.
-* :pull:`231` - |resultReader| objects
+* :pull:`231` - |ResultsReader| objects
   can now read files that do not contain group constant data. The setting
   :ref:`results-expectGcu` should be used to inform the reader that no
   group constant data is anticipated
