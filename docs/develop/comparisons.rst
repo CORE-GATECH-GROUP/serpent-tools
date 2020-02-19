@@ -87,7 +87,7 @@ appropriately.
 
 .. autofunction:: serpentTools.utils.compare.logDirectCompare
 
-.. autofunction:: serpentTools.utils.compare.splitdictByKeys
+.. autofunction:: serpentTools.utils.compare.splitDictByKeys
 
 .. autofunction:: serpentTools.utils.compare.getKeyMatchingShapes
 

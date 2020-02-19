@@ -112,9 +112,7 @@ The keys within the nested dictionary describe the isotope, reaction and special
 Each key has three entries (isotope, reaction, flag)
 
 1. ``isotope`` ID of the isotope (ZZAAA0/1), int or float
-2. ``reaction`` MT
-`reaction <http://serpent.vtt.fi/mediawiki/index.php/ENDF_reaction_MT%27s_and_macroscopic_reaction_numbers>`__,
-e.g., 102 (n,gamma)
+2. ``reaction`` MT e.g., 102 representing (n,gamma)
 3. ``flag`` special flag to describe isomeric state or fission yield distribution number
 
 For each such key (isotope, reaction, flag) the ``xsVal`` and ``xsVal``

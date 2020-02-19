@@ -24,7 +24,7 @@ Checklist
 =========
 
 #. Include the version as an option in the `serpentVersion` setting - :ref:`serpentVersion`
-#. Update the :ref:`defaultSettings` using the script ``docs/rstDefaultSettings.py``
+#. Update the :ref:`default-settings`
 #. Update |vars.yaml| to include the version and any new variable groups
    present in the results files - :ref:`dev-sss-versions-newVars`
 #. If |vars.yaml| is updated, update :ref:`variable-groups` using the script 
@@ -115,7 +115,7 @@ Loading such a file would return a dictionary like::
      childV: {childV:{vx0, vx1, ...}}}
 
 
-.. _dev-sss-versions-newFormats
+.. _dev-sss-versions-newFormats:
 
 Versions with New File Formats
 ==============================

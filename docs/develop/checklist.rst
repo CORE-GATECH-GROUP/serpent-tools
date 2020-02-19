@@ -9,13 +9,13 @@ reviewing pull requests (PR):
 
 #. The content of the PR fits within the scope of the project - :ref:`project-scope`
 #. The code included in the PR is written in good
-   `pythonic  <https://stackoverflow.com/a/25011492>`_
+   `pythonic <https://stackoverflow.com/a/25011492>`_
    fashion, and follows the style of the project - :ref:`code-style`
 #. The code directly resolves a previously raised issue - :ref:`issues`
 #. PR does not cause unit tests and builds to fail
 #. Changes are reflected in documentation - :ref:`documentation`
 
-.. _dev-ci
+.. _dev-ci:
 
 CI Testing
 ==========
@@ -27,7 +27,7 @@ notebooks. The former are used to perform more granular testing
 over the project, while the latter ensure our example notebooks
 are runnable.
 
-.. _dev-unittests
+.. _dev-unittests:
 
 Unit Tests
 ----------
@@ -51,7 +51,7 @@ deviations are acceptable. The coverage is not a factor in passing or failing
 CI, but substantial changes to the test suite should serve a valid purpose if
 the coverage does decrease.
 
-.. _dev-notebooks
+.. _dev-notebooks:
 
 Notebook Tests
 --------------
@@ -65,7 +65,7 @@ converts these to python scripts and runs them using
 It is beneficial to run this script during major changes to the API, as well as correcting any
 errors or deprecated/removed features.
 
-.. _dev-lint
+.. _dev-lint:
 
 Lint
 ====

@@ -41,19 +41,18 @@ class SensitivityReader(BaseReader):
     The matrices in :attr:`sensitivities` are ordered as they
     would be in MATLAB. The five dimensions correspond to:
 
-        1. :attr:`materials` that were contained perturbed isotopes
-        2. :attr:`zais` that were perturbed
-        3. :attr:`perts` - reactions that were perturbed, e.g.
-           ``'total xs'``
-        4: :attr:`energies` - which energy group contained the
-           perturbation. Will have one fewer dimensions than
-           the number of values in :attr:`energies`, corresponding
-           to the number of energy groups.
-        5: [value, relative uncertainty] pairs
+    1. :attr:`materials` that were contained perturbed isotopes
+    2. :attr:`zais` that were perturbed
+    3. :attr:`perts` - reactions that were perturbed, e.g.
+       ``'total xs'``
+    4. :attr:`energies` - which energy group contained the
+       perturbation. Will have one fewer dimensions than
+       the number of values in :attr:`energies`, corresponding
+       to the number of energy groups.
+    5. [value, relative uncertainty] pairs
 
     The matrices in :attr:`energyIntegratedSens` will have the same
     structure, but with the :attr:`energies` dimension removed.
-
 
     .. note::
 

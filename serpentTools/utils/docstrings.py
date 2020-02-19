@@ -24,7 +24,7 @@ LABELS = """labels : None or iterable
 _LABEL_BASE = """{q}label : str or bool, optional
     Label to apply to the {q}-axis. If given as ``None``,
     a label will be determined from other arguments.
-    If not ``None`` but evaluates to ``False, do not label."""
+    If not ``None`` but evaluates to ``False``, do not label."""
 XLABEL = _LABEL_BASE.format(q="x")
 YLABEL = _LABEL_BASE.format(q="y")
 
