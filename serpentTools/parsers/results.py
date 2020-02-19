@@ -690,7 +690,7 @@ class ResultsReader(XSReader):
         if right is None:
             formatPlot(ax, logx=logx, logy=logy, loglog=loglog,
                        xlabel=xlabel, ylabel=ylabel, legend=legend,
-                       ncol=ncol)
+                       legendcols=ncol)
             return ax
 
         # plot some other quantity on the same x axis
@@ -714,9 +714,10 @@ class ResultsReader(XSReader):
             leftHandles, leftLabels = ax.get_legend_handles_labels()
             rightHandles, rightLabels = other.get_legend_handles_labels()
 
-            placeLegend(ax, legend, ncol,
-                        (leftHandles + rightHandles,
-                         leftLabels + rightLabels))
+            placeLegend(
+                ax, legend,
+                (leftHandles + rightHandles, leftLabels + rightLabels),
+                ncol=ncol)
 
         if len(right) == 1 and rightlabel is None:
             for rightlabel in right.values():

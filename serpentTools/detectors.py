@@ -576,7 +576,7 @@ class Detector(NamedObject):
 
         if legend is None and labels:
             legend = True
-        ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
+        ax = formatPlot(ax, loglog=loglog, logx=logx, legendcols=ncol,
                         xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
                         legend=legend, title=title)
         return ax
@@ -669,9 +669,9 @@ class Detector(NamedObject):
         if legend is None and labels:
             legend = True
 
-        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        xlabel=xlabel, ylabel=ylabel, legend=legend,
-                        title=title)
+        ax = formatPlot(
+            ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
+            xlabel=xlabel, ylabel=ylabel, legend=legend, title=title)
         return ax
 
     @magicPlotDocDecorator
@@ -1347,7 +1347,7 @@ class HexagonalDetector(Detector):
         pc.set_norm(normalizer)
         ax.add_collection(pc)
 
-        addColorbar(ax, pc, None, cbarLabel)
+        addColorbar(ax, pc, cbarLabel=cbarLabel)
 
         formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
                    xlabel=xlabel or "X [cm]",
