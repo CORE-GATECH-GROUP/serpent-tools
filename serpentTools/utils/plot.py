@@ -43,7 +43,7 @@ DEPLETION_PLOT_LABELS = {
     'gsrc': r'Photon emission rate $[\#/s]$',
     'ingTox': 'Ingestion toxicity $[Sv]$',
     'inhTox': 'Inhalation toxicity $[Sv]$',
-    'days': 'Burnup $[d]$',
+    'days': 'Time $[d]$',
     'burnup': 'Burnup $[MWd/kgU]$',
 }
 
