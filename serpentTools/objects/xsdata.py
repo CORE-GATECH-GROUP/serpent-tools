@@ -264,9 +264,9 @@ class XSData(NamedObject):
 
         ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso
                             else 'cm$^{-1}$'))
-        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        legend=legend, title=title, xlabel=xlabel,
-                        ylabel=ylabel)
+        ax = formatPlot(
+            ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
+            legend=legend, title=title, xlabel=xlabel, ylabel=ylabel)
 
         return ax
 

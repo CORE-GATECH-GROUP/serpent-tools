@@ -17,6 +17,27 @@ Changelog
 * Installation also provides a ``serpentTools`` executable that
   can be used to access the :ref:`cli`
 
+.. _v0.9.2:
+
+0.9.2
+=====
+
+* Officially support installing under Python 3.8
+* Support for passing threshold values to hexagonal detector plots
+  - :issue:`351`
+
+.. _v0.9.2-bugs:
+
+Bug Fixes
+---------
+
+* Detector reader can handle sequential detectors with very similar
+  names - :issue:`374`.
+* ``serpentTools`` doesn't make any modifications to the logging state,
+  other than introducing package-wide logger.
+* Colorbars for mesh plots are placed next to their corresponding
+  plot, rather than near the last drawn plot - :issue:`372`
+
 .. _v0.9.1:
 
 :release-tag:`0.9.1`
@@ -30,7 +51,6 @@ Bug Fixes
 * Sensitivity arrays generated with ``sens opt history 1`` will no longer
   overwrite the primary result arrays - :pull:`366`. These arrays are not 
   currently stored - :issue:`367`
-
 
 .. _v0.9.0:
 
@@ -104,7 +124,7 @@ Incompatible API Changes
 * Setting ``expectGcu`` has been removed as :pull:`324` fixed how files without
   group constants are handled.
 * Keys to |BranchedUniv| objects stored in
-  :attr:`serpentTools.BranchCollector.universes` are stored as strings,
+  :attr:`serpentTools.xs.BranchCollector.universes` are stored as strings,
   rather than integers, e.g. ``0`` is replaced with ``"0"`` - :pull:`321`
 * Keys to |HomogUniv| instances stored on
   :class:`~serpentTools.objects.BranchContainer` are now
@@ -269,7 +289,7 @@ Pending Deprecations
 * :pull:`174` - Added parent object ``BaseObject`` with basic comparison
   method from which all objects inherit. Comparison method contains
   upper and lower bounds for values w/o uncertainties, :pull:`191`
-* :pull:`196` - Add comparison methods for |resultReader| and
+* :pull:`196` - Add comparison methods for |ResultsReader| and
   |HomogUniv| objects
 * :pull:`228` - Add comparison methods for |DetectorReader| and
   |Detector| objects
@@ -311,11 +331,13 @@ Deprecations
   files with unique random seeds - :mod:`serpentTools.seed`
 * :pull:`229` - :meth:`serpentTools.SensitivityReader.plot`
   now respects the option to not set x nor y labels.
-* :pull:`231` - |resultReader| objects
-  can now read files that do not contain group constant data. The setting
-  :ref:`results-expectGcu` should be used to inform the reader that no
-  group constant data is anticipated
+* :pull:`231` - |ResultsReader| objects can now read files that do not
+  contain group constant data. The setting ``results-expectGcu`` should
+  be used to inform the reader that no group constant data is anticipated
 
+    .. note::
+
+        This setting was removed in :ref:`v0.8.0` and in :pull:`324`
 
 .. _v0.5.2:
 

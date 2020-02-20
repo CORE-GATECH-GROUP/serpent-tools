@@ -122,7 +122,7 @@ class DepPlotMixin(object):
         if missing:
             warning("The following materials were not found in materials "
                     "dictionary: {}".format(', '.join(missing)))
-        formatPlot(ax, legend=legend, ncol=ncol, logx=logx, logy=logy,
+        formatPlot(ax, legend=legend, legendcols=ncol, logx=logx, logy=logy,
                    loglog=loglog,
                    xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
                    ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits],

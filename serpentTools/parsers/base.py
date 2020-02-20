@@ -163,12 +163,12 @@ class CSCStreamProcessor(object):
         the indices to something :term:`numpy` can properly
         understand
 
-    Paramters
-    ---------
-    stream: IO stream from an opened file
+    Parameters
+    ----------
+    stream : IO stream from an opened file
         Object with a ``readline`` function that returns
         the next line of text to be read
-    regex: str or compiled regular expression
+    regex : str or compiled regular expression
         Regular expression that matches the following:
 
             0. Row of matrix
@@ -178,28 +178,29 @@ class CSCStreamProcessor(object):
         All values in ``match.groups()[2:]`` will be converted to
         ``datatype`` and appended into :attr:`data`. The rows and columns
         are used to populate  :attr:`indices` and :attr:`indptr` vectors
-    datatype: object
+    datatype : object
         Data type of the numeric values of this matrix.
 
     Attributes
     ----------
-    data: :class:`numpy.ndarray`
+    data : :class:`numpy.ndarray`
         Column matrix of all values matched by ``regex`` after first
         two positions. Each columns can be used to build a sparse
         matrix with :attr:`indices` and :attr:`indptr`
-    indices: :class:`numpy.ndarray`
+    indices : :class:`numpy.ndarray`
         CSC-format indices pointer array
-    indptr: :class:`numpy.ndarray`
+    indptr : :class:`numpy.ndarray`
         CSC-format index pointer array. Row indices for column ``i`` are stored
         in ``indices[indptr[i]:indptr[i + 1]]``. Values for column ``i`` are
         stored in ``data[indptr[i]:intptr[i + 1]]``.
-    line: str
+    line : str
         Last line read after calling :meth:`process`. Will be the first
         non-empty line that does not match the passed regular expression
 
     See Also
     --------
     * :class:`scipy.sparse.csc_matrix`
+
     """
 
     def __init__(self, stream, regex, dtype=float):

@@ -51,39 +51,40 @@ class MicroXSReader(BaseReader):
     """
     Parser responsible for reading and working with micro-xs (mdx) files.
 
+    Parameters
+    ----------
+    filePath : str
+        path to the ``*mdx[n].m`` file
+
     Attributes
     ------------
-    nfy: dict
+    nfy : dict
         Nested dictionary with tuples (parent, energy) as keys.
         Parent is the isotope undergoing fission, e.g. 922350
         and energy is the impending neutron energy causing fission
         in MeV.
-        The values are nested dictionaries with the following structure:
-            'fissProd': array
-                contains the fission product ids
-                e.g., ``[541350, 551350]``
-            'indYield': array
-                contains the independent yields
-                e.g., ``[0.053, 0.015]``
-            'cumYield': array
-                contains the cumulative yields
-                e.g., ``[0.060, 0.016]``
-    fluxRatio: dict
+        The values are nested dictionaries with the following structure::
+
+            "fissProd": list of fission product ZAI ids, e.g. [541350, 551350, ...]
+            "indYield": list of independent yields
+            "cumYield": list of cumulative yields
+
+    fluxRatio : dict
         Dictionary with universes id as keys and the
         corresponding group-wise flux values.
-        e.g., ``fluxRatio['0']= [9.91938E+14, 1.81729E+15]``
-    fluxUnc: dict
+        e.g., ``fluxRatio['0'] = [9.91938E+14, 1.81729E+15]``
+    fluxUnc : dict
         Dictionary with universes id as keys and the
         corresponding group-wise flux uncertainty values.
-        e.g., ``fluxRatio['0']= [0.00023, 0.00042]``
-    xsVal: dict
+        e.g., ``fluxRatio['0'] = [0.00023, 0.00042]``
+    xsVal : dict
         Expected value on microscopic cross sections, sorted by
         universe then by isotope, reaction, and metastable flag.
         Nested dictionary with universes as keys, e.g. '0'.
         The values are nested dictionary with :class:`MicroXSTuple`
         as keys (isotope, reaction, flag) and group xs as values.
         e.g., ``(922350, 18, 0)``
-    xsUnc: dict
+    xsUnc : dict
         Uncertainties on microscopic cross sections, sorted by
         universe then by isotope, reaction, and metastable flag.
         Nested dictionary with universes as keys, e.g. '0'.
@@ -91,16 +92,11 @@ class MicroXSReader(BaseReader):
         as keys (isotope, reaction, flag) and group xs as values.
         e.g., ``(922350, 18, 0)``
 
-    Parameters
-    ----------
-    filePath: str
-        path to the *mdx[n].m file
-
     Raises
     ------
     SerpentToolsException
         No results exist in the file, or no results are collected
-    IOError: file is unexpectedly closes while reading
+
     """
 
     def __init__(self, filePath):

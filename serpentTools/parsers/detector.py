@@ -30,6 +30,9 @@ class DetectorReader(BaseReader):
         instances
     """
 
+    # Update this if new detector grids are introduced
+    _KNOWN_GRIDS = ("E", "X", "Y", "Z", "T", "COORD", "R", "PHI", "THETA")
+
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'detector')
         self.detectors = {}
@@ -60,7 +63,18 @@ class DetectorReader(BaseReader):
         with KeywordParser(self.filePath, ["DET"], ["\n", "];"]) as parser:
             for chunk in parser.yieldChunks():
                 name, data = cleanDetChunk(chunk)
-                if currentName and name[:len(currentName)] != currentName:
+
+                # Determine if this is a new detector
+                if not currentName:
+                    isNewDetector = False
+                elif not name.startswith(currentName):
+                    isNewDetector = True
+                else:
+                    isNewDetector = not any(
+                        name == "".join((currentName, g))
+                        for g in self._KNOWN_GRIDS)
+
+                if isNewDetector:
                     self._processDet(currentName, bins, grids)
                     bins = data
                     grids = {}

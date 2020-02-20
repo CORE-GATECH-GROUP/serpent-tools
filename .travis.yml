@@ -9,6 +9,7 @@ python:
   - "3.6"
   - "3.5"
   - "3.7"
+  - "3.8"
 env:
   global:
       - SERPENT_TOOLS_DATA=data/

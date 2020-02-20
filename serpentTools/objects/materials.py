@@ -342,7 +342,6 @@ class DepletedMaterial(DepletedMaterialBase):
         {matLabelFmt}
         {ncol}
         {title}
-
         {kwargs} :py:func:`matplotlib.pyplot.plot`
 
         Returns
@@ -351,9 +350,9 @@ class DepletedMaterial(DepletedMaterialBase):
 
         See Also
         --------
-        * :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
-        * :py:func:`matplotlib.pyplot.plot`
-        * :py:meth:`str.format` - used for formatting labels
+        * :func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
+        * :func:`matplotlib.pyplot.plot`
+        * :meth:`str.format` - used for formatting labels
 
         Raises
         ------
@@ -361,6 +360,7 @@ class DepletedMaterial(DepletedMaterialBase):
             If x axis units are not ``'days'`` nor ``'burnup'``
         TypeError
             If both ``names`` and ``zai`` are given
+
         """
         if yUnits is None:
             yUnits = xUnits
@@ -390,8 +390,12 @@ class DepletedMaterial(DepletedMaterialBase):
         for row in range(yVals.shape[0]):
             ax.plot(xVals, yVals[row], label=labels[row], **kwargs)
 
-        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        xlabel=xlabel or DEPLETION_PLOT_LABELS[xUnits],
-                        ylabel=ylabel or DEPLETION_PLOT_LABELS[yUnits],
+        if xlabel is None:
+            xlabel = DEPLETION_PLOT_LABELS[xUnits]
+        if ylabel is None:
+            ylabel = DEPLETION_PLOT_LABELS[yUnits]
+
+        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
+                        xlabel=xlabel, ylabel=ylabel,
                         title=title, legend=legend)
         return ax

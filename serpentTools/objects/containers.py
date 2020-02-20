@@ -94,47 +94,47 @@ class HomogUniv(NamedObject):
 
     Parameters
     ----------
-    name: str
+    name : str
         name of the universe
-    bu: float
+    bu : float
         burnup value
-    step: float
+    step : float
         temporal step
-    day: float
+    day : float
         depletion day
 
     Attributes
     ----------
-    name: str
+    name : str
         name of the universe
-    bu: float or int
+    bu : float or int
         non-negative burnup value
-    step: int
+    step : int
         temporal step
-    day: float or int
+    day : float or int
         non-negative depletion day
-    infExp: dict
+    infExp : dict
         Expected values for infinite medium group constants
-    infUnc: dict
+    infUnc : dict
         Relative uncertainties for infinite medium group constants
-    b1Exp: dict
+    b1Exp : dict
         Expected values for leakage corrected group constants
-    b1Unc: dict
+    b1Unc : dict
         Relative uncertainties for leakage-corrected group constants
-    gc: dict
+    gc : dict
         Expected values for group constants that do not fit
         the ``INF_`` nor ``B1_`` pattern
-    gcUnc: dict
+    gcUnc : dict
         Relative uncertainties for group constants that do not fit
         the ``INF_`` nor ``B1_`` pattern
-    reshaped: bool
+    reshaped : bool
         ``True`` if scattering matrices have been reshaped to square
         matrices. Otherwise, these matrices are stored as vectors.
-    groups: None or :class:`numpy.array`
+    groups : None or :class:`numpy.array`
         Group boundaries from highest to lowest
-    numGroups: None or int
+    numGroups : None or int
         Number of energy groups bounded by ``groups``
-    microGroups: None or :class:`numpy.array`
+    microGroups : None or :class:`numpy.array`
         Micro group structure used to produce group constants.
         Listed from lowest to highest
 
@@ -471,7 +471,7 @@ class HomogUniv(NamedObject):
             if logy is None:
                 logy = inferAxScale(ax, 'y')
 
-        formatPlot(ax, logx=logx, logy=logy, ncol=ncol,
+        formatPlot(ax, logx=logx, logy=logy, legendcols=ncol,
                    legend=legend, xlabel=xlabel or "Energy [MeV]",
                    ylabel=ylabel)
         return ax

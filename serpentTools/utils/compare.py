@@ -566,27 +566,29 @@ def compareDictOfArrays(d0, d1, desc, lower=DEF_COMP_LOWER,
     The following tests are performed
 
         1. Find a set of keys that both exist in ``d0`` and ``d1``
-          and point to arrays with identical shapes using
-          :meth:`getKeyMatchingShapes`
+           and point to arrays with identical shapes using
+           :meth:`getKeyMatchingShapes`
         2. For each key in this common set, compare the values
-          with :meth:`logDirectCompare` or :meth:`getLogOverlaps`.
-          The latter is used if the key exists in  ``u0`` and
-          ``u1``, provided uncertainty arrays are of identical shapes.
+           with :meth:`logDirectCompare` or :meth:`getLogOverlaps`.
+           The latter is used if the key exists in  ``u0`` and
+           ``u1``, provided uncertainty arrays are of identical shapes.
 
     Parameters
     ----------
-    d0: dict
-    d1: dict
-        Dictionaries to be compared
-    desc: str
-        Descption of the two dictionaries. What data do they represent?
+    d0 : dict
+        Reference dictionary
+    d1 : dict
+        Dictionarie to be compared to the reference
+    desc : str
+        Descption of the two dictionaries. Should describe what data they
+        represent.
     {compLimits}
     {sigma}
-    u0: dict
-    u1: dict
+    u0 : dict
+    u1 : dict
         If uncKeys is not ``None``, then find the uncertainties for data in
         ``d0`` and ``d1`` under the same keys.
-    relative: bool
+    relative : bool
         If this evaluates to ``true``, then uncertainties in ``u0`` and ``u1``
         are relative.
 
@@ -594,6 +596,7 @@ def compareDictOfArrays(d0, d1, desc, lower=DEF_COMP_LOWER,
     -------
     bool
         ``True`` If all comparisons pass
+
     """
     similar = len(d0) == len(d1)
     keysMatchingTypes = getKeyMatchingShapes(d0, d1, desc)

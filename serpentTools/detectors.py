@@ -26,7 +26,7 @@ from numbers import Real
 from collections.abc import Mapping
 
 from numpy import (
-    unique, empty, inf, hstack, arange, log, divide, asfortranarray,
+    unique, inf, hstack, arange, log, divide, asfortranarray,
     ndarray, asarray,
 )
 from matplotlib.patches import RegularPolygon
@@ -576,7 +576,7 @@ class Detector(NamedObject):
 
         if legend is None and labels:
             legend = True
-        ax = formatPlot(ax, loglog=loglog, logx=logx, ncol=ncol,
+        ax = formatPlot(ax, loglog=loglog, logx=logx, legendcols=ncol,
                         xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
                         legend=legend, title=title)
         return ax
@@ -669,9 +669,9 @@ class Detector(NamedObject):
         if legend is None and labels:
             legend = True
 
-        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, ncol=ncol,
-                        xlabel=xlabel, ylabel=ylabel, legend=legend,
-                        title=title)
+        ax = formatPlot(
+            ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
+            xlabel=xlabel, ylabel=ylabel, legend=legend, title=title)
         return ax
 
     @magicPlotDocDecorator
@@ -1225,20 +1225,37 @@ class HexagonalDetector(Detector):
     meshPlot.__doc__ = Detector.meshPlot.__doc__
 
     @magicPlotDocDecorator
-    def hexPlot(self, what='tallies', fixed=None, ax=None, cmap=None,
-                logColor=False, xlabel=None, ylabel=None, logx=False,
-                logy=False, loglog=False, title=None, normalizer=None,
-                cbarLabel=None, borderpad=2.5, **kwargs):
+    def hexPlot(self,
+                what='tallies',
+                fixed=None,
+                ax=None,
+                cmap=None,
+                thresh=None,
+                logColor=False,
+                xlabel=None,
+                ylabel=None,
+                logx=False,
+                logy=False,
+                loglog=False,
+                title=None,
+                normalizer=None,
+                cbarLabel=None,
+                borderpad=2.5,
+                **kwargs):
         """
         Create and return a hexagonal mesh plot.
 
         Parameters
         ----------
-        what: {'tallies', 'errors'}
-            Quantity to plot
-        fixed: None or dict
-            Dictionary of slicing arguments to pass to :meth:`slice`
+        what : {'tallies', 'errors'}, optional
+            Quantity to plot. Defaults to ``"tallies"``
+        fixed : dict, optional.
+            Dictionary of slicing arguments to pass to :meth:`slice`.
+            If not provided, detector must be defined with a 2D grid.
         {ax}
+        thresh : float, optional
+            Threshold value for plotting values. A hexagon must have a
+            value greater than this quantity in order to be drawn.
         {cmap}
         {logColor}
         {xlabel}
@@ -1247,7 +1264,7 @@ class HexagonalDetector(Detector):
         {logy}
         {loglog}
         {title}
-        borderpad: int or float
+        borderpad : int or float, optional
             Percentage of total plot to apply as a border. A value of
             zero means that the extreme edges of the hexagons will touch
             the x and y axis.
@@ -1257,6 +1274,7 @@ class HexagonalDetector(Detector):
         ------
         AttributeError
             If :attr:`pitch` and :attr:`hexType` are not set.
+
         """
         if self.centers is None or self.pitch is None or self.hexType is None:
             raise AttributeError("centers, pitch, and hexType not set")
@@ -1265,7 +1283,11 @@ class HexagonalDetector(Detector):
             raise KeyError("Refusing to restrict along one of the hexagonal "
                            "dimensions {x/y}coord")
 
-        if not isinstance(borderpad, Real) or borderpad < 0:
+        if not isinstance(borderpad, Real):
+            raise TypeError(
+                "borderpad should be postive float, not {}".format(
+                    type(borderpad)))
+        elif borderpad < 0:
             raise ValueError(
                 "borderpad should be postive, not {}".format(borderpad))
 
@@ -1274,6 +1296,12 @@ class HexagonalDetector(Detector):
         alpha = kwargs.get('alpha')
 
         data = self.slice(fixed, what)
+
+        if thresh is None:
+            thresh = -inf
+        elif not isinstance(thresh, Real):
+            raise TypeError(
+                "thresh should be real, not {}".format(type(thresh)))
 
         ny = getattr(self, what).shape[self.indexes.index("ycoord")]
         nx = getattr(self, what).shape[self.indexes.index("xcoord")]
@@ -1284,18 +1312,21 @@ class HexagonalDetector(Detector):
                              "Constrained shape: {}"
                              .format((ny, nx), data.shape))
 
-        patches = empty(ny * nx, dtype=object)
-        values = empty(ny * nx)
+        patches = []
+        values = []
         coords = self.centers
 
         ax = ax or gca()
+
         xmax, ymax = [-inf, ] * 2
         xmin, ymin = [inf, ] * 2
         radius = self.pitch / sqrt(3)
         rotation = 0 if self.hexType == 2 else (pi / 2)
 
         for pos, (xy, val) in enumerate(zip(coords, data.flat)):
-            values[pos] = val
+            if val <= thresh:
+                continue
+            values.append(val)
             h = RegularPolygon(xy, 6, radius, rotation, **kwargs)
             verts = h.get_verts()
             vmins = verts.min(0)
@@ -1304,7 +1335,10 @@ class HexagonalDetector(Detector):
             xmin = min(xmin, vmins[0])
             ymax = max(ymax, vmaxs[1])
             ymin = min(ymin, vmins[1])
-            patches[pos] = h
+            patches.append(h)
+
+        values = asarray(values)
+        patches = asarray(patches, dtype=object)
 
         normalizer = normalizerFactory(values, normalizer, logColor,
                                        coords[:, 0], coords[:, 1])
@@ -1313,7 +1347,7 @@ class HexagonalDetector(Detector):
         pc.set_norm(normalizer)
         ax.add_collection(pc)
 
-        addColorbar(ax, pc, None, cbarLabel)
+        addColorbar(ax, pc, cbarLabel=cbarLabel)
 
         formatPlot(ax, loglog=loglog, logx=logx, logy=logy,
                    xlabel=xlabel or "X [cm]",

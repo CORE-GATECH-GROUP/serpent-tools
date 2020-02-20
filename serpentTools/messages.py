@@ -11,7 +11,6 @@ import functools
 import warnings
 import logging
 from logging import Handler
-from logging.config import dictConfig
 from collections.abc import Callable
 
 from numpy import ndarray
@@ -43,33 +42,6 @@ class MismatchedContainersError(SamplerError):
 
 
 LOG_OPTS = ['critical', 'error', 'warning', 'info', 'debug']
-
-loggingConfig = {
-    'version': 1,
-    'formatters': {
-        'brief': {'format': '%(levelname)-8s: %(name)-12s: %(message)s'},
-        'precise': {
-            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s'
-        }
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'brief',
-            'level': logging.DEBUG,
-            'stream': 'ext://sys.stdout'
-        }
-    },
-    'loggers': {
-        'serpentTools': {
-            'handlers': ['console'],
-            'level': logging.WARNING,
-            'propagate': False,
-        },
-    }
-}
-
-dictConfig(loggingConfig)
 
 __logger__ = logging.getLogger('serpentTools')
 
@@ -377,7 +349,7 @@ class DictHandler(Handler):
 
     Attributes
     ----------
-    logMessages: dict
+    logMessages : dict
         Dictionary of lists where each key is a log level such
         as ``'DEBUG'`` or ``'WARNING'``. The list associated
         with each key contains all messages called under that

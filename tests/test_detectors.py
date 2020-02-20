@@ -4,7 +4,9 @@ Test various aspects of the detectors classes
 
 import numpy
 import pytest
+import serpentTools
 from serpentTools import detectors
+
 
 @pytest.fixture(scope="module")
 def meshedBinData():
@@ -45,6 +47,7 @@ def testDetectorProperties(meshedBinData):
 
     with pytest.raises(ValueError, match="indexes"):
         detector.indexes = detector.indexes[:1]
+
 
 @pytest.mark.parametrize("how", ["bins", "grids", "bare", "init"])
 def testCartesianDetector(meshedBinData, how):
@@ -114,6 +117,7 @@ def testCartesianDetector(meshedBinData, how):
 
     with pytest.raises(ValueError, match="indexes"):
         detector.indexes = detector.indexes[:1]
+
 
 @pytest.mark.parametrize("how", ["grids", "bins", "bare", "init"])
 def testHexagonalDetector(meshedBinData, how):
@@ -221,6 +225,7 @@ def binsWithScores():
     bins[0, -3] = 1.5
     return bins
 
+
 def testNoScores(binsWithScores):
 
     with pytest.raises(ValueError, match=".*scores"):
@@ -231,3 +236,41 @@ def testNoScores(binsWithScores):
 
     with pytest.raises(ValueError, match=".*scores"):
         detectors.Detector.fromTallyBins("scored", bins=binsWithScores)
+
+
+@pytest.fixture
+def similarDetectorFile(tmp_path):
+    detFile = tmp_path / "similar_det0.m"
+    detFile.absolute()
+
+    with detFile.open("w") as stream:
+        stream.write("""DETspectrum = [
+    1    1    1    1    1    1    1    1    1    1  8.19312E+17 0.05187
+];
+
+DETspectrumA = [
+    1    1    1    1    1    1    1    1    1    1  8.19312E+17 0.05187
+];
+
+DETspectrumAE = [
+ 0.00000E-11  4.13994E-07  2.07002E-07
+];
+
+DETspectrumACOORD = [
+ 0.00000E-11  4.13994E-07
+];
+
+DETspectrumB = [
+    1    1    1    1    1    1    1    1    1    1  8.19312E+17 0.05187
+];""")
+
+    yield str(detFile)
+
+    detFile.unlink()
+
+
+def test_similarDetectors(similarDetectorFile):
+    reader = serpentTools.read(similarDetectorFile)
+
+    assert set(reader.detectors) == {"spectrum", "spectrumA", "spectrumB"}
+    assert isinstance(reader["spectrumA"], detectors.HexagonalDetector)

@@ -72,7 +72,6 @@ Names of state data variables to convert to floats for each branch::
 
   Default: []
   Type: list
-  
 
 .. _branching-intVariables:
 
@@ -84,7 +83,6 @@ Name of state data variables to convert to integers for each branch::
   Default: []
   Type: list
   
-
 .. _depletion-materialVariables:
 
 ``depletion.materialVariables``
@@ -95,7 +93,6 @@ Names of variables to store. Empty list -> all variables::
   Default: []
   Type: list
   
-
 .. _depletion-materials:
 
 ``depletion.materials``
@@ -106,7 +103,6 @@ Names of materials to store. Empty list -> all materials::
   Default: []
   Type: list
   
-
 .. _depletion-metadataKeys:
 
 ``depletion.metadataKeys``
@@ -128,7 +124,6 @@ Option to store the depletion data from the TOT block::
   Default: True
   Type: bool
   
-
 .. _detector-names:
 
 ``detector.names``
@@ -139,7 +134,6 @@ List of detectors to store. Empty list -> store all detectors::
   Default: []
   Type: list
   
-
 .. _microxs-getFY:
 
 ``microxs.getFY``
@@ -150,7 +144,6 @@ If true, store the fission yields::
   Default: True
   Type: bool
   
-
 .. _microxs-getFlx:
 
 ``microxs.getFlx``
@@ -161,7 +154,6 @@ If true, store the group flux ratios::
   Default: True
   Type: bool
   
-
 .. _microxs-getXS:
 
 ``microxs.getXS``
@@ -172,7 +164,6 @@ If true, store the micro-group cross sections::
   Default: True
   Type: bool
   
-
 .. _sampler-allExist:
 
 ``sampler.allExist``
@@ -183,7 +174,6 @@ True if all the files should exist. Suppresses errors if a file does not exist::
   Default: True
   Type: bool
   
-
 .. _sampler-freeAll:
 
 ``sampler.freeAll``
@@ -194,7 +184,6 @@ If true, do not retain data from parsers after reading. Limits memory usage afte
   Default: False
   Type: bool
   
-
 .. _sampler-raiseErrors:
 
 ``sampler.raiseErrors``
@@ -205,7 +194,6 @@ If True, stop at the first error. Otherwise, continue reading but make a note ab
   Default: True
   Type: bool
   
-
 .. _sampler-skipPrecheck:
 
 ``sampler.skipPrecheck``
@@ -217,7 +205,6 @@ Set this to be True only if you know all files contain the same data as errors m
   Default: False
   Type: bool
   
-
 .. _serpentVersion:
 
 ``serpentVersion``
@@ -250,7 +237,6 @@ If true, store the critical leakage cross sections::
   Default: True
   Type: bool
   
-
 .. _xs-getInfXS:
 
 ``xs.getInfXS``
@@ -261,7 +247,6 @@ If true, store the infinite medium cross sections::
   Default: True
   Type: bool
   
-
 .. _xs-reshapeScatter:
 
 ``xs.reshapeScatter``
@@ -273,7 +258,6 @@ these matrices are stored as vectors::
   Default: False
   Type: bool
   
-
 .. _xs-variableExtras:
 
 ``xs.variableExtras``
@@ -284,7 +268,6 @@ Full SERPENT name of variables to be read::
   Default: []
   Type: list
   
-
 .. _xs-variableGroups:
 
 ``xs.variableGroups``

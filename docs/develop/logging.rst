@@ -1,9 +1,43 @@
-.. _dev-logging:
+.. _logging:
 
 .. currentmodule:: serpentTools.messages
 
 Logging and Reporting
 =====================
+
+The primary internal logging is performed with a logger named
+``serpentTools``, that can be obtained using::
+
+    >>> import logging
+    >>> logging.getLogger("serpentTools")
+
+If you want to see the messages produced by this logger, you have a 
+few options. First, the Python logging system must be configured. This
+can be done simply with::
+
+    >>> import logging
+    >>> logging.basicConfig(format="%(levelname)-s: %(message)-s")
+    # Display a basic warning
+    >>> logging.warning("This is a warning")
+    WARNING: This is a warning
+
+To show the internal messages, one can modify the verbosity through the
+:ref:`settings` interface with::
+
+    >>> serpentTools.settings.rc["verbosity"] = "debug"
+
+where ``"debug"`` can be one of ``"debug"``, ``"info"``, ``"warning"``,
+``"error"`` or ``"critical"``.
+
+Alternatively, the level can be adjusting using the python 
+:mod:`logging` module::
+
+    >>> logging.getLogger("serpentTools").setLevel(logging.DEBUG)
+
+.. _dev-logging:
+
+Developer Reference
+-------------------
 
 .. note::
 
