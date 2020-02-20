@@ -10,8 +10,6 @@ import re
 import argparse
 from os.path import splitext
 
-import six
-
 import serpentTools
 from serpentTools import settings
 from serpentTools.messages import info, error
@@ -21,10 +19,10 @@ from serpentTools.io import MatlabConverter
 _VERB_MAP = {'v': {1: 'info', 2: 'debug'},
              'q': {1: 'error', 2: 'critical'}}
 _VERB_MSG = {}
-for key, items in six.iteritems(_VERB_MAP):
+for key, items in _VERB_MAP.items():
     _VERB_MSG[key] = ', '.join(
         ['{}: {}'.format(key * num, value)
-         for num, value in six.iteritems(items)])
+         for num, value in items.items()])
 
 
 def __buildParser():

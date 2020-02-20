@@ -1,8 +1,6 @@
 """Class to test the read commands from serpentTools.parsers"""
 import unittest
 
-import six
-
 from serpentTools.messages import SerpentToolsException
 from serpentTools.parsers import inferReader, read
 
@@ -34,7 +32,7 @@ class TestReaderInfer(unittest.TestCase):
             'test_res.m': ResultsReader, 'test_fmtx99.m': FissionMatrixReader,
             'test_res': None, 'test.coe_dep.m': DepletionReader
         }
-        for fileP, expectedReader in six.iteritems(expectedClasses):
+        for fileP, expectedReader in expectedClasses.items():
             if expectedReader is None:
                 with self.assertRaises(SerpentToolsException):
                     inferReader(fileP)

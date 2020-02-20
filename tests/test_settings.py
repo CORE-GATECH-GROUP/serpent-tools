@@ -3,7 +3,6 @@ from os import remove
 from unittest import TestCase
 
 import yaml
-import six
 from serpentTools import settings
 
 from tests import TestCaseWithLogCapture
@@ -139,7 +138,7 @@ class ConfigLoaderTester(TestCaseWithLogCapture):
             yaml.dump(settings, out)
         with self.rc:
             self.rc.loadYaml(filePath, strict)
-            for key, value in six.iteritems(expected):
+            for key, value in expected.items():
                 if isinstance(value, list):
                     self.assertListEqual(value, self.rc[key])
                 else:
