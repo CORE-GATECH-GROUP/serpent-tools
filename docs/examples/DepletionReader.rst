@@ -6,6 +6,9 @@
 
 .. _depletion-reader-ex:
 
+Depletion Reader
+================
+
 .. note::
 
     Data files, like the one used in this example, are not included with the
@@ -20,12 +23,9 @@
     ...     os.environ["SERPENT_TOOLS_DATA"],
     ...     "demo_dep.m")
 
-================
-Depletion Reader
-================
-
 Basic Operation
 ---------------
+
 SERPENT produces a
 `burned material file <http://serpent.vtt.fi/mediawiki/index.php/Description_of_output_files#Burnup_calculation_output>`_,
 containing the evolution of material properties through burnup for all

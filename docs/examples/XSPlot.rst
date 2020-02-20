@@ -3,6 +3,9 @@
 
 .. _ex-xsplot:
 
+Cross Section Reader/Plotter
+============================
+
 .. note::
 
     Data files, like the one used in this example, are not included with the
@@ -16,9 +19,6 @@
     >>> xfile = os.path.join(
     ...     os.environ["SERPENT_TOOLS_DATA"],
     ...     "plut_xs0.m")
-
-Cross Section Reader/Plotter
-============================
 
 Basic Operation
 ---------------

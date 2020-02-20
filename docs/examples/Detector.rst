@@ -11,6 +11,9 @@
 
 .. _detector-example:
 
+Detector Reader
+===============
+
 .. note::
 
     Data files, like the one used in this example, are not included with the
@@ -27,10 +30,6 @@
     >>> bwrFile = os.path.join(
     ...     os.environ["SERPENT_TOOLS_DATA"],
     ...     "bwr_det0.m")
-
-===============
-Detector Reader
-===============
 
 Basic Operation
 ---------------

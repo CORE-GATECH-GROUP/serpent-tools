@@ -1,5 +1,8 @@
 .. _depmtx-reader-ex:
 
+Depletion Matrix Reader
+=======================
+
 .. note::
 
     Data files, like the one used in this example, are not included with the
@@ -13,10 +16,6 @@
     >>> mtxFile = os.path.join(
     ...     os.environ["SERPENT_TOOLS_DATA"],
     ...     "depmtx_ref.m")
-
-=======================
-Depletion Matrix Reader
-=======================
 
 The ``serpentTools`` package supports reading depletion matrix files, generated when
 ``set depmtx 1`` is added to the input file. As of ``SERPENT`` 2.1.30, these files contain

@@ -8,6 +8,9 @@
 
 .. _ex-microXS:
 
+Micro cross section reader
+==========================
+
 .. note::
 
     Data files, like the one used in this example, are not included with the
@@ -21,10 +24,6 @@
     >>> mdxFile = os.path.join(
     ...     os.environ["SERPENT_TOOLS_DATA"],
     ...     "ref_mdx0.m")
-
-==========================
-Micro cross section reader
-==========================
 
 Basic Operation
 ---------------

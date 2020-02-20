@@ -5,6 +5,9 @@
 
 .. _ex-results:
 
+Results Reader
+==============
+
 .. note::
 
     Data files, like the one used in this example, are not included with the
@@ -18,10 +21,6 @@
     >>> resFile = os.path.join(
     ...     os.environ["SERPENT_TOOLS_DATA"],
     ...     "InnerAssembly_res.m")
-
-==============
-Results Reader
-==============
 
 Basic operations
 ----------------

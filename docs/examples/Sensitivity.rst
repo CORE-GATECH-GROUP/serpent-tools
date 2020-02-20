@@ -4,6 +4,9 @@
 
 .. _ex-sensitivity:
 
+Sensitivity Reader
+==================
+
 .. note::
 
     Data files, like the one used in this example, are not included with the
@@ -17,9 +20,6 @@
     >>> sfile = os.path.join(
     ...     os.environ["SERPENT_TOOLS_DATA"],
     ...     "flattop_sens.m")
-
-Sensitivity Reader
-==================
 
 As of SERPENT 2.1.29, the ability to compute sensitivities using
 Generalized Perturbation Theory [gpt]_. An overview of the functionality,

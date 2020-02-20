@@ -3,6 +3,9 @@
 
 .. _branching-ex:
 
+Branching Reader
+================
+
 .. note::
 
     Data files, like the one used in this example, are not included with the
@@ -16,9 +19,6 @@
     >>> branchFile = os.path.join(
     ...     os.environ["SERPENT_TOOLS_DATA"],
     ...     "demo.coe")
-
-Branching Reader
-================
 
 This notebook demonstrates the capability of the
 `serpentTools <https://github.com/CORE-GATECH-GROUP/serpent-tools>`_
