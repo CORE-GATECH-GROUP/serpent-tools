@@ -1,13 +1,6 @@
 """
 Test the abstract base class approach upon
 which our objects are built.
-
-Most of this is trivial for a set python build,
-but since we support flavors of 2 and 3,
-we take advantage of :func:`six.add_metaclass`
-to properly create the abstract
-base classes.
-
 """
 
 from unittest import TestCase

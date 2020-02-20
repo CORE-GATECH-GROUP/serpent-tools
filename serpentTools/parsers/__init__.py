@@ -3,8 +3,6 @@ Package dedicated for reading ``SERPENT`` output files
 """
 import re
 
-import six
-
 from serpentTools.messages import SerpentToolsException, debug, deprecated
 from serpentTools.parsers.depletion import DepletionReader
 from serpentTools.parsers.branching import BranchingReader
@@ -75,7 +73,7 @@ def inferReader(filePath):
     SerpentToolsException
         If a reader cannot be inferred
     """
-    for reg, reader in six.iteritems(REGEXES):
+    for reg, reader in REGEXES.items():
         match = re.match(reg, filePath)
         if match and match.group() == filePath:
             debug('Inferred reader for {}: {}'
