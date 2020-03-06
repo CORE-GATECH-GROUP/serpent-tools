@@ -14,9 +14,9 @@ serpent-tools
    :target: https://badge.fury.io/py/serpentTools
    :alt: PyPi badge
 
-.. image:: https://zenodo.org/badge/102786755.svg
-   :target: https://zenodo.org/badge/latestdoi/102786755
-   :alt: Zenodo DOI 10.5281/zenodo.1301036
+.. image:: https://zenodo.org/badge/DOI/10.1080/00295639.2020.1723992.svg
+   :target: https://doi.org/10.1080/00295639.2020.1723992
+   :alt: Nuclear Science and Engineering 10.1080/00295639.2020.1723992
 
 A suite of parsers designed to make interacting with
 ``SERPENT`` [1]_ output files simple and flawless.
@@ -50,13 +50,26 @@ References
 ==========
 
 The Annals of Nuclear Energy article should be cited for all work
-using ``SERPENT``. If you wish to cite this project, please cite as::
+using ``SERPENT``. If you are using this project, please considering
+citing with::
 
-    Andrew Johnson, Dan Kotlyar, Gavin Ridley, Stefano Terlizzi, & Paul Romano.
-    (2018, June 29). "`serpent-tools: A collection of parsing tools and
-    data containers to make interacting with SERPENT outputs easy, intuitive, and flawless.
-    <https://doi.org/10.5281/zenodo.1301036>`_,".
+    Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, and Gavin Ridley,
+    "`serpentTools: A Python Package for Expediting Analysis with
+    Serpent <https://doi.org/10.1080/00295639.2020.1723992>`_,"
+    *Nuc. Sci. Eng*, (in press) (2020).
 
+Also, let us know if you publish work using this package! We try and
+keep an up-to-date list of `works using serpentTools`_, and would be
+happy to include more.
+
+If you want to refer to a specific version, follow the `Zenodo DOI 
+<https://doi.org/10.5281/zenodo.1301035>`_. This will resolve to the latest
+version, with links to earlier releases.
+
+ .. _works using serpentTools: https://github.com/CORE-GATECH-GROUP/serpent-tools/wiki/Publications-using-serpentTools
+
+If you want to refer to a specific version, follow the `Zenodo DOI 
 .. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
     <http://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
+
