@@ -90,7 +90,7 @@ class XSPlotReader(BaseReader):
                 elif 'bra_f' in chunk[0]:
                     warning("There is this weird 'bra_f' XS. these seem to be"
                             " constant. recording to metadata instead.")
-                    self.metadata[xsname].setData(chunk)
+                    self.xsections[xsname].setData(chunk)
 
                 else:
                     print(chunk)
