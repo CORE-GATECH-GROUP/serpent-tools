@@ -87,8 +87,7 @@ class XSPlotReader(BaseReader):
                     self.xsections[xsname].setData(chunk)
 
                 else:
-                    print(chunk)
-                    error('Unidentifiable entry {}'.format(chunk[0]))
+                    raise ValueError("Unidentifiable entry\n{}".format(chunk))
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a xsplot file."""
