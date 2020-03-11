@@ -1,8 +1,8 @@
 """Parser responsible for reading the ``*_xsplot.m`` files"""
 from numpy import array, float64
 
+from serpentTools.messages import error, warning
 from serpentTools.engines import KeywordParser
-from serpentTools.messages import warning, info, debug, error
 from serpentTools.parsers.base import BaseReader
 from serpentTools.objects.xsdata import XSData
 
@@ -53,7 +53,6 @@ class XSPlotReader(BaseReader):
 
     def _read(self):
         """Read through the depletion file and store requested data."""
-        info('Preparing to read {}'.format(self.filePath))
         keys = ['E', r'i\d{4,5}', r'm\w']
         separators = ['\n', '];', '\r\n']
 
@@ -70,7 +69,6 @@ class XSPlotReader(BaseReader):
                                                          dtype=float64)
 
                 elif chunk[0][-7:] == 'mt = [\n':
-                    debug('found mt specification')
                     xsname = chunk[0][:-8]
                     isiso = True if chunk[0][0] == 'i' else False
                     self.xsections[xsname] = XSData(xsname, self.metadata,
@@ -78,26 +76,19 @@ class XSPlotReader(BaseReader):
                     self.xsections[xsname].setMTs(chunk)
 
                 elif chunk[0][-7:] == 'xs = [\n':
-                    debug('found xs specification')
                     xsname = chunk[0][:-8]
                     self.xsections[xsname].setData(chunk)
 
                 elif chunk[0][-7:] == 'nu = [\n':
-                    debug('found nu specification')
                     xsname = chunk[0][:-8]
                     self.xsections[xsname].setNuData(chunk)
 
                 elif 'bra_f' in chunk[0]:
-                    warning("There is this weird 'bra_f' XS. these seem to be"
-                            " constant. recording to metadata instead.")
                     self.xsections[xsname].setData(chunk)
 
                 else:
                     print(chunk)
                     error('Unidentifiable entry {}'.format(chunk[0]))
-
-        info('Done reading xsplot file')
-        debug('  found {} xs listings'.format(len(self.xsections)))
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a xsplot file."""
