@@ -1,6 +1,6 @@
 """Test the xsplot reader."""
 import unittest
-from numpy import ndarray, array
+from numpy import ndarray, array, newaxis
 
 from numpy.testing import assert_array_equal
 
@@ -735,6 +735,29 @@ class XSPlotTester(unittest.TestCase):
                      9.51295e-02, 2.91685e-01, 0.00000e+00],
                     [2.93887e-01, 1.36424e-01, 1.13642e-04,
                      1.20609e-01, 5.96505e-01, 1.28477e-02]]),
+            },
+            "i82206_09c_bra": {
+                "MT": [102],
+                "MTdescrip": [" (n,gamma)"],
+                "hasNuData": False,
+                "isIso": True,
+                'metadata': {
+                    'egrid': array(
+                        [1.00000e-08, 1.03891e-07, 1.07934e-06,
+                         1.12135e-05, 1.16498e-04, 1.21032e-03,
+                         1.25742e-02, 1.30635e-01, 1.35719e+00,
+                         1.41000e+01]),
+                    'majorant_xs': array(
+                        [78.4253, 36.1666, 2.54417, 13.0654,
+                         4.27811, 0.822536, 0.781066, 0.598564,
+                         0.34175, 0.293887]),
+                },
+                "name": "i82206_09c_bra",
+                "xsdata": array([
+                    2.17000E-02, 2.17000E-02, 2.17000E-02, 2.17000E-02,
+                    2.17000E-02, 2.17000E-02, 2.17000E-02, 2.17000E-02,
+                    2.17000E-02, 2.17000E-02]
+                )[:, newaxis],  # Promote to 2D
             },
         }
 
