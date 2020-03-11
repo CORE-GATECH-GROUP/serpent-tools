@@ -59,31 +59,34 @@ class XSPlotReader(BaseReader):
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
 
-                if chunk[0][:5] == 'E = [':
+                lead = chunk[0].strip()
+                data = chunk[1:]
+                if lead.startswith("E = ["):
                     # The energy grid
-                    self.metadata['egrid'] = array(chunk[1:], dtype=float64)
+                    self.metadata['egrid'] = array(data, dtype=float64)
 
-                elif chunk[0][:15] == 'majorant_xs = [':
+                elif lead.endswith('majorant_xs = ['):
                     # L-inf norm on all XS on all materials
-                    self.metadata['majorant_xs'] = array(chunk[1:],
+                    self.metadata['majorant_xs'] = array(data,
                                                          dtype=float64)
 
-                elif chunk[0][-7:] == 'mt = [\n':
-                    xsname = chunk[0][:-8]
-                    isiso = True if chunk[0][0] == 'i' else False
+                elif lead.endswith('_mt = ['):
+                    xsname = lead[:lead.index("_mt")]
+                    isiso = lead[0] == 'i'
                     self.xsections[xsname] = XSData(xsname, self.metadata,
                                                     isIso=isiso)
                     self.xsections[xsname].setMTs(chunk)
 
-                elif chunk[0][-7:] == 'xs = [\n':
-                    xsname = chunk[0][:-8]
+                elif lead.endswith('_xs = ['):
+                    xsname = lead[:lead.index("_xs")]
                     self.xsections[xsname].setData(chunk)
 
-                elif chunk[0][-7:] == 'nu = [\n':
-                    xsname = chunk[0][:-8]
+                elif lead.endswith('_nu = ['):
+                    xsname = lead[:lead.index("_nu")]
                     self.xsections[xsname].setNuData(chunk)
 
-                elif 'bra_f' in chunk[0]:
+                elif lead.endswith("bra_f = ["):
+                    xsname = lead[:lead.index("_f")]
                     self.xsections[xsname].setData(chunk)
 
                 else:
