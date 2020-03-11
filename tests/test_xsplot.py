@@ -302,8 +302,8 @@ class XSPlotTester(unittest.TestCase):
             },
             'i8016_03c': {
                 'MT': [
-                    1, 101, 2, 102, 107, 51, 52, 53, 54, 22, 55,
-                    3, 104, 56, 57, 28, 108, 105, 23, 16],
+                    1, 101, 2, 102, 107, 51, 52, 53, 54, 22, 55, 91,
+                    103, 104, 56, 57, 28, 108, 105, 23, 16],
                 'MTdescrip': [
                     ' Total', ' Sum of absorption',
                     ' elastic scattering', ' (n,gamma)',
@@ -314,11 +314,14 @@ class XSPlotTester(unittest.TestCase):
                     ' inelastic scatt. to 4. excited state',
                     ' (n,nalpha)',
                     ' inelastic scatt. to 5. excited state',
-                    ' inelastic scattering to continuum', ' (n,p)',
+                    ' inelastic scattering to continuum',
+                    ' (n,p)',
                     ' (n,d)',
                     ' inelastic scatt. to 6. excited state',
                     ' inelastic scatt. to 7. excited state',
-                    ' (n,np)', ' (n,2alpha)', ' (n,t)',
+                    ' (n,np)',
+                    ' (n,2alpha)',
+                    ' (n,t)',
                     ' (n,n3alpha)',
                     ' (n,2n)',
                 ],
