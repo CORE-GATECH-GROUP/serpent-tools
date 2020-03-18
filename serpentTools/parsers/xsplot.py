@@ -1,8 +1,8 @@
 """Parser responsible for reading the ``*_xsplot.m`` files"""
 from numpy import array, float64
 
+from serpentTools.messages import error, warning
 from serpentTools.engines import KeywordParser
-from serpentTools.messages import warning, info, debug, error
 from serpentTools.parsers.base import BaseReader
 from serpentTools.objects.xsdata import XSData
 
@@ -53,51 +53,44 @@ class XSPlotReader(BaseReader):
 
     def _read(self):
         """Read through the depletion file and store requested data."""
-        info('Preparing to read {}'.format(self.filePath))
         keys = ['E', r'i\d{4,5}', r'm\w']
         separators = ['\n', '];', '\r\n']
 
         with KeywordParser(self.filePath, keys, separators) as parser:
             for chunk in parser.yieldChunks():
 
-                if chunk[0][:5] == 'E = [':
+                lead = chunk[0].strip()
+                data = chunk[1:]
+                if lead.startswith("E = ["):
                     # The energy grid
-                    self.metadata['egrid'] = array(chunk[1:], dtype=float64)
+                    self.metadata['egrid'] = array(data, dtype=float64)
 
-                elif chunk[0][:15] == 'majorant_xs = [':
+                elif lead.endswith('majorant_xs = ['):
                     # L-inf norm on all XS on all materials
-                    self.metadata['majorant_xs'] = array(chunk[1:],
+                    self.metadata['majorant_xs'] = array(data,
                                                          dtype=float64)
 
-                elif chunk[0][-7:] == 'mt = [\n':
-                    debug('found mt specification')
-                    xsname = chunk[0][:-8]
-                    isiso = True if chunk[0][0] == 'i' else False
+                elif lead.endswith('_mt = ['):
+                    xsname = lead[:lead.index("_mt")]
+                    isiso = lead[0] == 'i'
                     self.xsections[xsname] = XSData(xsname, self.metadata,
                                                     isIso=isiso)
                     self.xsections[xsname].setMTs(chunk)
 
-                elif chunk[0][-7:] == 'xs = [\n':
-                    debug('found xs specification')
-                    xsname = chunk[0][:-8]
+                elif lead.endswith('_xs = ['):
+                    xsname = lead[:lead.index("_xs")]
                     self.xsections[xsname].setData(chunk)
 
-                elif chunk[0][-7:] == 'nu = [\n':
-                    debug('found nu specification')
-                    xsname = chunk[0][:-8]
+                elif lead.endswith('_nu = ['):
+                    xsname = lead[:lead.index("_nu")]
                     self.xsections[xsname].setNuData(chunk)
 
-                elif 'bra_f' in chunk[0]:
-                    warning("There is this weird 'bra_f' XS. these seem to be"
-                            " constant. recording to metadata instead.")
-                    self.metadata[xsname].setData(chunk)
+                elif lead.endswith("bra_f = ["):
+                    xsname = lead[:lead.index("_f")]
+                    self.xsections[xsname].setData(chunk)
 
                 else:
-                    print(chunk)
-                    error('Unidentifiable entry {}'.format(chunk[0]))
-
-        info('Done reading xsplot file')
-        debug('  found {} xs listings'.format(len(self.xsections)))
+                    raise ValueError("Unidentifiable entry\n{}".format(chunk))
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a xsplot file."""
