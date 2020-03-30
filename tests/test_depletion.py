@@ -208,6 +208,35 @@ class DepletedMaterialTester(_DepletionTestHelper):
         assert_equal(self.material.adens, expectedAdens)
         assert_equal(self.material['ingTox'], expectedIngTox)
 
+    def test_attributes(self):
+        """Verify the attribute and dictionary based fetching"""
+        # Populate data that is not contained in reference file
+        # to test the attribute-based fetching
+        material = self.material
+        for key in ["mdens", "inhTox", "a", "sf", "gsrc", "h"]:
+            material.data[key] = material.data["adens"]
+        material.data["volume"] = material.data["burnup"]
+
+        for attr in ["burnup", "adens", "mdens", "volume", "ingTox", "inhTox"]:
+            self.assertIs(self.material.data[attr], self.material[attr])
+            self.assertIs(self.material[attr], getattr(self.material, attr))
+            previous = self.material.data.pop(attr)
+            self.assertIs(getattr(self.material, attr), None)
+            self.material.data[attr] = previous
+
+        for key, attr in [
+                ["a", "activity"],
+                ["h", "decayHeat"],
+                ["sf", "spontaneousFissionRate"],
+                ["sf", "spontaneousFissionRate"],
+        ]:
+            self.assertIs(self.material[key], self.material.data[key])
+            self.assertIs(getattr(self.material, attr), self.material.data[key])
+            previous = self.material.data.pop(key)
+            self.assertIs(getattr(self.material, attr), None)
+            self.material.data[key] = previous
+
+
     def test_getValues_burnup_full(self):
         """ Verify that getValues can produce the full burnup vector."""
         actual = self.material.getValues('days', 'burnup', )
