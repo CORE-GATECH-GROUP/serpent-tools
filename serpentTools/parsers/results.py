@@ -202,8 +202,7 @@ class ResultsReader(XSReader):
     """Metadata keys that will not be compared."""
 
     def __init__(self, filePath):
-        XSReader.__init__(self, filePath, 'results')
-
+        super().__init__(filePath, 'results')
         self.metadata = {}
         self.resdata = {}
         self.universes = {}

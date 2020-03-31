@@ -80,7 +80,7 @@ class MaterialReader(BaseReader):
     """Parent class for files that store materials."""
 
     def __init__(self, filePath, readerSettingsLevel):
-        BaseReader.__init__(self, filePath, readerSettingsLevel)
+        super().__init__(filePath, readerSettingsLevel)
         self.materials = {}
 
 
@@ -88,7 +88,7 @@ class XSReader(BaseReader):
     """Parent class for the branching and results reader"""
 
     def __init__(self, filePath, readerSettingsLevel):
-        BaseReader.__init__(self, filePath, ['xs', readerSettingsLevel])
+        super().__init__(filePath, ['xs', readerSettingsLevel])
         self.settings['variables'] = rc.expandVariables()
         self.settings.pop('variableGroups')
         self.settings.pop('variableExtras')
