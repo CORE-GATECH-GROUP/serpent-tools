@@ -209,6 +209,15 @@ class TesterCommonResultsReader(TestCase):
         self.assertSetEqual(expectedKeys, actualKeys)
         assert_array_equal(self.reader.resdata['absKeff'], self.expectedKeff)
 
+        for key, value in self.reader.resdata.items():
+            assert self.reader[key] is value
+            assert self.reader.get(key) is value
+
+        with self.assertRaises(KeyError):
+            self.reader["invalid key"]
+
+        self.assertIs(self.reader.get("invalid key"), None)
+
     def test_burnup(self):
         """Verify the burnup vector is properly stored."""
         actualBurnDays = self.reader.resdata.get('burnDays', None)
