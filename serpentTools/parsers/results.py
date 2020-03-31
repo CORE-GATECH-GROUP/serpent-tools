@@ -208,6 +208,31 @@ class ResultsReader(XSReader):
         self.resdata = {}
         self.universes = {}
 
+    def __getitem__(self, key):
+        """Retrieve an item from :attr:`resdata` only
+
+        Universes data like group constants should be pulled
+        from universes directly with :meth:`getUniv`
+
+        Parameters
+        ----------
+        key : str
+            ``mixedCase`` variable name like ``"absKeff"`` that may
+            exist in :attr:`resdata`
+
+        Returns
+        -------
+        numpy.ndarray
+            Requested quantity
+
+        Raises
+        ------
+        KeyError
+            If ``key`` does not exist in :attr:`resdata`
+
+        """
+        return self.resdata[key]
+
     def _read(self):
         """Read through the results file and store requested data."""
 
@@ -468,6 +493,26 @@ class ResultsReader(XSReader):
         self._cleanMetadata()
         del (self._varTypeLookup, self._burnupKeys, self._keysVersion,
              self._counter, self._univlist)
+
+    def get(self, key, default=None):
+        """Retrieve an item from :attr:`resdata` or ``default``
+
+        Parameters
+        ----------
+        key : str
+            ``mixedCase`` variable name that may or may not
+            exist in :attr:`resdata`
+        default : optional
+            Object to be returned in ``key`` is not found
+
+        Returns
+        -------
+        object
+            :class:`numpy.ndarray` if ``key`` is found. Otherwise
+            ``default`` is returned
+
+        """
+        return self.resdata.get(key, default)
 
     def _compare(self, other, lower, upper, sigma):
         similar = self.compareMetadata(other)
