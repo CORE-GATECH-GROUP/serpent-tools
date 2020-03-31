@@ -70,18 +70,16 @@ class DetectorHelper(TestCase):
 
     def test_iterDets(self):
         """Verify the iterDets method is functional."""
-        for name, det in self.reader.iterDets():
+        for name, det in self.reader.items():
             self.assertIn(name, self.reader.detectors, msg=name)
-            self.assertIs(det, self.reader.detectors[name], msg=name)
+            self.assertIn(name, self.reader, msg=name)
+            self.assertIs(self.reader.detectors[name], det, msg=name)
+            self.assertIs(self.reader[name], det, msg=name)
+            self.assertIs(self.reader.get(name), det, msg=name)
 
-    def test_getitem(self):
-        """Verify the getitem method for extracting detectors."""
-        for name, det in self.reader.detectors.items():
-            fromGetItem = self.reader[name]
-            self.assertIs(fromGetItem, det, msg=name)
         with self.assertRaises(KeyError):
-            self.reader['this should fail']
-
+            self.reader["this should fail"]
+        self.assertIs(self.reader.get("this should not fail"), None)
 
 class CartesianDetectorTester(DetectorHelper):
     """
