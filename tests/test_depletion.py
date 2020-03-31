@@ -111,11 +111,26 @@ class DepletionTester(_DepletionTestHelper):
 
     def test_getitem(self):
         """Verify the getitem approach to obtaining materials."""
+        self.assertEqual(len(self.reader), len(self.reader.materials))
+
         with self.assertRaises(KeyError):
             self.reader['this should not work']
-        for name, mat in self.reader.materials.items():
-            fromGetItem = self.reader[name]
-            self.assertIs(mat, fromGetItem, msg=mat)
+
+        self.assertIs(self.reader.get("this should not work"), None)
+
+        for name, mat in self.reader.items():
+            self.assertIn(name, self.reader.materials)
+            self.assertIn(name, self.reader)
+            self.assertIs(mat, self.reader[name], msg=mat)
+            self.assertIs(self.reader.get(name), mat)
+
+        for count, name in enumerate(self.reader, start=1):
+            self.assertIn(name, self.reader)
+
+        for count, name in enumerate(self.reader.keys(), start=1):
+            self.assertIn(name, self.reader)
+
+        self.assertEqual(count, len(self.reader.materials))
 
     @plotTest
     def test_plotFewIso(self):
