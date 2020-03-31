@@ -56,6 +56,9 @@ class DepletionSampler(DepPlotMixin, Sampler):
     metadata: dict
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]
+
+        .. deprecated:: 0.9.3
+            Use attributes like :attr:`days` directly
     metadataUncs: dict
         Dictionary containing uncertainties in day and burnup
         vectors

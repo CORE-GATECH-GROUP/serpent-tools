@@ -160,6 +160,8 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         ZZAAAI identifiers for isotopes
     metadata : dict of str to list
         Dictionary with zai and names
+
+        .. deprecated:: 0.9.3
     materials : dict of str to serpentTools.objects.Material
         Materials from the file. Keys will be the names as they appear
         in the file
