@@ -25,8 +25,8 @@ class DetectorHelper(TestCase):
 
     def test_loadedDetectors(self):
         """Verify that all anticipated detectors are loaded."""
-        expectedNames = set(self.EXPECTED_DETECTORS.keys())
-        actualNames = set(self.reader.detectors.keys())
+        expectedNames = set(self.EXPECTED_DETECTORS)
+        actualNames = set(self.reader)
         self.assertSetEqual(
             expectedNames, actualNames,
             msg="Failure reading detectors from {}".format(self.FILE_PATH))

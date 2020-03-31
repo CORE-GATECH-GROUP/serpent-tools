@@ -8,7 +8,7 @@ from serpentTools.utils.compare import getKeyMatchingShapes
 from serpentTools.engines import KeywordParser
 from serpentTools.detectors import detectorFactory
 from serpentTools.parsers.base import BaseReader
-from serpentTools.messages import SerpentToolsException
+from serpentTools.messages import SerpentToolsException, deprecated
 
 
 class DetectorReader(BaseReader):
@@ -74,8 +74,13 @@ class DetectorReader(BaseReader):
         """
         return self.detectors.get(key, default)
 
+    @deprecated("items")
     def iterDets(self):
-        """Yield name, detector pairs by iterating over :attr:`detectors`."""
+        """Yield name, detector pairs by iterating over :attr:`detectors`.
+
+        .. deprecated:: 0.9.3
+            Use :meth:`items`
+        """
         for key, det in self.detectors.items():
             yield key, det
 
