@@ -140,7 +140,7 @@ class TestGetUniv(TestCase):
 
     def test_allVarsNone(self):
         """Verify that the reader raises error when no time parameters are given""" # noqa
-        with self.assertRaises(SerpentToolsException):
+        with self.assertRaises(ValueError):
             self.reader.getUniv('0', burnup=None, index=None, timeDays=None)
 
     def test_noUnivState(self):

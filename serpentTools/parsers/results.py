@@ -395,18 +395,19 @@ class ResultsReader(XSReader):
 
         Returns
         -------
-        :class:`~serpentTools.objects.HomogUniv`
+        serpentTools.objects.HomogUniv
             Requested universe
 
         Raises
         ------
-        KeyError:
+        KeyError
             If the requested universe could not be found
-        :class:`~serpentTools.SerpentToolsException`
+        ValueError
             If burnup, days and index are not given
+
         """
         if index is None and burnup is None and timeDays is None:
-            raise SerpentToolsException(
+            raise ValueError(
                 'Burnup, time or index are required inputs')
 
         searchKey = UnivTuple(univ, burnup, index, timeDays)
