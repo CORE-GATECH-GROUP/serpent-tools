@@ -29,7 +29,6 @@ class BaseReader(ABC, BaseObject):
 
     def __init__(self, filePath, readerSettingsLevel):
         self.filePath = filePath
-        self.metadata = {}
         if isinstance(readerSettingsLevel, str):
             self.settings = rc.getReaderSettings(readerSettingsLevel)
         else:
