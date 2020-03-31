@@ -3,6 +3,7 @@ Class responsible for reading multiple depletion files
 and obtaining true uncertainties
 """
 from math import fabs
+import collections
 
 from numpy import zeros, zeros_like
 from matplotlib import pyplot
@@ -16,11 +17,6 @@ from serpentTools.parsers.depletion import DepletionReader, DepPlotMixin
 from serpentTools.samplers.base import (
     Sampler, SampledContainer,
 )
-
-CONSTANT_MDATA = ('names', 'zai')
-"""metadata that should be invariant throughout repeated runs"""
-VARIED_MDATA = ('days', 'burnup')
-"""metadata that could be varied throughout repeated runs"""
 
 
 class DepletionSampler(DepPlotMixin, Sampler):
@@ -61,8 +57,8 @@ class DepletionSampler(DepPlotMixin, Sampler):
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]
     metadataUncs: dict
-        Dictionary containing uncertainties in file-wide metadata,
-        such as burnup schedule
+        Dictionary containing uncertainties in day and burnup
+        vectors
     allMdata: dict
         Dictionary where key, value pairs are name of metadata and
         metadata arrays for all runs. Arrays with be of one greater dimension,
@@ -115,15 +111,14 @@ class DepletionSampler(DepPlotMixin, Sampler):
     def _checkMetadata(self):
         misMatch = {}
         for parser in self:
-            for key, value in parser.metadata.items():
-                valCheck = (tuple(value) if key in CONSTANT_MDATA
-                            else value.size)
+            for key in ["names", "zais", "days", "burnup"]:
+                value = getattr(parser, key)
+                valCheck = (
+                    tuple(value) if key in {"names", "zais"} else value.size
+                )
                 if key not in misMatch:
-                    misMatch[key] = {}
-                if valCheck not in misMatch[key]:
-                    misMatch[key][valCheck] = {parser.filePath}
-                else:
-                    misMatch[key][valCheck].add(parser.filePath)
+                    misMatch[key] = collections.defaultdict(set)
+                misMatch[key][valCheck].add(parser.filePath)
         for mKey, matches in misMatch.items():
             if len(matches) > 1:
                 self._raiseErrorMsgFromDict(matches, 'values',
@@ -136,7 +131,8 @@ class DepletionSampler(DepPlotMixin, Sampler):
         self.parsers.add(parser)
 
         for N, parser in enumerate(self.parsers):
-            self._copyMetadata(parser.metadata, N)
+            self.allMdata["days"][N] = parser.days
+            self.allMdata["burnup"][N] = parser.burnup
             for matName, material in parser.materials.items():
                 if matName in self.materials:
                     sampledMaterial = self.materials[matName]
@@ -149,9 +145,9 @@ class DepletionSampler(DepPlotMixin, Sampler):
         self._finalize()
 
     def _finalize(self):
-        for _matName, material in self.materials.items():
+        for material in self.materials.values():
             material.finalize()
-        for key in VARIED_MDATA:
+        for key in {"days", "burnup"}:
             allData = self.allMdata[key]
             setattr(self, key, allData.mean(axis=0))
             self.metadataUncs[key] = allData.std(axis=0)
@@ -168,13 +164,12 @@ class DepletionSampler(DepPlotMixin, Sampler):
         self.allMdata["days"] = zeros(shape)
         self.allMdata["burnup"] = zeros(shape)
 
-    def _copyMetadata(self, parserMdata, N):
-        for key in VARIED_MDATA:
-            self.allMdata[key][N, ...] = parserMdata[key]
+        for key in {"days", "burnup"}:
+            self.allMdata[key] = zeros(shape)
 
     def _free(self):
         self.allMdata = {}
-        for _mName, material in self.materials.items():
+        for material in self.materials.values():
             material.free()
 
     def iterMaterials(self):

@@ -204,9 +204,9 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                     self._checkAddData(chunk, name, variable)
                     continue
                 self._addMetadata(chunk)
-        if 'days' in self.metadata:
-            for mKey in self.materials:
-                self.materials[mKey].days = self.metadata['days']
+        if self.days is not None:
+            for material in self.materials.values():
+                material.days = self.days
 
     def _addMetadata(self, chunk):
         for varName, destination in METADATA_KEYS.items():
@@ -282,9 +282,6 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             )
         debug('  found {} materials'.format(len(self.materials)))
 
-        if 'bu' in self.metadata:
-            self.metadata['burnup'] = self.metadata.pop('bu')
-
     @property
     def metadata(self):
         out = {}
@@ -307,9 +304,13 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         return similar
 
     def _comparePrecheckMetadata(self, other):
-        for key, myVec in self.metadata.items():
-            otherVec = other.metadata[key]
-            if len(myVec) != len(otherVec):
+        for key in ["names", "zais", "days", "burnup"]:
+            myVec = getattr(self, key)
+            otherVec = getattr(other, key, None)
+            if (
+                (otherVec is None and myVec is not None)
+                or len(myVec) != len(otherVec)
+            ):
                 error("Stopping comparison early due to mismatched {} vectors"
                       "\n\t>{}\n\t<{}".format(key, myVec, otherVec))
                 return False
@@ -390,18 +391,12 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     def _compareMetadata(self, other, lower, upper, _sigma):
         """Private method for comparing metadata"""
 
-        similar = logDirectCompare(
-            self.metadata['names'], other.metadata['names'],
-            0, 0, 'names')
+        similar = logDirectCompare(self.names, other.names, 0, 0, 'names')
+        similar &= logDirectCompare(self.zais, other.zais, 0, 0, 'zai')
         similar &= logDirectCompare(
-            self.metadata['zai'], other.metadata['zai'],
-            0, 0, 'zai')
+            self.days, other.days, lower, upper, 'days')
         similar &= logDirectCompare(
-            self.metadata['days'], other.metadata['days'],
-            lower, upper, 'days')
-        similar &= logDirectCompare(
-            self.metadata['burnup'], other.metadata['burnup'],
-            lower, upper, 'burnup')
+            self.burnup, other.burnup, lower, upper, 'burnup')
         return similar
 
     @deprecated("toMatlab")
@@ -475,8 +470,13 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         else:
             converter = prepToMatlab
 
-        data = {k.upper() if reconvert else k: v
-                for k, v in self.metadata.items()}
+        data = {}
+        for k in ["names", "zais", "burnup", "days"]:
+            value = getattr(self, k)
+            if k == "zais":
+                k = "zai"  # Back compatibility
+            if value is not None:
+                data[k.upper() if reconvert else k] = value
 
         for matName, material in self.materials.items():
             for varName, varData in material.data.items():
