@@ -24,8 +24,7 @@ VARIED_MDATA = ('days', 'burnup')
 
 
 class DepletionSampler(DepPlotMixin, Sampler):
-    __doc__ = """
-    Class that reads and stores data from multiple ``*dep.m`` files
+    """Class that reads and stores data from multiple ``*dep.m`` files
 
     The following checks are performed in order to ensure that depletion
     files are of similar form:
@@ -46,6 +45,14 @@ class DepletionSampler(DepPlotMixin, Sampler):
 
     Attributes
     ----------
+    days : numpy.ndarray or None
+        Vector of points in time
+    burnup : numpy.ndarray or None
+        Nominal burnup in MWd/kgU
+    names : list of str or None
+        Names of isotopes corresponding to each row in the 2D arrays
+    zais : list of int or None
+        ZZAAAI identifiers for isotopes
     materials: dict
         Dictionary with material names as keys and the corresponding
         :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
@@ -74,7 +81,10 @@ class DepletionSampler(DepPlotMixin, Sampler):
 
     def __init__(self, files):
         self.materials = {}
-        self.metadata = {}
+        self.names = None
+        self.zais = None
+        self.days = None
+        self.burnup = None
         self.metadataUncs = {}
         self.allMdata = {}
         Sampler.__init__(self, files, DepletionReader)
@@ -83,6 +93,19 @@ class DepletionSampler(DepPlotMixin, Sampler):
     def __getitem__(self, name):
         """Retrieve a material from :attr:`materials`."""
         return self.materials[name]
+
+    @property
+    def metadata(self):
+        out = {}
+        if self.names is not None:
+            out["names"] = self.names
+        if self.zais is not None:
+            out["zai"] = self.zais
+        if self.days is not None:
+            out["days"] = self.days
+        if self.burnup is not None:
+            out["burnup"] = self.burnup
+        return out
 
     def _precheck(self):
         self._checkParserDictKeys('materials')
@@ -107,9 +130,12 @@ class DepletionSampler(DepPlotMixin, Sampler):
                                             '{} metadata'.format(mKey))
 
     def _process(self):
+        # Not sure how / why this is a set...
+        parser = self.parsers.pop()
+        self._allocateMetadata(parser)
+        self.parsers.add(parser)
+
         for N, parser in enumerate(self.parsers):
-            if not self.metadata:
-                self.__allocateMetadata(parser.metadata)
             self._copyMetadata(parser.metadata, N)
             for matName, material in parser.materials.items():
                 if matName in self.materials:
@@ -127,16 +153,20 @@ class DepletionSampler(DepPlotMixin, Sampler):
             material.finalize()
         for key in VARIED_MDATA:
             allData = self.allMdata[key]
-            self.metadata[key] = allData.mean(axis=0)
+            setattr(self, key, allData.mean(axis=0))
             self.metadataUncs[key] = allData.std(axis=0)
 
-    def __allocateMetadata(self, parserMdata):
-        for key in CONSTANT_MDATA:
-            self.metadata[key] = parserMdata[key]
-        vectorShape = tuple([len(self.files)]
-                            + list(parserMdata['days'].shape))
-        for key in VARIED_MDATA:
-            self.allMdata[key] = zeros(vectorShape)
+    def _allocateMetadata(self, parser):
+        self.names = parser.names
+        self.zais = parser.zais
+        if parser.days is None:
+            if parser.burnup is None:
+                raise AttributeError("Neither burnup nor days stored")
+            shape = len(self.files), parser.burnup.size
+        else:
+            shape = len(self.files), parser.days.size
+        self.allMdata["days"] = zeros(shape)
+        self.allMdata["burnup"] = zeros(shape)
 
     def _copyMetadata(self, parserMdata, N):
         for key in VARIED_MDATA:
