@@ -6,7 +6,7 @@ from matplotlib import pyplot
 
 from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
-    convertVariableName, str2vec,
+    str2vec,
 )
 from ._collections import DEPLETION_VARIABLES
 from serpentTools.engines import KeywordParser
@@ -26,7 +26,8 @@ from serpentTools.utils import (
 )
 from serpentTools.io import MatlabConverter
 
-METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
+METADATA_KEYS = {
+    'ZAI': "zais", 'NAMES': "names", 'BU': "burnup", 'DAYS': "days"}
 
 
 class DepPlotMixin(object):
@@ -135,6 +136,13 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     """
     Parser responsible for reading and working with depletion files.
 
+    .. note::
+
+        :attr:`metadata` is now a deprecated property, generated at
+        each call.  Additional keys added will not be retained.
+        Prefer using :attr:`names`, :attr:`burnup`,
+        :attr:`days`, and :attr:`zais`
+
     Parameters
     ----------
     filePath: str
@@ -142,10 +150,23 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
     Attributes
     ----------
-    {attrs:s}
+    days : numpy.ndarray or None
+        Vector of points in time
+    burnup : numpy.ndarray or None
+        Nominal burnup in MWd/kgU
+    names : list of str or None
+        Names of isotopes corresponding to each row in the 2D arrays
+    zais : list of int or None
+        ZZAAAI identifiers for isotopes
+    metadata : dict of str to list
+        Dictionary with zai and names
+    materials : dict of str to serpentTools.objects.Material
+        Materials from the file. Keys will be the names as they appear
+        in the file
     settings: dict
         names and values of the settings used to control operations
         of this reader
+
     """
     docAttrs = """materials: dict
         Dictionary with material names as keys and the corresponding
@@ -154,7 +175,6 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     metadata: dict
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
-    __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
@@ -162,6 +182,10 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         # match all materials if nothing given
         self._matPatterns = [re.compile(mat) for mat in patterns]
         DepPlotMixin.__init__(self)
+        self.names = None
+        self.zais = None
+        self.days = None
+        self.burnup = None
 
     def __getitem__(self, name):
         """Retrieve a material from :attr:`materials`."""
@@ -185,7 +209,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                 self.materials[mKey].days = self.metadata['days']
 
     def _addMetadata(self, chunk):
-        for varName in METADATA_KEYS:
+        for varName, destination in METADATA_KEYS.items():
             if varName not in chunk[0]:
                 continue
             if varName in ['ZAI', 'NAMES']:
@@ -197,10 +221,12 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             else:
                 line = self._cleanSingleLine(chunk)
                 values = str2vec(line)
-            self.metadata[convertVariableName(varName)] = values
-            return
-        warning("Unsure about how to process metadata chunk {}"
-                .format(chunk[0]))
+            setattr(self, destination, values)
+            break
+        else:
+            raise ValueError(
+                "Unsure about how to process metadata chunk "
+                "{}".format(chunk[0]))
 
     @staticmethod
     def _cleanSingleLine(chunk):
@@ -258,6 +284,19 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
         if 'bu' in self.metadata:
             self.metadata['burnup'] = self.metadata.pop('bu')
+
+    @property
+    def metadata(self):
+        out = {}
+        if self.names is not None:
+            out["names"] = self.names
+        if self.zais is not None:
+            out["zai"] = self.zais
+        if self.days is not None:
+            out["days"] = self.days
+        if self.burnup is not None:
+            out["burnup"] = self.burnup
+        return out
 
     def _compare(self, other, lower, upper, _sigma):
 
