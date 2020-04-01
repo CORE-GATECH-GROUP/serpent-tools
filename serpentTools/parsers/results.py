@@ -873,7 +873,7 @@ class ResultsReader(XSReader):
 
         Raises
         ------
-        ImportError:
+        ImportError
             If :term:`scipy` is not installed
 
         See Also

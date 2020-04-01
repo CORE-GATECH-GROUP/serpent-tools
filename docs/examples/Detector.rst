@@ -103,12 +103,14 @@ Here, only three columns, shown as rows for readability, are changing:
 -  column 10: tally column
 -  column 11: errors
 
-Detectors can also be obtained by indexing into the |DetectorReader|, as
+Detectors can also be obtained by indexing into the |DetectorReader| like
+a dictionary.
 
 .. code::
 
-    >>> nf = pin['nodeFlx']
-    >>> assert nf is nodeFlx
+    >>> pin["nodeFlx"] is pin.detectors[nodeFlx"]
+    True
+    >>> bwr.get("spectrum") is bwr.detectors["spectrum"]
 
 Tally data is reshaped corresponding to the bin information provided
 by Serpent. The tally and errors columns are recast into multi-dimensional
@@ -529,6 +531,9 @@ and :attr:`~serpentTools.HexagonalDetector.hexType` attributes.
     >>> hex3.hexPlot();
 
 .. image:: Detector_files/Detector_57_0.png
+
+The ``thresh`` argument can be used to created meshes only above a given value. 
+This works for both Cartesian meshes and hexagonal meshes.
 
 .. _ex-det-lim:
 
