@@ -193,6 +193,7 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'pandas': ('https://pandas.pydata.org/docs', None),
 }
 
 # -- Prepend the following lines to each rst file generated

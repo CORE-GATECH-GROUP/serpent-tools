@@ -11,6 +11,23 @@ Changelog
 0.9.3
 =====
 
+* Depletion data now exposed through attributes like
+  :attr:`~serpentTools.objects.DepletedMaterial.adens` - :pull:`390`
+* Generate a :class:`pandas.DataFrame` with depletion data using
+  :meth:`~serpentTools.objects.DepletedMaterial.toDataFrame`
+  - :pull:`391`
+* Dictionary-like item access and iteration for detector and depletion
+  readers - :pull:`392`
+* Obtain data from :attr:`~serpentTools.ResultsReader.resdata` with
+  :meth:`~serpentTools.ResultsReader.__getitem__` and 
+  :meth:`~serpentTools.ResultsReader.get` - :pull:`392`
+
+.. _v0.9.3-bug:
+
+Bug Fixes
+---------
+
+* Support ``xsplot`` files with branching fractions - :issue:`387`, :pull:`388`
 
 .. _v0.9.3-dep:
 
@@ -39,7 +56,7 @@ Bug Fixes
 * Detector reader can handle sequential detectors with very similar
   names - :issue:`374`.
 * ``serpentTools`` doesn't make any modifications to the logging state,
-  other than introducing package-wide logger.
+  other than introducing package-wide logger - :pull:`380`
 * Colorbars for mesh plots are placed next to their corresponding
   plot, rather than near the last drawn plot - :issue:`372`
 
