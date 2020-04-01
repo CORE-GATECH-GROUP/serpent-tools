@@ -6,10 +6,26 @@
 Changelog
 =========
 
+.. _v0.9.3:
+
+0.9.3
+=====
+
+
+.. _v0.9.3-dep:
+
+Pending Deprecations
+--------------------
+
+* :attr:`serpentTools.DepletionReader.metadata`. Prefer attributes
+  like :attr:`~serpentTools.DepletionReader.zais`
+* :attr:`serpentTools.samplers.DepletionSampler.metadata`. Prefer
+  attributes like :attr:`~serpentTools.samplers.DepletionSampler.zais`
+
 .. _v0.9.2:
 
-0.9.2
-=====
+:release-tag:`0.9.2`
+====================
 
 * Officially support installing under Python 3.8
 * Support for passing threshold values to hexagonal detector plots
