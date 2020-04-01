@@ -515,3 +515,79 @@ class DepletedMaterial(DepletedMaterialBase):
                         xlabel=xlabel, ylabel=ylabel,
                         title=title, legend=legend)
         return ax
+
+    def toDataFrame(self, quantity, names=None, zai=None, index="days"):
+        """Create a pandas DataFrame for a property of interest
+
+        If ``names`` and ``zai`` are not provided, then the isotope
+        names will be used as the columns.
+
+        Parameters
+        ----------
+        quantity : str
+            Either a key in :attr:`data` or the string name of an attribute
+            like ``photonProdRate`` for :attr:`photonProdRate`
+        names : sequence of str, optional
+            Specific isotope names to obtain. Not compatible with ``zai``
+        zai : sequence of int, optional
+            Specific isotope zai to obtain. Not compatible with ``names``
+        index : {"days", "burnup", "step"}, optional
+            What array to use for the index or rows of the DataFrame.
+            Defaults to using :attr:`days`, but ``"burnup"`` can be passed
+            to use :attr:`burnup`, if it is present. The value of ``"step"``
+            will simply create a basic index that starts at 0 and increments
+            by one per row
+
+        Returns
+        -------
+        pandas.DataFrame
+            2D tabulated representation of the requested array. Columns
+            reflect isotopes, rows represent points in time
+
+        """
+        import pandas
+
+        if quantity in {"burnup", "volume"}:
+            raise ValueError("{} does not reflect 2D isotopic data".format(
+                quantity))
+
+        if names is not None and zai is not None:
+            raise ValueError("Cannot pass both isotope names and zai")
+
+        if index == "days":
+            dfIndex = pandas.Index(self.days, name="Time [d]")
+        elif index == "burnup":
+            bu = self.burnup
+            if bu is None:
+                raise AttributeError(
+                    "Burnup not set on material {}".format(self.name))
+            dfIndex = pandas.Index(bu, name="Burnup [MWd/kgU]")
+        elif index == "step":
+            dfIndex = pandas.Index(range(len(self.days)), name="Step")
+        else:
+            raise ValueError(
+                "Index must be days, burnup, or step, not {}".format(index))
+
+        data = self.data.get(quantity)
+
+        if data is None:
+            data = getattr(self, quantity, None)
+        if data is None:
+            raise AttributeError("Quantity {} not present as key in data "
+                                 "or as attribute".format(quantity))
+
+        if names is None:
+            if zai is None:
+                columns = pandas.Index(self.names, name="Isotope")
+                isoslice = slice(None)
+            else:
+                isoslice = self._getRowIndices("zai", zai)
+                columns = pandas.Index(
+                    [self.zai[x] for x in isoslice], name="Isotope ZAI")
+        else:
+            isoslice = self._getRowIndices("names", names)
+            columns = pandas.Index(
+                [self.names[x] for x in isoslice], name="Isotopes")
+
+        return pandas.DataFrame(
+            data[isoslice].T.copy(), index=dfIndex, columns=columns)
