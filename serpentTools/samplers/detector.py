@@ -81,7 +81,7 @@ class DetectorSampler(Sampler):
     def _process(self):
         individualDetectors = defaultdict(list)
         for parser in self:
-            for detName, detector in parser.iterDets():
+            for detName, detector in parser.items():
                 individualDetectors[detName].append(detector)
         for name, detList in individualDetectors.items():
             self.detectors[name] = SampledDetector.fromDetectors(

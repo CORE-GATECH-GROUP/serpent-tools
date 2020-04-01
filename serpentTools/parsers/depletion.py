@@ -108,14 +108,14 @@ class DepPlotMixin(object):
                            "<burnup>, not {}".format(xUnits))
         missing = set()
         ax = ax or pyplot.gca()
-        materials = materials or self.materials.keys()
+        materials = materials or sorted(self)
         labelFmt = labelFmt or '{mat} {iso}'
         for mat in materials:
-            if mat not in self.materials:
+            if mat not in self:
                 missing.add(mat)
                 continue
 
-            ax = self.materials[mat].plot(
+            ax = self[mat].plot(
                 xUnits, yUnits, timePoints, names,
                 zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel,
                 logx=False, logy=False, loglog=False, labelFmt=labelFmt,
@@ -193,6 +193,49 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         """Retrieve a material from :attr:`materials`."""
         return self.materials[name]
 
+    def __len__(self):
+        return len(self.materials)
+
+    def __contains__(self, name):
+        """Check if a material is stored"""
+        return name in self.materials
+
+    def __iter__(self):
+        """Iterate over material names"""
+        return iter(self.materials)
+
+    def keys(self):
+        """Key-view into material dictionary"""
+        return self.materials.keys()
+
+    def values(self):
+        """Values-view into material dictionary"""
+        return self.materials.values()
+
+    def items(self):
+        """Iterate over name, material pairs"""
+        return self.materials.items()
+
+    def get(self, key, default=None):
+        """Retrieve a material from the dictionary if it exists
+
+        Parameters
+        ----------
+        key : str
+            Name of a material that may or may not exist in
+            :attr:`materials`
+        default : optional
+            Item to return if ``key`` isn't found
+
+        Returns
+        -------
+        object
+            A :class:`serpentTools.objects.DepletedMaterial` if
+            it is stored under ``key``. Otherwise return ``default``
+
+        """
+        return self.materials.get(key, default)
+
     def _read(self):
         """Read through the depletion file and store requested data."""
         keys = ['MAT', 'TOT'] if self.settings['processTotal'] else ['MAT']
@@ -207,7 +250,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                     continue
                 self._addMetadata(chunk)
         if self.days is not None:
-            for material in self.materials.values():
+            for material in self.values():
                 material.days = self.days
 
     def _addMetadata(self, chunk):
@@ -247,7 +290,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         if (self.settings['materialVariables']
                 and variable not in self.settings['materialVariables']):
             return
-        if name not in self.materials:
+        if name not in self:
             debug('Adding material {}...'.format(name))
             self.materials[name] = DepletedMaterial(name, self.metadata)
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
@@ -277,12 +320,12 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             error("No materials obtained from {}".format(self.filePath))
             return
 
-        for mKey, mat in self.materials.items():
+        for mKey, mat in self.items():
             assert isinstance(mat, DepletedMaterial), (
                 'Unexpected key {}: {} in materials dictionary'.format(
                     mKey, type(mat))
             )
-        debug('  found {} materials'.format(len(self.materials)))
+        debug('  found {} materials'.format(len(self)))
 
     @property
     def metadata(self):
@@ -353,7 +396,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         commonMats = getKeyMatchingShapes(
             self.materials, other.materials, 'materials')
         similar = (
-            len(self.materials) == len(other.materials) == len(commonMats))
+            len(self) == len(other) == len(commonMats))
 
         for matName in sorted(commonMats):
             myMat = self[matName]
@@ -441,12 +484,13 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
         Raises
         ------
-        ImportError:
+        ImportError
             If :term:`scipy` is not installed
 
         See Also
         --------
         :func:`scipy.io.savemat`
+
         """
         if metadata is not None:
             warn("metadata argument is deprecated. All metadata written",
@@ -480,7 +524,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             if value is not None:
                 data[k.upper() if reconvert else k] = value
 
-        for matName, material in self.materials.items():
+        for matName, material in self.items():
             for varName, varData in material.data.items():
                 data[converter(matName, varName)] = varData
 

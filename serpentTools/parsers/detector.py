@@ -8,11 +8,9 @@ from serpentTools.utils.compare import getKeyMatchingShapes
 from serpentTools.engines import KeywordParser
 from serpentTools.detectors import detectorFactory
 from serpentTools.parsers.base import BaseReader
-from serpentTools.messages import SerpentToolsException
+from serpentTools.messages import SerpentToolsException, deprecated
 
 
-# After py2 removal, subclass this from collections.abc.Mapping
-# Gain full dictionary-like behavior by defining a few methods
 class DetectorReader(BaseReader):
     """
     Parser responsible for reading and working with detector files.
@@ -45,13 +43,44 @@ class DetectorReader(BaseReader):
         return len(self.detectors)
 
     def __contains__(self, key):
+        """Check if a detector ``key`` is stored"""
         return key in self.detectors
 
     def __iter__(self):
+        """Iterate over detector names"""
         return iter(self.detectors)
 
+    def items(self):
+        """Iterate over key, detector pairs"""
+        return self.detectors.items()
+
+    def get(self, key, default=None):
+        """Retrieve a detector from the dictionary if it exists
+
+        Parameters
+        ----------
+        key : str
+            Name of a detector that may or may not exist in
+            :attr:`detectors`
+        default : optional
+            Item to return if ``key`` isn't found
+
+        Returns
+        -------
+        object
+            A :class:`serpentTools.Detector` if
+            it is stored under ``key``. Otherwise return ``default``
+
+        """
+        return self.detectors.get(key, default)
+
+    @deprecated("items")
     def iterDets(self):
-        """Yield name, detector pairs by iterating over :attr:`detectors`."""
+        """Yield name, detector pairs by iterating over :attr:`detectors`.
+
+        .. deprecated:: 0.9.3
+            Use :meth:`items`
+        """
         for key, det in self.detectors.items():
             yield key, det
 
@@ -113,14 +142,13 @@ class DetectorReader(BaseReader):
 
     def _compare(self, other, lower, upper, sigma):
         """Compare two detector readers."""
-        similar = len(self.detectors) == len(other.detectors)
+        similar = len(self) == len(other)
 
         commonKeys = getKeyMatchingShapes(self.detectors, other.detectors,
                                           'detectors')
-        similar &= len(commonKeys) == len(self.detectors)
+        similar &= len(commonKeys) == len(self)
 
-        for detName in sorted(commonKeys):
-            myDetector = self[detName]
+        for detName, myDetector in self.items():
             otherDetector = other[detName]
             similar &= myDetector.compare(otherDetector, lower, upper, sigma)
         return similar
@@ -129,7 +157,7 @@ class DetectorReader(BaseReader):
         """Collect data from all detectors for exporting to matlab"""
         data = {}
 
-        for det in self.detectors.values():
+        for det in self.values():
             data.update(det._gather_matlab(reconvert))
 
         return data
