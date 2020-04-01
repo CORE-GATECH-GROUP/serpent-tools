@@ -140,7 +140,7 @@ class TestGetUniv(TestCase):
 
     def test_allVarsNone(self):
         """Verify that the reader raises error when no time parameters are given""" # noqa
-        with self.assertRaises(SerpentToolsException):
+        with self.assertRaises(ValueError):
             self.reader.getUniv('0', burnup=None, index=None, timeDays=None)
 
     def test_noUnivState(self):
@@ -208,6 +208,15 @@ class TesterCommonResultsReader(TestCase):
         actualKeys = set(self.reader.resdata.keys())
         self.assertSetEqual(expectedKeys, actualKeys)
         assert_array_equal(self.reader.resdata['absKeff'], self.expectedKeff)
+
+        for key, value in self.reader.resdata.items():
+            assert self.reader[key] is value
+            assert self.reader.get(key) is value
+
+        with self.assertRaises(KeyError):
+            self.reader["invalid key"]
+
+        self.assertIs(self.reader.get("invalid key"), None)
 
     def test_burnup(self):
         """Verify the burnup vector is properly stored."""
