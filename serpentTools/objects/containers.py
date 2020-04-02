@@ -711,7 +711,7 @@ class BranchContainer(dict):
             raise TypeError("{} {}".format(key, type(value)))
         if not isinstance(key, UnivTuple):
             key = UnivTuple(*key)
-        dict.__setitem__(self, key, value)
+        super().__setitem__(key, value)
 
     def update(self, other):
         """Update with contents of another BranchContainer"""
@@ -722,7 +722,7 @@ class BranchContainer(dict):
                 raise TypeError("{} {}".format(key, type(univ)))
             temp[UnivTuple(*key)] = univ
 
-        dict.update(self, temp)
+        super().update(temp)
 
     def getUniv(self, univID, burnup=None, index=None, days=None):
         """
