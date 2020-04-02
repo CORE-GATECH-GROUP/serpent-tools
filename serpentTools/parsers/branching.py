@@ -194,10 +194,16 @@ class BranchingReader(XSReader):
         """Iterate over key, branch pairs from :attr:`branches`"""
         return self.branches.items()
 
+    @deprecated("items")
     def iterBranches(self):
-        """Iterate over branches yielding paired branch IDs and containers"""
-        for bID, b in self.branches.items():
-            yield bID, b
+        """Iterate over branches yielding paired branch IDs and containers
+
+        .. deprecated:: 0.9.3
+
+            Use :meth:`items` instead
+
+        """
+        return self.items()
 
     def _precheck(self):
         """Total number of branches and check for uncertainties"""
