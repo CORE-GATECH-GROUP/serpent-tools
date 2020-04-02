@@ -132,7 +132,20 @@ class DepletedMaterialBase(NamedObject):
         return self.data[item]
 
     def get(self, key, default=None):
-        """Retrive a value from the dictionary, or default if not found"""
+        """Retrieve a value from the dictionary, or default if not found
+
+        Parameters
+        ----------
+        key : str
+            Name of a quantity that may or may not exist in :attr:`data`
+        default : object, optional
+            Item to return if ``key`` is not found
+
+        Returns
+        -------
+        object
+            :class:`numpy.ndarray` if ``key`` was found, otherwise ``default``
+        """
         return self.data.get(key, default)
 
     @property

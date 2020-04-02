@@ -84,10 +84,9 @@ class DepPlotMixin(object):
 
         See Also
         --------
-        * :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
-        * :py:func:`matplotlib.pyplot.plot`
-        * :py:meth:`str.format` - used for formatting labels
-        * :py:func:`~serpentTools.objects.materials.DepletedMaterial.plot`
+        * :func:`~serpentTools.objects.DepletedMaterial.getValues`
+        * :meth:`str.format` - used for formatting labels
+        * :func:`~serpentTools.objects.DepletedMaterial.plot`
 
         Raises
         ------
@@ -95,6 +94,7 @@ class DepPlotMixin(object):
             If x axis units are not ``'days'`` nor ``'burnup'``
         SerpentToolsException
             If the materials dictionary does not contain any items
+
         """
         if yUnits is None:
             yUnits = xUnits

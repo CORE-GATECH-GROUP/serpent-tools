@@ -65,16 +65,16 @@ class HistoryReader(BaseReader):
 
     Parameters
     ----------
-    filePath: str
+    filePath : str
         path pointing towards the file to be read
 
     Attributes
     ----------
-    arrays: dict
+    arrays : dict
         Dictionary of all the arrays produced in the file.
         These arrays do not have the index column that is presented
         in the file.
-    numInactive: int
+    numInactive : int
         Number of inactive cycles used in this calculation
 
     """

@@ -183,8 +183,9 @@ autosummary_generate = True
 
 autodoc_default_options = {
     'members': True,
-    'special-members': True,
+    'special-members': "__len__,__iter__,__contains__,__getitem__,__setitem__",
     'exclude-members': '__init__',
+    'inherited-members': "serpentTools.objects.base.NamedObject,serpentTools.objects.base.BaseObject",
 }
 
 # -- Links to external documentation
@@ -193,6 +194,7 @@ intersphinx_mapping = {
     'matplotlib': ('https://matplotlib.org', None),
     'numpy': ('https://docs.scipy.org/doc/numpy/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'pandas': ('https://pandas.pydata.org/docs', None),
 }
 
 # -- Prepend the following lines to each rst file generated
