@@ -311,22 +311,23 @@ class HomogUniv(NamedObject):
             raise TypeError('The variable uncertainty has type %s.\n ...'
                             'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
-        setter = self._lookup(variableName, False)
-        if variableName not in setter:
+        location = self._lookup(variableName, False)
+        x = location.get(variableName)
+        if x is None:
             raise KeyError(
                 "Variable {} absent from expected value dictionary".format(
                     variableName))
-        x = setter.get(variableName)
         # 3. Return the value of the variable
         if not uncertainty:
             return x
-        setter = self._lookup(variableName, True)
-        if variableName not in setter:
+        location = self._lookup(variableName, True)
+        unc = location.get(variableName)
+        if unc is None:
             raise KeyError(
                 "Variable {} absent from uncertainty dictionary".format(
                     variableName))
 
-        return x, setter[variableName]
+        return x, unc
 
     def __getitem__(self, gcname):
         """
@@ -352,11 +353,11 @@ class HomogUniv(NamedObject):
         self._lookup(gckey, False)[gckey] = gcvalue
 
     def _lookup(self, variableName, uncertainty):
-        if 'inf' == variableName[:3]:
+        if variableName.startswith("inf"):
             if uncertainty:
                 return self.infUnc
             return self.infExp
-        elif "b1" == variableName[:2]:
+        elif variableName.startswith("b1"):
             if uncertainty:
                 return self.b1Unc
             return self.b1Exp
