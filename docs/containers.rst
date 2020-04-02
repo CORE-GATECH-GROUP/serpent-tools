@@ -64,6 +64,7 @@ Supporting Classes
     BranchContainer
     DepletedMaterial
     HomogUniv
+    UnivTuple
     XSData
 
 .. _api-xs:
