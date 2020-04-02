@@ -5,7 +5,7 @@ from numpy import array
 from serpentTools.utils import splitValsUncs
 from serpentTools.objects import BranchContainer, UnivTuple, HomogUniv
 from serpentTools.parsers.base import XSReader
-from serpentTools.messages import debug, error
+from serpentTools.messages import debug, error, deprecated
 
 
 class BranchingReader(XSReader):
@@ -14,12 +14,12 @@ class BranchingReader(XSReader):
 
     Parameters
     ----------
-    filePath: str
+    filePath : str
         path to the depletion file
 
     Attributes
     ----------
-    branches: dict
+    branches : dict
         Dictionary of branch names and their corresponding
         :class:`~serpentTools.objects.BranchContainer` objects
     """
@@ -37,6 +37,46 @@ class BranchingReader(XSReader):
     def hasUncs(self):
         """boolean if uncertainties are present in the file"""
         return self._hasUncs
+
+    def __len__(self):
+        """Number of branches stored on the reader"""
+        return len(self.branches)
+
+    def __contains__(self, key):
+        """Check if a branch is stored on the reader
+
+        Parameters
+        ----------
+        key : str or iterable of str
+            Name of the branch as defined in the Serpent input file
+
+        Returns
+        -------
+        bool
+            Flag indicating the presence of ``key``
+
+        """
+        return key in self.branches
+
+    def __getitem__(self, key):
+        """Return a specific branch from :attr:`branches`
+
+        Parameters
+        ----------
+        key : str or iterable of str
+            Branch name as defined in Serpent input
+
+        Returns
+        -------
+        serpentTools.objects.BranchContainer
+            Branch corresponding to ``key``
+
+        """
+        return self.branches[key]
+
+    def __iter__(self):
+        """Iterate over all branch names"""
+        return iter(self.branches)
 
     def _read(self):
         """Read the branching file and store the coefficients."""
@@ -130,6 +170,29 @@ class BranchingReader(XSReader):
                     univ.addData(varName, array(uncs), uncertainty=True)
                 else:
                     univ.addData(varName, array(varValues), uncertainty=False)
+
+    def get(self, key, default=None):
+        """Return a branch that may or may not exist in :attr:`branches`
+
+        Parameters
+        ----------
+        key : str or iterable of str
+            Branch name as defined in Serpent input
+        default : object, optional
+            Item to return if ``key`` is not found
+
+        Returns
+        -------
+        object
+            :class:`~serpentTools.objects.BranchContainer` if
+            ``key`` is found. ``default`` if not
+
+        """
+        return self.branches.get(key, default)
+
+    def items(self):
+        """Iterate over key, branch pairs from :attr:`branches`"""
+        return self.branches.items()
 
     def iterBranches(self):
         """Iterate over branches yielding paired branch IDs and containers"""
