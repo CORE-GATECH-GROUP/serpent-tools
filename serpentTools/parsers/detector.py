@@ -17,15 +17,15 @@ class DetectorReader(BaseReader):
 
     Parameters
     ----------
-    filePath: str
+    filePath : str
         path to the depletion file
 
     Attributes
     ----------
     detectors : dict
         Dictionary where key, value pairs correspond to detector names
-        and their respective :class:`~serpentTools.objects.detector.Detector`
-        instances
+        and their respective :class:`~serpentTools.Detector` instances
+
     """
 
     # Update this if new detector grids are introduced
@@ -40,6 +40,7 @@ class DetectorReader(BaseReader):
         return self.detectors[name]
 
     def __len__(self):
+        """Number of detectors stored"""
         return len(self.detectors)
 
     def __contains__(self, key):
