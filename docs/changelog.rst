@@ -16,8 +16,8 @@ Changelog
 * Generate a :class:`pandas.DataFrame` with depletion data using
   :meth:`~serpentTools.objects.DepletedMaterial.toDataFrame`
   - :pull:`391`
-* Dictionary-like item access and iteration for detector and depletion
-  readers - :pull:`392`
+* Dictionary-like item access and iteration for branching, detector,
+  history, and depletion readers - :pull:`392`, :pull:`395`
 * Obtain data from :attr:`~serpentTools.ResultsReader.resdata` with
   :meth:`~serpentTools.ResultsReader.__getitem__` and 
   :meth:`~serpentTools.ResultsReader.get` - :pull:`392`
@@ -38,6 +38,8 @@ Pending Deprecations
   like :attr:`~serpentTools.DepletionReader.zais`
 * :attr:`serpentTools.samplers.DepletionSampler.metadata`. Prefer
   attributes like :attr:`~serpentTools.samplers.DepletionSampler.zais`
+* :meth:`serpentTools.BranchingReader.iterBranches`. Prefer
+  :meth:`~serpentTools.BranchingReader.items`
 
 .. _v0.9.2:
 
