@@ -83,6 +83,22 @@ class HistoryReader(BaseReader):
         self.arrays = {}
         self.numInactive = None
 
+    def __getitem__(self, key):
+        """Return an item from :attr:`arrays`"""
+        return self.arrays[key]
+
+    def __contains__(self, key):
+        """Return ``True`` if key is in :attr:`arrays`, otherwise ``False``"""
+        return key in self.arrays
+
+    def __len__(self):
+        """Return number of entries in :attr:`arrays`."""
+        return len(self.arrays)
+
+    def __iter__(self):
+        """Iterate over keys in :attr:`arrays`"""
+        return iter(self.arrays)
+
     def _precheck(self):
         with open(self.filePath) as check:
             for line in check:
@@ -97,8 +113,9 @@ class HistoryReader(BaseReader):
         if self.numInactive is None:
             error('Unable to acertain the number of inactive cycles')
 
-    def __getitem__(self, key):
-        return self.arrays[key]
+    def get(self, key, default=None):
+        """Return an array or default if not found"""
+        return self.arrays.get(key, default)
 
     def _read(self):
         curKey = None
@@ -106,7 +123,7 @@ class HistoryReader(BaseReader):
         cycles = None
         indx = 0
         with open(self.filePath) as out:
-            for lineNo, line in enumerate(out):
+            for line in out:
                 if not line.strip():
                     continue
                 if '=' in line:
@@ -140,22 +157,9 @@ class HistoryReader(BaseReader):
             out[converter(key)] = value
         return out
 
-    def __contains__(self, key):
-        """Return ``True`` if key is in :attr:`arrays`, otherwise ``False``"""
-        return key in self.arrays
-
-    def __len__(self):
-        """Return number of entries in :attr:`arrays`."""
-        return len(self.arrays)
-
     def items(self):
         """Iterate over ``(key, value)`` pairs from :attr:`arrays`"""
-        for key, value in self.arrays.items():
-            yield key, value
-
-    def __iter__(self):
-        """Iterate over keys in :attr:`arrays`"""
-        return self.arrays.__iter__()
+        return self.arrays.items()
 
     @staticmethod
     def ioConvertName(name):
