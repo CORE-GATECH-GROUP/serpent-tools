@@ -17,33 +17,41 @@ def referenceMaterial(referenceDepReader):
 @pytest.mark.skipif(sys.version_info < (3, 6), reason="pandas requires 3.6+")
 @pytest.mark.parametrize("quantity", ["adens", "ingTox", "inhTox"])
 def test_toDataFrame(referenceMaterial, quantity):
-    adensFrame = referenceMaterial.toDataFrame(quantity)
+    fullFrame = referenceMaterial.toDataFrame(quantity)
+
     assert numpy.array_equal(
-        adensFrame.columns.values, referenceMaterial.names
+        fullFrame.columns.values, referenceMaterial.names
     )
-    assert numpy.array_equal(adensFrame.index.values, referenceMaterial.days)
+    assert numpy.array_equal(fullFrame.index.values, referenceMaterial.days)
     assert numpy.array_equal(
-        adensFrame.values, referenceMaterial.data[quantity].T
+        fullFrame.values, referenceMaterial.data[quantity].T
     )
+    assert fullFrame.index.name == "Time [d]"
+    assert fullFrame.columns.name == "Isotope"
 
     reference = referenceMaterial.getValues(
         "days", quantity, names=["U235", "Xe135", "Pu239"]
     )
-    frame0 = referenceMaterial.toDataFrame(
+    namedBurnup = referenceMaterial.toDataFrame(
         quantity, names=["U235", "Xe135", "Pu239"], index="burnup"
     )
-    frame1 = referenceMaterial.toDataFrame(
+    zaiSteps = referenceMaterial.toDataFrame(
         quantity, zai=[922350, 541350, 942390], index="step"
     )
 
-    assert numpy.array_equal(frame0.values, reference.T)
-    assert numpy.array_equal(frame0.values, frame1.values)
-    assert numpy.array_equal(frame0.index.values, referenceMaterial.burnup)
-    assert numpy.array_equal(frame0.columns.values, ["U235", "Xe135", "Pu239"])
-    assert numpy.array_equal(frame1.columns.values, [922350, 541350, 942390])
+    assert numpy.array_equal(namedBurnup.values, reference.T)
+    assert numpy.array_equal(namedBurnup.values, zaiSteps.values)
+    assert numpy.array_equal(namedBurnup.index.values, referenceMaterial.burnup)
+    assert numpy.array_equal(namedBurnup.columns.values, ["U235", "Xe135", "Pu239"])
+    assert numpy.array_equal(zaiSteps.columns.values, [922350, 541350, 942390])
     assert numpy.array_equal(
-        frame1.index.values, range(len(referenceMaterial.days))
+        zaiSteps.index.values, range(len(referenceMaterial.days))
     )
+    # Don't check the formatting of units, nor start of ZAI to prevent against
+    # future changes
+    assert namedBurnup.index.name.startswith("Burnup")
+    assert zaiSteps.columns.name.endswith("ZAI")
+    assert zaiSteps.index.name.endswith("Step")
 
 
 @pytest.mark.skipif(sys.version_info < (3, 6), reason="pandas requires 3.6+")
