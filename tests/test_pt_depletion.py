@@ -33,10 +33,10 @@ def test_toDataFrame(referenceMaterial, quantity):
         "days", quantity, names=["U235", "Xe135", "Pu239"]
     )
     namedBurnup = referenceMaterial.toDataFrame(
-        quantity, names=["U235", "Xe135", "Pu239"], index="burnup"
+        quantity, names=["U235", "Xe135", "Pu239"], time="burnup"
     )
     zaiSteps = referenceMaterial.toDataFrame(
-        quantity, zai=[922350, 541350, 942390], index="step"
+        quantity, zai=[922350, 541350, 942390], time="step"
     )
 
     assert numpy.array_equal(namedBurnup.values, reference.T)
