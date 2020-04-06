@@ -1,4 +1,4 @@
-.. _data-model:
+.. _data-model-v0:
 
 ==========
 Data Model

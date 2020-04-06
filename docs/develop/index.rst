@@ -13,7 +13,6 @@ without any loss of comprehension.
     :caption: Contents:
 
     contributing.rst
-    datamodel.rst
     documentation.rst
     checklist.rst
     git.rst
@@ -24,3 +23,4 @@ without any loss of comprehension.
     engines.rst
     serpentVersions.rst
     comparisons.rst
+    old-data-model.rst
