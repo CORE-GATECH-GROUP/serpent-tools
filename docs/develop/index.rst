@@ -13,6 +13,7 @@ without any loss of comprehension.
     :caption: Contents:
 
     contributing.rst
+    datamodel.rst
     documentation.rst
     checklist.rst
     git.rst
