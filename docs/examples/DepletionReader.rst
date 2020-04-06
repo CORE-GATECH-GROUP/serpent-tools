@@ -259,6 +259,38 @@ with ``bglass`` followed by at least one integer.
     >>> bglass.data.keys()
     dict_keys(['adens'])
 
+Integration with ``pandas``
+---------------------------
+
+If you have the :mod:`pandas` package installed, you can use
+the :meth:`~serpentTools.objects.DepletedMaterial.toDataFrame` method
+to create tabulated data. The method will retrieve data for all isotopes
+unless the ``names`` or ``zai`` arguments are provided. For compactness,
+only a few isotopes will be retrieved here.
+
+.. code::
+
+    >>> fuel.toDataFrame("adens", names=["U235", "Pu239", "Xe135"]).head()
+    Isotopes U235 Pu239 Xe135
+    Time [d]      
+    0.0 0.000558 0.000000e+00 0.000000e+00
+    0.5 0.000558 6.374580e-09 2.435910e-09
+    1.0 0.000558 2.590310e-08 4.037960e-09
+    1.5 0.000558 5.728820e-08 4.620920e-09
+    2.0 0.000557 9.927160e-08 4.789480e-09
+
+Arguments can also be used to control the time values in the index and
+column structure::
+
+    >>> fuel.toDataFrame("adens", zai=[922350, 942390, 541350], time="burnup")
+    Isotope ZAI 922350 942390 541350
+    Burnup [MWd/kgU]
+    0.0 0.000558 0.000000e+00 0.000000e+00
+    0.5 0.000558 6.374580e-09 2.435910e-09
+    1.0 0.000558 2.590310e-08 4.037960e-09
+    1.5 0.000558 5.728820e-08 4.620920e-09
+    2.0 0.000557 9.927160e-08 4.789480e-09
+
 Conclusion
 ----------
 

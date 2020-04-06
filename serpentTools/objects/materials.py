@@ -529,7 +529,7 @@ class DepletedMaterial(DepletedMaterialBase):
                         title=title, legend=legend)
         return ax
 
-    def toDataFrame(self, quantity, names=None, zai=None, index="days"):
+    def toDataFrame(self, quantity, names=None, zai=None, time="days", multiIndex=False):
         """Create a pandas DataFrame for a property of interest
 
         If ``names`` and ``zai`` are not provided, then the isotope
@@ -544,7 +544,7 @@ class DepletedMaterial(DepletedMaterialBase):
             Specific isotope names to obtain. Not compatible with ``zai``
         zai : sequence of int, optional
             Specific isotope zai to obtain. Not compatible with ``names``
-        index : {"days", "burnup", "step"}, optional
+        time : {"days", "burnup", "step"}, optional
             What array to use for the index or rows of the DataFrame.
             Defaults to using :attr:`days`, but ``"burnup"`` can be passed
             to use :attr:`burnup`, if it is present. The value of ``"step"``
@@ -567,19 +567,19 @@ class DepletedMaterial(DepletedMaterialBase):
         if names is not None and zai is not None:
             raise ValueError("Cannot pass both isotope names and zai")
 
-        if index == "days":
-            dfIndex = pandas.Index(self.days, name="Time [d]")
-        elif index == "burnup":
+        if time == "days":
+            timeIndex = pandas.Index(self.days, name="Time [d]")
+        elif time == "burnup":
             bu = self.burnup
             if bu is None:
                 raise AttributeError(
                     "Burnup not set on material {}".format(self.name))
-            dfIndex = pandas.Index(bu, name="Burnup [MWd/kgU]")
-        elif index == "step":
-            dfIndex = pandas.Index(range(len(self.days)), name="Step")
+            timeIndex = pandas.Index(bu, name="Burnup [MWd/kgU]")
+        elif time == "step":
+            timeIndex = pandas.Index(range(len(self.days)), name="Step")
         else:
             raise ValueError(
-                "Index must be days, burnup, or step, not {}".format(index))
+                "Index must be days, burnup, or step, not {}".format(time))
 
         data = self.data.get(quantity)
 
@@ -603,4 +603,4 @@ class DepletedMaterial(DepletedMaterialBase):
                 [self.names[x] for x in isoslice], name="Isotopes")
 
         return pandas.DataFrame(
-            data[isoslice].T.copy(), index=dfIndex, columns=columns)
+            data[isoslice].T.copy(), index=timeIndex, columns=columns)
