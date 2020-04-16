@@ -1323,7 +1323,7 @@ class HexagonalDetector(Detector):
         radius = self.pitch / sqrt(3)
         rotation = 0 if self.hexType == 2 else (pi / 2)
 
-        for pos, (xy, val) in enumerate(zip(coords, data.flat)):
+        for xy, val in zip(coords, data.flat):
             if val <= thresh:
                 continue
             values.append(val)
