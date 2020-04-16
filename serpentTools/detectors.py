@@ -999,8 +999,8 @@ class CartesianDetector(Detector):
         * :meth:`slice`
         * :func:`matplotlib.pyplot.pcolormesh`
         """
-        Detector.meshPlot(
-            self, xdim=xdim, ydim=ydim, what=what, fixed=fixed, ax=ax,
+        return super().meshPlot(
+            xdim=xdim, ydim=ydim, what=what, fixed=fixed, ax=ax,
             cmap=cmap, cbarLabel=cbarLabel, logColor=logColor, xlabel=xlabel,
             ylabel=ylabel, logx=logx, logy=logy, loglog=loglog,
             title=title, thresh=thresh, **kwargs)
