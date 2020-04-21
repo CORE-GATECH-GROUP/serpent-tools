@@ -13,7 +13,7 @@ Glossary
         :term:`Miniconda`. For more information, see
         `<https://www.anaconda.com/>`_.
 
-    Anaconda prompt
+    Anaconda Prompt
         Modified Windows prompt to be used with the :term:`Anaconda` python
         distrubution. Reconfigures python paths to point to packages
         installed via :term:`conda`
