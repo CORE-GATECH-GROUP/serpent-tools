@@ -55,14 +55,13 @@ __all__ = (
 
 UnivTuple = namedtuple("UnivTuple", ["universe", "burnup", "step", "days"])
 
-try:
-    UnivTuple.__doc__ = """Convenient identifier for universes
+UnivTuple.__doc__ = """Convenient identifier for universes
 
 Properties can be accessed by position or by attribute name.
 The latter is preferable as it will be consistent across
 potential API changes
 
-Attributes
+Parameters
 ----------
 universe : str
     Universe from Serpent input
@@ -83,9 +82,6 @@ Example
 True
 
 """
-except AttributeError:
-    # Can't set docs for namedtuples in PY2
-    pass
 
 
 class HomogUniv(NamedObject):
