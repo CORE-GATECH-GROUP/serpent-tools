@@ -80,6 +80,20 @@ necessary. The implementation should support the following::
 This should save time when reading multiple files of the same type, especially
 if filtering is used in all cases.
 
+Supported file inputs
+---------------------
+
+When possible, readers should support:
+
+    * string file names
+    * :class:`pathlib.Path`
+    * Generic :class:`io.TextIOBase` 
+    * Classes fulfilling the :term:`file object` API (``read``, ``readline``, etc.)
+
+This will improve integration with the python ecosystem, but also support
+reading in-memory streams like :class:`io.StringIO` for testing or
+:class:`zipfile.ZipFile` for reading compressed files.
+
 Generic Containers
 ------------------
 
