@@ -200,3 +200,9 @@ should be made and pushed.
 Work should be done to merge the ``next`` module as the main parsing and
 analysis library. This is the primary goal of the following major release
 ``0.11.0``, following a similar beta and release candidate period.
+The new features should still exist inside ``0.11.0`` in the
+``serpentTools.next`` module, but users and developers should be alerted
+that these features will be removed, favoring importing from the main
+``serpentTools`` API.
+
+Version ``0.12.0`` will fully remove the ``serpentTools.next`` module.
