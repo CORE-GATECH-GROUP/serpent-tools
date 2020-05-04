@@ -1,4 +1,6 @@
 """Holds cross section data pertaining to Serpent xsplot output."""
+from collections.abc import Mapping
+
 import numpy as np
 from matplotlib import pyplot
 
@@ -292,12 +294,9 @@ class XSData(NamedObject):
     @magicPlotDocDecorator
     def plot(self, mts='all', ax=None, loglog=False, xlabel=None, ylabel=None,
              logx=True, logy=False, title=None, legend=None, ncol=1,
-             **kwargs):
+             labels=None, **kwargs):
         """
-        Return a matplotlib figure for plotting XS.
-
-        mts should be a list of the desired MT numbers to plot for this
-        XS. Units should automatically be fixed between micro and macro XS.
+        Plot XS corresponding to their MTs.
 
         Parameters
         ----------
@@ -314,7 +313,14 @@ class XSData(NamedObject):
         {title}
         {legend}
         {ncol}
-        {kwargs} :py:func:`matplotlib.pyplot.plot`
+        labels : str or list of str or dict {int: str}
+            Labels to apply to the plot. Defaults to labeling by MT
+            description.  If a string, then ``mts`` must be a single
+            integer. If a list of strings, each label will be applied
+            to each entry in ``mts``. If a dictionary, keys must be
+            mts and their labels as values. The number of keys do
+            not have to align with the number of MTs
+        {kwargs} :func:`matplotlib.pyplot.plot`
 
         Returns
         -------
@@ -327,6 +333,44 @@ class XSData(NamedObject):
 
         """
 
+        mts = self._processPlotMts(mts)
+
+        userlabel = kwargs.pop("label", None)
+        if userlabel is not None:
+            # Allow label to be passed for single MT plots
+            # Little easier to remember and it makes more sense.
+            # Don't allow mixed label / labels arguments
+            if labels is not None:
+                raise ValueError(
+                    "Passing label and labels is not allowed. Prefer labels")
+            if len(mts) == 1:
+                labels = [userlabel]
+            else:
+                raise ValueError("Use labels when plotting multiple MTs")
+        else:
+            labels = self._processPlotLabels(mts, labels)
+
+        ax = ax or pyplot.gca()
+
+        kwargs.setdefault("drawstyle", "steps")
+        x = self.metadata['egrid']
+        for mt, label in zip(mts, labels):
+            y = self[mt]
+            ax.plot(x, y, label=label, **kwargs)
+
+        title = title or '{} cross section{}'.format(
+            self.name, 's' if len(mts) > 1 else '')
+        xlabel = xlabel or "Energy [MeV]"
+
+        ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso
+                            else 'cm$^{-1}$'))
+        ax = formatPlot(
+            ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
+            legend=legend, title=title, xlabel=xlabel, ylabel=ylabel)
+
+        return ax
+
+    def _processPlotMts(self, mts):
         if mts == 'all':
             mts = self.MT
         elif isinstance(mts, int):
@@ -344,28 +388,29 @@ class XSData(NamedObject):
 
         for mt in mts:
             if mt not in self.MT:
-                error("{} not in collected MT numbers, {}".format(mt, self.MT))
+                raise ValueError(
+                    "{} not in collected MT numbers, {}".format(mt, self.MT))
+        return mts
 
-        ax = ax or pyplot.gca()
-
-        x = self.metadata['egrid']
-        for mt in mts:
-            for i, MT in enumerate(self.MT):
-                if mt == MT:
-                    y = self.xsdata[:, i]
-                    ax.plot(x, y, drawstyle='steps', label=self.MTdescrip[i])
-
-        title = title or '{} cross section{}'.format(
-            self.name, 's' if len(mts) > 1 else '')
-        xlabel = xlabel or "Energy [MeV]"
-
-        ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso
-                            else 'cm$^{-1}$'))
-        ax = formatPlot(
-            ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
-            legend=legend, title=title, xlabel=xlabel, ylabel=ylabel)
-
-        return ax
+    def _processPlotLabels(self, mts, labels):
+        if isinstance(labels, str):
+            if len(mts) != 1:
+                raise ValueError(
+                    "Labels and mts do not align: {} mts, 1 label".format(
+                        len(mts)))
+            return [labels]
+        if labels is None:
+            return [self.describe(mt) for mt in mts]
+        if isinstance(labels, Mapping):
+            out = []
+            for i, mt in enumerate(mts):
+                out.append(labels.get(mt, self.MTdescrip[i]))
+            return out
+        if len(mts) != len(labels):
+            raise ValueError(
+                "Labels and mts do not align: {} mts, {} labels".format(
+                    len(mts), len(labels)))
+        return labels
 
     def showMT(self, retstring=False):
         """Create a pretty-print style string of the MT values avaialable
