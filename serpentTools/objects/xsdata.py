@@ -89,6 +89,10 @@ class XSData(NamedObject):
         # whether nu data present for fissionables
         self.hasNuData = False
 
+    def __len__(self):
+        """Number of reactions stored"""
+        return len(self.MT)
+
     def __getitem__(self, mt):
         """Return data corresponding to a given mt
 
