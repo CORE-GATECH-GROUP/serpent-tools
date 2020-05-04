@@ -25,145 +25,37 @@ These can be used to reduce the effort in creating a full manual,
 and can be viewed through python consoles to give the user insight
 into what is done, what is required, and what is returned from a
 particular object. This project uses
-`numpy style docstrings <https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt#docstring-standard>`_,
-examples of which are given below
+`numpydoc style docstrings <https://numpydoc.readthedocs.io/en/latest/format.html>`_::
 
-Functions and Methods
----------------------
-
-Below is the :py:func:`~serpentTools.parsers.depmtx` function annotated using
-short and longer docstrings::
-
-    def depmtx(filePath):
-        """Return t, no, zai, a, and n1 values from the depmtx file."""
-
-or::
-
-    def depmtx(filePath):
-        """
-        Read the contents of the ``depmtx`` file and return contents
-
-        .. note::
-
-            If ``scipy`` is not installed, matrix ``A`` will be full.
-            This can cause some warnings or errors if sparse or
-            non-sparse solvers are used.
+    def foo(a, b=None):
+        """Simple one line docstring
 
         Parameters
         ----------
-        fileP: str
-            Path to depletion matrix file
+        a : float
+            Some value
+        b : bool, optional
+            A flag
 
         Returns
         -------
-        t: float
-            Length of time
-        n0: numpy.ndarray
-            Initial isotopic vector
-        zai: numpy.array
-            String identifiers for each isotope in ``n0`` and ``n1``
-        a: numpy.array or scipy.sparse.csc_matrix
-            Decay matrix. Will be sparse if scipy is installed
-        n1: numpy.array
-            Final isotopic vector
+        returnType
+            Description of the return type
+
         """
-
-Both docstrings indicate what the function does, and what is returned.
-The latter, while more verbose, is preferred in most cases, for the following
-reasons. First, far more information is yielded to the reader. Second,
-the types of the inputs and outputs are given and clear. Some IDEs can obtain
-the expected types from the docstrings and inform the user if they are using
-an incorrect type.
-
-More content can be added to the docstring, including
-
-* Raises - Errors/warnings raised by this object
-* See Also - follow up information that may be useful
-* Yields - If this object is a generator. Similar to Returns
-
-
-.. note::
-
-    For multi-line docstrings, like the longer ``depmtx`` above,
-    Leave a full blank line between the first line of the docstring,
-    the summary, and the rest of the documentation
-
-Classes
--------
-
-Classes can have a more lengthy docstring, as they often include
-attributes to which the class has access. Below is an example of the
-docstring for the :py:class:`~serpentTools.parsers.DepletionReader`::
-
-    """
-    Parser responsible for reading and working with depletion files.
-
-    Parameters
-    ----------
-    filePath: str
-        path to the depletion file
-
-    Attributes
-    ----------
-    materials: dict
-        Dictionary with material names as keys and the corresponding
-        :py:class:`~serpentTools.objects.DepletedMaterial` class
-        for that material as values
-    metadata: dict
-        Dictionary with file-wide data names as keys and the
-        corresponding dataas values, e.g. 'zai': [list of zai numbers]
-    settings: dict
-        names and values of the settings used to control operations
-        of this reader
-
-    """
-
-Class docstrings can be added to the class signature, or to the ``__init__``
-method, as::
-
-    class Demo(object):
-        """
-        Demonstration class
-
-        Parameters
-        ----------
-        x: str
-            Just a string
-
-        Attributes
-        ----------
-        capX: str
-            Capitalized x
-        """
-
-or::
-
-    def __init__(self, x):
-        """
-        Demonstration class
-
-        Parameters
-        ----------
-        x: str
-            Just a string
-
-        Attributes
-        ----------
-        capX: str
-            Capitalized x
-        """
-
-.. _docs-deprecate:
 
 Deprecation
 -----------
 
 If an object is deprecated or will be modified in future versions, then the
-:py:func:`~serpentTools.messages.deprecated` and
-:py:func:`~serpentTools.messages.willChange` decorators should be applied to
+:func:`~serpentTools.messages.deprecated` and
+:func:`~serpentTools.messages.willChange` decorators should be applied to
 the object, and a note should be added to the docstring indicating as much.
+This can be done with the sphinx `deprecated 
+<https://www.sphinx-doc.org/en/master/usage/restructuredtext/
+directives.html#directive-deprecated>`_ directive.
 
-.. _jupyterExamples:
+.. _docs-jupyter-examples:
 
 Examples
 ========
@@ -249,10 +141,10 @@ This creates direct links from your text to the object declaration in our
 people to get more detail on whatever you are referencing, powered by the 
 ``docstrings`` on that object. Two such examples are given below:
 
-* ``:py:class:`serpentTools.parsers.depletion.DepletionReader```
-  becomes :py:class:`serpentTools.parsers.depletion.DepletionReader`
-* ``:py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot``` is shortened to
-  :py:meth:`~serpentTools.objects.materials.DepletedMaterial.plot`
+* ``:class:`serpentTools.DepletionReader```
+  becomes :class:`serpentTools.DepletionReader`
+* ``:meth:`~serpentTools.objects.DepletedMaterial.plot``` is shortened to
+  :py:meth:`~serpentTools.objects.DepletedMaterial.plot`
 
 .. _docs-verify:
 
@@ -274,7 +166,6 @@ look.
 
     If there is an issue with rendering your example, we will likely call upon you to fix these
     issues.
-
 
 .. note::
 
@@ -299,7 +190,7 @@ This is most simply done by calling ``.. autoclass::`` or ``..autofunction::`` l
 
     .. autofunction:: serpentTools.plot.plot
 
-    .. autoclass:: serpentTools.parsers.results.ResultsReader
+    .. autoclass:: serpentTools.ResultsReader
 
 For new readers, those should be included in their own file, such as ``docs/api/myNewReader.rst``, 
 which can be as bare as::
@@ -315,4 +206,3 @@ Proper documentation of the class or function requires thorough and concise
 documentation of all attributes, class methods, and construction arguments.
 Follow the above guides, such as :ref:`docstrings`, and this process *should*
 go smoothly.
-

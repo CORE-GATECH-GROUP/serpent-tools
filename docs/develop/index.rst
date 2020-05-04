@@ -24,3 +24,4 @@ without any loss of comprehension.
     engines.rst
     serpentVersions.rst
     comparisons.rst
+    old-data-model.rst
