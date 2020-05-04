@@ -83,6 +83,62 @@ class XSData(NamedObject):
         # whether nu data present for fissionables
         self.hasNuData = False
 
+    def __getitem__(self, mt):
+        """Return data corresponding to a given mt
+
+        Parameters
+        ----------
+        mt : int
+            Integer MT reaction number
+
+        Returns
+        -------
+        numpy.ndarray
+            Cross section data for this mt
+
+        Raises
+        ------
+        AttributeError
+            If :attr:`xsdata` is empty
+        KeyError
+            If ``mt`` not found in :attr:`MT`
+
+        """
+        if self.xsdata is None:
+            raise AttributeError("xsdata not populated")
+        try:
+            index = self.MT.index(mt)
+        except ValueError as ve:
+            raise KeyError(mt) from ve
+        return self.xsdata[:, index]
+
+    def get(self, mt, default=None):
+        """Return data corresponding to a given mt or a default
+
+        Parameters
+        ----------
+        mt : int
+            Integer MT reaction number
+        default : object
+            Object to be returned in ``mt`` is not found
+
+        Returns
+        -------
+        object
+            :class:`numpy.ndarray` if ``mt`` is found. Otherwise
+            ``default``
+
+        Raises
+        ------
+        AttributeError
+            If :attr:`xsdata` is empty
+
+        """
+        try:
+            return self[mt]
+        except KeyError:
+            return default
+
     @staticmethod
     def negativeMTDescription(mt):
         """Descriptions for Serpent negative MT numbers
