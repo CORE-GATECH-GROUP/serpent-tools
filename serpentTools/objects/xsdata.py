@@ -39,8 +39,11 @@ class XSData(NamedObject):
         Array of xs data. Rows correspond to items in :attr:`MT`
     hasNuData : bool
         True if nu data is present
+    energies : numpy.ndarray
+        Energy grid [MeV]
     metadata : dict
-        File-wide metadata from the reader.
+        File-wide metadata from the reader. Alias for accessing
+        :attr:`energies`. Will be removed in the future
 
     """
 
@@ -72,6 +75,7 @@ class XSData(NamedObject):
         self.isIso = isIso
 
         # metadata reference
+        self.energies = metadata["egrid"]
         self.metadata = metadata
 
         # Possible reactions on this material / nuclide
@@ -353,10 +357,9 @@ class XSData(NamedObject):
         ax = ax or pyplot.gca()
 
         kwargs.setdefault("drawstyle", "steps")
-        x = self.metadata['egrid']
         for mt, label in zip(mts, labels):
             y = self[mt]
-            ax.plot(x, y, label=label, **kwargs)
+            ax.plot(self.energies, y, label=label, **kwargs)
 
         title = title or '{} cross section{}'.format(
             self.name, 's' if len(mts) > 1 else '')
