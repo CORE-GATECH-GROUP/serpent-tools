@@ -200,7 +200,7 @@ class XSData(NamedObject):
             for mt in self.MT:
                 self.MTdescrip.append(self.negativeMTDescription(mt))
         else:
-            self.MTdescrip = [c.split('%')[1].rstrip() for c in chunk[1:]]
+            self.MTdescrip = [c.split('%')[1].strip() for c in chunk[1:]]
 
     def setData(self, chunk):
         """ Parse data from chunk to np array."""
