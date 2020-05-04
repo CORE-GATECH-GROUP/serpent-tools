@@ -1,5 +1,5 @@
 .. |xsections| replace:: :attr:`~serpentTools.XSPlotReader.xsections`
-.. |xsdata| replace:: :class:`~serpentTools.objects.xsdata.XSData`
+.. |xsdata| replace:: :class:`~serpentTools.objects.XSData`
 
 .. _ex-xsplot:
 
@@ -44,90 +44,79 @@ Notably, materials not appearing in the neutronics calculation, e.g.,
 external tanks in Serpent continuous reprocessing calculations, are not
 printed in the ``yourInputFileName_xs.m`` file.
 
-Plotting the entries is very easy, check this out:
+These |xsdata| instances can be obtained by indexing into the |xsections|
+dictionary or the reader
 
 .. code::
 
-    >>> xsreader.xsections['i4009_03c'].plot(legend='right');
+    >>> xsreader.xsections["i4009_03c"] is xsreader["i4009_03c"]
+    True
 
-.. image:: images/XSPlot_files/XSPlot_8_0.png
-
-This is nice to have an automatically generated legend, but gets
-somewhat busy quickly. So, it’s easy to check which MT numbers are
-available, and plot only a few:
-
-.. code::
-
-    >>> xsreader.xsections['i4009_03c'].showMT()
-    MT numbers available for i4009_03c:
-    -----------------------------------
-    1     Total
-    101   Sum of absorption
-    2     elastic scattering
-    102   (n,gamma)
-    107   (n,alpha)
-    16    (n,2n)
-    105   (n,t)
-    103   (n,p)
-    104   (n,d)
-    >>> xsreader.xsections['i4009_03c'].plot(mts=[2, 16], title='Less busy!');
-
-.. image:: images/XSPlot_files/XSPlot_11_0.png
-
-Of course, the same process can be applied to materials, but Serpent has
-some special unique negative MT numbers. The code will give you their
-meaning without requiring your reference back to the wiki.
+The final bit of useful information stored on the reader are the energy
+groups and majorant cross sections. The energy groups are shared
+across all |xsdata| objects stored on the reader
 
 .. code::
 
-    >>> xsreader.xsections['mfissile'].showMT()
-    MT numbers available for mfissile:
-    ----------------------------------
-    -1   Macro total
-    -3   Macro total elastic scatter
-    -2   Macro total capture
-    -6   Macro total fission
-    -7   Macro total fission neutron production
-    -16  Macro total scattering neutron production
+    >>> xsreader.energies
+    array([1.00000e-08, 1.03891e-07, 1.07934e-06, 1.12135e-05, 1.16498e-04,
+           1.21032e-03, 1.25742e-02, 1.30635e-01, 1.35719e+00, 1.41000e+01])
+    >>> xsreader.majorant
+    array([78.4253  , 36.1666  ,  2.54417 , 13.0654  ,  4.27811 ,  0.822536,
+           0.781066,  0.598564,  0.34175 ,  0.293887])
 
-    >>> xsreader.xsections['mfissile'].plot(mts=[-3, -6, -16], loglog=True)
+Data Access
+-----------
 
-.. image:: images/XSPlot_files/XSPlot_15_1.png
-
-Lastly, there are two ways to directly access data from Serpent’s xsplot
-output. Firstly, if you’d like to see the data as-stored, just check the
-attribute called “data” belonging to the |xsdata| object. Its columns
-correspond to MT reactions, ordered in the same way as 
-:meth:`~serpentTools.objects.XSData.showMT` presents.
-The rows correspond to values at the energies in metadata[‘egrid’].
-
-The other method regards presenting tabular data in a visually appealing
-way. It uses pandas though, so make sure you have that installed to
-obtain pretty tables.
+Most of the useful information is stored on the |xsdata| instances.
+These are primarily cross sections provided by Serpent and some
+descriptive data. The ``MT`` and ``MTdescrip`` attributes describe the
+ordering of the reactions and their descriptions
 
 .. code::
 
-    >>> xsreader.xsections['mfissile'].xsdata
-    array([[7.84253e+01, 4.04950e-01, 1.96698e+01, 5.83505e+01, 1.67674e+02,
-            0.00000e+00],
-           [3.61666e+01, 3.69643e-01, 1.20450e+01, 2.37520e+01, 6.80558e+01,
-            0.00000e+00],
-           [2.54417e+00, 5.06089e-01, 4.10559e-01, 1.62752e+00, 4.67294e+00,
-            0.00000e+00],
-           [1.30654e+01, 7.15384e-01, 2.01598e+00, 1.03340e+01, 2.95250e+01,
-            0.00000e+00],
-           [4.27811e+00, 7.21668e-01, 4.34122e-01, 3.12232e+00, 9.00007e+00,
-            0.00000e+00],
-           [8.22536e-01, 5.37059e-01, 3.51405e-03, 2.81963e-01, 8.14254e-01,
-            0.00000e+00],
-           [7.81066e-01, 6.23379e-01, 4.77288e-02, 9.38536e-02, 2.71066e-01,
-            0.00000e+00],
-           [5.83509e-01, 4.58020e-01, 1.08053e-02, 7.51650e-02, 2.17468e-01,
-            0.00000e+00],
-           [3.41750e-01, 1.63555e-01, 7.72110e-04, 9.51295e-02, 2.91685e-01,
-            0.00000e+00],
-           [2.93887e-01, 1.36424e-01, 1.13642e-04, 1.20609e-01, 5.96505e-01,
-            1.28477e-02]])
+    >>> o16 = xsreader["i8016_03c"]
+    # Make a quick dictionary to show descriptions
+    >>> dict(zip(o16.MT, o16.MTdescrip))
+    {1: 'Total',
+     101: 'Sum of absorption',
+     2: 'elastic scattering',
+     ...
+     105: '(n,t)',
+     23: '(n,n3alpha)',
+     16: '(n,2n)'}
+
+Cross section data are stored in the ``xsdata`` array, which has
+shape ``(N_E, N_MT)``
+
+.. code::
+
+    >>> o16.xsdata.shape == (len(o16.energies), len(o16.MT))
+    True
+
+The data can be obtained in a few different ways. First, you can
+index into the array directly
+
+.. code::
+
+    >>> o16.xsdata[:, 0]
+    array([4.16597, 3.88237, 3.85502, 3.8523 , 3.8518 , 3.84938, 3.82434,
+           3.58676, 3.19656, 1.593  ])
+
+This does require you to know the position of your reaction. Alternatively,
+you can index into the |xsdata| object using the reaction MT as a key
+
+.. code::
+
+    >>> o16[1]
+    array([4.16597, 3.88237, 3.85502, 3.8523 , 3.8518 , 3.84938, 3.82434,
+           3.58676, 3.19656, 1.593  ])
+
+The ``tabulate`` method can be used to create a :class:`pandas.DataFrame``
+for nice tabular representation.
+
+.. code::
+
     >>> xsreader.xsections['mfissile'].tabulate()
 
 .. raw:: html
@@ -263,6 +252,82 @@ obtain pretty tables.
       </tbody>
     </table>
     </div>
+
+Lastly, the descriptions for each reaction can be found in ``MTdescrip`` or
+using ``describe``
+
+.. code::
+
+    >>> o16.MTdescrip[0]
+    'Total'
+    >>> o16.describe(1)
+    'Total'
+
+Plotting
+--------
+
+Plotting reactions is provided through the
+:meth:`~serpentTools.objects.XSData.plot` method. With no MTs provided,
+all reactions are plotted and labeled
+
+.. code::
+
+    >>> be9 = xsreader['i4009_03c']
+    >>> be9.plot(legend='right');
+
+.. image:: images/XSPlot_files/XSPlot_8_0.png
+
+This is nice to have an automatically generated legend, but gets
+somewhat busy quickly. So, it’s easy to check which MT numbers are
+available, and plot only a few:
+
+.. code::
+
+    >>> be9.showMT()
+    MT numbers available for i4009_03c:
+    -----------------------------------
+    1     Total
+    101   Sum of absorption
+    2     elastic scattering
+    102   (n,gamma)
+    107   (n,alpha)
+    16    (n,2n)
+    105   (n,t)
+    103   (n,p)
+    104   (n,d)
+    >>> be9.plot(mts=[2, 16], title='Less busy!');
+
+.. image:: images/XSPlot_files/XSPlot_11_0.png
+
+Of course, the same process can be applied to materials, but Serpent has
+some special unique negative MT numbers. The code will give you their
+meaning without requiring your reference back to the wiki.
+
+.. code::
+
+    >>> xsreader['mfissile'].showMT()
+    MT numbers available for mfissile:
+    ----------------------------------
+    -1   Macro total
+    -3   Macro total elastic scatter
+    -2   Macro total capture
+    -6   Macro total fission
+    -7   Macro total fission neutron production
+    -16  Macro total scattering neutron production
+
+    >>> xsreader['mfissile'].plot(mts=[-3, -6, -16], loglog=True)
+
+.. image:: images/XSPlot_files/XSPlot_15_1.png
+
+Labels can be configured through the ``labels`` argument
+
+.. code::
+
+    >>> xsreader['mfissile'].plot(
+    ...     mts=[-3, -6], loglog=True,
+    ...     labels=["Total elastic scatter", "Total fission"])
+
+.. image:: images/XSPlot_files/XSPlot_22_0.png
 
 Conclusions
 -----------
