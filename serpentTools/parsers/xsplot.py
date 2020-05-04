@@ -21,7 +21,7 @@ class XSPlotReader(BaseReader):
     Parser responsible for reading and working with xsplot output files.
     These files can be generated using:
 
-    http://serpent.vtt.fi/mediawiki/index.php/It_syntax_manual#set_xsplot
+    http://serpent.vtt.fi/mediawiki/index.php/Input_syntax_manual#set_xsplot
 
     Parameters
     ----------
@@ -30,10 +30,10 @@ class XSPlotReader(BaseReader):
 
     Attributes
     ----------
-    xsections: NamedDict
-        Contains XSData objects with keys given by their names. There should be
-        one XSData instance for each isotope and material present in the
-        problem.
+    xsections: dict
+        Contains :class:`~serpentTools.objects.XSData` objects with keys
+        given by their names. There should be one XSData instance for each
+        isotope and material present in the problem.
     metadata: dict
         Contains data pertinent to all XSData instances collected.
         One particularly important entry is the 'egrid', which is a numpy array
@@ -41,15 +41,59 @@ class XSPlotReader(BaseReader):
         In addition, Serpent defines the 'majorant_xs', which is the L-inf norm
         among all macroscopic cross sections used in the problem. This gets
         used in the delta tracking routines usually.
-    settings: dict
-        names and values of the settings used to control operations
-        of this reader
     """
 
     def __init__(self, filePath):
         BaseReader.__init__(self, filePath, 'xsplot')
         self.xsections = {}
         self.metadata = {}
+    def __len__(self):
+        """Number of xsdata objects stored"""
+        return len(self.xsections)
+
+    def __iter__(self):
+        """Iterate over all keys in :attr:`xsections`"""
+        return iter(self.xsections)
+
+    def __contains__(self, key):
+        """Return true or false if ``key`` in :attr:`xsections`"""
+        return key in self.xsections
+
+    def __getitem__(self, key):
+        """Return item corresponding to ``key`` in :attr:`xsections`"""
+        return self.xsections[key]
+
+    def keys(self):
+        """Key-view into :attr:`xsections`"""
+        return self.xsections.keys()
+
+    def values(self):
+        """Values-view into :attr:`xsections`"""
+        return self.xsections.values()
+
+    def items(self):
+        """Item-view ``(k, v)`` into :attr:`xsections`"""
+        return self.xsections.items()
+
+    def get(self, key, default=None):
+        """Return the value of ``key`` from :attr:`xsections` or ``default``
+
+        Parameters
+        ----------
+        key : str
+            Name of isotope or material that may or may not exist
+            in :attr:`xsections`
+        default : object
+            Item to return if ``key`` not found
+
+        Returns
+        -------
+        object
+            :class:`~serpentTools.objects.XSData` that corresponds
+            to ``key`` if ``key`` is found. Otherwise return ``default``
+
+        """
+        return self.xsections.get(key, default)
 
     def _read(self):
         """Read through the depletion file and store requested data."""
