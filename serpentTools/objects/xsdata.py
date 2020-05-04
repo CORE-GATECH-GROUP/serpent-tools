@@ -162,6 +162,26 @@ class XSData(NamedObject):
             raise ValueError("{} is not negative".format(mt))
         return XSData.MTdescriptions[mt]
 
+    def describe(self, mt):
+        """Return the description for any reaction MT
+
+        Parameters
+        ----------
+        mt : int
+            Integer reaction number, e.g. 102 or -8. Assumes
+            neutrons only
+
+        Returns
+        -------
+        str
+            Description for this reaction
+
+        """
+        if mt < 0:
+            return XSData.MTdescriptions[mt]
+        index = self.MT.index(mt)
+        return self.MTdescrip[index]
+
     def setMTs(self, chunk):
         """ Parse chunk to MT numbers and descriptions"""
         if not self.isIso:
