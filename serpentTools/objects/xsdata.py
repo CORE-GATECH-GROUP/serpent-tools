@@ -12,31 +12,35 @@ __all__ = [
 
 
 class XSData(NamedObject):
-    docParams = """name: str
-        Name of this material
-    metadata: dict
-        Dictionary with file metadata"""
-    __doc__ = """
-    Base class for storing cross section data an xsplot file
+    """Base class for storing cross section data an xsplot file
 
     Parameters
     ----------
-    {params:s}
+    name : str
+        Name of this material
+    metadata : dict
+        Dictionary with file metadata. Expects ``egrid`` as a key
+        at least
+    isIso : bool, optional
+        Flag indicating if this data section is for a single
+        isotope or for a material
 
     Attributes
     ----------
-    isIso: bool
+    isIso : bool
         Whether this describes individual isotope XS, or whole-material XS
-    MT: list
+    MT : list
         Macroscopic cross section integers
-    MTdescip: list
+    MTdescip : list
         Descriptions of reactions in ``MT``
-    xsdata: :py:class:`numpy.ndarray`
-    hasNuData: bool
+    xsdata : numpy.ndarray
+        Array of xs data. Rows correspond to items in :attr:`MT`
+    hasNuData : bool
         True if nu data is present
-    metadata: dict
-        file-wide metadata from the reader
-    """.format(params=docParams)
+    metadata : dict
+        File-wide metadata from the reader.
+
+    """
 
     MTdescriptions = {
         -1: "Macro total",
@@ -61,7 +65,7 @@ class XSData(NamedObject):
     }
 
     def __init__(self, name, metadata, isIso=False):
-        NamedObject.__init__(self, name)
+        super().__init__(name)
 
         self.isIso = isIso
 
@@ -81,10 +85,25 @@ class XSData(NamedObject):
 
     @staticmethod
     def negativeMTDescription(mt):
-        """ Gives descriptions for negative MT numbers used by Serpent
-        for whole materials, for neutrons only. """
+        """Descriptions for Serpent negative MT numbers
+
+        These correspond to macroscopic properties, like
+        fission energy production, and for neutrons only.
+        From Serpent Wiki
+
+        Parameters
+        ----------
+        mt : int
+            Macroscopic reaction MT. Must be negative
+
+        Returns
+        -------
+        str
+            Description
+
+        """
         if mt > 0:
-            error("Uh, that's not a negative MT.")
+            raise ValueError("{} is not negative".format(mt))
         return XSData.MTdescriptions[mt]
 
     def setMTs(self, chunk):
@@ -141,7 +160,8 @@ class XSData(NamedObject):
 
         Returns
         -------
-        Pandas Dataframe version of the XS data.
+        pandas.DataFrame
+            Tabulated representation of the cross section data
 
         Raises
         ------
@@ -205,7 +225,7 @@ class XSData(NamedObject):
 
         Parameters
         ----------
-        mts: int, string, or list of ints
+        mts : int, string, or list of ints
             If it's a string, it should be 'all'.
             A single int indicates one MT reaction number.
             A list should be a list of MT numbers to plot.
@@ -227,7 +247,8 @@ class XSData(NamedObject):
         Raises
         ------
         TypeError
-            if MT numbers that don't make sense come up
+            If MT numbers that don't make sense come up
+
         """
 
         if mts == 'all':
@@ -271,13 +292,14 @@ class XSData(NamedObject):
         return ax
 
     def showMT(self, retstring=False):
-        """ Pretty prints MT values available for this XS and
-        descriptions.
+        """Create a pretty-print style string of the MT values avaialable
+
 
         Parameters
         ----------
-        retstring: bool
-            return a string if true. Otherwise, print it
+        retstring : bool
+            Return a string if true. Otherwise, print it
+
         """
         outstr = ""
         outstr += "MT numbers available for {}:\n".format(self.name)
