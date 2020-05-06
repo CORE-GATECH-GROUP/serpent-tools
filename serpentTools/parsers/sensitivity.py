@@ -5,7 +5,7 @@ from collections import OrderedDict
 from itertools import product
 
 from numpy import transpose, hstack
-from matplotlib.pyplot import gca
+from matplotlib.pyplot import gca, vlines
 
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
@@ -304,8 +304,8 @@ class SensitivityReader(BaseReader):
                                         "stored on reader")
 
     @magicPlotDocDecorator
-    def plot(self, resp, zai=None, pert=None, mat=None, sigma=3,
-             normalize=True, ax=None, labelFmt=None,
+    def plot(self, resp, zai=None, pert=None, mat=None, mevscale=False, egrid=None,
+             sigma=3, normalize=True, ax=None, labelFmt=None,
              title=None, logx=True, logy=False, loglog=False, xlabel=None,
              ylabel=None, legend=None, ncol=1):
         """
@@ -331,6 +331,10 @@ class SensitivityReader(BaseReader):
         mat: None or str or list of strings
             Plot sensitivities due to these materials. Passing ``None``
             will plot against all materials.
+        mevscale: string
+            Flag for plotting energy grid in MeV units. Default is ``False``.
+        egrid : numpy.array
+            Energy grid for sampling reaction rates ratios. Default is ``None``.
         {sigma}
         normalize: True
             Normalize plotted data per unit lethargy
@@ -389,7 +393,7 @@ class SensitivityReader(BaseReader):
 
         errors = resMat[..., 1] * values * sigma
 
-        energies = self.energies * 1E6
+        energies = self.energies * 1E6 if mevscale is False else self.energies
         for z, m, p in product(zais, mats, perts):
             iZ = self.zais[z]
             iM = self.materials[m]
@@ -401,8 +405,18 @@ class SensitivityReader(BaseReader):
             label = labelFmt.format(r=resp, z=z, m=m, p=p)
             ax.errorbar(energies, yVals, yErrs, label=label,
                         drawstyle='steps-post')
+            if egrid is not None:
+                ax.vlines(egrid, min(yVals), max(yVals), colors='k',
+                          linestyles='dashed')
 
-        xlabel = 'Energy [eV]' if xlabel is None else xlabel
+        if xlabel is None:
+            if mevscale is False:
+                xlabel = 'Energy [eV]'
+            else:
+                xlabel = 'Energy [MeV]'
+        else:
+            xlabel = xlabel
+
         ylabel = ylabel if ylabel is not None else (
             'Sensitivity {} {}'.format(
                 'per unit lethargy' if normalize else '',
