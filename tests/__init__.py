@@ -1,7 +1,6 @@
 """
 Module for testing the ``serpentTools`` package
 """
-from unittest import TestCase
 from functools import wraps
 from unittest import TestCase, SkipTest
 from logging import NOTSET
@@ -291,8 +290,8 @@ def getLegendTexts(ax):
 
 
 def plotAttrTest(testobj, ax=None, xlabel=None, ylabel=None,
-                  xscale=None, yscale=None, legendLabels=None,
-                  title=None):
+                 xscale=None, yscale=None, legendLabels=None,
+                 title=None):
     """Compare properties of a generated axes object"""
     if ax is None:
         from matplotlib.pyplot import gca
