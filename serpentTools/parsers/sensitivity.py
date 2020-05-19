@@ -304,8 +304,8 @@ class SensitivityReader(BaseReader):
                                         "stored on reader")
 
     @magicPlotDocDecorator
-    def plot(self, resp, zai=None, pert=None, mat=None, sigma=3,
-             normalize=True, ax=None, labelFmt=None,
+    def plot(self, resp, zai=None, pert=None, mat=None, mevscale=False,
+             egrid=None, sigma=3, normalize=True, ax=None, labelFmt=None,
              title=None, logx=True, logy=False, loglog=False, xlabel=None,
              ylabel=None, legend=None, ncol=1):
         """
@@ -331,10 +331,12 @@ class SensitivityReader(BaseReader):
         mat: None or str or list of strings
             Plot sensitivities due to these materials. Passing ``None``
             will plot against all materials.
-        mevscale: bool, optional
-            Flag for plotting energy grid in MeV units. Default is ``False``.
+        mevscale : bool, optional
+            Flag for plotting energy grid in MeV units. If ``True``, the energy
+            axis is expressed in MeV. Default is ``False``.
         egrid : numpy.array, optional
-            Energy grid for sampling reaction rates ratios. Default is ``None``.
+            User-defined energy grid boundaries displayed on the sensitivities
+            as vblack, dashed vertical lines. Default is ``None``.
         {sigma}
         normalize: True
             Normalize plotted data per unit lethargy
@@ -412,8 +414,6 @@ class SensitivityReader(BaseReader):
 
         if xlabel is None:
             xlabel = "Energy [MeV]" if mevscale else "Energy [eV]"
-        else:
-            xlabel = xlabel
 
         xlabel = 'Energy [eV]' if xlabel is None else xlabel
         ylabel = ylabel if ylabel is not None else (
