@@ -6,10 +6,18 @@
 Changelog
 =========
 
+.. note::
+
+    Development will be limited to bug fixes for future 
+    ``0.9.x`` releases. Release ``0.10.0`` will introduce
+    new and improved parsers and containers alongside
+    existing structures. For more information, see
+    :ref:`data-model`
+
 .. _v0.9.3:
 
-0.9.3
-=====
+:release-tag:`0.9.3`
+====================
 
 * Depletion data now exposed through attributes like
   :attr:`~serpentTools.objects.DepletedMaterial.adens` - :pull:`390`
@@ -17,10 +25,13 @@ Changelog
   :meth:`~serpentTools.objects.DepletedMaterial.toDataFrame`
   - :pull:`391`
 * Dictionary-like item access and iteration for branching, detector,
-  history, and depletion readers - :pull:`392`, :pull:`395`
+  history, depletion, and xsplot readers - :pull:`392`, :pull:`395`, :pull:`402`
 * Obtain data from :attr:`~serpentTools.ResultsReader.resdata` with
   :meth:`~serpentTools.ResultsReader.__getitem__` and 
   :meth:`~serpentTools.ResultsReader.get` - :pull:`392`
+* Modify plot legends for :meth:`serpentTools.objects.XSData.plot` for all
+  or some plotted MTs - :pull:`402`
+* Options for plotting sensitivity profiles against energies in MeV - :pull:`405`
 
 .. _v0.9.3-bug:
 
@@ -40,6 +51,10 @@ Pending Deprecations
   attributes like :attr:`~serpentTools.samplers.DepletionSampler.zais`
 * :meth:`serpentTools.BranchingReader.iterBranches`. Prefer
   :meth:`~serpentTools.BranchingReader.items`
+* :attr:`serpentTools.XSPlotReader.metadata` and
+  :attr:`serpentTools.objects.XSData.metadata`. Prefer attributes like
+  :attr:`~serpentTools.XSPlotReader.majorant` or 
+  :attr:`~serpentTools.objects.XSData.energies` - :pull:`402`
 
 .. _v0.9.2:
 
