@@ -38,19 +38,19 @@ should be incremented prior to new releases with the following designation:
 Releases
 ========
 
-Releases should be done with `git tags <https://git-scm.com/docs/git-tag>`_ from the master branch 
-and then pushed to GitHub. 
-Annotated tags should be used and can be created with::
+Following a release, the following actions should be performed:
 
-    git tag -a <version>
-    git tag -s <version>
-    git tag -m <msg> <version>
+1. Archived and installable python files should be created
+2. Archived and installable python files should be uploaded to the
+   python package index, :term:`PyPI`
+3. The tag should be pushed to GitHub and marked as a release, including information
+   on the changes introduced in this release
 
-Pushing these tags to GitHub creates a new 
-`release <https://github.com/CORE-GATECH-GROUP/serpent-tools/releases>`_.
-If a message is used, the messages should be a brief message describing the changes on this tag.
-On the release page, a more detail list of changes, such as pull requests and issues closed, 
-should be listed.
+This section details changes and procedures that, if followed, will increase chances
+of a painless release.
+
+Updating the package version
+----------------------------
 
 Before and after a release, the project version number should be updated in the
 following places:
@@ -59,13 +59,52 @@ following places:
 2. ``serpentTools/__init__.py``
 3. ``docs/conf.py``
 
-Following a release, the following actions should be performed:
+The new version should be indicative of the changes introduced between this release
+and the previous release.
 
-1. Archived and installable python files should be created
-2. Archived and installable python files should be uploaded to the
-   `python package index <https://pypi.python.org/pypi>`_
-3. The tag should be pushed to GitHub and marked as a release, including information
-   on the changes introduced in this release
+Generating distributions
+------------------------
+
+The new distribution, that can be uploaded to :term:`PyPI`, can be
+generated with
+
+.. code:: sh
+
+   python setup.py sdist bdist_wheel
+
+This will produce a source distribution and binary python wheel in the ``dist``
+directory, each of the form ``dist/serpentTools-<version>.<extension>``.
+Before tagging and pushing releases to :term:`PyPI`, the distribution should be
+checked with
+
+.. code:: sh
+
+   twine check dist/serpentTools-<version>*
+
+:term:`twine` will check that the package is compatible with the standards set
+by :term:`PyPI` prior to uploading. Following a successful check, the distribution
+can be pushed to the package index using
+
+..code:: sh
+
+    twine upload dist/serpentTools-<version>*
+
+Tagging
+-------
+
+Releases should be done with `git tags <https://git-scm.com/docs/git-tag>`_ from the master branch 
+and then pushed to GitHub. 
+Annotated tags should be used and can be created with
+
+.. code:: sh
+
+    git tag -s <version>
+
+Pushing these tags to GitHub creates a new 
+`release <https://github.com/CORE-GATECH-GROUP/serpent-tools/releases>`_.
+If a message is used, the messages should be a brief message describing the changes on this tag.
+On the release page, a more detail list of changes, such as pull requests and issues closed, 
+should be listed.
 
 .. _dev-commitMessages:
 

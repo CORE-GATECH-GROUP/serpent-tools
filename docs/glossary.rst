@@ -69,6 +69,11 @@ Glossary
         Recommended tool for installing Python packages. More at
         `<https://pypi.org/project/pip/>`_
 
+    PyPI
+        Python package index. Where packages that can easily
+        be fetched and installed via :term:`pip` can be found.
+        `<https://pypi.org>`_
+
     pytest
         Fully featured python test runner. More at 
         `<https://pytest.org/en/latest/>`_
@@ -86,6 +91,9 @@ Glossary
         that can be parsed by this project. More information, including
         distribution and licensing of ``SERPENT`` can be found at
         `<http://montecarlo.vtt.fi>`_. 
+
+    twine
+        Python package for interacting with and uploading packages to :term:`PyPI`
 
     yaml
         Human-readable format used for configuration files in this
