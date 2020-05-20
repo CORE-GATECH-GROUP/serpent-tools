@@ -43,7 +43,7 @@ with open('./requirements.txt') as req:
 
 pythonRequires = ">=3.5,<3.9"
 
-version = "0.9.2"
+version = "0.9.3"
 
 setupArgs = {
     'name': 'serpentTools',
