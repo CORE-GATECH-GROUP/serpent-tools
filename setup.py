@@ -54,6 +54,7 @@ setupArgs = {
     'description': ('A suite of parsers designed to make interacting with '
                     'SERPENT output files simple, scriptable, and flawless'),
     'long_description': longDesc,
+    'long_description_content_type': 'text/x-rst',
     'maintainer': 'Andrew Johnson',
     'maintainer_email': 'ajohnson400@gatech.edu',
     'author': 'serpentTools developer team',
