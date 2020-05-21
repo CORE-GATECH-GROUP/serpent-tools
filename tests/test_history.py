@@ -264,11 +264,6 @@ class HistoryTester(HistoryHelper):
             self.assertTupleEqual(shape, self.arrays[key].shape,
                                   msg=key)
 
-    def test_getItem(self):
-        """Verify the getitem indexing is functional."""
-        for key, readerArray in self.arrays.items():
-            self.assertIs(readerArray, self.reader[key], msg=key)
-
     def test_arrayHeads(self):
         """Verify the first few lines of each array are correct."""
         for key, expectedArray in EXPECTED_ARRAY_HEADS.items():
@@ -285,11 +280,16 @@ class HistoryTester(HistoryHelper):
 
     def test_specialMethods(self):
         """Test special methods on the reader"""
+        for key, readerArray in self.arrays.items():
+            self.assertIs(self.reader[key], readerArray, msg=key)
         # test len
         self.assertEqual(len(self.reader), len(self.reader.arrays))
         # test contains
         badKey = 'this_shouldNotBe_present'
-        self.assertFalse(badKey in self.reader)
+        self.assertNotIn(badKey, self.reader)
+        with self.assertRaises(KeyError):
+            self.reader[badKey]
+        self.assertIs(self.reader.get(badKey), None)
         # test iter
         for nFound, key in enumerate(self.reader, start=1):
             self.assertTrue(key in self.reader.arrays, msg=key)
@@ -299,10 +299,11 @@ class HistoryTester(HistoryHelper):
     def test_iterItems(self):
         """Test the items method for yielding key, value pairs"""
         for nFound, (key, value) in enumerate(self.reader.items(), start=1):
-            self.assertTrue(key in self.reader.arrays, msg=key)
-            self.assertTrue(key in self.reader, msg=key)
-            assert_array_equal(value, self.reader.arrays[key], err_msg=key)
-            self.assertTrue(value is self.reader[key], msg=key)
+            self.assertIn(key, self.reader.arrays, msg=key)
+            self.assertIn(key, self.reader, msg=key)
+            self.assertIs(value, self.reader.arrays[key], msg=key)
+            self.assertIs(value, self.reader[key], msg=key)
+            self.assertIs(value, self.reader.get(key), msg=key)
 
         self.assertEqual(nFound, len(self.reader.arrays))
 

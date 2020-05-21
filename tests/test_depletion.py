@@ -84,25 +84,28 @@ class DepletionTester(_DepletionTestHelper):
 
     def test_metadata(self):
         """Test the metadata storage for the reader."""
-        expectedMetadata = {
-            'zai':
-                [621490, 541350, 922350, 942390, 50100, 666, 0],
-            'names':
-                ['Sm149', 'Xe135', 'U235', 'Pu239', 'B10', 'lost', 'total'],
-            'burnup': [0.00000E+00, 1.93360E-02, 3.86721E-02, 1.16016E-01,
-                       1.93360E-01, 2.90041E-01, 3.86721E-01, 6.76762E-01,
-                       9.66802E-01, 1.45020E+00, 1.93360E+00, 2.90041E+00,
-                       3.86721E+00, 4.83401E+00],
-            'days': [0.00000E+00, 5.00000E-01, 1.00000E+00, 3.00000E+00,
-                     5.00000E+00, 7.50000E+00, 1.00000E+01, 1.75000E+01,
-                     2.50000E+01, 3.75000E+01, 5.00000E+01, 7.50000E+01,
-                     1.00000E+02, 1.25000E+02]
-        }
-        expectedKeys = set(expectedMetadata)
-        actualKeys = set(self.reader.metadata.keys())
-        self.assertSetEqual(expectedKeys, actualKeys)
-        for key, expectedValue in expectedMetadata.items():
-            assert_equal(self.reader.metadata[key], expectedValue)
+        self.assertListEqual(
+            self.reader.zais,
+            [621490, 541350, 922350, 942390, 50100, 666, 0],
+        )
+        self.assertListEqual(
+            self.reader.names,
+            ['Sm149', 'Xe135', 'U235', 'Pu239', 'B10', 'lost', 'total'],
+        )
+        assert_equal(
+            self.reader.burnup,
+            [0.00000E+00, 1.93360E-02, 3.86721E-02, 1.16016E-01,
+             1.93360E-01, 2.90041E-01, 3.86721E-01, 6.76762E-01,
+             9.66802E-01, 1.45020E+00, 1.93360E+00, 2.90041E+00,
+             3.86721E+00, 4.83401E+00],
+        )
+        assert_equal(
+            self.reader.days,
+            [0.00000E+00, 5.00000E-01, 1.00000E+00, 3.00000E+00,
+             5.00000E+00, 7.50000E+00, 1.00000E+01, 1.75000E+01,
+             2.50000E+01, 3.75000E+01, 5.00000E+01, 7.50000E+01,
+             1.00000E+02, 1.25000E+02],
+        )
 
     def test_ReadMaterials(self):
         """Verify the reader stored the correct materials."""
@@ -111,11 +114,26 @@ class DepletionTester(_DepletionTestHelper):
 
     def test_getitem(self):
         """Verify the getitem approach to obtaining materials."""
+        self.assertEqual(len(self.reader), len(self.reader.materials))
+
         with self.assertRaises(KeyError):
             self.reader['this should not work']
-        for name, mat in self.reader.materials.items():
-            fromGetItem = self.reader[name]
-            self.assertIs(mat, fromGetItem, msg=mat)
+
+        self.assertIs(self.reader.get("this should not work"), None)
+
+        for name, mat in self.reader.items():
+            self.assertIn(name, self.reader.materials)
+            self.assertIn(name, self.reader)
+            self.assertIs(mat, self.reader[name], msg=mat)
+            self.assertIs(self.reader.get(name), mat)
+
+        for count, name in enumerate(self.reader, start=1):
+            self.assertIn(name, self.reader)
+
+        for count, name in enumerate(self.reader.keys(), start=1):
+            self.assertIn(name, self.reader)
+
+        self.assertEqual(count, len(self.reader.materials))
 
     @plotTest
     def test_plotFewIso(self):
@@ -203,10 +221,38 @@ class DepletedMaterialTester(_DepletionTestHelper):
              1.49595E+09, 1.66322E+09, 1.80206E+09, 1.79453E+09, 1.79100E+09,
              1.80188E+09, 1.75346E+09, 1.60021E+09, 1.89771E+09],
         ])
-        self.assertListEqual(self.material.zai,
-                             self.reader.metadata['zai'])
+        self.assertListEqual(self.material.zai, self.reader.zais)
         assert_equal(self.material.adens, expectedAdens)
         assert_equal(self.material['ingTox'], expectedIngTox)
+
+    def test_attributes(self):
+        """Verify the attribute and dictionary based fetching"""
+        # Populate data that is not contained in reference file
+        # to test the attribute-based fetching
+        material = self.material
+        for key in ["mdens", "inhTox", "a", "sf", "gsrc", "h"]:
+            material.data[key] = material.data["adens"]
+        material.data["volume"] = material.data["burnup"]
+
+        for attr in ["burnup", "adens", "mdens", "volume", "ingTox", "inhTox"]:
+            self.assertIs(self.material.data[attr], self.material[attr])
+            self.assertIs(self.material[attr], getattr(self.material, attr))
+            previous = self.material.data.pop(attr)
+            self.assertIs(getattr(self.material, attr), None)
+            self.material.data[attr] = previous
+
+        for key, attr in [
+                ["a", "activity"],
+                ["h", "decayHeat"],
+                ["sf", "spontaneousFissionRate"],
+                ["sf", "spontaneousFissionRate"],
+        ]:
+            self.assertIs(self.material[key], self.material.data[key])
+            self.assertIs(getattr(self.material, attr), self.material.data[key])
+            previous = self.material.data.pop(key)
+            self.assertIs(getattr(self.material, attr), None)
+            self.material.data[key] = previous
+
 
     def test_getValues_burnup_full(self):
         """ Verify that getValues can produce the full burnup vector."""
@@ -333,10 +379,32 @@ class DepMatlabExportHelper(MatlabTesterHelper):
                     err_msg="{} {}".format(materialName, variableName))
 
     def checkMetadata(self, loaded):
-        for key, data in self.reader.metadata.items():
-            expected = key.upper() if self.RECONVERT else key
-            assert expected in loaded, (
-                "Missing {} from metadata".format(expected))
+        if self.RECONVERT:
+            zais = loaded["ZAI"]
+            names = loaded["NAMES"]
+            days = loaded["DAYS"]
+            burnup = loaded["BURNUP"]
+        else:
+            zais = loaded["zai"]
+            names = loaded["names"]
+            days = loaded["days"]
+            burnup = loaded["burnup"]
+
+        # String array has extra spacing around shorter words
+        # so names like "Xe135" are fine, but we also get "lost "
+        # with a space
+        self.assertListEqual([x.strip() for x in names], self.reader.names)
+
+        # Numeric arraysrrays are written as 1xN matrices
+        # Can't do a straight comparison first
+        for actual, attr in [
+            [zais, "zais"],
+            [days, "days"],
+            [burnup, "burnup"],
+        ]:
+            expected = getattr(self.reader, attr)
+            self.assertEqual(actual.shape, (1, len(expected)), msg=attr)
+            assert_equal(actual[0], expected, err_msg=attr)
 
     def constructExpectedVarName(self, material, variable):
         """

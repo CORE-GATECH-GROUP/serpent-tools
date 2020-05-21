@@ -3,6 +3,7 @@ Class responsible for reading multiple depletion files
 and obtaining true uncertainties
 """
 from math import fabs
+import collections
 
 from numpy import zeros, zeros_like
 from matplotlib import pyplot
@@ -17,15 +18,9 @@ from serpentTools.samplers.base import (
     Sampler, SampledContainer,
 )
 
-CONSTANT_MDATA = ('names', 'zai')
-"""metadata that should be invariant throughout repeated runs"""
-VARIED_MDATA = ('days', 'burnup')
-"""metadata that could be varied throughout repeated runs"""
-
 
 class DepletionSampler(DepPlotMixin, Sampler):
-    __doc__ = """
-    Class that reads and stores data from multiple ``*dep.m`` files
+    """Class that reads and stores data from multiple ``*dep.m`` files
 
     The following checks are performed in order to ensure that depletion
     files are of similar form:
@@ -46,6 +41,14 @@ class DepletionSampler(DepPlotMixin, Sampler):
 
     Attributes
     ----------
+    days : numpy.ndarray or None
+        Vector of points in time
+    burnup : numpy.ndarray or None
+        Nominal burnup in MWd/kgU
+    names : list of str or None
+        Names of isotopes corresponding to each row in the 2D arrays
+    zais : list of int or None
+        ZZAAAI identifiers for isotopes
     materials: dict
         Dictionary with material names as keys and the corresponding
         :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
@@ -53,9 +56,12 @@ class DepletionSampler(DepPlotMixin, Sampler):
     metadata: dict
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]
+
+        .. deprecated:: 0.9.3
+            Use attributes like :attr:`days` directly
     metadataUncs: dict
-        Dictionary containing uncertainties in file-wide metadata,
-        such as burnup schedule
+        Dictionary containing uncertainties in day and burnup
+        vectors
     allMdata: dict
         Dictionary where key, value pairs are name of metadata and
         metadata arrays for all runs. Arrays with be of one greater dimension,
@@ -74,7 +80,10 @@ class DepletionSampler(DepPlotMixin, Sampler):
 
     def __init__(self, files):
         self.materials = {}
-        self.metadata = {}
+        self.names = None
+        self.zais = None
+        self.days = None
+        self.burnup = None
         self.metadataUncs = {}
         self.allMdata = {}
         Sampler.__init__(self, files, DepletionReader)
@@ -84,6 +93,19 @@ class DepletionSampler(DepPlotMixin, Sampler):
         """Retrieve a material from :attr:`materials`."""
         return self.materials[name]
 
+    @property
+    def metadata(self):
+        out = {}
+        if self.names is not None:
+            out["names"] = self.names
+        if self.zais is not None:
+            out["zai"] = self.zais
+        if self.days is not None:
+            out["days"] = self.days
+        if self.burnup is not None:
+            out["burnup"] = self.burnup
+        return out
+
     def _precheck(self):
         self._checkParserDictKeys('materials')
         self._checkParserDictKeys('metadata')
@@ -92,25 +114,28 @@ class DepletionSampler(DepPlotMixin, Sampler):
     def _checkMetadata(self):
         misMatch = {}
         for parser in self:
-            for key, value in parser.metadata.items():
-                valCheck = (tuple(value) if key in CONSTANT_MDATA
-                            else value.size)
+            for key in ["names", "zais", "days", "burnup"]:
+                value = getattr(parser, key)
+                valCheck = (
+                    tuple(value) if key in {"names", "zais"} else value.size
+                )
                 if key not in misMatch:
-                    misMatch[key] = {}
-                if valCheck not in misMatch[key]:
-                    misMatch[key][valCheck] = {parser.filePath}
-                else:
-                    misMatch[key][valCheck].add(parser.filePath)
+                    misMatch[key] = collections.defaultdict(set)
+                misMatch[key][valCheck].add(parser.filePath)
         for mKey, matches in misMatch.items():
             if len(matches) > 1:
                 self._raiseErrorMsgFromDict(matches, 'values',
                                             '{} metadata'.format(mKey))
 
     def _process(self):
+        # Not sure how / why this is a set...
+        parser = self.parsers.pop()
+        self._allocateMetadata(parser)
+        self.parsers.add(parser)
+
         for N, parser in enumerate(self.parsers):
-            if not self.metadata:
-                self.__allocateMetadata(parser.metadata)
-            self._copyMetadata(parser.metadata, N)
+            self.allMdata["days"][N] = parser.days
+            self.allMdata["burnup"][N] = parser.burnup
             for matName, material in parser.materials.items():
                 if matName in self.materials:
                     sampledMaterial = self.materials[matName]
@@ -123,28 +148,31 @@ class DepletionSampler(DepPlotMixin, Sampler):
         self._finalize()
 
     def _finalize(self):
-        for _matName, material in self.materials.items():
+        for material in self.materials.values():
             material.finalize()
-        for key in VARIED_MDATA:
+        for key in {"days", "burnup"}:
             allData = self.allMdata[key]
-            self.metadata[key] = allData.mean(axis=0)
+            setattr(self, key, allData.mean(axis=0))
             self.metadataUncs[key] = allData.std(axis=0)
 
-    def __allocateMetadata(self, parserMdata):
-        for key in CONSTANT_MDATA:
-            self.metadata[key] = parserMdata[key]
-        vectorShape = tuple([len(self.files)]
-                            + list(parserMdata['days'].shape))
-        for key in VARIED_MDATA:
-            self.allMdata[key] = zeros(vectorShape)
+    def _allocateMetadata(self, parser):
+        self.names = parser.names
+        self.zais = parser.zais
+        if parser.days is None:
+            if parser.burnup is None:
+                raise AttributeError("Neither burnup nor days stored")
+            shape = len(self.files), parser.burnup.size
+        else:
+            shape = len(self.files), parser.days.size
+        self.allMdata["days"] = zeros(shape)
+        self.allMdata["burnup"] = zeros(shape)
 
-    def _copyMetadata(self, parserMdata, N):
-        for key in VARIED_MDATA:
-            self.allMdata[key][N, ...] = parserMdata[key]
+        for key in {"days", "burnup"}:
+            self.allMdata[key] = zeros(shape)
 
     def _free(self):
         self.allMdata = {}
-        for _mName, material in self.materials.items():
+        for material in self.materials.values():
             material.free()
 
     def iterMaterials(self):

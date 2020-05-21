@@ -6,7 +6,7 @@ from matplotlib import pyplot
 
 from serpentTools.utils import (
     magicPlotDocDecorator, formatPlot, DEPLETION_PLOT_LABELS,
-    convertVariableName, str2vec,
+    str2vec,
 )
 from ._collections import DEPLETION_VARIABLES
 from serpentTools.engines import KeywordParser
@@ -26,7 +26,8 @@ from serpentTools.utils import (
 )
 from serpentTools.io import MatlabConverter
 
-METADATA_KEYS = {'ZAI', 'NAMES', 'BU', 'DAYS'}
+METADATA_KEYS = {
+    'ZAI': "zais", 'NAMES': "names", 'BU': "burnup", 'DAYS': "days"}
 
 
 class DepPlotMixin(object):
@@ -83,10 +84,9 @@ class DepPlotMixin(object):
 
         See Also
         --------
-        * :py:func:`~serpentTools.objects.materials.DepletedMaterial.getValues`
-        * :py:func:`matplotlib.pyplot.plot`
-        * :py:meth:`str.format` - used for formatting labels
-        * :py:func:`~serpentTools.objects.materials.DepletedMaterial.plot`
+        * :func:`~serpentTools.objects.DepletedMaterial.getValues`
+        * :meth:`str.format` - used for formatting labels
+        * :func:`~serpentTools.objects.DepletedMaterial.plot`
 
         Raises
         ------
@@ -94,6 +94,7 @@ class DepPlotMixin(object):
             If x axis units are not ``'days'`` nor ``'burnup'``
         SerpentToolsException
             If the materials dictionary does not contain any items
+
         """
         if yUnits is None:
             yUnits = xUnits
@@ -107,14 +108,14 @@ class DepPlotMixin(object):
                            "<burnup>, not {}".format(xUnits))
         missing = set()
         ax = ax or pyplot.gca()
-        materials = materials or self.materials.keys()
+        materials = materials or sorted(self)
         labelFmt = labelFmt or '{mat} {iso}'
         for mat in materials:
-            if mat not in self.materials:
+            if mat not in self:
                 missing.add(mat)
                 continue
 
-            ax = self.materials[mat].plot(
+            ax = self[mat].plot(
                 xUnits, yUnits, timePoints, names,
                 zai, ax, legend=False, xlabel=xlabel, ylabel=ylabel,
                 logx=False, logy=False, loglog=False, labelFmt=labelFmt,
@@ -135,6 +136,13 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     """
     Parser responsible for reading and working with depletion files.
 
+    .. note::
+
+        :attr:`metadata` is now a deprecated property, generated at
+        each call.  Additional keys added will not be retained.
+        Prefer using :attr:`names`, :attr:`burnup`,
+        :attr:`days`, and :attr:`zais`
+
     Parameters
     ----------
     filePath: str
@@ -142,10 +150,25 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
     Attributes
     ----------
-    {attrs:s}
+    days : numpy.ndarray or None
+        Vector of points in time
+    burnup : numpy.ndarray or None
+        Nominal burnup in MWd/kgU
+    names : list of str or None
+        Names of isotopes corresponding to each row in the 2D arrays
+    zais : list of int or None
+        ZZAAAI identifiers for isotopes
+    metadata : dict of str to list
+        Dictionary with zai and names
+
+        .. deprecated:: 0.9.3
+    materials : dict of str to serpentTools.objects.Material
+        Materials from the file. Keys will be the names as they appear
+        in the file
     settings: dict
         names and values of the settings used to control operations
         of this reader
+
     """
     docAttrs = """materials: dict
         Dictionary with material names as keys and the corresponding
@@ -154,7 +177,6 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     metadata: dict
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
-    __doc__ = __doc__.format(attrs=docAttrs)
 
     def __init__(self, filePath):
         MaterialReader.__init__(self, filePath, 'depletion')
@@ -162,10 +184,57 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         # match all materials if nothing given
         self._matPatterns = [re.compile(mat) for mat in patterns]
         DepPlotMixin.__init__(self)
+        self.names = None
+        self.zais = None
+        self.days = None
+        self.burnup = None
 
     def __getitem__(self, name):
         """Retrieve a material from :attr:`materials`."""
         return self.materials[name]
+
+    def __len__(self):
+        return len(self.materials)
+
+    def __contains__(self, name):
+        """Check if a material is stored"""
+        return name in self.materials
+
+    def __iter__(self):
+        """Iterate over material names"""
+        return iter(self.materials)
+
+    def keys(self):
+        """Key-view into material dictionary"""
+        return self.materials.keys()
+
+    def values(self):
+        """Values-view into material dictionary"""
+        return self.materials.values()
+
+    def items(self):
+        """Iterate over name, material pairs"""
+        return self.materials.items()
+
+    def get(self, key, default=None):
+        """Retrieve a material from the dictionary if it exists
+
+        Parameters
+        ----------
+        key : str
+            Name of a material that may or may not exist in
+            :attr:`materials`
+        default : optional
+            Item to return if ``key`` isn't found
+
+        Returns
+        -------
+        object
+            A :class:`serpentTools.objects.DepletedMaterial` if
+            it is stored under ``key``. Otherwise return ``default``
+
+        """
+        return self.materials.get(key, default)
 
     def _read(self):
         """Read through the depletion file and store requested data."""
@@ -180,12 +249,12 @@ class DepletionReader(DepPlotMixin, MaterialReader):
                     self._checkAddData(chunk, name, variable)
                     continue
                 self._addMetadata(chunk)
-        if 'days' in self.metadata:
-            for mKey in self.materials:
-                self.materials[mKey].days = self.metadata['days']
+        if self.days is not None:
+            for material in self.values():
+                material.days = self.days
 
     def _addMetadata(self, chunk):
-        for varName in METADATA_KEYS:
+        for varName, destination in METADATA_KEYS.items():
             if varName not in chunk[0]:
                 continue
             if varName in ['ZAI', 'NAMES']:
@@ -197,10 +266,12 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             else:
                 line = self._cleanSingleLine(chunk)
                 values = str2vec(line)
-            self.metadata[convertVariableName(varName)] = values
-            return
-        warning("Unsure about how to process metadata chunk {}"
-                .format(chunk[0]))
+            setattr(self, destination, values)
+            break
+        else:
+            raise ValueError(
+                "Unsure about how to process metadata chunk "
+                "{}".format(chunk[0]))
 
     @staticmethod
     def _cleanSingleLine(chunk):
@@ -219,7 +290,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         if (self.settings['materialVariables']
                 and variable not in self.settings['materialVariables']):
             return
-        if name not in self.materials:
+        if name not in self:
             debug('Adding material {}...'.format(name))
             self.materials[name] = DepletedMaterial(name, self.metadata)
         if len(chunk) == 1:  # single line values, e.g. volume or burnup
@@ -249,15 +320,25 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             error("No materials obtained from {}".format(self.filePath))
             return
 
-        for mKey, mat in self.materials.items():
+        for mKey, mat in self.items():
             assert isinstance(mat, DepletedMaterial), (
                 'Unexpected key {}: {} in materials dictionary'.format(
                     mKey, type(mat))
             )
-        debug('  found {} materials'.format(len(self.materials)))
+        debug('  found {} materials'.format(len(self)))
 
-        if 'bu' in self.metadata:
-            self.metadata['burnup'] = self.metadata.pop('bu')
+    @property
+    def metadata(self):
+        out = {}
+        if self.names is not None:
+            out["names"] = self.names
+        if self.zais is not None:
+            out["zai"] = self.zais
+        if self.days is not None:
+            out["days"] = self.days
+        if self.burnup is not None:
+            out["burnup"] = self.burnup
+        return out
 
     def _compare(self, other, lower, upper, _sigma):
 
@@ -268,9 +349,13 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         return similar
 
     def _comparePrecheckMetadata(self, other):
-        for key, myVec in self.metadata.items():
-            otherVec = other.metadata[key]
-            if len(myVec) != len(otherVec):
+        for key in ["names", "zais", "days", "burnup"]:
+            myVec = getattr(self, key)
+            otherVec = getattr(other, key, None)
+            if (
+                (otherVec is None and myVec is not None)
+                or len(myVec) != len(otherVec)
+            ):
                 error("Stopping comparison early due to mismatched {} vectors"
                       "\n\t>{}\n\t<{}".format(key, myVec, otherVec))
                 return False
@@ -311,7 +396,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         commonMats = getKeyMatchingShapes(
             self.materials, other.materials, 'materials')
         similar = (
-            len(self.materials) == len(other.materials) == len(commonMats))
+            len(self) == len(other) == len(commonMats))
 
         for matName in sorted(commonMats):
             myMat = self[matName]
@@ -351,18 +436,12 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     def _compareMetadata(self, other, lower, upper, _sigma):
         """Private method for comparing metadata"""
 
-        similar = logDirectCompare(
-            self.metadata['names'], other.metadata['names'],
-            0, 0, 'names')
+        similar = logDirectCompare(self.names, other.names, 0, 0, 'names')
+        similar &= logDirectCompare(self.zais, other.zais, 0, 0, 'zai')
         similar &= logDirectCompare(
-            self.metadata['zai'], other.metadata['zai'],
-            0, 0, 'zai')
+            self.days, other.days, lower, upper, 'days')
         similar &= logDirectCompare(
-            self.metadata['days'], other.metadata['days'],
-            lower, upper, 'days')
-        similar &= logDirectCompare(
-            self.metadata['burnup'], other.metadata['burnup'],
-            lower, upper, 'burnup')
+            self.burnup, other.burnup, lower, upper, 'burnup')
         return similar
 
     @deprecated("toMatlab")
@@ -405,12 +484,13 @@ class DepletionReader(DepPlotMixin, MaterialReader):
 
         Raises
         ------
-        ImportError:
+        ImportError
             If :term:`scipy` is not installed
 
         See Also
         --------
         :func:`scipy.io.savemat`
+
         """
         if metadata is not None:
             warn("metadata argument is deprecated. All metadata written",
@@ -436,10 +516,15 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         else:
             converter = prepToMatlab
 
-        data = {k.upper() if reconvert else k: v
-                for k, v in self.metadata.items()}
+        data = {}
+        for k in ["names", "zais", "burnup", "days"]:
+            value = getattr(self, k)
+            if k == "zais":
+                k = "zai"  # Back compatibility
+            if value is not None:
+                data[k.upper() if reconvert else k] = value
 
-        for matName, material in self.materials.items():
+        for matName, material in self.items():
             for varName, varData in material.data.items():
                 data[converter(matName, varName)] = varData
 

@@ -63,10 +63,30 @@ class BranchTester(_BranchTesterHelper):
 
     def test_branchingUniverses(self):
         """Verify that the correct universes are present."""
-        for branchID, branch in self.reader.iterBranches():
+        for branchID, branch in self.reader.items():
             self.assertSetEqual(
                 self.expectedUniverses, set(branch),
                 'Branch {}'.format(branchID))
+
+    def test_special(self):
+        """Test special methods like len, get"""
+        self.assertEqual(len(self.reader), len(self.reader.branches))
+        allBranches = set(self.reader.branches)
+        self.assertSetEqual(set(self.reader), allBranches)
+
+        for key, branch in self.reader.items():
+            self.assertIn(key, self.reader, msg=key)
+            self.assertIs(self.reader[key], branch, msg=key)
+            self.assertIs(self.reader.get(key), branch, msg=key)
+            allBranches.remove(key)
+
+        self.assertSetEqual(
+            allBranches, set(), msg="Did not iterate over all items")
+
+        with self.assertRaises(KeyError):
+            self.reader["this should not exist"]
+
+        self.assertIs(self.reader.get("this should not exist"), None)
 
 
 class BranchContainerTester(_BranchTesterHelper):

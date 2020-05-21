@@ -65,54 +65,128 @@ class DepletedMaterialBase(NamedObject):
     __doc__ = """
     Base class for storing material data from a depleted material file
 
-    {equiv:s}
+    Many of the instance attributes are shortcuts for accessing data
+    in the underlying dictionary. For example, the following command
+    fetch the same data::
+
+        >>> m.data["adens"]
+        >>> m["adens"]
+        >>> m.adens
+
+    With one exception: the attribute-based accessing is guaranteed to
+    not raise an error if the data has not been loaded into the dictionary.
+    This may be the case if a file was read using filtering settings and
+    ``adens`` was not read.
 
     Parameters
     ----------
-    {params:s}
+    name : str
+        Name of this material
+    metadata : dict
+        Dictionary with file metadata
 
     Attributes
     ----------
-    {attrs:s}
+    data : dict
+        Main dictionary of arrays from the output file
+    zai : list of int
+        Isotopic ZZAAAI identifiers like ``922350``. Ordered like
+        the rows of the data arrays
+    names : list of str
+        Isotope names like ``"U235"``. Ordered like the rows of the
+        data arrays
+    days : numpy.ndarray
+        Time in days for each column in the data arrays
+    burnup : numpy.ndarray or None
+        Burnup vector for this specific material
+    volume : numpy.ndarray or None
+        Volume of this material over time
+    adens : numpy.ndarray or None
+        2D array of atom densities in atoms/b-cm
+    mdens : numpy.ndarray or None
+        2D array of mass densites in g/cm3
+    activity : numpy.ndarray or None
+        2D array of activities in Bq
+    decayHeat : numpy.ndarray or None
+        2D array of decay heats in W
+    spontaneousFissionRate : numpy.ndarray or None
+        2D array of spontaneous fission rate in fission per second
+    photonProdRate : numpy.ndarray or None
+        2D array of photon emission rate in photons per second
+    ingTox : numpy.ndarray or None
+        2D array of ingestion toxicity in sieverts
+    inhTox : numpy.ndarray or None
+        2D array of inhalation toxicity in sieverts
 
-    """.format(equiv=docEquiv, params=docParams, attrs=docAttrs)
+    """
 
     def __init__(self, name, metadata):
         NamedObject.__init__(self, name)
         self.data = {}
-        self.__burnup = None
-        self.__mdens = None
-        self.__adens = None
         self.zai = metadata.get('zai', None)
         self.names = metadata.get('names', None)
         self.days = metadata.get('days', None)
 
     def __getitem__(self, item):
-        if item not in self.data:
-            raise KeyError('Key {} not found on material {}'
-                           .format(item, self.name))
+        """Retrieve a value from the data dictionary"""
         return self.data[item]
+
+    def get(self, key, default=None):
+        """Retrieve a value from the dictionary, or default if not found
+
+        Parameters
+        ----------
+        key : str
+            Name of a quantity that may or may not exist in :attr:`data`
+        default : object, optional
+            Item to return if ``key`` is not found
+
+        Returns
+        -------
+        object
+            :class:`numpy.ndarray` if ``key`` was found, otherwise ``default``
+        """
+        return self.data.get(key, default)
 
     @property
     def burnup(self):
-        if 'burnup' not in self.data:
-            raise AttributeError('Burnup for material {} has not been loaded'
-                                 .format(self.name))
-        return self.data['burnup']
+        return self.data.get("burnup")
 
     @property
     def adens(self):
-        if 'adens' not in self.data:
-            raise AttributeError('Atomic densities for material {} have not '
-                                 'been loaded'.format(self.name))
-        return self.data['adens']
+        return self.data.get("adens")
 
     @property
     def mdens(self):
-        if 'mdens' not in self.data:
-            raise AttributeError('Mass densities for material {} has not been '
-                                 'loaded'.format(self.name))
-        return self.data['mdens']
+        return self.data.get("mdens")
+
+    @property
+    def volume(self):
+        return self.data.get("volume")
+
+    @property
+    def activity(self):
+        return self.data.get("a")
+
+    @property
+    def ingTox(self):
+        return self.data.get("ingTox")
+
+    @property
+    def inhTox(self):
+        return self.data.get("inhTox")
+
+    @property
+    def decayHeat(self):
+        return self.data.get("h")
+
+    @property
+    def spontaneousFissionRate(self):
+        return self.data.get("sf")
+
+    @property
+    def photonProdRate(self):
+        return self.data.get("gsrc")
 
     def _getIsoID(self, isotopes):
         """Return the row indices that correspond to specfic isotopes."""
@@ -270,7 +344,62 @@ class DepletedMaterialBase(NamedObject):
 
 
 class DepletedMaterial(DepletedMaterialBase):
-    __doc__ = DepletedMaterialBase.__doc__
+    """Base class for storing material data from a depleted material file
+
+    Many of the instance attributes are shortcuts for accessing data
+    in the underlying dictionary. For example, the following command
+    fetch the same data::
+
+        >>> m.data["adens"]
+        >>> m["adens"]
+        >>> m.adens
+
+    With one exception: the attribute-based accessing is guaranteed to
+    not raise an error if the data has not been loaded into the dictionary.
+    This may be the case if a file was read using filtering settings and
+    ``adens`` was not read.
+
+    Parameters
+    ----------
+    name : str
+        Name of this material
+    metadata : dict
+        Dictionary with file metadata
+
+    Attributes
+    ----------
+    data : dict
+        Main dictionary of arrays from the output file
+    zai : list of int
+        Isotopic ZZAAAI identifiers like ``922350``. Ordered like
+        the rows of the data arrays
+    names : list of str
+        Isotope names like ``"U235"``. Ordered like the rows of the
+        data arrays
+    days : numpy.ndarray
+        Time in days for each column in the data arrays
+    burnup : numpy.ndarray or None
+        Burnup vector for this specific material
+    volume : numpy.ndarray or None
+        Volume of this material over time
+    adens : numpy.ndarray or None
+        2D array of atom densities in atoms/b-cm
+    mdens : numpy.ndarray or None
+        2D array of mass densites in g/cm3
+    activity : numpy.ndarray or None
+        2D array of activities in Bq
+    decayHeat : numpy.ndarray or None
+        2D array of decay heats in W
+    spontaneousFissionRate : numpy.ndarray or None
+        2D array of spontaneous fission rate in fission per second
+    photonProdRate : numpy.ndarray or None
+        2D array of photon emission rate in photons per second
+    ingTox : numpy.ndarray or None
+        2D array of ingestion toxicity in sieverts
+    inhTox : numpy.ndarray or None
+        2D array of inhalation toxicity in sieverts
+
+    """
 
     def addData(self, variable, rawData):
         """
@@ -399,3 +528,79 @@ class DepletedMaterial(DepletedMaterialBase):
                         xlabel=xlabel, ylabel=ylabel,
                         title=title, legend=legend)
         return ax
+
+    def toDataFrame(self, quantity, names=None, zai=None, time="days", multiIndex=False):
+        """Create a pandas DataFrame for a property of interest
+
+        If ``names`` and ``zai`` are not provided, then the isotope
+        names will be used as the columns.
+
+        Parameters
+        ----------
+        quantity : str
+            Either a key in :attr:`data` or the string name of an attribute
+            like ``photonProdRate`` for :attr:`photonProdRate`
+        names : sequence of str, optional
+            Specific isotope names to obtain. Not compatible with ``zai``
+        zai : sequence of int, optional
+            Specific isotope zai to obtain. Not compatible with ``names``
+        time : {"days", "burnup", "step"}, optional
+            What array to use for the index or rows of the DataFrame.
+            Defaults to using :attr:`days`, but ``"burnup"`` can be passed
+            to use :attr:`burnup`, if it is present. The value of ``"step"``
+            will simply create a basic index that starts at 0 and increments
+            by one per row
+
+        Returns
+        -------
+        pandas.DataFrame
+            2D tabulated representation of the requested array. Columns
+            reflect isotopes, rows represent points in time
+
+        """
+        import pandas
+
+        if quantity in {"burnup", "volume"}:
+            raise ValueError("{} does not reflect 2D isotopic data".format(
+                quantity))
+
+        if names is not None and zai is not None:
+            raise ValueError("Cannot pass both isotope names and zai")
+
+        if time == "days":
+            timeIndex = pandas.Index(self.days, name="Time [d]")
+        elif time == "burnup":
+            bu = self.burnup
+            if bu is None:
+                raise AttributeError(
+                    "Burnup not set on material {}".format(self.name))
+            timeIndex = pandas.Index(bu, name="Burnup [MWd/kgU]")
+        elif time == "step":
+            timeIndex = pandas.Index(range(len(self.days)), name="Step")
+        else:
+            raise ValueError(
+                "Index must be days, burnup, or step, not {}".format(time))
+
+        data = self.data.get(quantity)
+
+        if data is None:
+            data = getattr(self, quantity, None)
+        if data is None:
+            raise AttributeError("Quantity {} not present as key in data "
+                                 "or as attribute".format(quantity))
+
+        if names is None:
+            if zai is None:
+                columns = pandas.Index(self.names, name="Isotope")
+                isoslice = slice(None)
+            else:
+                isoslice = self._getRowIndices("zai", zai)
+                columns = pandas.Index(
+                    [self.zai[x] for x in isoslice], name="Isotope ZAI")
+        else:
+            isoslice = self._getRowIndices("names", names)
+            columns = pandas.Index(
+                [self.names[x] for x in isoslice], name="Isotopes")
+
+        return pandas.DataFrame(
+            data[isoslice].T.copy(), index=timeIndex, columns=columns)

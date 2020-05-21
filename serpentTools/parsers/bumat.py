@@ -61,6 +61,7 @@ class BumatReader(MaterialReader):
         cls.HAS_BEEN_WARNED = True
 
     def __getitem__(self, key):
+        """Return a material from :attr:`materials`"""
         return self.materials[key]
 
     def _precheck(self):

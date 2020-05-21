@@ -83,12 +83,9 @@ class DepletionReaderComparisonTester(DepletionCompareHelper):
         """
         Verify the comparison fails early for dissimilar metadata shapes.
         """
-        newVecKey = 'badMetadataKey'
-        self.refReader.metadata[newVecKey] = [0, 1, 2, 3]
-        self.otherReader.metadata[newVecKey] = [0, 1, 2]
+        self.otherReader.names = self.refReader.names[1:]
         self.assertFalse(self.compare(100, 100, 100))
-        self.assertMsgInLogs('ERROR', newVecKey, partial=True)
-        self.refReader.metadata.pop(newVecKey)
+        self.assertMsgInLogs('ERROR', "names", partial=True)
 
     def test_diffMaterialDicts(self):
         """Verify the test fails if different materials are stored."""

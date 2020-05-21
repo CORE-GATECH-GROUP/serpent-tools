@@ -873,7 +873,7 @@ class CartesianDetector(Detector):
 
     def __init__(self, name, bins=None, tallies=None, errors=None,
                  indexes=None, grids=None, x=None, y=None, z=None):
-        Detector.__init__(self, name, bins, tallies, errors, indexes, grids)
+        super().__init__(name, bins, tallies, errors, indexes, grids)
         self._x = None
         self._y = None
         self._z = None
@@ -999,8 +999,8 @@ class CartesianDetector(Detector):
         * :meth:`slice`
         * :func:`matplotlib.pyplot.pcolormesh`
         """
-        Detector.meshPlot(
-            self, xdim=xdim, ydim=ydim, what=what, fixed=fixed, ax=ax,
+        return super().meshPlot(
+            xdim=xdim, ydim=ydim, what=what, fixed=fixed, ax=ax,
             cmap=cmap, cbarLabel=cbarLabel, logColor=logColor, xlabel=xlabel,
             ylabel=ylabel, logx=logx, logy=logy, loglog=loglog,
             title=title, thresh=thresh, **kwargs)
@@ -1011,7 +1011,7 @@ class CartesianDetector(Detector):
             if grid is not None:
                 return hstack((grid[:, 0], grid[-1, 1]))
             raise AttributeError("{} not set".format(qty[0], stacklevel=2))
-        return Detector._getPlotGrid(self, qty)
+        return super()._getPlotGrid(qty)
 
     def _getPlotXData(self, qty, ydata):
         if qty is not None and hasattr(self, qty[0]):
@@ -1019,7 +1019,7 @@ class CartesianDetector(Detector):
             if grid is not None:
                 return grid[:, 0], DETECTOR_PLOT_LABELS.get(qty, "Bin Index")
             raise AttributeError("{} not set".format(qty[0], stacklevel=2))
-        return Detector._getPlotXData(self, qty, ydata)
+        return super()._getPlotXData(qty, ydata)
 
 
 class HexagonalDetector(Detector):
@@ -1116,7 +1116,7 @@ class HexagonalDetector(Detector):
                  indexes=None, z=None, centers=None, pitch=None, hexType=None,
                  grids=None):
 
-        Detector.__init__(self, name, bins, tallies, errors, indexes, grids)
+        super().__init__(name, bins, tallies, errors, indexes, grids)
 
         if pitch is not None:
             self.pitch = pitch
@@ -1220,7 +1220,7 @@ class HexagonalDetector(Detector):
         if any(arg in {"ycoord", "xcoord"} for arg in (xdim, ydim)):
             warn("Use hexPlot if plotting xcoord vs ycoord")
             return self.hexPlot(**opts)
-        return Detector.meshPlot(self, xdim, ydim, **opts)
+        return super().meshPlot(xdim, ydim, **opts)
 
     meshPlot.__doc__ = Detector.meshPlot.__doc__
 
@@ -1323,7 +1323,7 @@ class HexagonalDetector(Detector):
         radius = self.pitch / sqrt(3)
         rotation = 0 if self.hexType == 2 else (pi / 2)
 
-        for pos, (xy, val) in enumerate(zip(coords, data.flat)):
+        for xy, val in zip(coords, data.flat):
             if val <= thresh:
                 continue
             values.append(val)
@@ -1428,8 +1428,8 @@ class CylindricalDetector(Detector):
         if any(arg in {"rmesh", "phi"} for arg in (xdim, ydim)):
             warn("Cylindrical plotting is not fully supported. See GitHub "
                  "issue 169")
-        return Detector.meshPlot(
-            self, xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
+        return super().meshPlot(
+            xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
             logColor=logColor, xlabel=xlabel, logx=logx, logy=logy,
             loglog=loglog, title=title, **kwargs)
 
@@ -1502,8 +1502,8 @@ class SphericalDetector(Detector):
                  logx=False, logy=False, loglog=False, title=None, **kwargs):
         if any(arg in {"theta", "phi", "rmesh"} for arg in (xdim, ydim)):
             warn("Spherical mesh plotting is not fully supported.")
-        return Detector.meshPlot(
-            self, xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
+        return super().meshPlot(
+            xdim, ydim, what=what, fixed=fixed, ax=ax, cmap=cmap,
             logColor=logColor, xlabel=xlabel, logx=logx, logy=logy,
             loglog=loglog, title=title, **kwargs)
 

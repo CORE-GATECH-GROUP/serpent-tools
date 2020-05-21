@@ -3,8 +3,8 @@ Custom-built containers for storing data from serpent outputs
 
 Contents
 --------
-* :class:`~serpentTools.objects.containers.HomogUniv`
-* :class:`~serpentTools.objects.containers.BranchContainer`
+* :class:`~serpentTools.objects.HomogUniv`
+* :class:`~serpentTools.objects.BranchContainer`
 
 """
 from itertools import product
@@ -55,14 +55,13 @@ __all__ = (
 
 UnivTuple = namedtuple("UnivTuple", ["universe", "burnup", "step", "days"])
 
-try:
-    UnivTuple.__doc__ = """Convenient identifier for universes
+UnivTuple.__doc__ = """Convenient identifier for universes
 
 Properties can be accessed by position or by attribute name.
 The latter is preferable as it will be consistent across
 potential API changes
 
-Attributes
+Parameters
 ----------
 universe : str
     Universe from Serpent input
@@ -83,9 +82,6 @@ Example
 True
 
 """
-except AttributeError:
-    # Can't set docs for namedtuples in PY2
-    pass
 
 
 class HomogUniv(NamedObject):
@@ -140,7 +136,7 @@ class HomogUniv(NamedObject):
 
     Raises
     ------
-    :class:`serpentTools.SerpentToolsException`
+    :class:`serpentTools.messages.SerpentToolsException`
         If a negative value of burnup, step, or burnup days is passed
 
     """
@@ -280,17 +276,17 @@ class HomogUniv(NamedObject):
 
         Parameters
         ----------
-        variableName: str
+        variableName : str
             Variable Name
-        uncertainty:   bool
+        uncertainty : bool, optional
             Boolean Variable- set to True in order to retrieve the
             uncertainty associated to the expected values
 
         Returns
         -------
-        x:
+        x :
             Variable Value
-        dx:
+        dx :
             Associated uncertainty if ``uncertainty``
 
         Raises
@@ -303,7 +299,7 @@ class HomogUniv(NamedObject):
 
         See Also
         --------
-        :meth:`__getitem__` to directly access data witout uncertainties
+        :meth:`__getitem__` to directly access data without uncertainties
 
         """
         # 1. Check the input values
@@ -311,22 +307,23 @@ class HomogUniv(NamedObject):
             raise TypeError('The variable uncertainty has type %s.\n ...'
                             'It should be boolean.', type(uncertainty))
         # 2. Pointer to the proper dictionary
-        setter = self._lookup(variableName, False)
-        if variableName not in setter:
+        location = self._lookup(variableName, False)
+        x = location.get(variableName)
+        if x is None:
             raise KeyError(
                 "Variable {} absent from expected value dictionary".format(
                     variableName))
-        x = setter.get(variableName)
         # 3. Return the value of the variable
         if not uncertainty:
             return x
-        setter = self._lookup(variableName, True)
-        if variableName not in setter:
+        location = self._lookup(variableName, True)
+        unc = location.get(variableName)
+        if unc is None:
             raise KeyError(
                 "Variable {} absent from uncertainty dictionary".format(
                     variableName))
 
-        return x, setter[variableName]
+        return x, unc
 
     def __getitem__(self, gcname):
         """
@@ -342,21 +339,30 @@ class HomogUniv(NamedObject):
         Set the expected value of gckey to be gcvalue
 
         No conversions are placed on the variable name. What you
-        pass is what gets set.
-
-        For uncertainties, or to convert variable
+        pass is what gets set. For uncertainties, or to convert variable
         names to ``mixedCase``, use :meth:`addData`.
 
         Much like a dictionary, this will overwrite existing data.
+
+        Parameters
+        ----------
+        gckey : str
+            Group constant name. If it begins with ``inf``, value will
+            be placed in :attr:`infExp`. If it begins with ``b1``, the
+            value will be placed in :attr:`b1Exp`. Otherwise it will
+            be placed in :attr:`gc`
+        gcvalue : numpy.ndarray
+            Corresponding group constant
+
         """
         self._lookup(gckey, False)[gckey] = gcvalue
 
     def _lookup(self, variableName, uncertainty):
-        if 'inf' == variableName[:3]:
+        if variableName.startswith("inf"):
             if uncertainty:
                 return self.infUnc
             return self.infExp
-        elif "b1" == variableName[:2]:
+        elif variableName.startswith("b1"):
             if uncertainty:
                 return self.b1Unc
             return self.b1Exp
@@ -396,10 +402,6 @@ class HomogUniv(NamedObject):
         Returns
         -------
         {rax}
-
-        See Also
-        --------
-        * :meth:`serpentTools.objects.containers.HomogUniv.get`
 
         """
         qtys = [qtys, ] if isinstance(qtys, str) else qtys
@@ -711,7 +713,7 @@ class BranchContainer(dict):
             raise TypeError("{} {}".format(key, type(value)))
         if not isinstance(key, UnivTuple):
             key = UnivTuple(*key)
-        dict.__setitem__(self, key, value)
+        super().__setitem__(key, value)
 
     def update(self, other):
         """Update with contents of another BranchContainer"""
@@ -722,7 +724,7 @@ class BranchContainer(dict):
                 raise TypeError("{} {}".format(key, type(univ)))
             temp[UnivTuple(*key)] = univ
 
-        dict.update(self, temp)
+        super().update(temp)
 
     def getUniv(self, univID, burnup=None, index=None, days=None):
         """
@@ -741,7 +743,7 @@ class BranchContainer(dict):
 
         Returns
         -------
-        :class:`~serpentTools.objects.containers.HomogUniv`
+        :class:`~serpentTools.objects.HomogUniv`
             Requested universe
 
         Raises

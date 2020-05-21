@@ -50,13 +50,17 @@ the corresponding values are the depleted material.
      'total': <serpentTools.objects.materials.DepletedMaterial at 0x7f8f8dce7940>}
 
 Metadata, such as the isotopic vector and depletion schedule are also
-present inside the reader
+present on the reader
 
 .. code:: 
     
-    >>> dep.metadata.keys()
-    dict_keys(['zai', 'names', 'burnup', 'days'])
-    >>> dep.metadata['burnup']
+    >>> dep.names
+    ['Xe135', 'I135', 'U234', 'U235', 'U236', 'U238', 'Pu238',
+    'Pu239', 'Pu240', 'Pu241', 'Pu242', 'Np237', 'Am241', 'Am243',
+    'Cm243', 'Cm244', 'Cm245', 'Cs133', 'Nd143', 'Sm147', 'Sm149',
+    'Sm150', 'Sm151', 'Sm152', 'Eu153', 'Gd155', 'Mo95', 'Tc99',
+    'Ru101', 'Rh103', 'Ag109', 'Cd113', 'lost', 'total']
+    >>> dep.burnup
     array([0.  , 0.02, 0.04, 0.06, 0.08, 0.1 , 0.12, 0.14, 0.16, 0.18, 0.2 ,
            0.22, 0.24, 0.26, 0.28, 0.3 , 0.32, 0.34, 0.36, 0.38, 0.4 , 0.42,
            0.44, 0.46, 0.48, 0.5 , 0.52, 0.54, 0.56, 0.58, 0.6 , 0.62, 0.64,
@@ -64,13 +68,12 @@ present inside the reader
            0.88, 0.9 , 0.92, 0.94, 0.96, 0.98, 1.  , 1.02, 1.04, 1.06, 1.08,
            1.1 , 1.12, 1.14, 1.16, 1.18, 1.2 , 1.22, 1.24, 1.26, 1.28, 1.3 ,
            1.32, 1.34, 1.36, 1.38, 1.4 , 1.42])
-    >>> dep.metadata['names']
-    ['Xe135', 'I135', 'U234', 'U235', 'U236', 'U238',
-     'Pu238', 'Pu239', 'Pu240', 'Pu241', 'Pu242', 'Np237',
-     'Am241', 'Am243', 'Cm243', 'Cm244', 'Cm245', 'Cs133',
-     'Nd143', 'Sm147', 'Sm149', 'Sm150', 'Sm151', 'Sm152',
-     'Eu153', 'Gd155', 'Mo95', 'Tc99', 'Ru101', 'Rh103',
-     'Ag109', 'Cd113', 'lost', 'total']
+    >>> dep.zais
+    [541350, 531350, 922340, 922350, 922360, 922380, 942380,
+     942390, 942400, 942410, 942420, 932370, 952410, 952430,
+     962430, 962440, 962450, 551330, 601430, 621470, 621490,
+     621500, 621510, 621520, 631530, 641550, 420950, 430990,
+     441010, 451030, 471090, 481130, 666, 0]
 
 Depleted Material Objects
 -------------------------
@@ -82,28 +85,28 @@ These objects share access to the metadata of the reader as well.
 .. code:: 
     
     >>> fuel = dep.materials['fuel0']
-    >>> print(fuel.burnup)
-    [0.         0.00702676 0.0144405  0.0218803  0.0297245  0.0370823
-     0.0447201  0.0513465  0.0590267  0.0671439  0.073392   0.0802637
-     0.0887954  0.0974604  0.104807   0.111528   0.119688   0.128006
-     0.135704   0.143491   0.150545   0.157608   0.165391   0.172872
-     0.180039   0.188011   0.195215   0.202291   0.20963    0.216895
-     0.224651   0.232139   0.23904    0.246076   0.25422    0.262011
-     0.269681   0.276981   0.284588   0.291835   0.299661   0.30727
-     0.314781   0.322364   0.329404   0.336926   0.34438    0.352246
-     0.360913   0.367336   0.37415    0.381556   0.388951   0.396286
-     0.404159   0.412113   0.419194   0.426587   0.43425    0.442316
-     0.449562   0.456538   0.465128   0.472592   0.479882   0.487348
-     0.494634   0.502167   0.508326   0.515086   0.522826   0.530643  ]
-    >>> print(fuel.days is dep.metadata['days'])
+    >>> fuel.burnup
+    array([0.         0.00702676 0.0144405  0.0218803  0.0297245  0.0370823
+           0.0447201  0.0513465  0.0590267  0.0671439  0.073392   0.0802637
+           0.0887954  0.0974604  0.104807   0.111528   0.119688   0.128006
+           0.135704   0.143491   0.150545   0.157608   0.165391   0.172872
+           0.180039   0.188011   0.195215   0.202291   0.20963    0.216895
+           0.224651   0.232139   0.23904    0.246076   0.25422    0.262011
+           0.269681   0.276981   0.284588   0.291835   0.299661   0.30727
+           0.314781   0.322364   0.329404   0.336926   0.34438    0.352246
+           0.360913   0.367336   0.37415    0.381556   0.388951   0.396286
+           0.404159   0.412113   0.419194   0.426587   0.43425    0.442316
+           0.449562   0.456538   0.465128   0.472592   0.479882   0.487348
+           0.494634   0.502167   0.508326   0.515086   0.522826   0.530643])
+    >>> fuel.days is dep.days
     True
 
 Materials can also be obtained by indexing directly into the reader, with
 
 .. code::
 
-    >>> newF = dep['fuel0']
-    >>> assert newF is fuel
+    >>> dep["fuel0"] is dep.materials["fuel0"] is dep.get("fuel0")
+    True
 
 All of the variables present in the depletion file for this material are
 present, stored in the |matData| dictionary. A few properties commonly
@@ -258,6 +261,38 @@ with ``bglass`` followed by at least one integer.
     >>> bglass = bgReader.materials['bglass0']
     >>> bglass.data.keys()
     dict_keys(['adens'])
+
+Integration with ``pandas``
+---------------------------
+
+If you have the :mod:`pandas` package installed, you can use
+the :meth:`~serpentTools.objects.DepletedMaterial.toDataFrame` method
+to create tabulated data. The method will retrieve data for all isotopes
+unless the ``names`` or ``zai`` arguments are provided. For compactness,
+only a few isotopes will be retrieved here.
+
+.. code::
+
+    >>> fuel.toDataFrame("adens", names=["U235", "Pu239", "Xe135"]).head()
+    Isotopes U235 Pu239 Xe135
+    Time [d]      
+    0.0 0.000558 0.000000e+00 0.000000e+00
+    0.5 0.000558 6.374580e-09 2.435910e-09
+    1.0 0.000558 2.590310e-08 4.037960e-09
+    1.5 0.000558 5.728820e-08 4.620920e-09
+    2.0 0.000557 9.927160e-08 4.789480e-09
+
+Arguments can also be used to control the time values in the index and
+column structure::
+
+    >>> fuel.toDataFrame("adens", zai=[922350, 942390, 541350], time="burnup")
+    Isotope ZAI 922350 942390 541350
+    Burnup [MWd/kgU]
+    0.0 0.000558 0.000000e+00 0.000000e+00
+    0.5 0.000558 6.374580e-09 2.435910e-09
+    1.0 0.000558 2.590310e-08 4.037960e-09
+    1.5 0.000558 5.728820e-08 4.620920e-09
+    2.0 0.000557 9.927160e-08 4.789480e-09
 
 Conclusion
 ----------
