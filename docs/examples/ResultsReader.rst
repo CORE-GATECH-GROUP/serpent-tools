@@ -84,8 +84,8 @@ values (e.g. CPU resources).
 
 .. code:: 
 
-    >>> list(res.resdata.keys())[0:5]
-    ['minMacroxs', 'dtThresh', 'stFrac', 'dtFrac', 'dtEff']
+    >>> sorted(res.resdata.keys())[0:5]
+    ['absKeff', 'absKinf', 'actinideActivity', 'actinideDecayHeat', 'actinideIngTox']
 
 Values are presented in similar fashion as if they were read in to Matlab, with one
 exception. Serpent currently appends a new row for each burnup step, but also for
@@ -123,6 +123,24 @@ uncertainties.
      [ 24.0096 ],
      [ 36.0144 ],
      [ 48.0192 ]]
+
+Data in the :attr:`~serpentTools.ResultsReader.resdata` can be obtained
+directly by indexing into the reader::
+
+    >>> res["burnup"]
+    array([[ 0.      , 0.      ],
+           [ 0.1     , 0.100001],
+           [ 1.      , 1.00001 ],
+           [ 2.      , 2.00001 ],
+           [ 3.      , 3.00003 ],
+           [ 4.      , 4.00004 ]]
+    >>> res.resdata.get('absKeff'))
+    array([[  1.29160000e+00, 9.00000000e-04],
+           [  1.29500000e+00, 9.30000000e-04],
+           [  1.29172000e+00, 9.10000000e-04],
+           [  1.29172000e+00, 7.80000000e-04],
+           [  1.29312000e+00, 6.80000000e-04],
+           [  1.29140000e+00, 7.80000000e-04]]
     
 Plotting Results Data
 ---------------------

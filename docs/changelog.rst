@@ -6,6 +6,14 @@
 Changelog
 =========
 
+.. note::
+
+    Development will be limited to bug fixes for future 
+    ``0.9.x`` releases. Release ``0.10.0`` will introduce
+    new and improved parsers and containers alongside
+    existing structures. For more information, see
+    :ref:`data-model`
+
 .. _v0.10.0:
 
 0.10.0
@@ -17,10 +25,52 @@ Changelog
 * Installation also provides a ``serpentTools`` executable that
   can be used to access the :ref:`cli`
 
+.. _v0.9.3:
+
+:release-tag:`0.9.3`
+====================
+
+* Depletion data now exposed through attributes like
+  :attr:`~serpentTools.objects.DepletedMaterial.adens` - :pull:`390`
+* Generate a :class:`pandas.DataFrame` with depletion data using
+  :meth:`~serpentTools.objects.DepletedMaterial.toDataFrame`
+  - :pull:`391`
+* Dictionary-like item access and iteration for branching, detector,
+  history, depletion, and xsplot readers - :pull:`392`, :pull:`395`, :pull:`402`
+* Obtain data from :attr:`~serpentTools.ResultsReader.resdata` with
+  :meth:`~serpentTools.ResultsReader.__getitem__` and 
+  :meth:`~serpentTools.ResultsReader.get` - :pull:`392`
+* Modify plot legends for :meth:`serpentTools.objects.XSData.plot` for all
+  or some plotted MTs - :pull:`402`
+* Options for plotting sensitivity profiles against energies in MeV - :pull:`405`
+
+.. _v0.9.3-bug:
+
+Bug Fixes
+---------
+
+* Support ``xsplot`` files with branching fractions - :issue:`387`, :pull:`388`
+
+.. _v0.9.3-dep:
+
+Pending Deprecations
+--------------------
+
+* :attr:`serpentTools.DepletionReader.metadata`. Prefer attributes
+  like :attr:`~serpentTools.DepletionReader.zais`
+* :attr:`serpentTools.samplers.DepletionSampler.metadata`. Prefer
+  attributes like :attr:`~serpentTools.samplers.DepletionSampler.zais`
+* :meth:`serpentTools.BranchingReader.iterBranches`. Prefer
+  :meth:`~serpentTools.BranchingReader.items`
+* :attr:`serpentTools.XSPlotReader.metadata` and
+  :attr:`serpentTools.objects.XSData.metadata`. Prefer attributes like
+  :attr:`~serpentTools.XSPlotReader.majorant` or 
+  :attr:`~serpentTools.objects.XSData.energies` - :pull:`402`
+
 .. _v0.9.2:
 
-0.9.2
-=====
+:release-tag:`0.9.2`
+====================
 
 * Officially support installing under Python 3.8
 * Support for passing threshold values to hexagonal detector plots
@@ -34,7 +84,7 @@ Bug Fixes
 * Detector reader can handle sequential detectors with very similar
   names - :issue:`374`.
 * ``serpentTools`` doesn't make any modifications to the logging state,
-  other than introducing package-wide logger.
+  other than introducing package-wide logger - :pull:`380`
 * Colorbars for mesh plots are placed next to their corresponding
   plot, rather than near the last drawn plot - :issue:`372`
 

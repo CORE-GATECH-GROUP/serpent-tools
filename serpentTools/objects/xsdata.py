@@ -1,4 +1,6 @@
 """Holds cross section data pertaining to Serpent xsplot output."""
+from collections.abc import Mapping
+
 import numpy as np
 from matplotlib import pyplot
 
@@ -12,31 +14,38 @@ __all__ = [
 
 
 class XSData(NamedObject):
-    docParams = """name: str
-        Name of this material
-    metadata: dict
-        Dictionary with file metadata"""
-    __doc__ = """
-    Base class for storing cross section data an xsplot file
+    """Base class for storing cross section data an xsplot file
 
     Parameters
     ----------
-    {params:s}
+    name : str
+        Name of this material
+    metadata : dict
+        Dictionary with file metadata. Expects ``egrid`` as a key
+        at least
+    isIso : bool, optional
+        Flag indicating if this data section is for a single
+        isotope or for a material
 
     Attributes
     ----------
-    isIso: bool
+    isIso : bool
         Whether this describes individual isotope XS, or whole-material XS
-    MT: list
+    MT : list
         Macroscopic cross section integers
-    MTdescip: list
+    MTdescip : list
         Descriptions of reactions in ``MT``
-    xsdata: :py:class:`numpy.ndarray`
-    hasNuData: bool
+    xsdata : numpy.ndarray
+        Array of xs data. Rows correspond to items in :attr:`MT`
+    hasNuData : bool
         True if nu data is present
-    metadata: dict
-        file-wide metadata from the reader
-    """.format(params=docParams)
+    energies : numpy.ndarray
+        Energy grid [MeV]
+    metadata : dict
+        File-wide metadata from the reader. Alias for accessing
+        :attr:`energies`. Will be removed in the future
+
+    """
 
     MTdescriptions = {
         -1: "Macro total",
@@ -61,11 +70,12 @@ class XSData(NamedObject):
     }
 
     def __init__(self, name, metadata, isIso=False):
-        NamedObject.__init__(self, name)
+        super().__init__(name)
 
         self.isIso = isIso
 
         # metadata reference
+        self.energies = metadata["egrid"]
         self.metadata = metadata
 
         # Possible reactions on this material / nuclide
@@ -79,13 +89,108 @@ class XSData(NamedObject):
         # whether nu data present for fissionables
         self.hasNuData = False
 
+    def __len__(self):
+        """Number of reactions stored"""
+        return len(self.MT)
+
+    def __getitem__(self, mt):
+        """Return data corresponding to a given mt
+
+        Parameters
+        ----------
+        mt : int
+            Integer MT reaction number
+
+        Returns
+        -------
+        numpy.ndarray
+            Cross section data for this mt
+
+        Raises
+        ------
+        AttributeError
+            If :attr:`xsdata` is empty
+        KeyError
+            If ``mt`` not found in :attr:`MT`
+
+        """
+        if self.xsdata is None:
+            raise AttributeError("xsdata not populated")
+        try:
+            index = self.MT.index(mt)
+        except ValueError as ve:
+            raise KeyError(mt) from ve
+        return self.xsdata[:, index]
+
+    def get(self, mt, default=None):
+        """Return data corresponding to a given mt or a default
+
+        Parameters
+        ----------
+        mt : int
+            Integer MT reaction number
+        default : object
+            Object to be returned in ``mt`` is not found
+
+        Returns
+        -------
+        object
+            :class:`numpy.ndarray` if ``mt`` is found. Otherwise
+            ``default``
+
+        Raises
+        ------
+        AttributeError
+            If :attr:`xsdata` is empty
+
+        """
+        try:
+            return self[mt]
+        except KeyError:
+            return default
+
     @staticmethod
     def negativeMTDescription(mt):
-        """ Gives descriptions for negative MT numbers used by Serpent
-        for whole materials, for neutrons only. """
+        """Descriptions for Serpent negative MT numbers
+
+        These correspond to macroscopic properties, like
+        fission energy production, and for neutrons only.
+        From Serpent Wiki
+
+        Parameters
+        ----------
+        mt : int
+            Macroscopic reaction MT. Must be negative
+
+        Returns
+        -------
+        str
+            Description
+
+        """
         if mt > 0:
-            error("Uh, that's not a negative MT.")
+            raise ValueError("{} is not negative".format(mt))
         return XSData.MTdescriptions[mt]
+
+    def describe(self, mt):
+        """Return the description for any reaction MT
+
+        Parameters
+        ----------
+        mt : int
+            Integer reaction number, e.g. 102 or -8. Assumes
+            neutrons only
+
+        Returns
+        -------
+        str
+            Description for this reaction
+
+        """
+        if mt < 0:
+            return XSData.MTdescriptions[mt]
+        index = self.MT.index(mt)
+        return self.MTdescrip[index]
 
     def setMTs(self, chunk):
         """ Parse chunk to MT numbers and descriptions"""
@@ -99,7 +204,7 @@ class XSData(NamedObject):
             for mt in self.MT:
                 self.MTdescrip.append(self.negativeMTDescription(mt))
         else:
-            self.MTdescrip = [c.split('%')[1].rstrip() for c in chunk[1:]]
+            self.MTdescrip = [c.split('%')[1].strip() for c in chunk[1:]]
 
     def setData(self, chunk):
         """ Parse data from chunk to np array."""
@@ -141,7 +246,8 @@ class XSData(NamedObject):
 
         Returns
         -------
-        Pandas Dataframe version of the XS data.
+        pandas.DataFrame
+            Tabulated representation of the cross section data
 
         Raises
         ------
@@ -196,16 +302,13 @@ class XSData(NamedObject):
     @magicPlotDocDecorator
     def plot(self, mts='all', ax=None, loglog=False, xlabel=None, ylabel=None,
              logx=True, logy=False, title=None, legend=None, ncol=1,
-             **kwargs):
+             labels=None, **kwargs):
         """
-        Return a matplotlib figure for plotting XS.
-
-        mts should be a list of the desired MT numbers to plot for this
-        XS. Units should automatically be fixed between micro and macro XS.
+        Plot XS corresponding to their MTs.
 
         Parameters
         ----------
-        mts: int, string, or list of ints
+        mts : int, string, or list of ints
             If it's a string, it should be 'all'.
             A single int indicates one MT reaction number.
             A list should be a list of MT numbers to plot.
@@ -218,7 +321,14 @@ class XSData(NamedObject):
         {title}
         {legend}
         {ncol}
-        {kwargs} :py:func:`matplotlib.pyplot.plot`
+        labels : str or list of str or dict {int: str}
+            Labels to apply to the plot. Defaults to labeling by MT
+            description.  If a string, then ``mts`` must be a single
+            integer. If a list of strings, each label will be applied
+            to each entry in ``mts``. If a dictionary, keys must be
+            mts and their labels as values. The number of keys do
+            not have to align with the number of MTs
+        {kwargs} :func:`matplotlib.pyplot.plot`
 
         Returns
         -------
@@ -227,9 +337,47 @@ class XSData(NamedObject):
         Raises
         ------
         TypeError
-            if MT numbers that don't make sense come up
+            If MT numbers that don't make sense come up
+
         """
 
+        mts = self._processPlotMts(mts)
+
+        userlabel = kwargs.pop("label", None)
+        if userlabel is not None:
+            # Allow label to be passed for single MT plots
+            # Little easier to remember and it makes more sense.
+            # Don't allow mixed label / labels arguments
+            if labels is not None:
+                raise ValueError(
+                    "Passing label and labels is not allowed. Prefer labels")
+            if len(mts) == 1:
+                labels = [userlabel]
+            else:
+                raise ValueError("Use labels when plotting multiple MTs")
+        else:
+            labels = self._processPlotLabels(mts, labels)
+
+        ax = ax or pyplot.gca()
+
+        kwargs.setdefault("drawstyle", "steps")
+        for mt, label in zip(mts, labels):
+            y = self[mt]
+            ax.plot(self.energies, y, label=label, **kwargs)
+
+        title = title or '{} cross section{}'.format(
+            self.name, 's' if len(mts) > 1 else '')
+        xlabel = xlabel or "Energy [MeV]"
+
+        ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso
+                            else 'cm$^{-1}$'))
+        ax = formatPlot(
+            ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
+            legend=legend, title=title, xlabel=xlabel, ylabel=ylabel)
+
+        return ax
+
+    def _processPlotMts(self, mts):
         if mts == 'all':
             mts = self.MT
         elif isinstance(mts, int):
@@ -247,37 +395,39 @@ class XSData(NamedObject):
 
         for mt in mts:
             if mt not in self.MT:
-                error("{} not in collected MT numbers, {}".format(mt, self.MT))
+                raise ValueError(
+                    "{} not in collected MT numbers, {}".format(mt, self.MT))
+        return mts
 
-        ax = ax or pyplot.gca()
-
-        x = self.metadata['egrid']
-        for mt in mts:
-            for i, MT in enumerate(self.MT):
-                if mt == MT:
-                    y = self.xsdata[:, i]
-                    ax.plot(x, y, drawstyle='steps', label=self.MTdescrip[i])
-
-        title = title or '{} cross section{}'.format(
-            self.name, 's' if len(mts) > 1 else '')
-        xlabel = xlabel or "Energy [MeV]"
-
-        ylabel = ylabel or ('Cross Section ({})'.format('b' if self.isIso
-                            else 'cm$^{-1}$'))
-        ax = formatPlot(
-            ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
-            legend=legend, title=title, xlabel=xlabel, ylabel=ylabel)
-
-        return ax
+    def _processPlotLabels(self, mts, labels):
+        if isinstance(labels, str):
+            if len(mts) != 1:
+                raise ValueError(
+                    "Labels and mts do not align: {} mts, 1 label".format(
+                        len(mts)))
+            return [labels]
+        if labels is None:
+            return [self.describe(mt) for mt in mts]
+        if isinstance(labels, Mapping):
+            out = []
+            for i, mt in enumerate(mts):
+                out.append(labels.get(mt, self.MTdescrip[i]))
+            return out
+        if len(mts) != len(labels):
+            raise ValueError(
+                "Labels and mts do not align: {} mts, {} labels".format(
+                    len(mts), len(labels)))
+        return labels
 
     def showMT(self, retstring=False):
-        """ Pretty prints MT values available for this XS and
-        descriptions.
+        """Create a pretty-print style string of the MT values avaialable
+
 
         Parameters
         ----------
-        retstring: bool
-            return a string if true. Otherwise, print it
+        retstring : bool
+            Return a string if true. Otherwise, print it
+
         """
         outstr = ""
         outstr += "MT numbers available for {}:\n".format(self.name)

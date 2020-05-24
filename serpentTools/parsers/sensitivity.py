@@ -5,7 +5,7 @@ from collections import OrderedDict
 from itertools import product
 
 from numpy import transpose, hstack
-from matplotlib.pyplot import gca
+from matplotlib.pyplot import gca, axvline
 
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
@@ -304,8 +304,8 @@ class SensitivityReader(BaseReader):
                                         "stored on reader")
 
     @magicPlotDocDecorator
-    def plot(self, resp, zai=None, pert=None, mat=None, sigma=3,
-             normalize=True, ax=None, labelFmt=None,
+    def plot(self, resp, zai=None, pert=None, mat=None, mevscale=False,
+             egrid=None, sigma=3, normalize=True, ax=None, labelFmt=None,
              title=None, logx=True, logy=False, loglog=False, xlabel=None,
              ylabel=None, legend=None, ncol=1):
         """
@@ -331,6 +331,12 @@ class SensitivityReader(BaseReader):
         mat: None or str or list of strings
             Plot sensitivities due to these materials. Passing ``None``
             will plot against all materials.
+        mevscale : bool, optional
+            Flag for plotting energy grid in MeV units. If ``True``, the energy
+            axis is expressed in MeV. Default is ``False``.
+        egrid : numpy.array, optional
+            User-defined energy grid boundaries displayed on the sensitivities
+            as vblack, dashed vertical lines. Default is ``None``.
         {sigma}
         normalize: True
             Normalize plotted data per unit lethargy
@@ -389,7 +395,7 @@ class SensitivityReader(BaseReader):
 
         errors = resMat[..., 1] * values * sigma
 
-        energies = self.energies * 1E6
+        energies = self.energies if mevscale else self.energies * 1E6
         for z, m, p in product(zais, mats, perts):
             iZ = self.zais[z]
             iM = self.materials[m]
@@ -402,13 +408,23 @@ class SensitivityReader(BaseReader):
             ax.errorbar(energies, yVals, yErrs, label=label,
                         drawstyle='steps-post')
 
-        xlabel = 'Energy [eV]' if xlabel is None else xlabel
-        ylabel = ylabel if ylabel is not None else (
-            'Sensitivity {} {}'.format(
-                'per unit lethargy' if normalize else '',
-                r'$\pm{}\sigma$'.format(sigma) if sigma else ''))
+        if egrid is not None:
+            for group in egrid:
+                ax.axvline(group, color='k', linestyle='dashed')
+
+        if xlabel is None:
+            xlabel = "Energy [MeV]" if mevscale else "Energy [eV]"
+
+        if ylabel is None:
+            parts = ["Sensitivity"]
+            if normalize:
+                parts.append("per unit lethargy")
+            if sigma:
+                parts.append(r"$\pm{}\sigma$".format(sigma))
+            ylabel = " ".join(parts)
+
         ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
-                        legend=legend, xlabel=xlabel, ylabel=ylabel.strip())
+                        legend=legend, xlabel=xlabel, ylabel=ylabel)
         return ax
 
     def _gather_matlab(self, reconvert):

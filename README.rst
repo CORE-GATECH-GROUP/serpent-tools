@@ -33,11 +33,9 @@ Installation
 
    $ python -m pip install --user --upgrade pip serpentTools
 
-
 For more detailed instructions, including operating-system specific
 instructions and building from source, see
 `Installation Guide <http://serpent-tools.readthedocs.io/en/latest/install.html>`_.
-
 
 Issues
 ======
@@ -51,25 +49,19 @@ References
 
 The Annals of Nuclear Energy article should be cited for all work
 using ``SERPENT``. If you are using this project, please considering
-citing with::
+citing with
 
-    Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, and Gavin Ridley,
-    "`serpentTools: A Python Package for Expediting Analysis with
-    Serpent <https://doi.org/10.1080/00295639.2020.1723992>`_,"
-    *Nuc. Sci. Eng*, (in press) (2020).
+* Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, and Gavin Ridley,
+  "`serpentTools: A Python Package for Expediting Analysis with
+  Serpent <https://doi.org/10.1080/00295639.2020.1723992>`_,"
+  *Nuc. Sci. Eng*, (in press) (2020).
 
 Also, let us know if you publish work using this package! We try and
-keep an up-to-date list of `works using serpentTools`_, and would be
+keep an up-to-date list of works using serpentTools [2]_, and would be
 happy to include more.
 
-If you want to refer to a specific version, follow the `Zenodo DOI 
-<https://doi.org/10.5281/zenodo.1301035>`_. This will resolve to the latest
-version, with links to earlier releases.
-
- .. _works using serpentTools: https://github.com/CORE-GATECH-GROUP/serpent-tools/wiki/Publications-using-serpentTools
-
-If you want to refer to a specific version, follow the `Zenodo DOI 
 .. [1] Leppanen, J. et al. (2015) "The Serpent Monte Carlo code: Status,
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
     <http://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
 
+.. [2] https://github.com/CORE-GATECH-GROUP/serpent-tools/wiki/Publications-using-serpentTools

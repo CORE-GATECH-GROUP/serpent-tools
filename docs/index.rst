@@ -71,6 +71,7 @@ version, with links to earlier releases.
    develop/index
    license
    contributors
+   publications
    glossary
 
 Indices and tables

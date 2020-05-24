@@ -254,11 +254,35 @@ class ResultsReader(XSReader):
     """Metadata keys that will not be compared."""
 
     def __init__(self, filePath):
-        XSReader.__init__(self, filePath, 'results')
-
+        super().__init__(filePath, 'results')
         self.metadata = {}
         self.resdata = {}
         self.universes = {}
+
+    def __getitem__(self, key):
+        """Retrieve an item from :attr:`resdata` only
+
+        Universes data like group constants should be pulled
+        from universes directly with :meth:`getUniv`
+
+        Parameters
+        ----------
+        key : str
+            ``mixedCase`` variable name like ``"absKeff"`` that may
+            exist in :attr:`resdata`
+
+        Returns
+        -------
+        numpy.ndarray
+            Requested quantity
+
+        Raises
+        ------
+        KeyError
+            If ``key`` does not exist in :attr:`resdata`
+
+        """
+        return self.resdata[key]
 
     def _read(self):
         """Read through the results file and store requested data."""
@@ -429,18 +453,19 @@ class ResultsReader(XSReader):
 
         Returns
         -------
-        :class:`~serpentTools.objects.HomogUniv`
+        serpentTools.objects.HomogUniv
             Requested universe
 
         Raises
         ------
-        KeyError:
+        KeyError
             If the requested universe could not be found
-        :class:`~serpentTools.SerpentToolsException`
+        ValueError
             If burnup, days and index are not given
+
         """
         if index is None and burnup is None and timeDays is None:
-            raise SerpentToolsException(
+            raise ValueError(
                 'Burnup, time or index are required inputs')
 
         searchKey = UnivTuple(univ, burnup, index, timeDays)
@@ -527,6 +552,26 @@ class ResultsReader(XSReader):
         self._cleanMetadata()
         del (self._varTypeLookup, self._burnupKeys, self._keysVersion,
              self._counter, self._univlist, self._tempArrays)
+
+    def get(self, key, default=None):
+        """Retrieve an item from :attr:`resdata` or ``default``
+
+        Parameters
+        ----------
+        key : str
+            ``mixedCase`` variable name that may or may not
+            exist in :attr:`resdata`
+        default : optional
+            Object to be returned in ``key`` is not found
+
+        Returns
+        -------
+        object
+            :class:`numpy.ndarray` if ``key`` is found. Otherwise
+            ``default`` is returned
+
+        """
+        return self.resdata.get(key, default)
 
     def _compare(self, other, lower, upper, sigma):
         similar = self.compareMetadata(other)
@@ -887,7 +932,7 @@ class ResultsReader(XSReader):
 
         Raises
         ------
-        ImportError:
+        ImportError
             If :term:`scipy` is not installed
 
         See Also
