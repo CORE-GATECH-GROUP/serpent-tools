@@ -362,7 +362,7 @@ class DetectorReader:
                 gridName = name[len(currentName):]
                 grids[gridName] = data
 
-        if not self.names or currentName in self.names:
+        if currentName and (not self.names or currentName in self.names):
             detectors[currentName] = self._detectorFactory(
                 currentName, bins, grids
             )
