@@ -1,4 +1,5 @@
 """Test for the new detector file"""
+import sys
 import pathlib
 import zipfile
 import io
@@ -75,6 +76,9 @@ def test_new_det(previousBWR):
     compareDetReader(fromstream, previousBWR)
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 6), reason="Can't write zip files with <3.6"
+)
 def test_from_zip(previousBWR, zippedStream):
     newfile = serpentTools.next.DetectorFile.fromSerpent(zippedStream)
     compareDetReader(previousBWR, newfile)
