@@ -150,9 +150,12 @@ class DetectorFile(dict, SerpentFile):
     def _fromSerpentStream(
         cls, stream, sourcename, postcheck, strict, names=None
     ):
-        return DetectorReader(names=names).readTextStream(
+        out = DetectorReader(names=names).readTextStream(
             stream, sourcename=sourcename, postcheck=postcheck, strict=strict,
         )
+        if type(out) is cls:
+            return out
+        return cls(out, filename=out.filename)
 
 
 class DetectorReader:
