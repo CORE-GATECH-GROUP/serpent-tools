@@ -69,6 +69,7 @@ version, with links to earlier releases.
    variableGroups
    command-line
    develop/index
+   next
    license
    contributors
    publications

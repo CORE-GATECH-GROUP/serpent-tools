@@ -32,7 +32,7 @@ class SerpentFile(ABC):
         ----------
         source : str or pathlib.Path or io.IOBase
             Source of Serpent output data. File names can be passed
-            as either strings or :class:`pathlib.Path`s. Otherwise,
+            as either strings or :class:`pathlib.Path`. Otherwise,
             source must be readable, e.g. support ``source.read`` and
             ``source.readline``
         sourcename : str, optional

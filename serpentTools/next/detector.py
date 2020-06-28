@@ -103,7 +103,7 @@ class DetectorFile(dict, SerpentFile):
         ----------
         source : str or pathlib.Path or io.IOBase
             Source of Serpent output data. File names can be passed
-            as either strings or :class:`pathlib.Path`s. Otherwise,
+            as either strings or :class:`pathlib.Path`. Otherwise,
             source must be readable, e.g. support ``source.read`` and
             ``source.readline``
         sourcename : str, optional
@@ -203,7 +203,7 @@ class DetectorReader:
         ----------
         source : str or pathlib.Path or io.IOBase
             Filenames can be provided as strings or
-            :class:`pathlib.Path`s and will be opened accordingly.
+            :class:`pathlib.Path` and will be opened accordingly.
             Otherwise read directly from this argument
         sourcename : str, optional
             Additional descriptor of the data source. If not provided,
