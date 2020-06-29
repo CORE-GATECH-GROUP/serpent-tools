@@ -119,7 +119,8 @@ class DetectorReader(BaseReader):
 
     def _processDet(self, name, bins, grids):
         """Add this detector with it's grid data to the reader."""
-        if self.settings['names'] and name not in self.settings['names']:
+        if not name or (
+                self.settings['names'] and name not in self.settings['names']):
             return
         if name in self.detectors:
             raise KeyError("Detector {} already stored on reader"
