@@ -9,9 +9,9 @@ from numpy import array, ndarray, fromiter
 
 # Regular expressions
 
-STR_REGEX = compile(r'\'.+\'')  # string
-VEC_REGEX = compile(r'(?<==.)\[.+?\]')  # vector
-SCALAR_REGEX = compile(r'=.+;')  # scalar
+STR_REGEX = compile(r"([A-Z_]+).*'(.*)'")
+VEC_REGEX = compile(r"([A-Z_]+).*=\s+\[\s*([0-9-\+\.Ee ]+)\]")
+SCALAR_REGEX = compile(r"([A-Z_]+).*=\s+([0-9-\+Ee\.]+)")
 FIRST_WORD_REGEX = compile(r'^\w+')  # first word in the line
 
 
