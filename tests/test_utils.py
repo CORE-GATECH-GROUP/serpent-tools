@@ -44,48 +44,6 @@ class VariableConverterTester(TestCase):
             self.assertEqual(expected, actual, msg=serpentStyle)
 
 
-class VectorConverterTester(TestCase):
-    """Class for testing the str2vec function"""
-
-    @classmethod
-    def setUpClass(cls):
-        cls.testCases = ("0 1 2 3", [0, 1, 2, 3], (0, 1, 2, 3), arange(4))
-
-    def test_str2Arrays(self):
-        """Verify that the str2vec converts to arrays."""
-        expected = arange(4)
-        for case in self.testCases:
-            actual = str2vec(case)
-            assert_array_equal(expected, actual, err_msg=case)
-
-    def test_listOfInts(self):
-        """Verify that a list of ints can be produced with str2vec."""
-        expected = [0, 1, 2, 3]
-        self._runConversionTest(int, expected, list)
-
-    def test_vecOfStr(self):
-        """Verify a single word can be converted with str2vec"""
-        key = 'ADF'
-        expected = array('ADF')
-        actual = str2vec(key)
-        assert_array_equal(expected, actual)
-
-    def _runConversionTest(self, valType, expected, outType=None):
-        if outType is None:
-            outType = array
-            compareType = ndarray
-        else:
-            compareType = outType
-        for case in self.testCases:
-            actual = str2vec(case, dtype=valType, out=outType)
-            self.assertIsInstance(actual, compareType, msg=case)
-            ofRightType = [isinstance(xx, valType) for xx in actual]
-            self.assertTrue(all(ofRightType),
-                            msg="{} -> {}, {}".format(case, actual,
-                                                      type(actual)))
-            self.assertEqual(expected, actual, msg=case)
-
-
 class SplitValsTester(TestCase):
     """Class that tests splitValsUncs."""
 

@@ -135,8 +135,9 @@ class MicroXSReader(BaseReader):
             if '[' in tline or ']' in tline:
                 continue
             tline = tline[:tline.find('%')]
-            if len(tline.split()) == 3:
-                val1, val2, val3 = str2vec(tline, out=list)
+            items = tline.split()
+            if len(items) == 3:
+                val1, val2, val3 = (float(i) for i in items)
                 fissProd.append(val1)
                 indYield.append(val2)
                 cumYield.append(val3)

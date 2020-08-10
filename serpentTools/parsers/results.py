@@ -133,8 +133,8 @@ def varTypeFactory(key):
             return lambda x: (typeFunc(x), None)
     # Perform array conversion, return expected values and uncertainties
     if UNIV_K_RE.search(key) is not None:
-        return lambda x: str2vec(x, out=tuple)
-    return lambda x: splitValsUncs(x)
+        return lambda s: tuple(float(i) for i in s.split())
+    return splitValsUncs
 
 
 __all__ = ['ResultsReader', ]

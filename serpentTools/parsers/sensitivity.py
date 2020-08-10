@@ -4,7 +4,7 @@ Class to read Sensitivity file
 from collections import OrderedDict
 from itertools import product
 
-from numpy import transpose, hstack
+from numpy import transpose, hstack, array
 from matplotlib.pyplot import gca, axvline
 
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
@@ -219,7 +219,7 @@ class SensitivityReader(BaseReader):
                                         "in energy chunk {}".format(chunk[:3]))
         splitLine = line.split()
         varName = splitLine[0].split('_')[1:]
-        varValues = str2vec(splitLine[3:-1])
+        varValues = array(splitLine[3:-1], dtype=float)
         if varName[0] == 'E':
             self.energies = varValues
         elif varName == ['LETHARGY', 'WIDTHS']:
