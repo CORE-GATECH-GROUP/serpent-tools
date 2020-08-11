@@ -133,8 +133,8 @@ def varTypeFactory(key):
             return lambda x: (typeFunc(x), None)
     # Perform array conversion, return expected values and uncertainties
     if UNIV_K_RE.search(key) is not None:
-        return lambda x: str2vec(x, out=tuple)
-    return lambda x: splitValsUncs(x)
+        return lambda s: tuple(float(i) for i in s.split())
+    return splitValsUncs
 
 
 __all__ = ['ResultsReader', ]
@@ -427,13 +427,13 @@ class ResultsReader(XSReader):
         varType, varVals = [], []
         if strMatch is not None:
             varType = 'string'
-            varVals = tline[strMatch.span()[0] + 1:strMatch.span()[1] - 1]
+            varVals = strMatch.groups()[1]
         elif vecMatch is not None:
             varType = 'vector'
-            varVals = tline[vecMatch.span()[0] + 1:vecMatch.span()[1] - 2]
+            varVals = vecMatch.groups()[1].strip()
         elif sclMatch is not None:
             varType = 'scalar'
-            varVals = tline[sclMatch.span()[0] + 1:sclMatch.span()[1] - 2]
+            varVals = sclMatch.groups()[1]
         return varType, varVals
 
     def getUniv(self, univ, burnup=None, index=None, timeDays=None):

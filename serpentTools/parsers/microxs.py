@@ -128,15 +128,15 @@ class MicroXSReader(BaseReader):
         if 'E' in currVar.split('_')[-1]:  # e.g., NFY_902270_1E
             sclVal = SCALAR_REGEX.search(chunk[0])
             # energy must be stored on the reader
-            self._energyFY = float(str2vec(
-                chunk[0][sclVal.span()[0] + 1:sclVal.span()[1] - 2]))
+            self._energyFY = float(sclVal.groups()[1])
             return  # thermal/epi/fast
         for tline in chunk:
             if '[' in tline or ']' in tline:
                 continue
             tline = tline[:tline.find('%')]
-            if len(tline.split()) == 3:
-                val1, val2, val3 = str2vec(tline, out=list)
+            items = tline.split()
+            if len(items) == 3:
+                val1, val2, val3 = (float(i) for i in items)
                 fissProd.append(val1)
                 indYield.append(val2)
                 cumYield.append(val3)
@@ -151,7 +151,7 @@ class MicroXSReader(BaseReader):
         # obtain the universe id
         univ = currVar.split('_')[-1]
         search = VEC_REGEX.search(chunk0)  # group flux values
-        vals = str2vec(chunk0[search.span()[0] + 1:search.span()[1] - 2])
+        vals = str2vec(search.groups()[1])
         self.fluxRatio[univ], self.fluxUnc[univ] = splitValsUncs(vals)
 
     def _storeMicroXS(self, chunk):

@@ -9,68 +9,43 @@ from numpy import array, ndarray, fromiter
 
 # Regular expressions
 
-STR_REGEX = compile(r'\'.+\'')  # string
-VEC_REGEX = compile(r'(?<==.)\[.+?\]')  # vector
-SCALAR_REGEX = compile(r'=.+;')  # scalar
+STR_REGEX = compile(r"([A-Z_]+).*'(.*)'")
+VEC_REGEX = compile(r"([A-Z_]+).*=\s+\[\s*([0-9-\+\.Ee ]+)\]")
+SCALAR_REGEX = compile(r"([A-Z_]+).*=\s+([0-9-\+Ee\.]+)")
 FIRST_WORD_REGEX = compile(r'^\w+')  # first word in the line
 
 
-def str2vec(iterable, dtype=float, out=array):
+def str2vec(s, dtype=float):
     """
-    Convert a string or other iterable to vector.
+    Convert a string to a numpy array
 
     Parameters
     ----------
-    iterable: str or iterable
+    s : str
         If a string containing spaces, will be split using
         ```iterable.split()``. If no spaces are found, the
         outgoing type is filled with a single string, e.g.
         a list with a single string as the first and only
         entry. This is returned directly, avoiding conversion
-        with ``dtype``.
-        Every item in this split list, or original
-        iterable, will be iterated over and converted accoring
-        to the other arguments.
-    dtype: type
+        with ``dtype``. Every item in this split list will be iterated
+        over and converted according to the other arguments.
+    dtype : type
         Convert each value in ``iterable`` to this data type.
-    out: type
-        Return data type. Will be passed the iterable of
-        converted items of data dtype ``dtype``.
 
     Returns
     -------
-    vector
-        Iterable of all values of ``iterable``, or split variant,
-        converted to type ``dtype``.
+    numpy.ndarray
+        Vector of all the elements converted to ``dtype``
 
     Examples
     --------
-    ::
 
-        >>> v = "1 2 3 4"
-        >>> str2vec(v)
-        array([1., 2., 3., 4.,])
-
-        >>> str2vec(v, int, list)
-        [1, 2, 3, 4]
-
-        >>> x = [1, 2, 3, 4]
-        >>> str2vec(x)
-        array([1., 2., 3., 4.,])
-
-        >>> str2vec("ADF")
-        array(['ADF', dtype='<U3')
+    >>> v = "1 2 3 4"
+    >>> str2vec(v)
+    array([1., 2., 3., 4.,])
 
     """
-    if isinstance(iterable, str):
-        if ' ' in iterable:
-            iterable = iterable.split()
-        else:
-            return out([iterable])
-    cmap = map(dtype, iterable)
-    if out is array:
-        return fromiter(cmap, dtype)
-    return out(cmap)
+    return array(s.split(), dtype=dtype)
 
 
 def splitValsUncs(iterable, copy=False):
