@@ -463,7 +463,11 @@ class Detector(NamedObject):
         return slices
 
     def _getPlotGrid(self, qty):
+        # Try with the first letter only
         grids = self.grids.get(qty[0].upper())
+        if grids is None:
+            # The phi-grid has three letters!
+            grids = self.grids.get(qty.upper())
         if grids is not None:
             return hstack((grids[:, 0], grids[-1, 1]))
         nItems = self.tallies.shape[self.indexes.index(qty)]
