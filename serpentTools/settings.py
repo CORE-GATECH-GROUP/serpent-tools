@@ -1,6 +1,7 @@
 """Settings to yield control to the user."""
 import os
 from warnings import warn
+import pathlib
 
 from yaml import safe_load
 
@@ -376,27 +377,11 @@ class UserSettingsLoader(dict):
            set
                Names of all variables to be scraped
            """
-        keywords = self['xs.variableGroups']
-        extras = self['xs.variableExtras']
-        serpentVersion = self['serpentVersion'].replace(".", "-")
-        if not (keywords or extras):  # return empty set and don't read
-            return set()
-        variables = set(extras) if extras else set()
-        if not keywords:
-            return variables
-        varFile = os.path.join(ROOT_DIR, 'variables.yaml')
-        with open(varFile) as fObj:
-            groups = safe_load(fObj)
-        thisVersion = groups.get(serpentVersion, {})
-        baseGroups = groups['base']
-        for key in keywords:
-            versionVars = thisVersion.get(key)
-            baseVars = baseGroups.get(key)
-            if versionVars:
-                variables.update(versionVars)
-            elif baseVars:
-                variables.update(baseVars)
-        return variables
+        return VARIABLE_EXPANDER(
+            self["serpentVersion"],
+            self["xs.variableGroups"],
+            self["xs.variableExtras"],
+        )
 
     def loadYaml(self, filePath, strict=True):
         """
@@ -469,4 +454,87 @@ class UserSettingsLoader(dict):
         return out
 
 
+class VariableExpander:
+    """Interface to the variable groups used to ease collection of data
+
+    Uses a shipped data file describing what variable groups
+    correspond to what Serpent output variables. These are typically
+    found in the result or branching files.
+
+    Parameters
+    ----------
+    datafile : pathlib.Path
+        YAML file containing what variables map to what group
+
+    """
+    def __init__(self, datafile):
+        with datafile.open(mode="r") as stream:
+            self._groups = safe_load(stream)
+
+    def __call__(self, version, groups=None, extras=None) -> set:
+        """Expand a collection of user-provided groups and extras
+
+        Parameters
+        ----------
+        version : str, {"2.1.29", "2.1.30", "2.1.31"}
+            Serpent version. Some variable groups have updated
+            variables over releases
+        groups : set of str, optional
+            Groups of similarly defined output data that will
+            be expanded corresponding to the Serpent version
+        extras : set of str, optional
+            Individual variables defined as they appear exactly
+            in the Serpent ouputs, e.g. ``"ABS_KEFF"``
+
+        Returns
+        -------
+        set of str
+            Variables that are contained in the group ``group``
+            and those in ``extras``
+
+        """
+        variables = set(extras) if extras is not None else set()
+        if groups is None:
+            return variables
+
+        # the base version is 2.1.29 so fall back to base if
+        # this is passed
+        if version == "2.1.29":
+            search = "base"
+        else:
+            # YAML doesn't allow us to pass x.y.z as serpentVersion
+            # Instead pass x-y-z
+            search = version.replace(".", "-")
+        thisVersion = self._groups.get(search)
+        if thisVersion is None:
+            allowed = set(self._groups)
+            allowed.discard("base")
+            raise KeyError(
+                "Version {} [from {}] not found in variables file. "
+                "Allowed groups: {}".format(search, version, allowed)
+            )
+        base = self._groups["base"]
+        missing = set()
+
+        for group in groups:
+            keys = thisVersion.get(group)
+            if keys is not None:
+                variables.update(keys)
+                continue
+            keys = base.get(group)
+            if keys is not None:
+                variables.update(keys)
+                continue
+            missing.add(group)
+
+        if missing:
+            warn(
+                "The following variable groups did not exist with Serpent "
+                "version {}: {}".format(version, missing)
+            )
+        return variables
+
+
 rc = UserSettingsLoader()
+
+VARIABLE_EXPANDER = VariableExpander(pathlib.Path(ROOT_DIR) / "variables.yaml")
