@@ -34,6 +34,12 @@ of metallic fuel sodium fast reactor*." `Annals of Nuclear Energy (2019)
 Conference
 ==========
 
+Victor Petitgenet, Christopher D. Roper, Matthew Krecicki, Andrew J. Yatsko,
+Dan Kotlyar, Dimitri N. Mavris, and David Shalat, "*A Coupled Approach
+to the Design Space Exploration of Nuclear Thermal Propulsion Systems*,"
+in proceedings of American Institute of Aeronautics and Astronautics,
+Virtual, 2020 https://doi.org/10.2514/6.2020-3846
+
 A. Johnson and D. Kotlyar, "*Application of a Custom Depletion Framework
 to the Prediction of Neutron Flux Distribution Through Depletion*,"
 in proceedings of PHYSOR 2020: Transition to a Scalable Nuclear
