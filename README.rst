@@ -54,7 +54,7 @@ citing with
 * Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, and Gavin Ridley,
   "`serpentTools: A Python Package for Expediting Analysis with
   Serpent <https://doi.org/10.1080/00295639.2020.1723992>`_,"
-  *Nuc. Sci. Eng*, (in press) (2020).
+  *Nuc. Sci. Eng*, 2020, 194, 1016-1024
 
 Also, let us know if you publish work using this package! We try and
 keep an up-to-date list of works using serpentTools [2]_, and would be
