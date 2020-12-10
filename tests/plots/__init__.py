@@ -1,6 +1,7 @@
 from functools import wraps
 import pathlib
 
+import pytest
 from matplotlib import pyplot
 from matplotlib.testing.compare import compare_images
 
@@ -39,5 +40,9 @@ def compare_or_update_plot(f):
         fig.savefig(testFile)
         compare_images(baseline, testFile, tol=10)
         testFile.unlink()
+
+    # If a test is tagged with this decorator, mark is with the
+    # plot mark automatically
+    pytest.mark.plot(wrapped)
 
     return wrapped
