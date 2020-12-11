@@ -1,5 +1,6 @@
 from functools import wraps
 import pathlib
+from os import remove
 
 import pytest
 from matplotlib import pyplot
@@ -28,6 +29,11 @@ def compare_or_update_plot(f):
     """
     update = config["update"]
     baseline = (FIG_RESULT_BASE / f.__name__).with_suffix(".png")
+    testFile = baseline.with_name("{}-test.png".format(f.__name__))
+    # TODO Don't convert to str - needed because MPL for python 3.5
+    # doesn't support saving as pathlib.Path instances
+    baseline = str(baseline)
+    testFile = str(testFile)
 
     @wraps(f)
     def wrapped(*args, **kwargs):
@@ -36,10 +42,9 @@ def compare_or_update_plot(f):
         if update:
             fig.savefig(baseline)
             return
-        testFile = baseline.with_name("{}-test.png".format(f.__name__))
         fig.savefig(testFile)
         compare_images(baseline, testFile, tol=10)
-        testFile.unlink()
+        remove(testFile)
 
     # If a test is tagged with this decorator, mark is with the
     # plot mark automatically
