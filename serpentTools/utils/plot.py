@@ -248,8 +248,7 @@ def placeLegend(ax, legend, handlesAndLabels=None, **kwargs):
     {rax}
 
     """
-#    import pdb
-#    pdb.set_trace()
+
     if handlesAndLabels is None:
         handles, labels = ax.get_legend_handles_labels()
     else:
