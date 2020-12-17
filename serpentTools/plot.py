@@ -139,7 +139,7 @@ def cartMeshPlot(data, xticks=None, yticks=None, ax=None, cmap=None,
     else:
         X, Y = meshgrid(xticks, yticks)
         mappable = ax.pcolormesh(X, Y, data, cmap=cmap, norm=norm, **kwargs)
-    addColorbar(ax, mappable, norm, cbarLabel)
+    addColorbar(ax, mappable, cbarLabel)
 
     return ax
 
