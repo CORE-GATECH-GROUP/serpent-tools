@@ -43,7 +43,8 @@ def compare_or_update_plot(f):
             fig.savefig(baseline)
             return
         fig.savefig(testFile)
-        compare_images(baseline, testFile, tol=10)
+        res = compare_images(baseline, testFile, tol=config["plot_tolerance"])
+        assert res is None, res
         remove(testFile)
 
     # If a test is tagged with this decorator, mark is with the
