@@ -337,7 +337,7 @@ def addColorbar(ax, mappable, norm=None, cbarLabel=None):
         The colorbar that was added
 
     """
-    cbar = pyplot.colorbar(mappable, ax=ax, norm=norm)
+    cbar = pyplot.colorbar(mappable, ax=ax)
     if cbarLabel:
         cbar.ax.set_ylabel(cbarLabel)
     return cbar
