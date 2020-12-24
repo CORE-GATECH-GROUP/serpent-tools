@@ -395,7 +395,7 @@ class HomogUniv(NamedObject):
         {ylabel}
         {legend}
         {ncol}
-        steps: bool
+        steps : bool
             If ``True``, plot values as constant within
             energy bins.
         {univLabelFmt}
@@ -411,7 +411,6 @@ class HomogUniv(NamedObject):
         ax = ax or pyplot.gca()
         onlyXS = True
         sigma = max(0, int(sigma))
-        drawstyle = 'steps-post' if steps else None
         limitE = limitE and (self.groups is not None
                              and self.microGroups is not None)
         macroBins = self.numGroups + 1 if self.numGroups is not None else None
@@ -426,11 +425,12 @@ class HomogUniv(NamedObject):
             # Conflicting arguments but defer to user value for now
             warnings.warn(
                 "Passing steps and drawstyle will default to using the "
-                "drawstyle value but may cause an error later",
+                "drawstyle value and will cause an error after 0.11.0. See "
+                "https://github.com/CORE-GATECH-GROUP/serpent-tools/issues/433",
                 PendingDeprecationWarning
             )
-        else:
-            kwargs.setdefault("drawstyle", drawstyle)
+        elif steps:
+            kwargs.setdefault("drawstyle", "steps-post")
 
         if "label" in kwargs:
             if len(qtys) > 1:
