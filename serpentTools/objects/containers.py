@@ -9,6 +9,7 @@ Contents
 """
 from itertools import product
 from collections import namedtuple
+import warnings
 
 from matplotlib import pyplot
 from numpy import arange, hstack, ndarray, zeros_like
@@ -371,7 +372,7 @@ class HomogUniv(NamedObject):
     @magicPlotDocDecorator
     def plot(self, qtys, limitE=True, ax=None, logx=None, logy=None,
              loglog=None, sigma=3, xlabel=None, ylabel=None, legend=None,
-             ncol=1, steps=True, labelFmt=None, labels=None):
+             ncol=1, steps=True, labelFmt=None, labels=None, **kwargs):
         """
         Plot homogenized data as a function of energy.
 
@@ -394,10 +395,12 @@ class HomogUniv(NamedObject):
         {ylabel}
         {legend}
         {ncol}
-        steps: bool
+        steps : bool
             If ``True``, plot values as constant within
             energy bins.
         {univLabelFmt}
+        {kwargs} :func:`matplotlib.pyplot.plot` or
+            :func:`matplotlib.pyplot.errorbar`
 
         Returns
         -------
@@ -408,7 +411,6 @@ class HomogUniv(NamedObject):
         ax = ax or pyplot.gca()
         onlyXS = True
         sigma = max(0, int(sigma))
-        drawstyle = 'steps-post' if steps else None
         limitE = limitE and (self.groups is not None
                              and self.microGroups is not None)
         macroBins = self.numGroups + 1 if self.numGroups is not None else None
@@ -418,15 +420,36 @@ class HomogUniv(NamedObject):
         if limitE:
             eneCap = min(self.microGroups.max(), self.groups.max())
 
+        # Check kwargs
+        if "drawstyle" in kwargs and steps:
+            # Conflicting arguments but defer to user value for now
+            warnings.warn(
+                "Passing steps and drawstyle will default to using the "
+                "drawstyle value and will cause an error after 0.11.0. See "
+                "https://github.com/CORE-GATECH-GROUP/serpent-tools/issues/433",
+                PendingDeprecationWarning
+            )
+        elif steps:
+            kwargs.setdefault("drawstyle", "steps-post")
+
+        if "label" in kwargs:
+            if len(qtys) > 1:
+                raise ValueError(
+                    "Passing label while plotting multiple entries {} is "
+                    "not allowed".format(qtys)
+                )
+            if labels is not None:
+                raise ValueError("Passing label and labels is not allowed")
+            labels = kwargs.pop("label")
+
         if isinstance(labels, str):
             labels = [labels, ]
-        if labels is None:
+        elif labels is None:
             labels = [labelFmt, ] * len(qtys)
-        else:
-            if len(labels) != len(qtys):
-                raise IndexError(
-                    "Need equal number of labels for plot quantities. "
-                    "Given {} expected: {}".format(len(labels), len(qtys)))
+        elif len(labels) != len(qtys):
+            raise IndexError(
+                "Need equal number of labels for plot quantities. "
+                "Given {} expected: {}".format(len(labels), len(qtys)))
 
         for key, label in zip(qtys, labels):
             yVals = self.__getitem__(key)
@@ -451,8 +474,7 @@ class HomogUniv(NamedObject):
 
             label = self.__formatLabel(label, key)
 
-            ax.errorbar(xdata, yVals, yerr=yUncs, label=label,
-                        drawstyle=drawstyle)
+            ax.errorbar(xdata, yVals, yerr=yUncs, label=label, **kwargs)
 
         if ylabel is None:
             ylabel, yUnits = (("Cross Section", "[cm$^{-1}$]") if onlyXS
