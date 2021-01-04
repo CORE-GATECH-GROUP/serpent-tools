@@ -5,7 +5,7 @@ from collections import OrderedDict
 from itertools import product
 
 from numpy import transpose, hstack
-from matplotlib.pyplot import gca, axvline
+from matplotlib.pyplot import gca
 
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
@@ -321,27 +321,27 @@ class SensitivityReader(BaseReader):
         ----------
         resp: str
             Name of the specific response to be examined. Must be a key
-            in ``sensitivities`` and ``energyIntegratedSens``
-        zai: None or str or int or iterable
+            in :attr:`sensitivities` and :attr:`energyIntegratedSens`
+        zai : None or str or int or iterable
             Plot sensitivities due to these isotopes. Passing ``None``
             will plot against all isotopes.
-        pert: None or str or list of strings
+        pert : None or str or list of strings
             Plot sensitivities due to these perturbations. Passing ``None``
             will plot against all perturbations.
-        mat: None or str or list of strings
+        mat : None or str or list of strings
             Plot sensitivities due to these materials. Passing ``None``
             will plot against all materials.
-        mevscale : bool, optional
+        mevscale  : bool, optional
             Flag for plotting energy grid in MeV units. If ``True``, the energy
             axis is expressed in MeV. Default is ``False``.
-        egrid : numpy.array, optional
+        egrid  : numpy.array, optional
             User-defined energy grid boundaries displayed on the sensitivities
             as vblack, dashed vertical lines. Default is ``None``.
         {sigma}
-        normalize: True
+        normalize : True
             Normalize plotted data per unit lethargy
         {ax}
-        labelFmt: None or str
+        labelFmt : None or str
             Formattable string to be applied to the labels.
             The following entries will be formatted for each plot
             permuation::
@@ -371,7 +371,7 @@ class SensitivityReader(BaseReader):
 
         See Also
         --------
-        * :py:meth:`str.format` - used for formatting labels
+        * :meth:`str.format` - used for formatting labels
 
         """
         for subDict in {'sensitivities', 'energyIntegratedSens'}:
