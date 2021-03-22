@@ -497,18 +497,22 @@ class SensitivityReader(BaseReader):
             out[eneSensFmt.format(key)] = self.energyIntegratedSens[key]
         return out
 
-    def _getCleanedPertOpt(self, key, value):
-        """Return a set of all or some of the requested perturbations."""
-        assert hasattr(self, key), key
-        opts = getattr(self, key).keys()
+    def _getCleanedPertOpt(self, attrName, value):
+        """Return a list of all or some of the requested perturbations."""
+        opts = getattr(self, attrName, None)
+        assert isinstance(opts, OrderedDict)
         if value is None:
             return list(opts)
-        requested = set([value, ]) if isinstance(value, str) else set(value)
-        missing = {str(xx) for xx in requested.difference(set(opts))}
-        if missing:
-            raise KeyError("Could not find the following perturbations: "
-                           "{}".format(', '.join(missing)))
-        return requested
+        elif isinstance(value, str):
+            value = [value]
+        available = set(opts)
+        if available.issuperset(value):
+            return value
+        missing = available.intersection(value).symmetric_difference(value)
+        raise KeyError(
+            "Could not find the following {} perturbations: "
+            "{}".format(attrName, missing)
+        )
 
 
 def reshapePermuteSensMat(vec, newShape):
