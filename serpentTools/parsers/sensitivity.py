@@ -307,7 +307,7 @@ class SensitivityReader(BaseReader):
     def plot(self, resp, zai=None, pert=None, mat=None, mevscale=False,
              egrid=None, sigma=3, normalize=True, ax=None, labelFmt=None,
              title=None, logx=True, logy=False, loglog=False, xlabel=None,
-             ylabel=None, legend=None, ncol=1):
+             ylabel=None, legend=None, ncol=1, **kwargs):
         """
         Plot sensitivities due to some or all perturbations.
 
@@ -358,6 +358,9 @@ class SensitivityReader(BaseReader):
         {ylabel}
         {legend}
         {ncol}
+        {kwargs} :method:`matplotlib.pyplot.Axes.errorbar`
+
+            .. versionadded: 0.9.4
 
         Returns
         -------
@@ -378,7 +381,15 @@ class SensitivityReader(BaseReader):
             if resp not in getattr(self, subDict):
                 raise KeyError("Response {} missing from {}"
                                .format(resp, subDict))
-        labelFmt = labelFmt or "mat: {m} zai: {z} pert: {p}"
+        if "label" in kwargs:
+            if labelFmt:
+                raise ValueError("Passing label= and labelFmt= is not allowed")
+            labelFmt = kwargs.pop("label")
+        elif labelFmt is None:
+            labelFmt = "mat: {m} zai: {z} pert: {p}"
+
+        kwargs.setdefault("drawstyle", "steps-post")
+
         if isinstance(zai, (str, int)):
             zai = {zai, }
         zais = self._getCleanedPertOpt('zais', zai)
@@ -405,8 +416,7 @@ class SensitivityReader(BaseReader):
             yErrs = errors[iM, iZ, iP]
             yErrs = hstack((yErrs, yErrs[-1]))
             label = labelFmt.format(r=resp, z=z, m=m, p=p)
-            ax.errorbar(energies, yVals, yErrs, label=label,
-                        drawstyle='steps-post')
+            ax.errorbar(energies, yVals, yErrs, label=label, **kwargs)
 
         if egrid is not None:
             for group in egrid:
