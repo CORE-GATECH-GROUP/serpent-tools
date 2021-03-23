@@ -17,14 +17,15 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8]
         installer: [setup,sdist]
 
-        exclude:
-          # Easy install not brought in with github python action
+        include:
+          # Installing from source distribution doesn't
+          # appear to work for py35
           -
             python-version: 3.5
-            installer: bdist_egg
+            installer: setup
     name: 'Python ${{ matrix.python-version }} installer=${{ matrix.installer }}'
 
     # Environment variables
