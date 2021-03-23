@@ -1,0 +1,58 @@
+name: CI
+on:
+  # Enable running actions from GH Actions tab
+  workflow_dispatch:
+
+  pull_request:
+    branches:
+      - develop
+      - master
+  push:
+    branches:
+      - develop
+      - master
+
+jobs:
+  main:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+        installer: [setup,sdist,bdist_wheel,bdist_egg]
+
+    name: 'Python ${{ matrix.python-version }} installer=${{ matrix.installer }}'
+
+    # Environment variables
+    env:
+      ST_INSTALL=${{ matrix.installer }}
+
+    steps:
+      - 
+        uses: actions/checkout@v2
+
+      - 
+        name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+        
+      -
+        name: install
+        shell: bash
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-test.txt
+          $GITHUB_WORKSPACE/scripts/ci/install.sh
+
+      -
+        name: test
+        shell: bash
+        run: |
+          pytest --cov=serpentTools --cov=report= -v
+          $GITHUB_WORKSPACE/scripts/ci/testNotebooks.sh
+
+      -
+        name: after
+        shell: bash
+        run: |
+          coverage report
