@@ -20,12 +20,6 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
         installer: [setup,sdist]
 
-        include:
-          # Installing from source distribution doesn't
-          # appear to work for py35
-          -
-            python-version: 3.5
-            installer: setup
     name: 'Python ${{ matrix.python-version }} installer=${{ matrix.installer }}'
 
     # Environment variables
