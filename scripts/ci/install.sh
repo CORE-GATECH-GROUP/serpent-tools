@@ -24,15 +24,7 @@ case $ST_INSTALL in
         python setup.py sdist
         pip install dist/serpentTools-*.tar.gz
         ;;
-    'bdist_wheel')
-        python setup.py bdist_wheel
-        easy_install dist/serpentTools-*whl
-        ;;
-    'bdist_egg')
-        python setup.py bdist_egg
-        easy_install dist/serpentTools-*egg
-        ;;
     *)
-        echo No install option
+        echo No install option $ST_INSTALL
         exit 1
 esac
