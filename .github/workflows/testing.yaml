@@ -37,12 +37,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       -
-        name: Environment
-        shell: bash
-        run: |
-          echo "SERPENT_TOOLS_DATA=$GITHUB_WORKSPACE/data" >> $GITHUB_ENV
-        
-      -
         name: install
         shell: bash
         run: |
