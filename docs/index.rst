@@ -8,8 +8,8 @@ Welcome to serpentTools's documentation!
 
 .. only:: html
 
-    .. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=develop
-        :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
+    .. image:: https://github.com/CORE-GATECH-GROUP/serpent-tools/actions/workflows/testing.yaml/badge.svg?branch=develop
+        :target: https://github.com/CORE-GATECH-GROUP/serpent-tools/actions/workflows/testing.yaml
         :alt: Build status - develop
 
     .. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
