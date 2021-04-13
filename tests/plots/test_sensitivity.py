@@ -21,11 +21,6 @@ def test_sensitivity_filter(flattop):
     ax.set_xlim(LOWER_XLIM)
 
 
-@compare_or_update_plot
-def test_sensitivity_all(flattop):
-    ax = flattop.plot("keff")
-    ax.set_xlim(LOWER_XLIM)
-
 
 @compare_or_update_plot
 def test_sensitivity_kwargs(flattop):
