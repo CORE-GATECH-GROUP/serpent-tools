@@ -790,8 +790,7 @@ class ResultsReader(XSReader):
             raise KeyError("Passing label as kwargs is not supported")
 
         if len(y) == 1 and ylabel is None:
-            for ylabel in y.values():
-                break  # just need the first one
+            ylabel = next(iter(y.values()))
             if sigma:
                 ylabel += r'$ \pm {}\sigma$'.format(sigma)
 
@@ -832,8 +831,7 @@ class ResultsReader(XSReader):
                 ncol=ncol)
 
         if len(right) == 1 and rightlabel is None:
-            for rightlabel in right.values():
-                break  # just need the first one
+            rightlabel = next(iter(right.values()))
             if sigma:
                 rightlabel += r'$ \pm {}\sigma$'.format(sigma)
 
