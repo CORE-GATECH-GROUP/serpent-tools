@@ -715,7 +715,7 @@ class ResultsReader(XSReader):
     @magicPlotDocDecorator
     def plot(self, x, y=None, right=None, sigma=3, ax=None, legend=None,
              ncol=None, xlabel=True, ylabel=None, logx=False, logy=False,
-             loglog=False, rightlabel=None):
+             loglog=False, rightlabel=None, **kwargs):
         """
         Plot quantities over time
 
@@ -756,6 +756,11 @@ class ResultsReader(XSReader):
         rlabel: str or None
             If given and passing values to ``right``, use this to label
             the y-axis.
+        {kwargs} : pyplot plot or errorbar depending on if ``sigma`` evaluates
+            to ``True``. Will be passed for both right and left plots. Passing
+            ``"label"`` to label a single plot is not allowed. Instead, pass
+            a dictionary for ``y`` and/or ``right``. Values will be used to
+            label a given quantity.
 
         Returns
         -------
@@ -781,6 +786,9 @@ class ResultsReader(XSReader):
         if xlabel is True:
             xlabel = RESULTS_PLOT_XLABELS[x]
 
+        if "label" in kwargs:
+            raise KeyError("Passing label as kwargs is not supported")
+
         if len(y) == 1 and ylabel is None:
             for ylabel in y.values():
                 break  # just need the first one
@@ -789,7 +797,7 @@ class ResultsReader(XSReader):
 
         ax = ax or gca()
 
-        self._plot(x, y, ax, sigma)
+        self._plot(x, y, ax, sigma, **kwargs)
 
         if right is None:
             formatPlot(ax, logx=logx, logy=logy, loglog=loglog,
@@ -805,7 +813,7 @@ class ResultsReader(XSReader):
         colors = colors[len(y):] + colors[:len(y)]
         other.set_prop_cycle(cycler('color', colors))
 
-        self._plot(x, right, other, sigma)
+        self._plot(x, right, other, sigma, **kwargs)
 
         # formatting
         if logy is None or isinstance(logy, bool):
@@ -836,7 +844,7 @@ class ResultsReader(XSReader):
 
         return ax, other
 
-    def _plot(self, x, y, ax, sigma):
+    def _plot(self, x, y, ax, sigma, **kwargs):
         """Simple, unformatted plot with dictionary of keys"""
         # get plot data
         xvals = self.resdata[x][:, 0]
@@ -849,12 +857,15 @@ class ResultsReader(XSReader):
 
             # grab second column for uncertainty
             if sigma and ydata.shape[1] > 1:
-                ax.errorbar(xvals, ydata[:, 0], label=label,
-                            yerr=ydata[:, 0] * sigma * ydata[:, 1],
-                            )
+                ax.errorbar(
+                    xvals,
+                    ydata[:, 0],
+                    label=label,
+                    yerr=ydata[:, 0] * sigma * ydata[:, 1],
+                    **kwargs,
+                )
             else:
-                ax.errorbar(xvals, ydata[:, 0], label=label,
-                            )
+                ax.plot(xvals, ydata[:, 0], label=label, **kwargs)
 
     @staticmethod
     def _expandPlotIterables(y, tail=''):
