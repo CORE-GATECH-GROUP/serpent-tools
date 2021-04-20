@@ -12,7 +12,7 @@ Overview
 
 Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, and Gavin Ridley,
 *"serpentTools: A Python Package for Expediting Analysis with Serpent*."
-`Nuclear Science and Engineering (in press) (2020)
+`Nuclear Science and Engineering (2020)
 <https://doi.org/10.1080/00295639.2020.1723992>`_
 
 Journal
