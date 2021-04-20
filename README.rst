@@ -71,4 +71,4 @@ happy to include more.
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
     <http://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
 
-.. [2] https://github.com/CORE-GATECH-GROUP/serpent-tools/wiki/Publications-using-serpentTools
+.. [2] https://serpent-tools.readthedocs.io/en/latest/publications.html
