@@ -53,6 +53,13 @@ version, with links to earlier releases.
 
  .. _works using serpentTools: https://github.com/CORE-GATECH-GROUP/serpent-tools/wiki/Publications-using-serpentTools
 
+Support
+=======
+
+The development of ``serpentTools`` is supported by the following organizations:
+
+* `USNC-Tech <https://usnc.com/space>`_
+
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
