@@ -30,19 +30,227 @@ variable names converted to ``mixedCaseNames``. This conversion is done
 to fit the style of the project and reduce a few keystrokes for accessing
 variable names.
 
+.. _vars-2-1-32:
+
+----------
+``2-1-32``
+----------
+
+.. _burnup-coeff-2-1-32:
+
+
+``burnup-coeff``
+----------------
+
+
+  * ``BURNUP`` →  ``burnup``
+  * ``BURN_DAYS`` →  ``burnDays``
+  * ``BURN_MATERIALS`` →  ``burnMaterials``
+  * ``BURN_MODE`` →  ``burnMode``
+  * ``BURN_RANDOMIZE_DATA`` →  ``burnRandomizeData``
+  * ``BURN_STEP`` →  ``burnStep``
+  * ``COEF_BRANCH`` →  ``coefBranch``
+  * ``COEF_BU_STEP`` →  ``coefBuStep``
+  * ``COEF_IDX`` →  ``coefIdx``
+  * ``FIMA`` →  ``fima``
+
+.. _energy-deposition-2-1-32:
+
+
+``energy-deposition``
+---------------------
+
+
+  * ``EDEP_CAPT_E`` →  ``edepCaptE``
+  * ``EDEP_COMP`` →  ``edepComp``
+  * ``EDEP_DELAYED`` →  ``edepDelayed``
+  * ``EDEP_KEFF_CORR`` →  ``edepKeffCorr``
+  * ``EDEP_LOCAL_EGD`` →  ``edepLocalEgd``
+  * ``EDEP_MODE`` →  ``edepMode``
+
+.. _n-balance-2-1-32:
+
+
+``n-balance``
+-------------
+
+
+  * ``BALA_LOSS_NEUTRON_CAPT`` →  ``balaLossNeutronCapt``
+  * ``BALA_LOSS_NEUTRON_CUT`` →  ``balaLossNeutronCut``
+  * ``BALA_LOSS_NEUTRON_ERR`` →  ``balaLossNeutronErr``
+  * ``BALA_LOSS_NEUTRON_FISS`` →  ``balaLossNeutronFiss``
+  * ``BALA_LOSS_NEUTRON_LEAK`` →  ``balaLossNeutronLeak``
+  * ``BALA_LOSS_NEUTRON_TOT`` →  ``balaLossNeutronTot``
+  * ``BALA_NEUTRON_DIFF`` →  ``balaNeutronDiff``
+  * ``BALA_SRC_NEUTRON_FISS`` →  ``balaSrcNeutronFiss``
+  * ``BALA_SRC_NEUTRON_NXN`` →  ``balaSrcNeutronNxn``
+  * ``BALA_SRC_NEUTRON_SRC`` →  ``balaSrcNeutronSrc``
+  * ``BALA_SRC_NEUTRON_TOT`` →  ``balaSrcNeutronTot``
+  * ``BALA_SRC_NEUTRON_VR`` →  ``balaSrcNeutronVr``
+
+.. _optimization-2-1-32:
+
+
+``optimization``
+----------------
+
+
+  * ``DOUBLE_INDEXING`` →  ``doubleIndexing``
+  * ``MG_MAJORANT_MODE`` →  ``mgMajorantMode``
+  * ``OPTIMIZATION_MODE`` →  ``optimizationMode``
+  * ``RECONSTRUCT_MACROXS`` →  ``reconstructMacroxs``
+  * ``RECONSTRUCT_MICROXS`` →  ``reconstructMicroxs``
+  * ``SPECTRUM_COLLAPSE`` →  ``spectrumCollapse``
+
+.. _rad-data-2-1-32:
+
+
+``rad-data``
+------------
+
+
+  * ``ACTINIDE_ACTIVITY`` →  ``actinideActivity``
+  * ``ACTINIDE_DECAY_HEAT`` →  ``actinideDecayHeat``
+  * ``ACTINIDE_ING_TOX`` →  ``actinideIngTox``
+  * ``ACTINIDE_INH_TOX`` →  ``actinideInhTox``
+  * ``ALPHA_DECAY_SOURCE`` →  ``alphaDecaySource``
+  * ``CS134_ACTIVITY`` →  ``cs134Activity``
+  * ``ELECTRON_DECAY_SOURCE`` →  ``electronDecaySource``
+  * ``FISSION_PRODUCT_ACTIVITY`` →  ``fissionProductActivity``
+  * ``FISSION_PRODUCT_DECAY_HEAT`` →  ``fissionProductDecayHeat``
+  * ``FISSION_PRODUCT_ING_TOX`` →  ``fissionProductIngTox``
+  * ``FISSION_PRODUCT_INH_TOX`` →  ``fissionProductInhTox``
+  * ``INGENSTION_TOXICITY`` →  ``ingenstionToxicity``
+  * ``INHALATION_TOXICITY`` →  ``inhalationToxicity``
+  * ``NEUTRON_DECAY_SOURCE`` →  ``neutronDecaySource``
+  * ``PHOTON_DECAY_SOURCE`` →  ``photonDecaySource``
+  * ``SR90_ACTIVITY`` →  ``sr90Activity``
+  * ``TE132_ACTIVITY`` →  ``te132Activity``
+  * ``TOT_ACTIVITY`` →  ``totActivity``
+  * ``TOT_DECAY_HEAT`` →  ``totDecayHeat``
+  * ``TOT_SF_RATE`` →  ``totSfRate``
+
+.. _six-ff-2-1-32:
+
+
+``six-ff``
+----------
+
+
+  * ``SIX_FF_EPSILON`` →  ``sixFfEpsilon``
+  * ``SIX_FF_ETA`` →  ``sixFfEta``
+  * ``SIX_FF_F`` →  ``sixFfF``
+  * ``SIX_FF_KEFF`` →  ``sixFfKeff``
+  * ``SIX_FF_KINF`` →  ``sixFfKinf``
+  * ``SIX_FF_LF`` →  ``sixFfLf``
+  * ``SIX_FF_LT`` →  ``sixFfLt``
+  * ``SIX_FF_P`` →  ``sixFfP``
+
 .. _vars-2-1-31:
 
 ----------
-``2.1.31``
+``2-1-31``
 ----------
 
-Variable groups for Serpent 2.1.31 are identical to those from 
-Serpent 2.1.30
+.. _burnup-coeff-2-1-31:
+
+
+``burnup-coeff``
+----------------
+
+
+  * ``BURNUP`` →  ``burnup``
+  * ``BURN_DAYS`` →  ``burnDays``
+  * ``BURN_MATERIALS`` →  ``burnMaterials``
+  * ``BURN_MODE`` →  ``burnMode``
+  * ``BURN_RANDOMIZE_DATA`` →  ``burnRandomizeData``
+  * ``BURN_STEP`` →  ``burnStep``
+  * ``COEF_BRANCH`` →  ``coefBranch``
+  * ``COEF_BU_STEP`` →  ``coefBuStep``
+  * ``COEF_IDX`` →  ``coefIdx``
+
+.. _n-balance-2-1-31:
+
+
+``n-balance``
+-------------
+
+
+  * ``BALA_LOSS_NEUTRON_CAPT`` →  ``balaLossNeutronCapt``
+  * ``BALA_LOSS_NEUTRON_CUT`` →  ``balaLossNeutronCut``
+  * ``BALA_LOSS_NEUTRON_ERR`` →  ``balaLossNeutronErr``
+  * ``BALA_LOSS_NEUTRON_FISS`` →  ``balaLossNeutronFiss``
+  * ``BALA_LOSS_NEUTRON_LEAK`` →  ``balaLossNeutronLeak``
+  * ``BALA_LOSS_NEUTRON_TOT`` →  ``balaLossNeutronTot``
+  * ``BALA_NEUTRON_DIFF`` →  ``balaNeutronDiff``
+  * ``BALA_SRC_NEUTRON_FISS`` →  ``balaSrcNeutronFiss``
+  * ``BALA_SRC_NEUTRON_NXN`` →  ``balaSrcNeutronNxn``
+  * ``BALA_SRC_NEUTRON_SRC`` →  ``balaSrcNeutronSrc``
+  * ``BALA_SRC_NEUTRON_TOT`` →  ``balaSrcNeutronTot``
+  * ``BALA_SRC_NEUTRON_VR`` →  ``balaSrcNeutronVr``
+
+.. _optimization-2-1-31:
+
+
+``optimization``
+----------------
+
+
+  * ``DOUBLE_INDEXING`` →  ``doubleIndexing``
+  * ``MG_MAJORANT_MODE`` →  ``mgMajorantMode``
+  * ``OPTIMIZATION_MODE`` →  ``optimizationMode``
+  * ``RECONSTRUCT_MACROXS`` →  ``reconstructMacroxs``
+  * ``RECONSTRUCT_MICROXS`` →  ``reconstructMicroxs``
+  * ``SPECTRUM_COLLAPSE`` →  ``spectrumCollapse``
+
+.. _rad-data-2-1-31:
+
+
+``rad-data``
+------------
+
+
+  * ``ACTINIDE_ACTIVITY`` →  ``actinideActivity``
+  * ``ACTINIDE_DECAY_HEAT`` →  ``actinideDecayHeat``
+  * ``ACTINIDE_ING_TOX`` →  ``actinideIngTox``
+  * ``ACTINIDE_INH_TOX`` →  ``actinideInhTox``
+  * ``ALPHA_DECAY_SOURCE`` →  ``alphaDecaySource``
+  * ``CS134_ACTIVITY`` →  ``cs134Activity``
+  * ``ELECTRON_DECAY_SOURCE`` →  ``electronDecaySource``
+  * ``FISSION_PRODUCT_ACTIVITY`` →  ``fissionProductActivity``
+  * ``FISSION_PRODUCT_DECAY_HEAT`` →  ``fissionProductDecayHeat``
+  * ``FISSION_PRODUCT_ING_TOX`` →  ``fissionProductIngTox``
+  * ``FISSION_PRODUCT_INH_TOX`` →  ``fissionProductInhTox``
+  * ``INGENSTION_TOXICITY`` →  ``ingenstionToxicity``
+  * ``INHALATION_TOXICITY`` →  ``inhalationToxicity``
+  * ``NEUTRON_DECAY_SOURCE`` →  ``neutronDecaySource``
+  * ``PHOTON_DECAY_SOURCE`` →  ``photonDecaySource``
+  * ``SR90_ACTIVITY`` →  ``sr90Activity``
+  * ``TE132_ACTIVITY`` →  ``te132Activity``
+  * ``TOT_ACTIVITY`` →  ``totActivity``
+  * ``TOT_DECAY_HEAT`` →  ``totDecayHeat``
+  * ``TOT_SF_RATE`` →  ``totSfRate``
+
+.. _six-ff-2-1-31:
+
+
+``six-ff``
+----------
+
+
+  * ``SIX_FF_EPSILON`` →  ``sixFfEpsilon``
+  * ``SIX_FF_ETA`` →  ``sixFfEta``
+  * ``SIX_FF_F`` →  ``sixFfF``
+  * ``SIX_FF_KEFF`` →  ``sixFfKeff``
+  * ``SIX_FF_KINF`` →  ``sixFfKinf``
+  * ``SIX_FF_LF`` →  ``sixFfLf``
+  * ``SIX_FF_LT`` →  ``sixFfLt``
+  * ``SIX_FF_P`` →  ``sixFfP``
 
 .. _vars-2-1-30:
 
 ----------
-``2.1.30``
+``2-1-30``
 ----------
 
 .. _n-balance-2-1-30:
