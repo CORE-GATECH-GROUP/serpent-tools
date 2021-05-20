@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [3.6, 3.7, 3.8, 3.9]
         installer: [setup,sdist]
 
     name: 'Python ${{ matrix.python-version }} installer=${{ matrix.installer }}'
@@ -50,6 +50,15 @@ jobs:
         run: |
           pytest --cov=serpentTools --cov-report= -v
           $GITHUB_WORKSPACE/scripts/ci/testNotebooks.sh
+
+      -
+        name: artifacts
+        uses: actions/upload-artifact@v2
+        if: failure()  # only if the previous step failed
+        with:
+            name: test-images-${{ matrix.python-version }}-${{ matrix.installer }}
+            path: |
+                tests/plots/result_images/*png
 
       -
         name: after

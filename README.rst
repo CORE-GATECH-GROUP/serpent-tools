@@ -44,6 +44,13 @@ If you have issues installing the project, find a bug, or want to add a feature,
 the `GitHub issue page <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues>`_
 is the best place to do that.
 
+Support
+=======
+
+The development of ``serpentTools`` is supported by the following organizations:
+
+* `USNC-Tech <https://usnc.com/space>`_
+
 References
 ==========
 
@@ -64,4 +71,4 @@ happy to include more.
     development and applications in 2013." Ann. Nucl. Energy, `82 (2015) 142-150
     <http://www.sciencedirect.com/science/article/pii/S0306454914004095>`_
 
-.. [2] https://github.com/CORE-GATECH-GROUP/serpent-tools/wiki/Publications-using-serpentTools
+.. [2] https://serpent-tools.readthedocs.io/en/latest/publications.html

@@ -12,11 +12,23 @@ Overview
 
 Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, and Gavin Ridley,
 *"serpentTools: A Python Package for Expediting Analysis with Serpent*."
-`Nuclear Science and Engineering (in press) (2020)
+`Nuclear Science and Engineering (2020)
 <https://doi.org/10.1080/00295639.2020.1723992>`_
 
 Journal
 =======
+
+A. Johnson and D. Kotlyar, "*Hybrid depletion framework using mixed-fidelity
+transport solutions and substeps*." `Annals of Nuclear Energy (2021)
+<https://doi.org/10.1016/j.anucene.2020.108120>`_
+
+J. Carter and R. Borrelli, "*Integral molten salt reactor temperature
+sensitivities using Serpent target motion sampling*." `Nuclear Engineering
+and Design (2020) <https://doi.org/10.1016/j.nucengdes.2020.110863>`_
+
+V. Mishra et al., "*Estimating gamma and neutron radiation fluxes around
+BWR quivers for nuclear safeguards verification purposes*." `Journal of Instrumentation
+(2020) <https://doi.org/10.1088/1748-0221/15/12/P12023>`_
 
 M. Krecicki and D. Kotlyar, "*Low enriched nuclear thermal propulsion
 neutronic, thermal hydraulic, and system design space analysis*."

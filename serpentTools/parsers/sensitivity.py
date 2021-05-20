@@ -5,7 +5,7 @@ from collections import OrderedDict
 from itertools import product
 
 from numpy import transpose, hstack
-from matplotlib.pyplot import gca, axvline
+from matplotlib.pyplot import gca
 
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
@@ -104,27 +104,27 @@ class SensitivityReader(BaseReader):
     """
 
     _RECONVERT_ATTR_MAP = {
-        'nMat': ('sensNumMat', 'SENS_N_MAT'),
-        'nZai': ('sensNumZai', 'SENS_N_ZAI'),
-        'nPert': ('sensNumPert', 'SENS_N_PERT'),
-        'nEne': ('sensNumEne', 'SENS_N_ENE'),
-        'nMu': ('sensNumMu', 'SENS_N_MU'),
-        'latGen': ('sensLatGen', 'SENS_N_LATGEN'),
-        'energies': ('sensEne', 'SENS_E'),
-        'lethargyWidths': ('sensLethWidth', 'SENS_LETHARGY_WIDTHS'),
+        "nMat": ("sensNumMat", "SENS_N_MAT"),
+        "nZai": ("sensNumZai", "SENS_N_ZAI"),
+        "nPert": ("sensNumPert", "SENS_N_PERT"),
+        "nEne": ("sensNumEne", "SENS_N_ENE"),
+        "nMu": ("sensNumMu", "SENS_N_MU"),
+        "latGen": ("sensLatGen", "SENS_N_LATGEN"),
+        "energies": ("sensEne", "SENS_E"),
+        "lethargyWidths": ("sensLethWidth", "SENS_LETHARGY_WIDTHS"),
     }
     _RECONVERT_LIST_MAP = {
-        'materials': ('sensMats', 'SENS_MAT_LIST'),
-        'zais': ('sensZais', 'SENS_ZAI_LIST'),
-        'perts': ('sensPerts', 'SENS_PERT_LIST'),
+        "materials": ("sensMats", "SENS_MAT_LIST"),
+        "zais": ("sensZais", "SENS_ZAI_LIST"),
+        "perts": ("sensPerts", "SENS_PERT_LIST"),
     }
     _RECONVERT_SENS_FMT = [
-        ['sens{}', 'sens{}_eneInt'],
-        ['ADJ_PERT_{}_SENS', 'ADJ_PERT_{}_SENS_E_INT'],
+        ["sens{}", "sens{}_eneInt"],
+        ["ADJ_PERT_{}_SENS", "ADJ_PERT_{}_SENS_E_INT"],
     ]
 
     def __init__(self, filePath):
-        BaseReader.__init__(self, filePath, 'sens')
+        BaseReader.__init__(self, filePath, "sens")
         self.nMat = None
         self.nZai = None
         self.nPert = None
@@ -135,30 +135,32 @@ class SensitivityReader(BaseReader):
         self.perts = OrderedDict()
         self.latGen = None
         self._indxMap = {
-            'materials': self.materials, 'nuclides': self.zais,
-            'reactions': self.perts}
+            "materials": self.materials,
+            "nuclides": self.zais,
+            "reactions": self.perts,
+        }
         self.energies = None
         self.lethargyWidths = None
         self.sensitivities = {}
         self.energyIntegratedSens = {}
 
     def _read(self):
-        keys = stops = ['%']
+        keys = stops = ["%"]
         throughParams = False
         with KeywordParser(self.filePath, keys, stops) as parser:
             for chunk in parser.yieldChunks():
                 if not throughParams:
                     chunk0 = chunk[0]
-                    if 'Number' in chunk0:
+                    if "Number" in chunk0:
                         self._processNumChunk(chunk)
-                    elif 'included' in chunk0:
+                    elif "included" in chunk0:
                         what = chunk0.split()[1]
                         self._processIndexChunk(what, chunk)
-                    elif 'energy' in chunk0:
+                    elif "energy" in chunk0:
                         self._processEnergyChunk(chunk)
-                    elif 'latent' in chunk0:
+                    elif "latent" in chunk0:
                         split = chunk0.split()
-                        self.latGen = int(split[split.index('latent') - 1])
+                        self.latGen = int(split[split.index("latent") - 1])
                         throughParams = True
                     continue
                 self._processSensChunk(chunk)
@@ -166,90 +168,94 @@ class SensitivityReader(BaseReader):
             old = self.zais
             self.zais = OrderedDict()
             for key, value in old.items():
-                if key == 'total':
+                if key == "total":
                     self.zais[key] = value
                     continue
                 self.zais[int(key)] = value
 
     def _processNumChunk(self, chunk):
-        chunk = [line for line in chunk if 'SENS' in line]
+        chunk = [line for line in chunk if "SENS" in line]
         for line in chunk:
             split = line.split()
-            attrN = 'n' + split[0].split('_')[-1].capitalize()
+            attrN = "n" + split[0].split("_")[-1].capitalize()
             if hasattr(self, attrN):
                 setattr(self, attrN, int(split[-1][:-1]))
             else:
                 raise SerpentToolsException(
-                    'Attempted to set attribute {} from number block'.format(
-                        attrN))
+                    "Attempted to set attribute {} from number block".format(
+                        attrN
+                    )
+                )
 
     def _processIndexChunk(self, what, chunk):
         key = what.lower()
         if key not in self._indxMap:
             raise SerpentToolsException(
-                'Could not find proper index map for quantity '
-                '{}'.format(what)
+                "Could not find proper index map for quantity "
+                "{}".format(what)
             )
         datum = self._indxMap[key]
         indx = 0
         store = False
         for line in chunk:
-            if 'SENS' in line:
+            if "SENS" in line:
                 store = True
                 continue
-            if '];' in line:
+            if "];" in line:
                 return
             if store:
-                start = line.index('\'') + 1 if '\'' in line else 0
+                start = line.index("'") + 1 if "'" in line else 0
                 stop = -1
-                key = line[start:stop].replace('\'', '').strip()
-                if '%' in key:
-                    key = key.split('% ')[1]
+                key = line[start:stop].replace("'", "").strip()
+                if "%" in key:
+                    key = key.split("% ")[1]
                 datum[key] = indx
                 indx += 1
-        raise SerpentToolsException(
-            "Unexpected index chunk {}".format(chunk))
+        raise SerpentToolsException("Unexpected index chunk {}".format(chunk))
 
     def _processEnergyChunk(self, chunk):
         for line in chunk:
-            if 'SENS' == line[:4]:
+            if "SENS" == line[:4]:
                 break
         else:
-            raise SerpentToolsException("Could not find SENS parameter "
-                                        "in energy chunk {}".format(chunk[:3]))
+            raise SerpentToolsException(
+                "Could not find SENS parameter "
+                "in energy chunk {}".format(chunk[:3])
+            )
         splitLine = line.split()
-        varName = splitLine[0].split('_')[1:]
+        varName = splitLine[0].split("_")[1:]
         varValues = str2vec(splitLine[3:-1])
-        if varName[0] == 'E':
+        if varName[0] == "E":
             self.energies = varValues
-        elif varName == ['LETHARGY', 'WIDTHS']:
+        elif varName == ["LETHARGY", "WIDTHS"]:
             self.lethargyWidths = varValues
         else:
-            warning("Unanticipated energy setting {}"
-                    .format(splitLine[0]))
+            warning("Unanticipated energy setting {}".format(splitLine[0]))
 
     def _processSensChunk(self, chunk):
         varName = None
         isEnergyIntegrated = False
         varName = None
         for line in chunk:
-            if line == '\n' or '%' in line[:5] or '];' == line[:2]:
+            if line == "\n" or "%" in line[:5] or "];" == line[:2]:
                 continue
-            if line[:3] == 'ADJ':
+            if line[:3] == "ADJ":
                 fullVarName = line.split()[0]
                 nameProps = self._getAdjVarProps(fullVarName.split("_"))
                 varName = nameProps.get("name")
 
                 if varName is None:
                     raise ValueError(
-                        "Cannot get response name from {}".format(fullVarName))
+                        "Cannot get response name from {}".format(fullVarName)
+                    )
 
                 isEnergyIntegrated = nameProps.get("energyFlag", False)
                 latentGen = nameProps.get("latent")
 
             elif varName is not None:
                 self._addSens(
-                    varName, str2vec(line), isEnergyIntegrated, latentGen)
+                    varName, str2vec(line), isEnergyIntegrated, latentGen
+                )
                 varName = None
 
     @staticmethod
@@ -263,10 +269,11 @@ class SensitivityReader(BaseReader):
             elif word == "SENS":
                 if nameStart is None:
                     raise ValueError(
-                        "Cannot get response name from {}".format(parts))
+                        "Cannot get response name from {}".format(parts)
+                    )
                 props["name"] = "_".join(parts[nameStart:ix])
             elif word == "INT":
-                props["energyFlag"] = (parts[ix - 1] == "E")
+                props["energyFlag"] = parts[ix - 1] == "E"
             elif word == "GEN":
                 props["latent"] = int(parts[ix - 1])
 
@@ -275,8 +282,11 @@ class SensitivityReader(BaseReader):
     def _addSens(self, varName, vec, isEnergyIntegrated, latentGen):
         if latentGen is not None:
             return
-        dest = (self.energyIntegratedSens if isEnergyIntegrated
-                else self.sensitivities)
+        dest = (
+            self.energyIntegratedSens
+            if isEnergyIntegrated
+            else self.sensitivities
+        )
         newShape = [2, self.nPert, self.nZai, self.nMat]
         if not isEnergyIntegrated:
             newShape.insert(1, self.nEne)
@@ -284,30 +294,53 @@ class SensitivityReader(BaseReader):
             newName = convertVariableName(varName)
             dest[newName] = reshapePermuteSensMat(vec, newShape)
         except Exception as ee:
-            critical("The following error was raised attempting to "
-                     "reshape matrix {}".format(varName))
+            critical(
+                "The following error was raised attempting to "
+                "reshape matrix {}".format(varName)
+            )
             raise ee
 
     def _precheck(self):
         with open(self.filePath) as fobj:
             for count in range(5):
-                if 'SENS' == fobj.readline()[:4]:
+                if "SENS" == fobj.readline()[:4]:
                     return
-        warning("Could not find any lines starting with SENS. "
-                "Is {} a sensitivity file?".format(self.filePath))
+        warning(
+            "Could not find any lines starting with SENS. "
+            "Is {} a sensitivity file?".format(self.filePath)
+        )
 
     def _postcheck(self):
         if not self.sensitivities:
             raise SerpentToolsException("No sensitivity data stored on reader")
         if not self.energyIntegratedSens:
-            raise SerpentToolsException("No energy integrated sensitivities "
-                                        "stored on reader")
+            raise SerpentToolsException(
+                "No energy integrated sensitivities " "stored on reader"
+            )
 
     @magicPlotDocDecorator
-    def plot(self, resp, zai=None, pert=None, mat=None, mevscale=False,
-             egrid=None, sigma=3, normalize=True, ax=None, labelFmt=None,
-             title=None, logx=True, logy=False, loglog=False, xlabel=None,
-             ylabel=None, legend=None, ncol=1):
+    def plot(
+        self,
+        resp,
+        zai=None,
+        pert=None,
+        mat=None,
+        mevscale=False,
+        egrid=None,
+        sigma=3,
+        normalize=True,
+        ax=None,
+        labelFmt=None,
+        title=None,
+        logx=True,
+        logy=False,
+        loglog=False,
+        xlabel=None,
+        ylabel=None,
+        legend=None,
+        ncol=1,
+        **kwargs
+    ):
         """
         Plot sensitivities due to some or all perturbations.
 
@@ -321,27 +354,27 @@ class SensitivityReader(BaseReader):
         ----------
         resp: str
             Name of the specific response to be examined. Must be a key
-            in ``sensitivities`` and ``energyIntegratedSens``
-        zai: None or str or int or iterable
+            in :attr:`sensitivities` and :attr:`energyIntegratedSens`
+        zai : None or str or int or iterable
             Plot sensitivities due to these isotopes. Passing ``None``
             will plot against all isotopes.
-        pert: None or str or list of strings
+        pert : None or str or list of strings
             Plot sensitivities due to these perturbations. Passing ``None``
             will plot against all perturbations.
-        mat: None or str or list of strings
+        mat : None or str or list of strings
             Plot sensitivities due to these materials. Passing ``None``
             will plot against all materials.
-        mevscale : bool, optional
+        mevscale  : bool, optional
             Flag for plotting energy grid in MeV units. If ``True``, the energy
             axis is expressed in MeV. Default is ``False``.
-        egrid : numpy.array, optional
+        egrid  : numpy.array, optional
             User-defined energy grid boundaries displayed on the sensitivities
             as vblack, dashed vertical lines. Default is ``None``.
         {sigma}
-        normalize: True
+        normalize : True
             Normalize plotted data per unit lethargy
         {ax}
-        labelFmt: None or str
+        labelFmt : None or str
             Formattable string to be applied to the labels.
             The following entries will be formatted for each plot
             permuation::
@@ -358,6 +391,9 @@ class SensitivityReader(BaseReader):
         {ylabel}
         {legend}
         {ncol}
+        {kwargs} :method:`matplotlib.pyplot.Axes.errorbar`
+
+            .. versionadded: 0.9.4
 
         Returns
         -------
@@ -371,19 +407,30 @@ class SensitivityReader(BaseReader):
 
         See Also
         --------
-        * :py:meth:`str.format` - used for formatting labels
+        * :meth:`str.format` - used for formatting labels
 
         """
-        for subDict in {'sensitivities', 'energyIntegratedSens'}:
+        for subDict in {"sensitivities", "energyIntegratedSens"}:
             if resp not in getattr(self, subDict):
-                raise KeyError("Response {} missing from {}"
-                               .format(resp, subDict))
-        labelFmt = labelFmt or "mat: {m} zai: {z} pert: {p}"
+                raise KeyError(
+                    "Response {} missing from {}".format(resp, subDict)
+                )
+        if "label" in kwargs:
+            if labelFmt:
+                raise ValueError("Passing label= and labelFmt= is not allowed")
+            labelFmt = kwargs.pop("label")
+        elif labelFmt is None:
+            labelFmt = "mat: {m} zai: {z} pert: {p}"
+
+        kwargs.setdefault("drawstyle", "steps-post")
+
         if isinstance(zai, (str, int)):
-            zai = {zai, }
-        zais = self._getCleanedPertOpt('zais', zai)
-        perts = self._getCleanedPertOpt('perts', pert)
-        mats = self._getCleanedPertOpt('materials', mat)
+            zai = {
+                zai,
+            }
+        zais = self._getCleanedPertOpt("zais", zai)
+        perts = self._getCleanedPertOpt("perts", pert)
+        mats = self._getCleanedPertOpt("materials", mat)
 
         ax = ax or gca()
 
@@ -395,7 +442,7 @@ class SensitivityReader(BaseReader):
 
         errors = resMat[..., 1] * values * sigma
 
-        energies = self.energies if mevscale else self.energies * 1E6
+        energies = self.energies if mevscale else self.energies * 1e6
         for z, m, p in product(zais, mats, perts):
             iZ = self.zais[z]
             iM = self.materials[m]
@@ -405,12 +452,11 @@ class SensitivityReader(BaseReader):
             yErrs = errors[iM, iZ, iP]
             yErrs = hstack((yErrs, yErrs[-1]))
             label = labelFmt.format(r=resp, z=z, m=m, p=p)
-            ax.errorbar(energies, yVals, yErrs, label=label,
-                        drawstyle='steps-post')
+            ax.errorbar(energies, yVals, yErrs, label=label, **kwargs)
 
         if egrid is not None:
             for group in egrid:
-                ax.axvline(group, color='k', linestyle='dashed')
+                ax.axvline(group, color="k", linestyle="dashed")
 
         if xlabel is None:
             xlabel = "Energy [MeV]" if mevscale else "Energy [eV]"
@@ -423,8 +469,16 @@ class SensitivityReader(BaseReader):
                 parts.append(r"$\pm{}\sigma$".format(sigma))
             ylabel = " ".join(parts)
 
-        ax = formatPlot(ax, loglog=loglog, logx=logx, logy=logy, legendcols=ncol,
-                        legend=legend, xlabel=xlabel, ylabel=ylabel)
+        ax = formatPlot(
+            ax,
+            loglog=loglog,
+            logx=logx,
+            logy=logy,
+            legendcols=ncol,
+            legend=legend,
+            xlabel=xlabel,
+            ylabel=ylabel,
+        )
         return ax
 
     def _gather_matlab(self, reconvert):
@@ -443,24 +497,28 @@ class SensitivityReader(BaseReader):
             out[eneSensFmt.format(key)] = self.energyIntegratedSens[key]
         return out
 
-    def _getCleanedPertOpt(self, key, value):
-        """Return a set of all or some of the requested perturbations."""
-        assert hasattr(self, key), key
-        opts = getattr(self, key).keys()
+    def _getCleanedPertOpt(self, attrName, value):
+        """Return a list of all or some of the requested perturbations."""
+        opts = getattr(self, attrName, None)
+        assert isinstance(opts, OrderedDict)
         if value is None:
             return list(opts)
-        requested = set([value, ]) if isinstance(value, str) else set(value)
-        missing = {str(xx) for xx in requested.difference(set(opts))}
-        if missing:
-            raise KeyError("Could not find the following perturbations: "
-                           "{}".format(', '.join(missing)))
-        return requested
+        elif isinstance(value, str):
+            value = [value]
+        available = set(opts)
+        if available.issuperset(value):
+            return value
+        missing = available.intersection(value).symmetric_difference(value)
+        raise KeyError(
+            "Could not find the following {} perturbations: "
+            "{}".format(attrName, missing)
+        )
 
 
 def reshapePermuteSensMat(vec, newShape):
     """
     Return an array that has been reshaped and permuted like the sens file.
     """
-    reshaped = vec.reshape(newShape, order='F')
+    reshaped = vec.reshape(newShape, order="F")
     newAx = list(reversed(range(len(newShape))))
     return transpose(reshaped, newAx)
