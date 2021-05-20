@@ -36,12 +36,13 @@ classifiers = [
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
 ]
 
 with open('./requirements.txt') as req:
     installRequires = req.read()
 
-pythonRequires = ">=3.5,<3.9"
+pythonRequires = ">=3.5"
 
 version = "0.9.3"
 
