@@ -391,7 +391,7 @@ class SensitivityReader(BaseReader):
         {ylabel}
         {legend}
         {ncol}
-        {kwargs} :method:`matplotlib.pyplot.Axes.errorbar`
+        {kwargs} :meth:`matplotlib.pyplot.Axes.errorbar`
 
             .. versionadded: 0.9.4
 
