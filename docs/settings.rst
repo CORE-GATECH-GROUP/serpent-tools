@@ -214,7 +214,7 @@ Version of Serpent::
 
   Default: 2.1.31
   Type: str
-  Options: [2.1.29, 2.1.30, 2.1.31]
+  Options: [2.1.29, 2.1.30, 2.1.31, 2.1.32]
 
 .. _verbosity:
 
