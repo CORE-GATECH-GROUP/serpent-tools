@@ -14,6 +14,21 @@ Changelog
     existing structures. For more information, see
     :ref:`data-model`
 
+.. _v0.9.4:
+
+:release-tag:`0.9.4rc0`
+====================
+
+* Support for Serpent 2.1.32 via :ref:`settings`. 2.1.31 is still
+  default - :pull:`447`
+* Support for installing under python 3.9 - :pull:`444`
+* Various ``plot`` methods now support passing keword arguments to underlying
+  matplotlib plot routines
+
+  * :meth:`serpentTools.objects.HomogUniv.plot` - :pull:`432`
+  * :meth:`serpentTools.SensitivityReader.plot` - :pull:`434`
+  * :meth:`serpentTools.ResultsReader.plot` - :pull:`446`
+
 .. _v0.9.3:
 
 :release-tag:`0.9.3`
