@@ -1,4 +1,7 @@
 """Parser responsible for reading the ``*_xsplot.m`` files"""
+import warnings
+import re
+
 from numpy import array, float64
 
 from serpentTools.messages import error, warning
@@ -44,6 +47,7 @@ class XSPlotReader(BaseReader):
         likely be removed in the future
 
     """
+    _misc = {"pspec", }
 
     def __init__(self, filePath):
         super().__init__(filePath, 'xsplot')
@@ -146,7 +150,22 @@ class XSPlotReader(BaseReader):
                     self.xsections[xsname].setData(chunk)
 
                 else:
-                    raise ValueError("Unidentifiable entry\n{}".format(chunk))
+                    self._processMisc(lead, data)
+
+    def _processMisc(self, lead, data):
+        variable = lead.split()[0]
+        for key in self._misc:
+            start = variable.find(key)
+            if start == -1:
+                continue
+            xsname = re.sub("_$", "", variable[:start])
+            cleaned = list(map(str.split, data))
+            self.xsections[xsname].misc[key] = array(cleaned, dtype=float)
+            return
+
+        warnings.warn(
+            "Unidentifiable entry in {}: {}".format(self.filePath, lead)
+        )
 
     def _precheck(self):
         """do a quick scan to ensure this looks like a xsplot file."""
