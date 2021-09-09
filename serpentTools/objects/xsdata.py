@@ -44,6 +44,9 @@ class XSData(NamedObject):
     metadata : dict
         File-wide metadata from the reader. Alias for accessing
         :attr:`energies`. Will be removed in the future
+    misc : dict of str to numpy.ndarray
+        Other arrays that do not have a dedicated attribute, e.g.,
+        ``pspec`` for photon line spectrum
 
     """
 
@@ -88,6 +91,8 @@ class XSData(NamedObject):
 
         # whether nu data present for fissionables
         self.hasNuData = False
+
+        self.misc = {}
 
     def __len__(self):
         """Number of reactions stored"""

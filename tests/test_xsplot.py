@@ -1,11 +1,13 @@
 """Test the xsplot reader."""
 import unittest
 from numpy import ndarray, array, newaxis
-
 from numpy.testing import assert_array_equal
+import pytest
 
 from serpentTools.parsers.xsplot import XSPlotReader
 from serpentTools.data import getFile
+
+DATA_FILE = getFile("plut_xs0.m")
 
 
 def findDiff(d1, d2, path=""):
@@ -48,8 +50,7 @@ class XSPlotTester(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.file = getFile('plut_xs0.m')
-        cls.reader = XSPlotReader(cls.file)
+        cls.reader = XSPlotReader(DATA_FILE)
         cls.reader.read()
 
     def test1_allXS(self):
@@ -782,3 +783,59 @@ class XSPlotTester(unittest.TestCase):
 """
         actual = self.reader.xsections['mfissile'].showMT(retstring=True)
         self.assertEqual(refString.rstrip(), actual.rstrip())
+
+
+def test_goodMisc():
+    reader = XSPlotReader(DATA_FILE)
+    reader.read()
+    pu = reader["i94239_03c"]
+    assert "pspec" in pu.misc
+    actualPspec = array(
+        [
+            [1.36082E-02, 1.47639E-02],
+            [3.27184E-03, 5.25321E-03],
+            [1.64140E-02, 3.43399E-03],
+            [1.37229E-02, 1.50625E-03],
+            [1.29750E-02, 3.69478E-04],
+            [5.16240E-02, 2.72200E-04],
+            [3.86610E-02, 1.04400E-04],
+            [1.29296E-01, 6.31000E-05],
+            [9.89280E-02, 5.69788E-05],
+            [3.75054E-01, 1.55400E-05],
+            [4.13713E-01, 1.46600E-05],
+            [9.87800E-02, 1.46500E-05],
+            [1.11820E-01, 1.29767E-05],
+            [5.68280E-02, 1.15200E-05],
+            [1.10928E-01, 6.61565E-06],
+            [2.03550E-01, 5.69000E-06],
+            [9.92700E-01, 2.70000E-10],
+            [8.16000E-01, 2.40000E-10],
+            [7.63600E-01, 2.20000E-10],
+            [9.86900E-01, 2.10000E-10],
+            [6.93200E-01, 2.00000E-10],
+            [7.92900E-01, 2.00000E-10],
+            [4.12300E-01, 1.80000E-10],
+            [1.00570E+00, 1.80000E-10],
+            [7.62600E-01, 1.00000E-10],
+            [6.70800E-01, 9.00000E-11],
+            [6.70990E-01, 9.00000E-11],
+            [9.18700E-01, 8.40000E-11],
+            [1.72560E-01, 3.00000E-11],
+            [1.23228E-01, 1.60000E-11],
+        ]
+    )
+    assert pu.misc["pspec"] == pytest.approx(actualPspec, rel=0, abs=0)
+
+
+@pytest.fixture
+def xsreaderNoPspec():
+    reader = XSPlotReader(DATA_FILE)
+    reader._misc.difference_update({"pspec", })
+    return reader
+
+
+def test_missingPspec(xsreaderNoPspec):
+    with pytest.warns(UserWarning, match="pspec"):
+        xsreaderNoPspec.read()
+    pu = xsreaderNoPspec["i94239_03c"]
+    assert "pspec" not in pu.misc
