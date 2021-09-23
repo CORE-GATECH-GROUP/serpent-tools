@@ -500,6 +500,7 @@ class Detector(NamedObject):
             fixed=None,
             ax=None,
             normalize=True,
+            by="max",
             xlabel=None,
             ylabel=None,
             steps=True,
@@ -522,7 +523,12 @@ class Detector(NamedObject):
             Dictionary controlling the reduction in data
         {ax}
         normalize: bool
-            Normalize quantities per unit lethargy
+            Divide tally values by size of lethargy bins.
+        by : {"max", None}, optional
+            How to scale the spectrum after considering ``normalize``.
+            ``"max"`` (default) will divide by the maximum value such
+            that the max value is unity. ``None`` will not perform any
+            additional modifications.
         {xlabel}
         {ylabel}
         steps: bool
@@ -568,6 +574,9 @@ class Detector(NamedObject):
             # Need to scale up the dimension of the energy grids to support
             # broadcasting -> (E, N) / (E, )
             slicedTallies /= lethBins[:, newaxis]
+
+        if by == "max":
+            slicedTallies /= slicedTallies.max(axis=0)
 
         if steps:
             if 'drawstyle' in kwargs:
