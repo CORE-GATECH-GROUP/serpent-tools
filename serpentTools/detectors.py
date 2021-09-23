@@ -27,7 +27,7 @@ from collections.abc import Mapping
 
 from numpy import (
     unique, inf, hstack, arange, log, divide, asfortranarray,
-    ndarray, asarray,
+    ndarray, asarray, newaxis
 )
 from matplotlib.patches import RegularPolygon
 from matplotlib.collections import PatchCollection
@@ -560,13 +560,14 @@ class Detector(NamedObject):
             )
         elif len(slicedTallies.shape) == 1:
             slicedTallies = slicedTallies.reshape(slicedTallies.size, 1)
+
         lowerE = self.grids['E'][:, 0]
         if normalize:
             lethBins = log(
                 divide(self.grids['E'][:, -1], lowerE))
-            for indx in range(slicedTallies.shape[1]):
-                scratch = divide(slicedTallies[:, indx], lethBins)
-                slicedTallies[:, indx] = scratch / scratch.max()
+            # Need to scale up the dimension of the energy grids to support
+            # broadcasting -> (E, N) / (E, )
+            slicedTallies /= lethBins[:, newaxis]
 
         if steps:
             if 'drawstyle' in kwargs:
