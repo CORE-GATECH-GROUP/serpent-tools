@@ -495,10 +495,24 @@ class Detector(NamedObject):
         return similar
 
     @magicPlotDocDecorator
-    def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
-                     ylabel=None, steps=True, logx=True, logy=False,
-                     loglog=False, sigma=3, labels=None, legend=None, ncol=1,
-                     title=None, **kwargs):
+    def spectrumPlot(
+            self,
+            fixed=None,
+            ax=None,
+            normalize=True,
+            xlabel=None,
+            ylabel=None,
+            steps=True,
+            logx=True,
+            logy=False,
+            loglog=False,
+            sigma=3,
+            labels=None,
+            legend=None,
+            ncol=1,
+            title=None,
+            **kwargs,
+    ):
         """
         Quick plot of the detector value as a function of energy.
 
@@ -576,9 +590,16 @@ class Detector(NamedObject):
 
         if legend is None and labels:
             legend = True
-        ax = formatPlot(ax, loglog=loglog, logx=logx, legendcols=ncol,
-                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
-                        legend=legend, title=title)
+        ax = formatPlot(
+            ax,
+            loglog=loglog,
+            logx=logx,
+            legendcols=ncol,
+            xlabel=xlabel or "Energy [MeV]",
+            ylabel=ylabel,
+            legend=legend,
+            title=title,
+        )
         return ax
 
     @magicPlotDocDecorator
