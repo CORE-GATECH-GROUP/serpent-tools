@@ -594,6 +594,7 @@ class Detector(NamedObject):
             ax,
             loglog=loglog,
             logx=logx,
+            logy=logy,
             legendcols=ncol,
             xlabel=xlabel or "Energy [MeV]",
             ylabel=ylabel,
