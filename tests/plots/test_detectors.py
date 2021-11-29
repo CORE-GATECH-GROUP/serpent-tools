@@ -17,3 +17,9 @@ def testBwrMeshPlot():
     with pytest.warns(None) as record:
         reader["xymesh"].meshPlot(fixed={"energy": 0})
     assert len(record) == 0
+
+
+@compare_or_update_plot
+def testSpectrumJustNormPerLethargy():
+    reader = readDataFile("bwr_det0.m")
+    reader["spectrum"].spectrumPlot(by=None, fixed={"reaction": 1})

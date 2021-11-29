@@ -27,7 +27,7 @@ from collections.abc import Mapping
 
 from numpy import (
     unique, inf, hstack, arange, log, divide, asfortranarray,
-    ndarray, asarray,
+    ndarray, asarray, newaxis
 )
 from matplotlib.patches import RegularPolygon
 from matplotlib.collections import PatchCollection
@@ -495,10 +495,25 @@ class Detector(NamedObject):
         return similar
 
     @magicPlotDocDecorator
-    def spectrumPlot(self, fixed=None, ax=None, normalize=True, xlabel=None,
-                     ylabel=None, steps=True, logx=True, logy=False,
-                     loglog=False, sigma=3, labels=None, legend=None, ncol=1,
-                     title=None, **kwargs):
+    def spectrumPlot(
+            self,
+            fixed=None,
+            ax=None,
+            normalize=True,
+            by="max",
+            xlabel=None,
+            ylabel=None,
+            steps=True,
+            logx=True,
+            logy=False,
+            loglog=False,
+            sigma=3,
+            labels=None,
+            legend=None,
+            ncol=1,
+            title=None,
+            **kwargs,
+    ):
         """
         Quick plot of the detector value as a function of energy.
 
@@ -508,7 +523,12 @@ class Detector(NamedObject):
             Dictionary controlling the reduction in data
         {ax}
         normalize: bool
-            Normalize quantities per unit lethargy
+            Divide tally values by size of lethargy bins.
+        by : {"max", None}, optional
+            How to scale the spectrum after considering ``normalize``.
+            ``"max"`` (default) will divide by the maximum value such
+            that the max value is unity. ``None`` will not perform any
+            additional modifications.
         {xlabel}
         {ylabel}
         steps: bool
@@ -546,13 +566,17 @@ class Detector(NamedObject):
             )
         elif len(slicedTallies.shape) == 1:
             slicedTallies = slicedTallies.reshape(slicedTallies.size, 1)
+
         lowerE = self.grids['E'][:, 0]
         if normalize:
             lethBins = log(
                 divide(self.grids['E'][:, -1], lowerE))
-            for indx in range(slicedTallies.shape[1]):
-                scratch = divide(slicedTallies[:, indx], lethBins)
-                slicedTallies[:, indx] = scratch / scratch.max()
+            # Need to scale up the dimension of the energy grids to support
+            # broadcasting -> (E, N) / (E, )
+            slicedTallies /= lethBins[:, newaxis]
+
+        if by == "max":
+            slicedTallies /= slicedTallies.max(axis=0)
 
         if steps:
             if 'drawstyle' in kwargs:
@@ -576,9 +600,17 @@ class Detector(NamedObject):
 
         if legend is None and labels:
             legend = True
-        ax = formatPlot(ax, loglog=loglog, logx=logx, legendcols=ncol,
-                        xlabel=xlabel or "Energy [MeV]", ylabel=ylabel,
-                        legend=legend, title=title)
+        ax = formatPlot(
+            ax,
+            loglog=loglog,
+            logx=logx,
+            logy=logy,
+            legendcols=ncol,
+            xlabel=xlabel or "Energy [MeV]",
+            ylabel=ylabel,
+            legend=legend,
+            title=title,
+        )
         return ax
 
     @magicPlotDocDecorator
