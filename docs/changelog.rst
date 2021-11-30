@@ -16,12 +16,14 @@ Changelog
 
 .. _v0.9.4:
 
-0.9.4rc1
-========
-* Support for reading ``pspec`` fields in xsplot files
+:release-tag:`0.9.4rc1`
+=======================
+
+* Normalize spectrum by maximum value or not at all - :pull:`457`
+* Support for reading ``pspec`` fields in xsplot files - :pull:`456`
 
 :release-tag:`0.9.4rc0`
-====================
+=======================
 
 * Support for Serpent 2.1.32 via :ref:`settings`. 2.1.31 is still
   default - :pull:`447`
