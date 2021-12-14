@@ -50,6 +50,7 @@ MapStrVersions = {
 }
 MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
 MapStrVersions['2.1.31'] = MapStrVersions['2.1.29']
+MapStrVersions['2.1.32'] = MapStrVersions['2.1.29']
 """
 Assigns search strings for different Serpent versions
 """
@@ -495,7 +496,7 @@ class ResultsReader(XSReader):
         if keys is None:
             warning("SERPENT {} is not supported by the "
                     "ResultsReader".format(serpentV))
-            warning("  Attemping to read anyway. Please report strange "
+            warning("  Attempting to read anyway. Please report strange "
                     "behaviors/failures to developers.")
             keys = MapStrVersions[max(MapStrVersions)]
 
