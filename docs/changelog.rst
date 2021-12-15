@@ -16,14 +16,11 @@ Changelog
 
 .. _v0.9.4:
 
-:release-tag:`0.9.4rc1`
-=======================
+:release-tag:`0.9.4`
+====================
 
 * Normalize spectrum by maximum value or not at all - :pull:`457`
 * Support for reading ``pspec`` fields in xsplot files - :pull:`456`
-
-:release-tag:`0.9.4rc0`
-=======================
 
 * Support for Serpent 2.1.32 via :ref:`settings`. 2.1.31 is still
   default - :pull:`447`
@@ -34,6 +31,8 @@ Changelog
   * :meth:`serpentTools.objects.HomogUniv.plot` - :pull:`432`
   * :meth:`serpentTools.SensitivityReader.plot` - :pull:`434`
   * :meth:`serpentTools.ResultsReader.plot` - :pull:`446`
+
+Supported by releases :release-tag:`0.9.4rc0` and :release-tag:`0.9.4rc1`
 
 .. _v0.9.3:
 
