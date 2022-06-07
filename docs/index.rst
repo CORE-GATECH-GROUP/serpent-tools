@@ -25,15 +25,15 @@ Welcome to serpentTools's documentation!
        :alt: Nuclear Science and Engineering 10.1080/00295639.2020.1723992
 
 A suite of parsers designed to make interacting with
-:term:`SERPENT` [serpent]_ output files simple and flawless. 
+:term:`SERPENT` [serpent]_ output files simple and flawless.
 
 The :term:`SERPENT` Monte Carlo code
 is developed by VTT Technical Research Centre of Finland, Ltd.
 More information, including distribution and licensing of :term:`SERPENT` can be
 found at `<http://montecarlo.vtt.fi>`_
 
-The Annals of Nuclear Energy article should be cited for all work
-using :term:`SERPENT`. 
+The Nuclear Science and Engineering article should be cited for all work
+using :term:`SERPENT`.
 
 .. admonition:: Preferred citation for attribution
     :class: tip
@@ -41,13 +41,13 @@ using :term:`SERPENT`.
     Andrew Johnson, Dan Kotlyar, Stefano Terlizzi, and Gavin Ridley,
     "`serpentTools: A Python Package for Expediting Analysis with
     Serpent <https://doi.org/10.1080/00295639.2020.1723992>`_,"
-    *Nuc. Sci. Eng*, (in press) (2020).
+    *Nuc. Sci. Eng*, **194** (11), pp. 1016-1024 (2020).
 
 Also, let us know if you publish work using this package! We try and
 keep an up-to-date list of `works using serpentTools`_, and would be
 happy to include more.
 
-If you want to refer to a specific version, follow the `Zenodo DOI 
+If you want to refer to a specific version, follow the `Zenodo DOI
 <https://doi.org/10.5281/zenodo.1301035>`_. This will resolve to the latest
 version, with links to earlier releases.
 
