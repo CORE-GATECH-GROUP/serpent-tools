@@ -21,13 +21,14 @@ class BaseReader(ABC, BaseObject):
 
     Parameters
     ----------
-    filePath: str
+    filePath: str or path-like
         path pointing towards the file to be read
     readerSettingsLevel: str or list
         type of reader. Determines which settings to obtain
     """
 
     def __init__(self, filePath, readerSettingsLevel):
+        filePath = str(filePath)
         self.filePath = filePath
         if isinstance(readerSettingsLevel, str):
             self.settings = rc.getReaderSettings(readerSettingsLevel)

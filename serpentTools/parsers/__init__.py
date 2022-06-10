@@ -65,7 +65,7 @@ def inferReader(filePath):
 
     Parameters
     ----------
-    filePath: str
+    filePath: str or path-like
         File to be read.
 
     Raises
@@ -73,6 +73,7 @@ def inferReader(filePath):
     SerpentToolsException
         If a reader cannot be inferred
     """
+    filePath = str(filePath)
     for reg, reader in REGEXES.items():
         match = re.match(reg, filePath)
         if match and match.group() == filePath:
