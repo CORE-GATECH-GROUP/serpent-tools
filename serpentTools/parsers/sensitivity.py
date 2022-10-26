@@ -384,6 +384,7 @@ class SensitivityReader(BaseReader):
                 {p} - specific perturbation
                 {r} - response being plotted
 
+        {title}
         {logx}
         {logy}
         {loglog}
@@ -478,6 +479,7 @@ class SensitivityReader(BaseReader):
             legend=legend,
             xlabel=xlabel,
             ylabel=ylabel,
+            title=title,
         )
         return ax
 
