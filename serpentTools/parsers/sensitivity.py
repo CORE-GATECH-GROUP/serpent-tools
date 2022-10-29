@@ -4,7 +4,7 @@ Class to read Sensitivity file
 from collections import OrderedDict
 from itertools import product
 
-from numpy import transpose, hstack
+from numpy import transpose, hstack, fabs
 from matplotlib.pyplot import gca
 
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
@@ -451,7 +451,7 @@ class SensitivityReader(BaseReader):
             yVals = values[iM, iZ, iP]
             yVals = hstack((yVals, yVals[-1]))
             yErrs = errors[iM, iZ, iP]
-            yErrs = hstack((yErrs, yErrs[-1]))
+            yErrs = fabs(hstack((yErrs, yErrs[-1])))
             label = labelFmt.format(r=resp, z=z, m=m, p=p)
             ax.errorbar(energies, yVals, yErrs, label=label, **kwargs)
 
