@@ -16,10 +16,13 @@ def flattop():
 @compare_or_update_plot
 def test_sensitivity_filter(flattop):
     ax = flattop.plot(
-        "keff", zai=922380, pert="total xs", labelFmt="{r}: {z} {p}",
+        "keff",
+        zai=922380,
+        pert="total xs",
+        labelFmt="{r}: {z} {p}",
+        title="Sensitivity of $k_{eff}$ to U-238 total cross section",
     )
     ax.set_xlim(LOWER_XLIM)
-
 
 
 @compare_or_update_plot
