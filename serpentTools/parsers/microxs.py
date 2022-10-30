@@ -182,10 +182,10 @@ class MicroXSReader(BaseReader):
                               "Parser: {}\nFile: {}".format(self,
                                                             self.filePath))
             for tline in fid:
-                if 'NFY' in tline:
+                if 'NFY' in tline or 'XS_' in tline:
                     return
-            raise SerpentToolsException("Fission yields values were not "
-                                        "found in {}".format(self.filePath))
+            raise SerpentToolsException("Fission yields and/or XS values were "
+                                         "not found in {}".format(self.filePath))
 
     def _postcheck(self):
         """ensure the parser grabbed expected results."""
