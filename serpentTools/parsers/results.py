@@ -48,12 +48,13 @@ MapStrVersions = {
         'varsUnc': ['MICRO_NG', 'MICRO_E', 'MACRO_NG', 'MACRO_E'],
     },
 }
-MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
-MapStrVersions['2.1.31'] = MapStrVersions['2.1.29']
-MapStrVersions['2.1.32'] = MapStrVersions['2.1.29']
 """
 Assigns search strings for different Serpent versions
 """
+MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
+MapStrVersions['2.1.31'] = MapStrVersions['2.1.29']
+MapStrVersions['2.1.32'] = MapStrVersions['2.1.29']
+MapStrVersions['2.2.0'] = MapStrVersions['2.1.32']
 
 METADATA_CONV = {
     int: {

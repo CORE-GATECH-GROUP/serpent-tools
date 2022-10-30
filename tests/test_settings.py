@@ -164,3 +164,8 @@ class ConfigLoaderTester(TestCaseWithLogCapture):
         self._writeTestRemoveConfFile(badSettings, self.files['nested'],
                                       self.configSettings, False)
         self.assertMsgInLogs("ERROR", "bad setting", partial=True)
+
+
+def test_supports_2_2():
+    with settings.rc as rc:
+        rc["serpentVersion"] = "2.2.0"
