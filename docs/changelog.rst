@@ -14,6 +14,23 @@ Changelog
     existing structures. For more information, see
     :ref:`data-model`
 
+.. _v0.9.5:
+
+:release-tag:`0.9.5`
+====================
+
+.. note::
+
+    Following the `0.9.5` release, the default branch for development
+    will be the ``main`` branch on GitHub. The ``develop`` branch will
+    be re-incorporated at a later date.
+
+*  Allow microxs reader to handle files w/o nfy data :pull:`468`
+*  ResultsReader supports Serpent 2.2.0 :pull:`472`
+*  SensitivityReader.plot applies the title to the plot :pull:`471`
+*  SensitivityReader.plot uses absolute value for yerr :pull:`470`
+*  Allow pathlib.Path arguments to readers :pull:`463`
+
 .. _v0.9.4:
 
 :release-tag:`0.9.4`
@@ -25,7 +42,7 @@ Changelog
 * Support for Serpent 2.1.32 via :ref:`settings`. 2.1.31 is still
   default - :pull:`447`
 * Support for installing under python 3.9 - :pull:`444`
-* Various ``plot`` methods now support passing keword arguments to underlying
+* Various ``plot`` methods now support passing keyword arguments to underlying
   matplotlib plot routines
 
   * :meth:`serpentTools.objects.HomogUniv.plot` - :pull:`432`
