@@ -7,4 +7,4 @@ from serpentTools.samplers import *
 from serpentTools.seed import *
 from serpentTools.xs import *
 
-__version__ = "0.9.4"
+__version__ = "0.9.5"
