@@ -38,8 +38,9 @@ classifiers = [
 ]
 
 # Matplotlib 3.6 requires python 3.8
+# Numpy > 1.22 requires 3.8
 
-installRequires = """numpy>=1.16.0
+installRequires = """numpy>=1.16.0,<1.22
 matplotlib>=2.2.3,!=3.3.4,<3.6
 pyyaml>=5.1.1
 """
