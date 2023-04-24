@@ -96,17 +96,12 @@ Installing from a Release
 Installing via git
 ==================
 
-The newest features are available on the ``develop`` branch before getting
-pushed to the ``master`` branch. We try to give decent notice when features are
-going to change via warning messages and our :ref:`changelog`, but changes
-to the API and other functionality can occur across the develop branch.
-
 1. Clone the repository and checkout the branch of your choosing. The default
-   is ``develop``::
+   is ``main``::
 
         $ git clone https://github.com/CORE-GATECH-GROUP/serpent-tools.git
         $ cd serpent-tools
-        $ git checkout master
+        $ git checkout main
 
 2. Install using our `setup script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/setup.py>`_::
 
