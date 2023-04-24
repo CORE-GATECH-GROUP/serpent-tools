@@ -40,9 +40,8 @@ jobs:
         name: install
         shell: bash
         run: |
-          pip install -r requirements.txt
-          pip install -r requirements-test.txt
           $GITHUB_WORKSPACE/scripts/ci/install.sh
+          pip install jupyter
 
       -
         name: test

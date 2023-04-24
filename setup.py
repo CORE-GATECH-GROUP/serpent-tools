@@ -37,8 +37,10 @@ classifiers = [
     'Programming Language :: Python :: 3.9',
 ]
 
-with open('./requirements.txt') as req:
-    installRequires = req.read()
+installRequires = """numpy>=1.16.0
+matplotlib>=2.2.3,!=3.3.4
+pyyaml>=5.1.1
+"""
 
 pythonRequires = ">=3.7"
 
