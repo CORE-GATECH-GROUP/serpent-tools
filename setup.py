@@ -32,8 +32,6 @@ classifiers = [
     'License :: OSI Approved :: MIT License',
     'Natural Language :: English',
     'Programming Language :: Python',
-    'Programming Language :: Python :: 3.5',
-    'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
@@ -42,7 +40,7 @@ classifiers = [
 with open('./requirements.txt') as req:
     installRequires = req.read()
 
-pythonRequires = ">=3.5"
+pythonRequires = ">=3.7"
 
 version = "0.9.5"
 
