@@ -53,7 +53,7 @@ jobs:
 
       -
         name: artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()  # only if the previous step failed
         with:
             name: test-images-${{ matrix.python-version }}-${{ matrix.installer }}
