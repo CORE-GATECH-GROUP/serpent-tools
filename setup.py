@@ -37,8 +37,10 @@ classifiers = [
     'Programming Language :: Python :: 3.9',
 ]
 
+# Matplotlib 3.6 requires python 3.8
+
 installRequires = """numpy>=1.16.0
-matplotlib>=2.2.3,!=3.3.4
+matplotlib>=2.2.3,!=3.3.4,<3.6
 pyyaml>=5.1.1
 """
 
