@@ -166,6 +166,7 @@ class ConfigLoaderTester(TestCaseWithLogCapture):
         self.assertMsgInLogs("ERROR", "bad setting", partial=True)
 
 
-def test_supports_2_2():
+def test_supports_2_2_x():
     with settings.rc as rc:
-        rc["serpentVersion"] = "2.2.0"
+        for ver in ["2.2.0", "2.2.1"]:
+            rc["serpentVersion"] = ver

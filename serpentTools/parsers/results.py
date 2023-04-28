@@ -55,6 +55,7 @@ MapStrVersions['2.1.30'] = MapStrVersions['2.1.29']
 MapStrVersions['2.1.31'] = MapStrVersions['2.1.29']
 MapStrVersions['2.1.32'] = MapStrVersions['2.1.29']
 MapStrVersions['2.2.0'] = MapStrVersions['2.1.32']
+MapStrVersions['2.2.1'] = MapStrVersions['2.1.32']
 
 METADATA_CONV = {
     int: {
