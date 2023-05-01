@@ -177,7 +177,7 @@ class PatternReader(_TextProcessor):
         ----------
         pattern: str or compiled regular expression
             Seek through the file and yield all match groups for lines that
-            contain this patten.
+            contain this pattern.
 
         Yields
         ------

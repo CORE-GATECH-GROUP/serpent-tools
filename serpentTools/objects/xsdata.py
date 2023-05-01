@@ -280,7 +280,7 @@ class XSData(NamedObject):
             pass
         else:
             msg = ("mts argument must be a string saying 'all',"
-                   "a list of integer MTs, or a single interger"
+                   "a list of integer MTs, or a single integer"
                    "instead, {} of type {} was passed."
                    .format(mts, type(mts)))
             raise TypeError(msg)
@@ -425,7 +425,7 @@ class XSData(NamedObject):
         return labels
 
     def showMT(self, retstring=False):
-        """Create a pretty-print style string of the MT values avaialable
+        """Create a pretty-print style string of the MT values available
 
 
         Parameters

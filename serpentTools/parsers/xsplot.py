@@ -43,7 +43,7 @@ class XSPlotReader(BaseReader):
         L-inf norm among all macroscopic cross sections used in the problem.
     metadata: dict
         Alias for accessing :attr:`energies` and :attr:`majorant`.
-        Attribute-based access is prefered, as this property will
+        Attribute-based access is preferred, as this property will
         likely be removed in the future
 
     """

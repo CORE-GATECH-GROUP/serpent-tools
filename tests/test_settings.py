@@ -19,7 +19,7 @@ class DefaultSettingsTester(TestCase):
         cls.testSettingMethod = cls.assertListEqual
 
     def test_getDefault(self):
-        """Verify the default settings loader properly retrives defaults."""
+        """Verify the default settings loader properly retrieves defaults."""
         self.testSettingMethod(self._getLoaderSetting(self.testSetting),
                                self.testSettingExpected)
 
@@ -106,7 +106,7 @@ class RCTester(TestCase):
 
 
 class ConfigLoaderTester(TestCaseWithLogCapture):
-    """Class to test loading multiple setttings at once, i.e. config files"""
+    """Class to test loading multiple settings at once, i.e. config files"""
 
     @classmethod
     def setUpClass(cls):
@@ -166,6 +166,7 @@ class ConfigLoaderTester(TestCaseWithLogCapture):
         self.assertMsgInLogs("ERROR", "bad setting", partial=True)
 
 
-def test_supports_2_2():
+def test_supports_2_2_x():
     with settings.rc as rc:
-        rc["serpentVersion"] = "2.2.0"
+        for ver in ["2.2.0", "2.2.1"]:
+            rc["serpentVersion"] = ver

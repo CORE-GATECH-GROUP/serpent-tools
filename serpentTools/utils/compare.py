@@ -118,7 +118,7 @@ def directCompare(obj0, obj1, lower, upper):
     """
     Return True if values are close enough to each other.
 
-    Wrapper around various comparision tests for strings, numeric, and
+    Wrapper around various comparison tests for strings, numeric, and
     arrays.
 
     Parameters
@@ -261,7 +261,7 @@ def logDirectCompare(obj0, obj1, lower, upper, quantity):
     * :func:`directCompare` - function that does the comparison
     * :func:`getOverlaps` - function for evaluating values with uncertainties
     * :func:`getLogOverlaps` - function that logs the result of stastistical
-      comparisions
+      comparisons
     """
     result = directCompare(obj0, obj1, lower, upper)
     if result < 0:  # failures
@@ -393,7 +393,7 @@ def getKeyMatchingShapes(map0, map1, quantity, keySet=None, desc0='first',
 @compareDocDecorator
 def getOverlaps(arr0, arr1, unc0, unc1, sigma, relative=True):
     r"""
-    Return the indicies of overlapping confidence intervals
+    Return the indices of overlapping confidence intervals
 
     Parameters
     ----------

@@ -26,7 +26,7 @@ This document will demonstrate the |DepmtxReader|, designed to store such data.
    For this reason, the |DepmtxReader| can store matrices in
    `Compressed Sparse Column <https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html>`_
    or full :term:`numpy` arrays. The reader will use the sparse format
-   if :term:`scipy` is installed unless explicitely told to use dense arrays.
+   if :term:`scipy` is installed unless explicitly told to use dense arrays.
 
 
 Basic Operation

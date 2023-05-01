@@ -10,7 +10,7 @@ set -o pipefail
 
 # Run only for CI builds
 if [[ $CI != true ]]; then
-    echo Instal script only meant to be run for CI testing
+    echo Install script only meant to be run for CI testing
     exit 1
 fi
 

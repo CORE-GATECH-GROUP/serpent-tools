@@ -377,7 +377,7 @@ class SensitivityReader(BaseReader):
         labelFmt : None or str
             Formattable string to be applied to the labels.
             The following entries will be formatted for each plot
-            permuation::
+            permutation::
 
                 {m} - name of the material
                 {z} - isotope zai

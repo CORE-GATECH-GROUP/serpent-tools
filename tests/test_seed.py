@@ -145,7 +145,7 @@ class SeedlessFileWriter(SeedFileHelper):
 
 class SeededFileWriter(SeedFileHelper):
     """
-    Test the reproducability of the file writer by explictely passing a seed.
+    Test the reproducibility of the file writer by explicitly passing a seed.
     """
 
     @classmethod
