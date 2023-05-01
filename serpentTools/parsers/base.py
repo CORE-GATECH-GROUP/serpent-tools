@@ -120,7 +120,7 @@ class SparseReaderMixin(object):
     installed.
 
     Parameters
-    ---------
+    ----------
     sparse: bool or ``None``
         Flag to store sparse matrices or full matrices.
         If ``None``, use full only if :term:`scipy` is not installed.
