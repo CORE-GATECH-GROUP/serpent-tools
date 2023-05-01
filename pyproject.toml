@@ -53,3 +53,4 @@ where = ["serpentTools"]
 markers = [
     "plot: tests involving plotting capabilities",
 ]
+addopts = "-rs"
