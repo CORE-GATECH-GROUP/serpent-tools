@@ -37,37 +37,18 @@ printing a very basic python command::
 Installing from pip
 ===================
 
-:term:`pip` is the easiest way to install the latest version of 
-``serpentTools``. First, ensure that you have :term:`numpy` installed, 
-as this is one of the required packages that is tricky to install. You can
-check by opening up a your preferred terminal and executing
+Installing with :term:`pip` will pull from the python package index and is
+the simplest way to install::
 
-.. code::
+    $ pip install serpentTools
 
-   $ python -c "import numpy"
+This will install the latest release from https://pypi.org/project/serpentTools/.
 
-If this fails, please consult :ref:`install-python-dist`.
+Some additional packages, like ``pandas``, are not needed for core functionality
+but do provide nice capabilities. These can be picked up through the "extras"
+dependency group with::
 
-Next, installation with pip can be completed with::
-
-   $ python -m pip install --user --upgrade pip serpentTools
-
-This installs the dependencies of the package, the latest ``serpentTools`` release,
-and upgrades your version of :term:`pip` along the way.
-When a new release is issued, run the command again to install the updated version.
-
-If you wish to install the development branch to get the latest updates as they
-happen, use the following command::
-
-   $ python -m pip install -e git+https://www.github.com/CORE-GATECH-GROUP/serpent-tools.git@develop#egg=serpentTools
-
-.. note::
-
-   Changes to the development branch may not always be back-compatible
-   and may cause non-ideal outcomes. Be sure to check the
-   :ref:`changelog` before/after updating from the develop branch
-
-See also `pip install from git <https://pip.pypa.io/en/stable/reference/pip_install/#git>`_
+    $ pip install "serpentTools[extras]"
 
 .. _install-release:
 
@@ -82,14 +63,9 @@ Installing from a Release
 
     $ cd path/to/release
 
-4. Install using our setup script::
+4. Install with :term:`pip`
 
-    $ python setup.py install
-
-5. Verify the install by running our test suite::
-
-    $ python setup.py test
-
+    $ pip install .
 
 .. _install-git:
 
@@ -103,13 +79,13 @@ Installing via git
         $ cd serpent-tools
         $ git checkout main
 
-2. Install using our `setup script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/setup.py>`_::
+2. Install all utilities with using :term:`pip`
 
-    $ python setup.py install
+    $ pip install -e ".[extras,test]"
 
 3. Verify the install by running our test suite::
 
-    $ python setup.py test
+    $ pytest tests
 
 .. _install-python-dist:
 

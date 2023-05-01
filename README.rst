@@ -2,10 +2,6 @@
 serpent-tools
 =============
 
-.. image:: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools.svg?branch=develop
-    :target: https://travis-ci.org/CORE-GATECH-GROUP/serpent-tools
-    :alt: Build status - develop
-
 .. image:: https://readthedocs.org/projects/serpent-tools/badge/?version=latest
     :target: http://serpent-tools.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
@@ -31,7 +27,7 @@ Installation
 
 ``serpentTools`` can be installed with ``pip`` using::
 
-   $ python -m pip install --user --upgrade pip serpentTools
+   $ pip install serpentTools
 
 For more detailed instructions, including operating-system specific
 instructions and building from source, see

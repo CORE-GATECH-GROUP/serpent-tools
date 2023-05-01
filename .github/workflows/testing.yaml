@@ -17,14 +17,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9]
-        installer: [setup,sdist]
+        python-version: [3.8, 3.9]
 
-    name: 'Python ${{ matrix.python-version }} installer=${{ matrix.installer }}'
-
-    # Environment variables
-    env:
-      ST_INSTALL: ${{ matrix.installer }}
+    name: 'Python ${{ matrix.python-version }}'
 
     steps:
       - 
@@ -39,9 +34,7 @@ jobs:
       -
         name: install
         shell: bash
-        run: |
-          $GITHUB_WORKSPACE/scripts/ci/install.sh
-          pip install jupyter pytest pytest-cov
+        run: pip install ".[extras,test,ci]"
 
       -
         name: test
@@ -55,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v3
         if: failure()  # only if the previous step failed
         with:
-            name: test-images-${{ matrix.python-version }}-${{ matrix.installer }}
+            name: test-images-${{ matrix.python-version }}
             path: |
                 tests/plots/result_images/*png
 
