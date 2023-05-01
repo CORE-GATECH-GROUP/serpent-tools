@@ -451,7 +451,7 @@ class ResultsReader(XSReader):
             Burnup [MWd/kgU] of the desired universe
         timeDays: float or int, optional
             Time [days] of the desired universe
-        index: int, optinal
+        index: int, optional
             Point of interest in the burnup/days index
 
         Returns
@@ -504,7 +504,9 @@ class ResultsReader(XSReader):
 
         self._keysVersion = keys
 
-        self._burnupKeys = {k: convertVariableName(keys[k]) for k in {"days", "burnup"}}
+        self._burnupKeys = {
+            k: convertVariableName(keys[k]) for k in {"days", "burnup"}
+        }
 
         univSet = set()
         verWarning = True
@@ -522,7 +524,7 @@ class ResultsReader(XSReader):
                                 "defined in settings"
                                 .format(varVals, self.filePath,
                                         serpentV))
-                        warning("  Attemping to read anyway. Please report "
+                        warning("  Attempting to read anyway. Please report "
                                 "strange behaviors/failures to developers.")
                 if self._keysVersion['univ'] in tline:
                     varType, varVals = self._getVarValues(tline)  # universe
