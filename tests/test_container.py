@@ -174,7 +174,7 @@ class UnivTruthTester(TestCase):
     """Class that tests the various boolean evaluations for HomogUniv"""
 
     def setUp(self):
-        """Verify that an empty universe evalutes to False."""
+        """Verify that an empty universe evaluates to False."""
         self.assertFalse(self.getUniv())
 
     def test_loadedUnivTrue(self):

@@ -65,7 +65,7 @@ below:
 +--------------+---------------+
 | ``spectrum`` | CSEWG 239     |
 |              | group         |
-|              | stucture for  |
+|              | structure for |
 |              | flux and      |
 |              | U-235 fission |
 |              | cross section |

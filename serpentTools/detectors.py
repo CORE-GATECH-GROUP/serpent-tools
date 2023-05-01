@@ -1317,11 +1317,11 @@ class HexagonalDetector(Detector):
 
         if not isinstance(borderpad, Real):
             raise TypeError(
-                "borderpad should be postive float, not {}".format(
+                "borderpad should be positive float, not {}".format(
                     type(borderpad)))
         elif borderpad < 0:
             raise ValueError(
-                "borderpad should be postive, not {}".format(borderpad))
+                "borderpad should be positive, not {}".format(borderpad))
 
         kwargs.setdefault("ec", "k")
         kwargs.setdefault("edgecolor", "k")
@@ -1414,7 +1414,7 @@ class CylindricalDetector(Detector):
         to a unique bin, such as energy or spatial bin. Note:
         this is a relative error as it would appear in the
         output file
-    indexes : collections.OrderedDict, optinal
+    indexes : collections.OrderedDict, optional
         Dictionary mapping the bin name to its corresponding
         axis in :attr:`tallies` and :attr:`errors`, e.g.
         ``{"energy": 0}``

@@ -29,7 +29,7 @@ def str2vec(iterable, dtype=float, out=array):
         entry. This is returned directly, avoiding conversion
         with ``dtype``.
         Every item in this split list, or original
-        iterable, will be iterated over and converted accoring
+        iterable, will be iterated over and converted according
         to the other arguments.
     dtype: type
         Convert each value in ``iterable`` to this data type.

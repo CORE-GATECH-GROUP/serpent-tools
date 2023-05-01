@@ -2,9 +2,9 @@
 
 .. _dev-convert:
 
-==================
-Converter Utilites
-==================
+===================
+Converter Utilities
+===================
 
 One goal for this project is to allow users to use ``serpentTools`` as a
 pipeline for taking :term:`SERPENT` data to other programs.
@@ -17,7 +17,7 @@ on each object. These are obscured from the public API as they don't serve
 a direct purpose besides a simple method by which to translate data
 from one place to the next.
 This collection is called inside the primary ``convert`` method,
-which is reponsible for gathering and writing the data into the new
+which is responsible for gathering and writing the data into the new
 form.
 
 Keeping with the |matlabConv| as an example, it looks for

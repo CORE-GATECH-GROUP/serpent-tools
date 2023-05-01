@@ -119,8 +119,8 @@ class SparseReaderMixin(object):
     ``sparse`` passed to the constructor and if :term:`scipy` is
     installed.
 
-    Paramters
-    ---------
+    Parameters
+    ----------
     sparse: bool or ``None``
         Flag to store sparse matrices or full matrices.
         If ``None``, use full only if :term:`scipy` is not installed.

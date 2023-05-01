@@ -495,7 +495,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         if metadata is not None:
             warn("metadata argument is deprecated. All metadata written",
                  FutureWarning)
-            # need this path to perserve selecting not to write
+            # need this path to preserve selecting not to write
             # metadata
         converter = MatlabConverter(self, fileP)
         return converter.convert(reconvert, append, format, longNames,
