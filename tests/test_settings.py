@@ -19,7 +19,7 @@ class DefaultSettingsTester(TestCase):
         cls.testSettingMethod = cls.assertListEqual
 
     def test_getDefault(self):
-        """Verify the default settings loader properly retrives defaults."""
+        """Verify the default settings loader properly retrieves defaults."""
         self.testSettingMethod(self._getLoaderSetting(self.testSetting),
                                self.testSettingExpected)
 
@@ -106,7 +106,7 @@ class RCTester(TestCase):
 
 
 class ConfigLoaderTester(TestCaseWithLogCapture):
-    """Class to test loading multiple setttings at once, i.e. config files"""
+    """Class to test loading multiple settings at once, i.e. config files"""
 
     @classmethod
     def setUpClass(cls):

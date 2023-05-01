@@ -414,7 +414,7 @@ class DepMatlabExportHelper(MatlabTesterHelper):
 
 
 class DepMatlabExportConverter(DepMatlabExportHelper):
-    """Mixin class that converts variables back to orgiginal form"""
+    """Mixin class that converts variables back to original form"""
 
     RECONVERT = True
 

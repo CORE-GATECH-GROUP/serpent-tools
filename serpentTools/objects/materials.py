@@ -189,7 +189,7 @@ class DepletedMaterialBase(NamedObject):
         return self.data.get("gsrc")
 
     def _getIsoID(self, isotopes):
-        """Return the row indices that correspond to specfic isotopes."""
+        """Return the row indices that correspond to specific isotopes."""
         if not isotopes:
             return numpy.array(list(range(len(self.names))), dtype=int)
         isoList = [isotopes] if isinstance(isotopes, (str, int)) else isotopes

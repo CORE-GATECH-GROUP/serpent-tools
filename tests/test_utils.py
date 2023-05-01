@@ -102,7 +102,7 @@ class SplitValsTester(TestCase):
         assert_array_equal(expectedU, actualU, err_msg="Uncertainties")
 
     def test_splitCopy(self):
-        """Verfiy that a copy, not a view, is returned when copy=True"""
+        """Verify that a copy, not a view, is returned when copy=True"""
         viewV, viewU = splitValsUncs(self.input)
         copyV, copyU = splitValsUncs(self.input, copy=True)
         for view, copy, msg in zip(

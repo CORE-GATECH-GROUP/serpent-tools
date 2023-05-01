@@ -79,7 +79,7 @@ class NormalizerTester(unittest.TestCase):
         self.data = arange(-4, 5)
 
     def _testType(self, norm):
-        """Ensure the return type is an instance/sublass of Normalize."""
+        """Ensure the return type is an instance/subclass of Normalize."""
         typeFlag = (isinstance(norm, Normalize)
                     or issubclass(norm.__class__, Normalize))
         self.assertTrue(typeFlag, msg=(

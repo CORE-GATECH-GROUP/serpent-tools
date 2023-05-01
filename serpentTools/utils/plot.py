@@ -1,5 +1,5 @@
 """
-Utilties for assisting with plots
+Utilities for assisting with plots
 """
 from matplotlib import pyplot
 from matplotlib.axes import Axes

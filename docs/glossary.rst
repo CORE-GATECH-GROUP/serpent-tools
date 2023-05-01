@@ -7,7 +7,7 @@ Glossary
 .. glossary::
 
     Anaconda
-        Python distrubution that makes installing packages like
+        Python distribution that makes installing packages like
         :term:`numpy` easier for Windows. Includes over 700
         packages. For a smaller, more minimal approach, see
         :term:`Miniconda`. For more information, see
@@ -15,7 +15,7 @@ Glossary
 
     Anaconda Prompt
         Modified Windows prompt to be used with the :term:`Anaconda` python
-        distrubution. Reconfigures python paths to point to packages
+        distribution. Reconfigures python paths to point to packages
         installed via :term:`conda`
 
     conda
@@ -23,7 +23,7 @@ Glossary
 
           Conda is an open source package management system and environment
           management system that runs on Windows, macOS, and Lunix. Conda
-          quickly installs, runs, and updates packages and their dependncies
+          quickly installs, runs, and updates packages and their dependencies
 
     CI
         Continuous integration. Software we utilize to check that pull

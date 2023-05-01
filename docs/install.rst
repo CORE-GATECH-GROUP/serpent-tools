@@ -135,7 +135,7 @@ your package manager or from pip::
     # pip
     $ sudo pip install --upgrade numpy
 
-If you already have :term:`numpy`, then the :term:`pip` installtion
+If you already have :term:`numpy`, then the :term:`pip` installation
 process will take care of our other dependencies.
 
 Windows

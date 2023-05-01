@@ -27,7 +27,7 @@ def test_homoguniv_multi(univ):
         labelFmt="{u} @ {b} MWd/kgU // {d} days // step {i}: {k}",
         xlabel="Incident energy (MeV)",
         ylabel="Macroscopic cross section (cm$^{-1})$",
-        # Addtional arguments to pass along to the underlying plot
+        # Additional arguments to pass along to the underlying plot
         linestyle="--",
     )
 
