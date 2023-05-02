@@ -37,11 +37,14 @@ jobs:
         run: pip install ".[extras,test,ci]"
 
       -
-        name: test
+        name: unit tests
         shell: bash
-        run: |
-          pytest --cov=serpentTools --cov-report= -v
-          $GITHUB_WORKSPACE/scripts/ci/testNotebooks.sh
+        run: pytest --cov=serpentTools --cov-report= -v
+
+      -
+        name: notebooks
+        shell: bash
+        run: cd examples && jupyter run *ipynb
 
       -
         name: artifacts
