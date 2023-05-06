@@ -44,7 +44,7 @@ jobs:
       -
         name: notebooks
         shell: bash
-        run: cd examples && jupyter run *ipynb
+        run: cd examples && jupyter execute *ipynb
 
       -
         name: artifacts
