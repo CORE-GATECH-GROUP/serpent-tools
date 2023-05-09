@@ -14,3 +14,4 @@ Here are all the wonderful people that helped make this project happen
 * `Anton Travleev <https://github.com/travleev>`_
 * `@nicolaborate <https://github.com/nicoloabrate>`_ 
 * `@rzehumat <https://github.com/rzehumat>`_ 
+* `Federico Grimaldi <https://github.com/GrimFe>`_ 
