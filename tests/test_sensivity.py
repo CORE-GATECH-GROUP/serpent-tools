@@ -1,6 +1,8 @@
 """
 Test the sensitivity reader
 """
+import pandas as pd
+
 from unittest import TestCase, skipUnless
 from collections import OrderedDict
 from itertools import product
@@ -201,6 +203,29 @@ class SensitivityTester(SensitivityTestHelper):
         actual = self.reader.materials
         self.assertDictEqual(expected, actual)
 
+    def test_toDataFrame(self):
+        fullFrame = self.reader.toDataFrame()
+        expected = {
+                'keff': array([[
+                       [[3.21018000e-01, 7.40000000e-02],
+                        [-5.58871000e-03, 1.00000000e+00],
+                        [0.00000000e+00, 0.00000000e+00],
+                        [-5.16380000e-03, 7.60000000e-01],
+                        [-1.14412000e-01, 5.70000000e-02],
+                        [4.46246000e-01, 4.20000000e-02],
+                        [-6.34103000e-05, 1.00000000e+00]]]])
+        }
+        assert fullFrame.columns == pd.Index(['MAT', 'ZAI', 'PERT', 'ENE', 'S', 'rel_unc', 'RESP'])
+        assert fullFrame.MAT.unique() == list(self.reader.materials.keys())
+        assert (fullFrame.ZAI.unique() == list(self.reader.zais.keys())).all()
+        assert (fullFrame.PERT.unique() == list(self.reader.perts.keys())).all()
+        assert (fullFrame.ENE.unique() == self.reader.energies[1:]).all()
+        assert (fullFrame.query("RESP == 'keff'").S == expectd['keff'][:,0]).all()
+        assert (fullFrame.query("RESP == 'keff'").rel_unc == expectd['keff'][:,1]).all()
+
+        columns = ["A", "B", "C", "D", "E", "F", "G"]
+        assert self.reader.toDataFrame(columns=columns).columns == columns
+
 
 class SensitivityPlotTester(SensitivityTestHelper):
     """Class for testing rudimentary plot aspects of the reader."""
@@ -211,7 +236,7 @@ class SensitivityPlotTester(SensitivityTestHelper):
 
     def _plot(self, **kwargs):
         """Shortcut for plotting."""
-        return self.reader.plot(self.RESP, **kwargs)
+        return (self.reader.plot(self.RESP, **kwargs)).all()
 
     def _checkAxisLabels(self, ax, xlabel, ylabel, msg=None):
         self.assertEqual(ax.get_xlabel(), xlabel, msg=msg)

@@ -456,6 +456,39 @@ class SensitivityReader(BaseReader):
                            "{}".format(', '.join(missing)))
         return requested
 
+    def toDataFrame(self, columns=["MAT", "ZAI", "PERT", "ENE", "S", "rel_unc", "RESP"]):
+        """
+        Create a pandas DataFrame for the sensitivities
+
+
+        Parameters
+        ----------
+        columns : sequence of str, optional
+            Names for the columns of the output dataframe.
+            Default is ``["MAT", "ZAI", "PERT", "ENE", "S", "rel_unc", "RESP"]``
+
+        Returns
+        -------
+        pandas.DataFrame
+            2D tabulated representation of the sensitivity. Columns reflect
+            materials, zais, perts, energies, sensitivity, relative uncertainty
+            and response
+
+        """
+        import pandas as pd
+        out = []
+        size = self.nMat * self.nZai * self.nPert * self.nEne
+        idx = pd.MultiIndex.from_product([self.materials.keys(),
+                                          self.zais,
+                                          self.perts,
+                                          self.energies[1:]])
+        for k, v in self.sensitivities.items():
+            out.append(pd.DataFrame(v.reshape(size, 2),
+                                    index=idx
+                                    ).reset_index().assign(Response=k))
+        out = pd.concat(out, ignore_index=True)
+        out.columns = columns
+        return out
 
 def reshapePermuteSensMat(vec, newShape):
     """
