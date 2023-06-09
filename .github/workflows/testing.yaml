@@ -6,57 +6,47 @@ on:
   pull_request:
     branches:
       - develop
-      - master
+      - main
   push:
     branches:
       - develop
-      - master
+      - main
 
 jobs:
   main:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.6, 3.7, 3.8, 3.9]
-        installer: [setup,sdist]
+        python-version: [3.8, 3.9]
 
-    name: 'Python ${{ matrix.python-version }} installer=${{ matrix.installer }}'
-
-    # Environment variables
-    env:
-      ST_INSTALL: ${{ matrix.installer }}
+    name: 'Python ${{ matrix.python-version }}'
 
     steps:
       - 
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - 
         name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
       -
         name: install
         shell: bash
-        run: |
-          pip install -r requirements.txt
-          pip install -r requirements-test.txt
-          $GITHUB_WORKSPACE/scripts/ci/install.sh
+        run: pip install ".[extras,test,ci]"
 
       -
-        name: test
+        name: unit tests
         shell: bash
-        run: |
-          pytest --cov=serpentTools --cov-report= -v
-          $GITHUB_WORKSPACE/scripts/ci/testNotebooks.sh
+        run: pytest --cov=serpentTools --cov-report= -v
 
       -
         name: artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()  # only if the previous step failed
         with:
-            name: test-images-${{ matrix.python-version }}-${{ matrix.installer }}
+            name: test-images-${{ matrix.python-version }}
             path: |
                 tests/plots/result_images/*png
 
