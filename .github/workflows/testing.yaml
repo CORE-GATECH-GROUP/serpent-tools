@@ -30,6 +30,9 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+      -
+        name: Prep environment
+        run: sudo apt-get install libopenblas-dev
 
       -
         name: install
