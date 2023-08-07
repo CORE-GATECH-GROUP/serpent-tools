@@ -42,6 +42,11 @@ jobs:
         run: pytest --cov=serpentTools --cov-report= -v
 
       -
+        name: notebooks
+        shell: bash
+        run: cd examples && jupyter execute *ipynb
+
+      -
         name: artifacts
         uses: actions/upload-artifact@v3
         if: failure()  # only if the previous step failed
