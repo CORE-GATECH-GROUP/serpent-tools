@@ -36,6 +36,10 @@ jobs:
         shell: bash
         run: pip install ".[extras,test,ci]"
 
+      - name: debug python install
+        working-directory: /tmp
+        run: python -c "import serpentTools"
+
       -
         name: unit tests
         shell: bash
