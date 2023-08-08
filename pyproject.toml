@@ -38,7 +38,7 @@ dependencies = [
 
 [project.optional-dependencies]
 extras = ["pandas>1", "scipy"]
-test = ["pytest>=6", "pytest-cov", "coverage"]
+test = ["pytest>=6"]
 ci = ["jupyter"]
 
 [tool.setuptools]
