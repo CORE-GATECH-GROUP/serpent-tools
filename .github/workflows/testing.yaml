@@ -42,7 +42,7 @@ jobs:
       -
         name: unit tests
         shell: bash
-        run: pytest --cov=serpentTools --cov-report= -v
+        run: pytest -v
 
       -
         name: artifacts
@@ -52,9 +52,3 @@ jobs:
             name: test-images-${{ matrix.python-version }}
             path: |
                 tests/plots/result_images/*png
-
-      -
-        name: after
-        shell: bash
-        run: |
-          coverage report
