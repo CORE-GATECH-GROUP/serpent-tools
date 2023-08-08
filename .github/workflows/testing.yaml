@@ -37,9 +37,7 @@ jobs:
       -
         name: install
         shell: bash
-        run: |
-          pip install "numpy>=1.16.0" scipy "pandas>=1,<2"
-          pip install ".[extras,test,ci]"
+        run: pip install ".[extras,test,ci]"
 
       -
         name: unit tests
