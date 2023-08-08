@@ -37,7 +37,14 @@ dependencies = [
 "Bug Tracker" = "https://github.com/CORE-GATECH-GROUP/serpent-tools/issues"
 
 [project.optional-dependencies]
-extras = ["pandas>1", "scipy"]
+extras = [
+    "pandas>1",
+    # Add conditional to still get scipy
+    # but we need a version with wheels to avoid building from
+    # scratch in CI
+    "scipy;python_version<3.11",
+    "scipy>=1.9.2;python_version==3.11",
+]
 test = ["pytest>=6"]
 ci = ["jupyter"]
 
