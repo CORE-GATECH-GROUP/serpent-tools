@@ -32,7 +32,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
       -
         name: Prep environment
-        run: sudo apt-get install libopenblas-dev
+        # pip install scipy for py3.11 hasn't worked well
+        # we don't need a lot of specific versions here, so
+        # just grab _a_ scipy from the package manager
+        run: sudo apt-get install python3-scipy
 
       -
         name: install
