@@ -37,7 +37,7 @@ jobs:
       -
         name: install
         shell: bash
-        run: pip install ".[extras,test,ci]"
+        run: pip3 install ".[extras,test,ci]"
 
       -
         name: unit tests
