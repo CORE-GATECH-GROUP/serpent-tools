@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -38,7 +38,7 @@ dependencies = [
 
 [project.optional-dependencies]
 extras = ["pandas>1", "scipy"]
-test = ["pytest>=6"]
+test = ["pytest>=6", "pytest-cov", "coverage"]
 ci = ["jupyter"]
 
 [tool.setuptools]
