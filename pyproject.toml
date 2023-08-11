@@ -50,7 +50,6 @@ serpentTools = ["variables.yaml"]
 
 [tool.setuptools.packages.find]
 where = ["serpentTools"]
-include = ["serpentTools*"]
 
 [tool.pytest.ini_options]
 markers = [
