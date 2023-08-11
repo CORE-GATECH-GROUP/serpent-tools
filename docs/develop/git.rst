@@ -6,14 +6,6 @@ Version Control
 
 ``serpentTools`` uses :term:`git` for version control. All the source
 code can be found at https://github.com/CORE-GATECH-GROUP/serpent-tools.
-Two main branches are provided: ``master`` and ``develop``, and the
-`git flow <https://nvie.com/posts/a-successful-git-branching-model/>`_ branching
-model is followed.
-The ``master`` branch should be considered stable and updated coincident with
-each release.
-The ``develop`` branch is updated with more frequency as features are introduced.
-This is the main branch of the project, and features should be introduced off
-of this branch.
 
 ``serpentTools`` follows the `semantic versioning <https://semver.org/>`_
 system, where the version number as found in ``setup.py``,

@@ -81,7 +81,7 @@ the lint that would be introduced with
 
 .. code::
 
-    $ git diff --unified=0 develop | flake8 --diff
+    $ git diff --unified=0 main | flake8 --diff
 
-Here, ``develop`` is the intended target branch into which these changes
+Here, ``main`` is the intended target branch into which these changes
 will be merged.
