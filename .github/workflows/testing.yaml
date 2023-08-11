@@ -42,6 +42,18 @@ jobs:
         run: pytest --cov=serpentTools --cov-report= -v
 
       -
+        name: notebooks
+        shell: bash
+        # Workaround to prepend repository to python path
+        # to resolve an issue importing serpenttools after
+        # installing. Should be removed with a src-layout
+        # https://github.com/CORE-GATECH-GROUP/serpent-tools/issues/499
+        run: |
+          export PYTHONPATH=${GITHUB_WORKSPACE}:${PYTHONPATH}
+          cd examples
+          jupyter execute *ipynb
+
+      -
         name: artifacts
         uses: actions/upload-artifact@v3
         if: failure()  # only if the previous step failed
