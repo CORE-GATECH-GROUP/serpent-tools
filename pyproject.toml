@@ -11,7 +11,7 @@ maintainers = [
 ]
 description = "A suite of parsers designed to make interacting with Serpent output files simple, scriptable, and flawless"
 readme = "README.rst"
-requires-python = ">=3.8,<=3.11"
+requires-python = ">=3.8,<3.12"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Education",
