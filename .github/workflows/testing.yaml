@@ -30,19 +30,16 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      -
-        name: Prep environment
-        run: sudo apt-get install libopenblas-dev
 
       -
         name: install
         shell: bash
-        run: pip3 install ".[extras,test,ci]"
+        run: pip install ".[extras,test,ci]"
 
       -
         name: unit tests
         shell: bash
-        run: pytest -v
+        run: pytest --cov=serpentTools --cov-report= -v
 
       -
         name: artifacts
@@ -52,3 +49,9 @@ jobs:
             name: test-images-${{ matrix.python-version }}
             path: |
                 tests/plots/result_images/*png
+
+      -
+        name: after
+        shell: bash
+        run: |
+          coverage report
