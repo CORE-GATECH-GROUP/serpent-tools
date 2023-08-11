@@ -52,15 +52,8 @@ of a painless release.
 Updating the package version
 ----------------------------
 
-Before and after a release, the project version number should be updated in the
-following places:
-
-1. ``setup.py``
-2. ``serpentTools/__init__.py``
-3. ``docs/conf.py``
-
-The new version should be indicative of the changes introduced between this release
-and the previous release.
+Package version is pulled using ``setuptools-scm`` based on git tags. Therefore nothing
+is needed to be changed in order to change the version. Only the creation of new tags.
 
 Generating distributions
 ------------------------
