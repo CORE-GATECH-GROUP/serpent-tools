@@ -44,7 +44,14 @@ jobs:
       -
         name: notebooks
         shell: bash
-        run: cd examples && jupyter execute *ipynb
+        # Workaround to prepend repository to python path
+        # to resolve an issue importing serpenttools after
+        # installing. Should be removed with a src-layout
+        # https://github.com/CORE-GATECH-GROUP/serpent-tools/issues/499
+        run: |
+          export PYTHONPATH=${GITHUB_WORKSPACE}:${PYTHONPATH}
+          cd examples
+          jupyter execute *ipynb
 
       -
         name: artifacts
