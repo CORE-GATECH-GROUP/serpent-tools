@@ -52,7 +52,9 @@ master_doc = 'index'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 
-version = "0.9.5"
+from importlib.metadata import version
+release = version("serpentTools")
+version = release
 
 # General information about the project.
 project = 'serpentTools'
