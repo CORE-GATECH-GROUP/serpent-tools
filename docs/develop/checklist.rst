@@ -61,7 +61,7 @@ in the package. These are converted to be used in our main documentation, and se
 as a handy way for new users to discover the features provided with ``serpentTools``.
 In order to ensure that these are valid notebooks as changes are introduced, our :term:`CI`
 converts these to python scripts and runs them using 
-`the test notebooks script <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/develop/scripts/travis/testNotebooks.sh>`_. 
+``jupyter execute``.
 It is beneficial to run this script during major changes to the API, as well as correcting any
 errors or deprecated/removed features.
 
@@ -81,7 +81,7 @@ the lint that would be introduced with
 
 .. code::
 
-    $ git diff --unified=0 develop | flake8 --diff
+    $ git diff --unified=0 main | flake8 --diff
 
-Here, ``develop`` is the intended target branch into which these changes
+Here, ``main`` is the intended target branch into which these changes
 will be merged.
