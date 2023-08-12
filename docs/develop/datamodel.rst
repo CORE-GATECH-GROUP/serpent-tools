@@ -5,9 +5,7 @@ Updated Data Model
 ==================
 
 The goal of this document is to describe developer-specific changes
-that should drive the next phase of development. The contents
-reflect changes that will be introduced between release
-:ref:`v0.9.3` and the next major release of ``0.10.0``.
+that should drive the next phase of development.
 
 Goals and non-goals
 ===================
@@ -36,8 +34,12 @@ Separation of readers and containers
 
 Objects that store information from Serpent files should be separated from
 objects that read Serpent files. Much of this is inspired by :issue:`335`,
-and will help 1) reduce left-over code and methods related to reading files, and
-2) support integration with other file formats. Classes that store the file data
+and will help
+
+1. Reduce left-over code and methods related to reading files, and
+2. Support integration with other file formats.
+
+Classes that store the file data
 will be designated as ``<X>File`` like ``ResultFile``, while classes that read
 file data will be designated as ``<X>Reader``, e.g. ``ResultReader``.
 
@@ -58,7 +60,7 @@ and trying to plot before calling ``read``.
 
 This has an additional benefit of allowing additional class methods for creating
 files from alternative data types. A ``fromHdf`` method would be extra wonderful.
-But, new file formats are not the intended goal of version ``0.10.0``.
+But, new file formats are not the intended goal this effort.
 
 Reusable readers
 ----------------
@@ -173,12 +175,8 @@ branch.  This will hopefully reduce the amount of features to be
 back-ported into the new library.
 
 When the ``next`` module is complete and ready for release, a beta
-release of the form ``0.10.0b0`` should be made and pushed to the
-Python package index.  Users should be alerted through appropriate
-channels.
-
-After this point, a new main release on the ``0.9.x`` 
-tree should be made. Users should be alerted to changes, primarily in
+release should be made and pushed to the Python package index.
+Users should be alerted to changes, primarily in
 :func:`serpentTools.read` and the settings interface. These are likely
 to have the largest changes to non-developer end-users.
 
@@ -189,8 +187,8 @@ like a good low end target.
 If/when sufficient bugs are found and fixed, a new beta release should
 be made and pushed.
 
-Once the beta period is complete, a release candidate, ``0.10.0rc0``
-or similar, should be made and pushed. Users should be alerted through
+Once the beta period is complete, a release candidate
+should be made and pushed. Users should be alerted through
 appropriate channels. This release candidate should be live for a
 reasonable amount of time.
 
@@ -199,10 +197,10 @@ should be made and pushed.
 
 Work should be done to merge the ``next`` module as the main parsing and
 analysis library. This is the primary goal of the following major release
-``0.11.0``, following a similar beta and release candidate period.
-The new features should still exist inside ``0.11.0`` in the
+following a similar beta and release candidate period.
+The new features should still exist inside the
 ``serpentTools.next`` module, but users and developers should be alerted
 that these features will be removed, favoring importing from the main
 ``serpentTools`` API.
 
-Version ``0.12.0`` will fully remove the ``serpentTools.next`` module.
+A final major release will fully remove the ``serpentTools.next`` module.

@@ -6,14 +6,6 @@
 Changelog
 =========
 
-.. note::
-
-    Development will be limited to bug fixes for future 
-    ``0.9.x`` releases. Release ``0.10.0`` will introduce
-    new and improved parsers and containers alongside
-    existing structures. For more information, see
-    :ref:`data-model`
-
 .. _v0.9.5:
 
 :release-tag:`0.9.5`
