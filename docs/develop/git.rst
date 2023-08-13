@@ -8,10 +8,8 @@ Version Control
 code can be found at https://github.com/CORE-GATECH-GROUP/serpent-tools.
 
 ``serpentTools`` follows the `semantic versioning <https://semver.org/>`_
-system, where the version number as found in ``setup.py``,
-``serpentTools/__init__.py``, and ``docs/conf.py`` has the following form:
-``major.minor.patch``, e.g. ``0.8.0`` or ``1.1.20``. Each of the numbers
-should be incremented prior to new releases with the following designation:
+system, where the released versions have the following form
+``{major}.{minor}.{patch}``, where
 
 1. Changes that are not backwards compatible should be denoted by
    incrementing the major number.
@@ -20,10 +18,23 @@ should be incremented prior to new releases with the following designation:
 3. Changes that are largely internal and not recognizable by end-users should
    be denoted by incrementing the patch number
 
-.. note::
+Prior to a release, there may be pre-releases made signified with a "release candidate"
+label. These can be identified with a trailing ``.rc.{N}`` e.g., ``0.10.0.rc.5`` would be
+the fifth release candidate for version ``0.10.0``.
 
-    Until a stable 1.0.0 release, the positions are essentially shifted,
-    e.g. the version is ``0.major.minor``
+For developers and users who are using the "bleeding edge" version straight from source
+between releases, the version string may be more complex. As this is being written,
+the version string is ``0.9.6.dev14+g0d7b6d6.d20230811``. The most recent release
+from the time of this writing was ``0.9.5``, so the first part ``0.9.6.dev`` means
+we are ahead of version ``0.9.5``, and does not mean the next version **must** be
+``0.9.6``.
+
+The ``.dev14+g0d7b6b6`` indicates we are currently ``14`` commits ahead of the last
+tag, and the content following the ``+g`` is the SHA-1 hash of the most recent
+commit.
+
+Finally, if we have any uncommitted changes, the version string will conclude with
+an indicator of the installed date. Which in this case is August 11th, 2023.
 
 .. _dev-release:
 
@@ -44,15 +55,8 @@ of a painless release.
 Updating the package version
 ----------------------------
 
-Before and after a release, the project version number should be updated in the
-following places:
-
-1. ``setup.py``
-2. ``serpentTools/__init__.py``
-3. ``docs/conf.py``
-
-The new version should be indicative of the changes introduced between this release
-and the previous release.
+Package version is pulled using ``setuptools-scm`` based on git tags. Therefore nothing
+is needed to be changed in order to change the version. Only the creation of new tags.
 
 Generating distributions
 ------------------------

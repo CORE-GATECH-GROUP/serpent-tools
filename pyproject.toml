@@ -1,10 +1,11 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "serpentTools"
-version = "0.9.5"
+# Let setuptools-scm pick up version data
+dynamic = ["version"]
 maintainers = [
     {name="Dan Kotlyar"},
     {name="Drew Johnson"},
@@ -50,6 +51,10 @@ serpentTools = ["variables.yaml"]
 
 [tool.setuptools.packages.find]
 where = ["serpentTools"]
+
+# This is okay to be empty, but we need a section here
+# in order to trigger it's usage when setting version data
+[tool.setuptools_scm]
 
 [tool.pytest.ini_options]
 markers = [
