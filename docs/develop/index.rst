@@ -11,7 +11,7 @@ without any loss of comprehension.
 .. note::
 
     Developers are encouraged to read and follow new guiding principles
-    in :ref:`data-model` leading up to version ``0.10.0``
+    in :ref:`data-model`
 
 .. toctree::
     :maxdepth: 2

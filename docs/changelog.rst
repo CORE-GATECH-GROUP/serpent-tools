@@ -6,13 +6,14 @@
 Changelog
 =========
 
-.. note::
+.. _v0.10.0:
 
-    Development will be limited to bug fixes for future 
-    ``0.9.x`` releases. Release ``0.10.0`` will introduce
-    new and improved parsers and containers alongside
-    existing structures. For more information, see
-    :ref:`data-model`
+:release-tag:`0.10.0`
+=====================
+
+* Drop support for Python 3.5, 3.6, and 3.7 - :pull:`478`
+* Support and test against Python 3.9, 3.10, and 3.11 - :pull:`492`
+* Support Serpent 2.2.1 - :pull:`481`
 
 .. _v0.9.5:
 
@@ -22,8 +23,7 @@ Changelog
 .. note::
 
     Following the `0.9.5` release, the default branch for development
-    will be the ``main`` branch on GitHub. The ``develop`` branch will
-    be re-incorporated at a later date.
+    will be the ``main`` branch on GitHub.
 
 *  Allow microxs reader to handle files w/o nfy data :pull:`468`
 *  ResultsReader supports Serpent 2.2.0 :pull:`472`
