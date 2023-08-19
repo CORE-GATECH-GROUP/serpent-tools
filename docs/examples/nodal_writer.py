@@ -1,1 +1,0 @@
-../examples/nodal_writer.py
