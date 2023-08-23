@@ -6,6 +6,19 @@
 Changelog
 =========
 
+.. _v0.10.1:
+
+:release-tag:`0.10.1`
+=====================
+
+This is a bug fix release to fix installing the package.
+Users should experience no changes. Developer should note
+that the package has moved from a "flat-layout" to a "src-layout",
+where the code the the package has moved from ``serpentTools``
+to ``src/serpentTools``
+
+* Move from "flat-layout" to "src-layout" - :pull:`506`
+
 .. _v0.10.0:
 
 :release-tag:`0.10.0`
