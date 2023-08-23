@@ -24,6 +24,11 @@ to ``src/serpentTools``
 :release-tag:`0.10.0`
 =====================
 
+.. warning::
+
+    This release has been pulled from :term:`PyPI` and should
+    be replaced with :ref:`v0.10.1`
+
 * Drop support for Python 3.5, 3.6, and 3.7 - :pull:`478`
 * Support and test against Python 3.9, 3.10, and 3.11 - :pull:`492`
 * Support Serpent 2.2.1 - :pull:`481`
