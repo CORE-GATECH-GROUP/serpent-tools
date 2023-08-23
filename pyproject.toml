@@ -50,7 +50,7 @@ serpentTools = ["variables.yaml"]
 "serpentTools.data" = ["*.m", "*.coe"]
 
 [tool.setuptools.packages.find]
-where = ["serpentTools"]
+where = ["src"]
 
 # This is okay to be empty, but we need a section here
 # in order to trigger it's usage when setting version data
