@@ -6,10 +6,28 @@
 Changelog
 =========
 
+.. _v0.10.1:
+
+:release-tag:`0.10.1`
+=====================
+
+This is a bug fix release to fix installing the package.
+Users should experience no changes. Developer should note
+that the package has moved from a "flat-layout" to a "src-layout",
+where the code the the package has moved from ``serpentTools``
+to ``src/serpentTools``
+
+* Move from "flat-layout" to "src-layout" - :pull:`506`
+
 .. _v0.10.0:
 
 :release-tag:`0.10.0`
 =====================
+
+.. warning::
+
+    This release has been pulled from :term:`PyPI` and should
+    be replaced with :ref:`v0.10.1`
 
 * Drop support for Python 3.5, 3.6, and 3.7 - :pull:`478`
 * Support and test against Python 3.9, 3.10, and 3.11 - :pull:`492`
