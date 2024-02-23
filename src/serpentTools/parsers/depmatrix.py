@@ -41,6 +41,8 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
     ----------
     deltaT: float
         Length of depletion interval
+    flx: float
+        Homogenized flux
     n0: :class:`numpy.ndarray`
         Vector of original isotopics
     zai: :class:`numpy.ndarray`
@@ -60,6 +62,7 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
         BaseReader.__init__(self, filePath, 'depmtx')
         SparseReaderMixin.__init__(self, sparse)
         self.deltaT = None
+        self.flx = None
         self.n0 = None
         self.n1 = None
         self.zai = None
@@ -92,9 +95,16 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
         with open(self.filePath) as stream:
             line = stream.readline()
             self.deltaT = float(line.split()[-1][:-1])
+            line = stream.readline()
+
+            if "flx" in line:
+              self.flx = float(line.split()[-1][:-1])
+              line = stream.readline()
+
+            if "zeros" in line:
+              line = stream.readline()
 
             # process initial isotopics
-            line = stream.readline()
             match = self._getMatch(line, NDENS_REGEX, 'n0 vector')
             line = _parseIsoBlock(stream, tempN0, match, line, NDENS_REGEX)
             numIso = len(tempN0)
@@ -104,7 +114,9 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
 
             self.n1 = empty_like(self.n0)
             self.zai = empty_like(self.n0, dtype=int)
-
+            
+            if "zeros" in line:
+              line = stream.readline()
             match = self._getMatch(line, ZAI_REGEX, 'zai vector')
             line = _parseIsoBlock(stream, self.zai, match, line, ZAI_REGEX)
 
@@ -115,7 +127,10 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
                 line = self.__processSparseMatrix(stream, matrixSize)
             else:
                 line = self.__processDenseMatrix(stream, matrixSize)
-
+                
+            if "zeros" in line:
+              line = stream.readline()
+              
             match = self._getMatch(line, NDENS_REGEX, 'n1 vector')
             _parseIsoBlock(stream, self.n1, match, line, NDENS_REGEX)
 
