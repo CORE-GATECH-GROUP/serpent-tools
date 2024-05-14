@@ -11,13 +11,11 @@ def testSpectrumPlot():
 
 
 @compare_or_update_plot
-def testBwrMeshPlot():
+def testBwrMeshPlot(recwarn):
     reader = readDataFile("bwr_det0.m")
     # Ensure that fix for #414 in in: matplotlib colorbar norm
-    with pytest.warns(None) as record:
-        reader["xymesh"].meshPlot(fixed={"energy": 0})
-    assert len(record) == 0
-
+    reader["xymesh"].meshPlot(fixed={"energy": 0})
+    assert len(recwarn) == 0
 
 @compare_or_update_plot
 def testSpectrumJustNormPerLethargy():
