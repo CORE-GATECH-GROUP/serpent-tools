@@ -1,4 +1,3 @@
-import pytest
 from serpentTools.data import readDataFile
 
 from . import compare_or_update_plot
