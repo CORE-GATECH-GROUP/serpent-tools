@@ -1359,7 +1359,7 @@ class HexagonalDetector(Detector):
             if val <= thresh:
                 continue
             values.append(val)
-            h = RegularPolygon(xy, 6, radius, rotation, **kwargs)
+            h = RegularPolygon(xy, 6, radius=radius, orientation=rotation, **kwargs)
             verts = h.get_verts()
             vmins = verts.min(0)
             vmaxs = verts.max(0)
