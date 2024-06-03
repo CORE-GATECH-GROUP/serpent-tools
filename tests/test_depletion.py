@@ -441,19 +441,24 @@ def test_defaultSettings():
     """Test behavior of settings if no additional arguments given"""
     r = DepletionReader(DEP_FILE_PATH)
     assert r.settings["metadataKeys"] == ["ZAI", "NAMES", "DAYS", "BU"]
+    assert r.settings["materials"] == []
 
 
 def test_simpleOverloadSettings():
     """Test overwritting some settings and the behavior"""
     base = DepletionReader(DEP_FILE_PATH)
     base.read()
-    alt = DepletionReader(DEP_FILE_PATH, metadataKeys=["ZAI"])
+    alt = DepletionReader(
+        DEP_FILE_PATH,
+        materials=["f.*"],
+        metadataKeys=["ZAI"],
+    )
     alt.read()
     assert set(alt.metadata) == {
         "zai",
     }
     assert alt.zais == base.zais
-    assert set(alt.materials) == set(base.materials)
+    assert set(alt.materials) == {"fuel", "total"}
     assert alt.days is None
     assert alt.burnup is None
     assert alt.names is None
