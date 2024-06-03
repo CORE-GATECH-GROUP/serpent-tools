@@ -147,6 +147,11 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     ----------
     filePath: str
         path to the depletion file
+    metadataKeys : list of string, optional
+        Metadata fields to pull from the file. List can contain
+        zero or more of the following strings: ``"ZAI"``, ``"NAMES"``,
+        ``"DAYS",`` and ``"BU"`` (case sensitive). If not provided,
+        pulls from ``depletion.metadataKeys`` setting
 
     Attributes
     ----------
@@ -170,6 +175,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         of this reader
 
     """
+
     docAttrs = """materials: dict
         Dictionary with material names as keys and the corresponding
         :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
@@ -178,9 +184,11 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
 
-    def __init__(self, filePath):
-        MaterialReader.__init__(self, filePath, 'depletion')
-        patterns = self.settings['materials'] or ['.*']
+    def __init__(self, filePath, metadataKeys=None):
+        MaterialReader.__init__(self, filePath, "depletion")
+        if metadataKeys is not None:
+            self.settings["metadataKeys"] = metadataKeys
+        patterns = self.settings["materials"] or [".*"]
         # match all materials if nothing given
         self._matPatterns = [re.compile(mat) for mat in patterns]
         DepPlotMixin.__init__(self)
