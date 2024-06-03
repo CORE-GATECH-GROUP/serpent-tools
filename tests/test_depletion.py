@@ -2,11 +2,11 @@
 
 from unittest import TestCase
 from os import remove
+from io import BytesIO
 
 from numpy import array
 from numpy.testing import assert_equal
 
-from io import BytesIO
 from serpentTools.data import getFile
 from serpentTools.settings import rc
 from serpentTools.parsers.depletion import (
