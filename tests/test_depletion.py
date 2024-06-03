@@ -6,6 +6,7 @@ from io import BytesIO
 
 from numpy import array
 from numpy.testing import assert_equal
+import pytest
 
 from serpentTools.data import getFile
 from serpentTools.settings import rc
@@ -443,6 +444,7 @@ def test_defaultSettings():
     assert r.settings["metadataKeys"] == ["ZAI", "NAMES", "DAYS", "BU"]
     assert r.settings["materials"] == []
     assert r.settings["processTotal"]
+    assert r.settings["materialVariables"] == []
 
 
 def test_simpleOverloadSettings():
@@ -452,6 +454,7 @@ def test_simpleOverloadSettings():
     alt = DepletionReader(
         DEP_FILE_PATH,
         materials=["f.*"],
+        materialVariables=["ADENS", "INH_TOX"],
         metadataKeys=["ZAI"],
         processTotal=False,
     )
@@ -464,6 +467,10 @@ def test_simpleOverloadSettings():
     assert set(alt.materials) == {
         "fuel",
     }
+    fuel = alt["fuel"]
+    assert set(fuel.data) == {"adens", "inhTox"}
+    assert fuel["adens"] == pytest.approx(base["fuel"]["adens"])
+    assert fuel["inhTox"] == pytest.approx(base["fuel"]["inhTox"])
     assert alt.days is None
     assert alt.burnup is None
     assert alt.names is None

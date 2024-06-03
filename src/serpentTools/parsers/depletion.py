@@ -154,6 +154,11 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         But ``["fuel.*"]`` is a pattern that will match and collect any
         material that begins with ``fuel``. If not provided,
         pulls from ``depletion.materials`` setting.
+    materialVariables : list of string, optional
+        Names of variables to pull for each processed material. List can
+        contain zero or more entries like ``"ADENS"``, ``"MDENS"``, and
+        ``"INH_TOX"``. If not provided, pulls from
+        ``depletion.materialVariables`` setting.
     metadataKeys : list of string, optional
         Metadata fields to pull from the file. List can contain
         zero or more of the following strings: ``"ZAI"``, ``"NAMES"``,
@@ -195,7 +200,12 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
 
     def __init__(
-        self, filePath, materials=None, metadataKeys=None, processTotal=None
+        self,
+        filePath,
+        materials=None,
+        materialVariables=None,
+        metadataKeys=None,
+        processTotal=None,
     ):
         MaterialReader.__init__(self, filePath, "depletion")
         if metadataKeys is not None:
@@ -204,6 +214,8 @@ class DepletionReader(DepPlotMixin, MaterialReader):
             self.settings["materials"] = materials
         if processTotal is not None:
             self.settings["processTotal"] = processTotal
+        if materialVariables is not None:
+            self.settings["materialVariables"] = materialVariables
         patterns = self.settings["materials"] or [".*"]
         # match all materials if nothing given
         self._matPatterns = [re.compile(mat) for mat in patterns]
