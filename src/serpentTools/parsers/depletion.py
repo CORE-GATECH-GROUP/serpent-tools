@@ -159,6 +159,9 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         zero or more of the following strings: ``"ZAI"``, ``"NAMES"``,
         ``"DAYS",`` and ``"BU"`` (case sensitive). If not provided,
         pulls from ``depletion.metadataKeys`` setting
+    processTotal : bool, optional
+        Flag to process the ``TOTAL`` data section or not. If not given,
+        pulls from the ``depletion.processTotal`` setting.
 
     Attributes
     ----------
@@ -191,12 +194,16 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
 
-    def __init__(self, filePath, materials=None, metadataKeys=None):
+    def __init__(
+        self, filePath, materials=None, metadataKeys=None, processTotal=None
+    ):
         MaterialReader.__init__(self, filePath, "depletion")
         if metadataKeys is not None:
             self.settings["metadataKeys"] = metadataKeys
         if materials is not None:
             self.settings["materials"] = materials
+        if processTotal is not None:
+            self.settings["processTotal"] = processTotal
         patterns = self.settings["materials"] or [".*"]
         # match all materials if nothing given
         self._matPatterns = [re.compile(mat) for mat in patterns]
