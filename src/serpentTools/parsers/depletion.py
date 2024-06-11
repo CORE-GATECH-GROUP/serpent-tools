@@ -154,19 +154,30 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         But ``["fuel.*"]`` is a pattern that will match and collect any
         material that begins with ``fuel``. If not provided,
         pulls from ``depletion.materials`` setting.
+
+        .. versionadded:: 0.11.0
+
     materialVariables : list of string, optional
         Names of variables to pull for each processed material. List can
         contain zero or more entries like ``"ADENS"``, ``"MDENS"``, and
         ``"INH_TOX"``. If not provided, pulls from
         ``depletion.materialVariables`` setting.
+
+        .. versionadded:: 0.11.0
+
     metadataKeys : list of string, optional
         Metadata fields to pull from the file. List can contain
         zero or more of the following strings: ``"ZAI"``, ``"NAMES"``,
         ``"DAYS",`` and ``"BU"`` (case sensitive). If not provided,
         pulls from ``depletion.metadataKeys`` setting
+
+        .. versionadded:: 0.11.0
+
     processTotal : bool, optional
         Flag to process the ``TOTAL`` data section or not. If not given,
         pulls from the ``depletion.processTotal`` setting.
+
+        .. versionadded:: 0.11.0
 
     Attributes
     ----------
