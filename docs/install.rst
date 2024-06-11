@@ -50,6 +50,15 @@ dependency group with::
 
     $ pip install "serpentTools[extras]"
 
+.. _install-conda:
+
+Installing from Conda
+====================
+
+``serpentTools`` can also be installed via :term:`conda` with::
+
+  $ conda install -c conda-forge serpentTools
+
 .. _install-release:
 
 Installing from a Release
