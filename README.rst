@@ -33,6 +33,10 @@ For more detailed instructions, including operating-system specific
 instructions and building from source, see
 `Installation Guide <http://serpent-tools.readthedocs.io/en/latest/install.html>`_.
 
+Alternatively, use ``conda`` with::
+
+  $ conda install -c conda-forge serpentTools
+
 Issues
 ======
 
