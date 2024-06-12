@@ -44,13 +44,6 @@ If you have issues installing the project, find a bug, or want to add a feature,
 the `GitHub issue page <https://github.com/CORE-GATECH-GROUP/serpent-tools/issues>`_
 is the best place to do that.
 
-Support
-=======
-
-The development of ``serpentTools`` is supported by the following organizations:
-
-* `USNC-Tech <https://usnc.com/space>`_
-
 References
 ==========
 
