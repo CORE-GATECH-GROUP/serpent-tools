@@ -6,6 +6,13 @@
 Changelog
 =========
 
+.. _v0.11.0:
+
+0.11.0
+======
+
+* Depletion reader settings can be provided at construction - :pull:`516`
+
 .. _v0.10.1:
 
 :release-tag:`0.10.1`

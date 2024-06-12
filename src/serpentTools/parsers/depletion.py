@@ -147,6 +147,37 @@ class DepletionReader(DepPlotMixin, MaterialReader):
     ----------
     filePath: str
         path to the depletion file
+    materials : list of string, optional
+        Names and patterns to use when determining if a material found
+        in the file should be processed or not. ``["fuel"]`` will
+        result in only the material exactly named ``fuel`` to be processed.
+        But ``["fuel.*"]`` is a pattern that will match and collect any
+        material that begins with ``fuel``. If not provided,
+        pulls from ``depletion.materials`` setting.
+
+        .. versionadded:: 0.11.0
+
+    materialVariables : list of string, optional
+        Names of variables to pull for each processed material. List can
+        contain zero or more entries like ``"ADENS"``, ``"MDENS"``, and
+        ``"INH_TOX"``. If not provided, pulls from
+        ``depletion.materialVariables`` setting.
+
+        .. versionadded:: 0.11.0
+
+    metadataKeys : list of string, optional
+        Metadata fields to pull from the file. List can contain
+        zero or more of the following strings: ``"ZAI"``, ``"NAMES"``,
+        ``"DAYS",`` and ``"BU"`` (case sensitive). If not provided,
+        pulls from ``depletion.metadataKeys`` setting
+
+        .. versionadded:: 0.11.0
+
+    processTotal : bool, optional
+        Flag to process the ``TOTAL`` data section or not. If not given,
+        pulls from the ``depletion.processTotal`` setting.
+
+        .. versionadded:: 0.11.0
 
     Attributes
     ----------
@@ -170,6 +201,7 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         of this reader
 
     """
+
     docAttrs = """materials: dict
         Dictionary with material names as keys and the corresponding
         :py:class:`~serpentTools.objects.materials.DepletedMaterial` class
@@ -178,9 +210,24 @@ class DepletionReader(DepPlotMixin, MaterialReader):
         Dictionary with file-wide data names as keys and the
         corresponding data, e.g. ``'zai'``: [list of zai numbers]"""
 
-    def __init__(self, filePath):
-        MaterialReader.__init__(self, filePath, 'depletion')
-        patterns = self.settings['materials'] or ['.*']
+    def __init__(
+        self,
+        filePath,
+        materials=None,
+        materialVariables=None,
+        metadataKeys=None,
+        processTotal=None,
+    ):
+        MaterialReader.__init__(self, filePath, "depletion")
+        if metadataKeys is not None:
+            self.settings["metadataKeys"] = metadataKeys
+        if materials is not None:
+            self.settings["materials"] = materials
+        if processTotal is not None:
+            self.settings["processTotal"] = processTotal
+        if materialVariables is not None:
+            self.settings["materialVariables"] = materialVariables
+        patterns = self.settings["materials"] or [".*"]
         # match all materials if nothing given
         self._matPatterns = [re.compile(mat) for mat in patterns]
         DepPlotMixin.__init__(self)

@@ -1,11 +1,13 @@
 """Test the depletion file."""
+
 from unittest import TestCase
 from os import remove
+from io import BytesIO
 
 from numpy import array
 from numpy.testing import assert_equal
+import pytest
 
-from io import BytesIO
 from serpentTools.data import getFile
 from serpentTools.settings import rc
 from serpentTools.parsers.depletion import (
@@ -434,3 +436,41 @@ class DepMatlabExportNoConverter(DepMatlabExportHelper):
 
 
 del DepMatlabExportHelper
+
+
+def test_defaultSettings():
+    """Test behavior of settings if no additional arguments given"""
+    r = DepletionReader(DEP_FILE_PATH)
+    assert r.settings["metadataKeys"] == ["ZAI", "NAMES", "DAYS", "BU"]
+    assert r.settings["materials"] == []
+    assert r.settings["processTotal"]
+    assert r.settings["materialVariables"] == []
+
+
+def test_simpleOverloadSettings():
+    """Test overwritting some settings and the behavior"""
+    base = DepletionReader(DEP_FILE_PATH)
+    base.read()
+    alt = DepletionReader(
+        DEP_FILE_PATH,
+        materials=["f.*"],
+        materialVariables=["ADENS", "INH_TOX"],
+        metadataKeys=["ZAI"],
+        processTotal=False,
+    )
+    assert not alt.settings["processTotal"]
+    alt.read()
+    assert set(alt.metadata) == {
+        "zai",
+    }
+    assert alt.zais == base.zais
+    assert set(alt.materials) == {
+        "fuel",
+    }
+    fuel = alt["fuel"]
+    assert set(fuel.data) == {"adens", "inhTox"}
+    assert fuel["adens"] == pytest.approx(base["fuel"]["adens"])
+    assert fuel["inhTox"] == pytest.approx(base["fuel"]["inhTox"])
+    assert alt.days is None
+    assert alt.burnup is None
+    assert alt.names is None
