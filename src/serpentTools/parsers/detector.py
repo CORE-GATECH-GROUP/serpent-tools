@@ -19,6 +19,9 @@ class DetectorReader(BaseReader):
     ----------
     filePath : str
         path to the depletion file
+    names : list of string, optional
+        Names of any detectors to process. If not given, fall back
+        to the ``detector.names``.
 
     Attributes
     ----------
@@ -31,9 +34,11 @@ class DetectorReader(BaseReader):
     # Update this if new detector grids are introduced
     _KNOWN_GRIDS = ("E", "X", "Y", "Z", "T", "COORD", "R", "PHI", "THETA")
 
-    def __init__(self, filePath):
-        BaseReader.__init__(self, filePath, 'detector')
+    def __init__(self, filePath, names=None):
+        BaseReader.__init__(self, filePath, "detector")
         self.detectors = {}
+        if names is not None:
+            self.settings["names"] = names
 
     def __getitem__(self, name):
         """Retrieve a detector from :attr:`detectors`"""

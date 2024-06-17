@@ -7,7 +7,7 @@ from collections import OrderedDict
 
 from numpy import arange, array
 from numpy.testing import assert_equal
-from serpentTools.parsers import read
+from serpentTools.parsers import read, DetectorReader
 from serpentTools.data import getFile
 from serpentTools.detectors import (
     CartesianDetector, HexagonalDetector, CylindricalDetector)
@@ -336,3 +336,18 @@ class TimeBinnedDetectorTester(TestCase):
         assert_equal(self.timeDet.tallies, expTallies)
         assert_equal(self.timeDet.errors, expErrors)
         assert_equal(self.timeDet.grids['T'], expTimeGrid)
+
+
+def test_defaultSettings():
+     fp = getFile("ref_det0.m")
+     reader = DetectorReader(fp)
+     assert reader.settings["names"] == []
+
+
+def test_filteredInitSettings():
+    fp = getFile("bwr_det0.m")
+    reader = DetectorReader(fp, names=["spectrum"])
+    assert reader.settings["names"] == ["spectrum"]
+    reader.read()
+    assert len(reader) == 1
+    assert "spectrum" in reader
