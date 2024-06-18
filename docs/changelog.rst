@@ -13,6 +13,8 @@ Changelog
 
 * Depletion reader settings can be provided at construction - :pull:`516`
 * Support ``numpy`` 2.0 - :pull:`524`
+* Names of detectors to read can be provided at construction of the detector
+  reader - :pull:`519`
 
 .. _v0.10.1:
 
