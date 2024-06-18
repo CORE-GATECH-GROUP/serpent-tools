@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from numpy import array, longfloat, subtract, matrix
+from numpy import array, longdouble, subtract, matrix
 from numpy.testing import assert_array_equal
 
 from serpentTools.data import getFile
@@ -92,7 +92,7 @@ class DepmtxTestHelper(TestCase):
         2.108367055387284252194156353166E-07,
         9.841801952371811001202615665146E-12,
         8.052266563002563381135156316475E-16,
-    ], dtype=longfloat)
+    ], dtype=longdouble)
     REF_ZAI = array([
         -1, 10010, 10020, 10030, 20030, 20040, 30060, 30070, 40090, 50100,
         50110, 60120, 70140, 70150, 80160, 80170, 561380, 561400, 581380,
@@ -179,7 +179,7 @@ class DepmtxTestHelper(TestCase):
         2.108922382983142802931309477132E-07,
         9.823435767284427578223342980928E-12,
         8.030354784613487489140522453118E-16,
-    ], dtype=longfloat)
+    ], dtype=longdouble)
 
     # Values for comparing depletion matrix
     # Taking the first and last N_MTX values
@@ -236,7 +236,7 @@ class DepmtxTestHelper(TestCase):
         2.166500765256806589294628619590E-14,
         8.673595631793918327440743302798E-12,
         -3.205752291225075667717126458572E-09,
-    ], dtype=longfloat)
+    ], dtype=longdouble)
 
     def test_vectors_deltaT(self):
         """Verify the isotopics are stored correctly."""
