@@ -12,6 +12,7 @@ Changelog
 ======
 
 * Depletion reader settings can be provided at construction - :pull:`516`
+* Support ``numpy`` 2.0 - :pull:`524`
 
 .. _v0.10.1:
 

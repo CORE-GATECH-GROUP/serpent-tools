@@ -3,7 +3,7 @@ Improved processing of depletion matrix files
 """
 import re
 
-from numpy import empty, empty_like, longfloat, zeros
+from numpy import empty, empty_like, longdouble, zeros
 
 from serpentTools.parsers.base import BaseReader, SparseReaderMixin
 from serpentTools.messages import SerpentToolsException
@@ -98,7 +98,7 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
             match = self._getMatch(line, NDENS_REGEX, 'n0 vector')
             line = _parseIsoBlock(stream, tempN0, match, line, NDENS_REGEX)
             numIso = len(tempN0)
-            self.n0 = empty(numIso, dtype=longfloat)
+            self.n0 = empty(numIso, dtype=longdouble)
             for index in range(numIso):
                 self.n0[index] = tempN0.pop(index)
 
@@ -120,13 +120,13 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
             _parseIsoBlock(stream, self.n1, match, line, NDENS_REGEX)
 
     def __processDenseMatrix(self, stream, matrixSize):
-        self.depmtx = zeros(matrixSize, dtype=longfloat)
+        self.depmtx = zeros(matrixSize, dtype=longdouble)
         line = stream.readline()
         match = self._getMatch(line, DEPMTX_REGEX, 'depletion matrix')
         while match:
             row, col = [int(xx) - 1 for xx in match.groups()[:2]]
-            value = longfloat(match.groups()[2])
-            self.depmtx[row, col] = longfloat(value)
+            value = longdouble(match.groups()[2])
+            self.depmtx[row, col] = longdouble(value)
             line = stream.readline()
             match = DEPMTX_REGEX.search(line)
         return line
@@ -136,11 +136,11 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
         from serpentTools.parsers.base import CSCStreamProcessor
 
         cscProcessor = CSCStreamProcessor(
-            stream, DEPMTX_REGEX, longfloat)
+            stream, DEPMTX_REGEX, longdouble)
         line = cscProcessor.process()
         self.depmtx = csc_matrix(
             (cscProcessor.data[:, 0], cscProcessor.indices,
-             cscProcessor.indptr), dtype=longfloat, shape=matrixSize)
+             cscProcessor.indptr), dtype=longdouble, shape=matrixSize)
 
         return line
 

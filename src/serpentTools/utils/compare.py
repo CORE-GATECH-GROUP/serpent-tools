@@ -3,10 +3,9 @@ Comparison utilities
 """
 from collections.abc import Iterable
 
-from numpy.core.defchararray import equal as charEqual
 from numpy import (
     fabs, zeros_like, ndarray, array, greater, multiply, subtract,
-    equal, asarray,
+    equal, asarray, char
 )
 
 from serpentTools.messages import (
@@ -190,8 +189,8 @@ def directCompare(obj0, obj1, lower, upper):
 def _directCompareIdentical(obj0, obj1):
     """Compare arrays that should be identical"""
     # special case for strings
-    if obj0.dtype.name[:3] == 'str':
-        compArray = charEqual(obj0, obj1)
+    if obj0.dtype.name.startswith("str"):
+        compArray = char.equal(obj0, obj1)
     else:
         compArray = equal(obj0, obj1)
     if compArray.all():

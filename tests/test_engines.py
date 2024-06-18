@@ -12,7 +12,7 @@ from io import StringIO
 
 import re
 from numpy.testing import assert_array_equal, assert_allclose
-from numpy import longfloat, array, dtype
+from numpy import longdouble, array, dtype
 
 from serpentTools.parsers.base import CSCStreamProcessor
 
@@ -90,9 +90,9 @@ class FloatProcessor(object):
     datatype = float
 
 
-class LongFloatProcessor(object):
+class longdoubleProcessor(object):
     """Class that stores data as long floats."""
-    datatype = longfloat
+    datatype = longdouble
 
 
 class CaseOneStringFloatTester(
@@ -102,10 +102,10 @@ class CaseOneStringFloatTester(
     """
 
 
-class CaseOneStringLongfloatTester(
-        CSCStreamTester, CaseOneStringBasedProcessor, LongFloatProcessor):
+class CaseOneStringlongdoubleTester(
+        CSCStreamTester, CaseOneStringBasedProcessor, longdoubleProcessor):
     """
-    Class that reads the first case with string-regex and stores longfloats.
+    Class that reads the first case with string-regex and stores longdoubles.
     """
 
 
@@ -116,10 +116,10 @@ class CaseTwoStringFloatTester(
     """
 
 
-class CaseTwoStringLongfloatTester(
-        CSCStreamTester, CaseTwoStringBasedProcessor, LongFloatProcessor):
+class CaseTwoStringlongdoubleTester(
+        CSCStreamTester, CaseTwoStringBasedProcessor, longdoubleProcessor):
     """
-    Class that reads the second case with string-regex and stores longfloats.
+    Class that reads the second case with string-regex and stores longdoubles.
     """
 
 
@@ -130,10 +130,10 @@ class CaseOneRegexFloatTester(
     """
 
 
-class CaseOneRegexLongfloatTester(
-        CSCStreamTester, CaseOneRegexBasedProcessor, LongFloatProcessor):
+class CaseOneRegexlongdoubleTester(
+        CSCStreamTester, CaseOneRegexBasedProcessor, longdoubleProcessor):
     """
-    Class that reads the first case with compiled regex and stores longfloats.
+    Class that reads the first case with compiled regex and stores longdoubles.
     """
 
 
@@ -144,10 +144,10 @@ class CaseTwoRegexFloatTester(
     """
 
 
-class CaseTwoRegexLongfloatTester(
-        CSCStreamTester, CaseTwoRegexBasedProcessor, LongFloatProcessor):
+class CaseTwoRegexlongdoubleTester(
+        CSCStreamTester, CaseTwoRegexBasedProcessor, longdoubleProcessor):
     """
-    Class that reads the second case with compiled regex and stores longfloats.
+    Class that reads the second case with compiled regex and stores longdoubles.
     """
 
 
