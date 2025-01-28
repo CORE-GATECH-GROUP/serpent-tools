@@ -12,7 +12,7 @@ maintainers = [
 ]
 description = "A suite of parsers designed to make interacting with Serpent output files simple, scriptable, and flawless"
 readme = "README.rst"
-requires-python = ">=3.9,<3.12"
+requires-python = ">=3.9,<3.14"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Education",
@@ -23,6 +23,8 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 license = {file = "LICENSE"}
 dependencies = [
