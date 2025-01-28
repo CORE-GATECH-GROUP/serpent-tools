@@ -11,10 +11,17 @@ Changelog
 0.11.0
 ======
 
+.. warning::
+
+  This release drops support for Python 3.8 which reached end-of-life
+  2024-10-17
+
 * Depletion reader settings can be provided at construction - :pull:`516`
 * Support ``numpy`` 2.0 - :pull:`524`
 * Names of detectors to read can be provided at construction of the detector
   reader - :pull:`519`
+* Drop Python 3.8
+* Support Python 3.12, 3.13
 
 .. _v0.10.1:
 
@@ -25,7 +32,7 @@ This is a bug fix release to fix installing the package.
 Users should experience no changes. Developer should note
 that the package has moved from a "flat-layout" to a "src-layout",
 where the code the the package has moved from ``serpentTools``
-to ``src/serpentTools``
+to ``src/serpentTools``Commit
 
 * Move from "flat-layout" to "src-layout" - :pull:`506`
 
