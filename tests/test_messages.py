@@ -32,8 +32,8 @@ class DecoratorTester(TestCase):
         with catch_warnings(record=True) as record:
             self.assertEqual(7, demoFuture(2))
             self.assertEqual(7, demoFuture(2, 5))
-            self.assertEquals(len(record), 2,
-                              'Did not catch two warnings::willChange')
+            self.assertEqual(len(record), 2,
+                             "Did not catch two warnings::willChange")
 
     def test_deprecatedDecorator(self):
         """Verify that the deprecated decorator doesn't break things"""
@@ -45,8 +45,8 @@ class DecoratorTester(TestCase):
         with catch_warnings(record=True) as record:
             self.assertEqual(7, demoFunction(2))
             self.assertEqual(7, demoFunction(2, 5))
-            self.assertEquals(len(record), 2,
-                              'Did not catch two warnings::deprecation')
+            self.assertEqual(len(record), 2,
+                             "Did not catch two warnings::deprecation")
 
 
 class LoggingTester(TestCaseWithLogCapture):
