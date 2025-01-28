@@ -20,8 +20,8 @@ Changelog
 * Support ``numpy`` 2.0 - :pull:`524`
 * Names of detectors to read can be provided at construction of the detector
   reader - :pull:`519`
-* Drop Python 3.8
-* Support Python 3.12, 3.13
+* Drop Python 3.8 - :pull:`525`
+* Support Python 3.12, 3.13 - :pull:`525`
 
 .. _v0.10.1:
 
