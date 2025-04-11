@@ -10,7 +10,6 @@ from numpy.testing import assert_allclose
 from serpentTools.messages import (
     DictHandler, __logger__, removeHandler, addHandler,
 )
-from serpentTools.utils import checkScipy
 
 
 def computeMeansErrors(*arrays):
@@ -249,7 +248,12 @@ class TestCaseWithLogCapture(TestCase, LoggerMixin):
                          msg=failMsg.format(matchType, msg, level))
 
 
-HAS_SCIPY = checkScipy('1.0')
+try:
+    import scipy
+
+    HAS_SCIPY = True
+except ImportError:
+    HAS_SCIPY = False
 
 
 class MatlabTesterHelper(TestCase):

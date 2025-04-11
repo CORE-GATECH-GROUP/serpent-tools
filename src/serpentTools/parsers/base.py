@@ -13,7 +13,13 @@ from numpy import array
 from serpentTools.messages import info
 from serpentTools.settings import rc
 from serpentTools.objects.base import BaseObject
-from serpentTools.utils import checkScipy
+
+try:
+    import scipy
+
+    _HAS_SCIPY = True
+except ImportError:
+    _HAS_SCIPY = False
 
 
 class BaseReader(ABC, BaseObject):
@@ -135,10 +141,9 @@ class SparseReaderMixin(object):
     """
 
     def __init__(self, sparse):
-        HAS_SCIPY = checkScipy()
         if sparse is None:
-            self.__sparse = HAS_SCIPY
-        elif sparse is True and not HAS_SCIPY:
+            self.__sparse = _HAS_SCIPY
+        elif sparse and not _HAS_SCIPY:
             raise ImportError(
                 "scipy not installed and required for sparse support")
         else:

@@ -3,7 +3,6 @@ Classes for converting readers and containers to other data types
 """
 
 from abc import ABC, abstractmethod
-from serpentTools.utils import checkScipy
 
 __all__ = [
     'MatlabConverter',
@@ -65,11 +64,6 @@ class MatlabConverter(BaseConverter):
             raise NotImplementedError(
                 "Gathering method not implemented for {}."
                 .format(container.__class__.__name__))
-
-    def checkImports(self):
-        """Ensure that :term:`scipy` >= 1.0 is installed."""
-        if not checkScipy('1.0'):
-            raise ImportError("scipy >= 1.0 required")
 
     def convert(self, reconvert, append=True, format='5', longNames=True,
                 compress=True, oned='row'):
