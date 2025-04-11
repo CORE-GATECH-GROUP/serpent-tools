@@ -567,10 +567,11 @@ class Detector(NamedObject):
         elif len(slicedTallies.shape) == 1:
             slicedTallies = slicedTallies.reshape(slicedTallies.size, 1)
 
+        # (n_groups, 3) where columns are lower, upper, and middle energy
         lowerE = self.grids['E'][:, 0]
         if normalize:
             lethBins = log(
-                divide(self.grids['E'][:, -1], lowerE))
+                divide(self.grids['E'][:, 1], lowerE))
             # Need to scale up the dimension of the energy grids to support
             # broadcasting -> (E, N) / (E, )
             slicedTallies /= lethBins[:, newaxis]
