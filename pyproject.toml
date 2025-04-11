@@ -39,7 +39,7 @@ dependencies = [
 "Bug Tracker" = "https://github.com/CORE-GATECH-GROUP/serpent-tools/issues"
 
 [project.optional-dependencies]
-extras = ["pandas>1", "scipy"]
+extras = ["pandas>1", "scipy>1.0"]
 test = ["pytest>=8", "pytest-cov", "coverage"]
 ci = ["jupyter"]
 
