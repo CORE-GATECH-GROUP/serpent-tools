@@ -1,6 +1,10 @@
 from unittest import TestCase
+import os
+import tempfile
+import textwrap
 
-from numpy import array, longdouble, subtract, matrix
+import numpy as np
+from numpy import array, longfloat, subtract, matrix
 from numpy.testing import assert_array_equal
 
 from serpentTools.data import getFile
@@ -92,7 +96,7 @@ class DepmtxTestHelper(TestCase):
         2.108367055387284252194156353166E-07,
         9.841801952371811001202615665146E-12,
         8.052266563002563381135156316475E-16,
-    ], dtype=longdouble)
+    ], dtype=longfloat)
     REF_ZAI = array([
         -1, 10010, 10020, 10030, 20030, 20040, 30060, 30070, 40090, 50100,
         50110, 60120, 70140, 70150, 80160, 80170, 561380, 561400, 581380,
@@ -179,7 +183,7 @@ class DepmtxTestHelper(TestCase):
         2.108922382983142802931309477132E-07,
         9.823435767284427578223342980928E-12,
         8.030354784613487489140522453118E-16,
-    ], dtype=longdouble)
+    ], dtype=longfloat)
 
     # Values for comparing depletion matrix
     # Taking the first and last N_MTX values
@@ -236,7 +240,7 @@ class DepmtxTestHelper(TestCase):
         2.166500765256806589294628619590E-14,
         8.673595631793918327440743302798E-12,
         -3.205752291225075667717126458572E-09,
-    ], dtype=longdouble)
+    ], dtype=longfloat)
 
     def test_vectors_deltaT(self):
         """Verify the isotopics are stored correctly."""
@@ -324,3 +328,107 @@ class SparseReadDepmtxFuncTester(ReadDepmtxFuncTesterBase, DenseTesterMixin):
 
 
 del DepmtxTestHelper, DepmtxReaderTesterBase, ReadDepmtxFuncTesterBase
+
+
+class SparseOptionalPreambleTester(
+    TestCase,
+    SparseTesterMixin,
+):
+    """Tests sparse reader with optional flx & zeros preambles present."""
+    USE_SPARSE = True
+
+    @classmethod
+    def setUpClass(cls):
+        # Small synthetic case: 4x4 with trailing all-zero cols (3 & 4)
+        content = textwrap.dedent(
+            """\
+            t = 4.320000000000000000000000000000E+04;
+            flx =  1.000000008E+10;
+            N0 = zeros(4, 1);
+            N0( 1, 1) = 1.0E-3;
+            ZAI = zeros(4, 1);
+            ZAI(  1) = 922350;
+            A = zeros(4, 4);
+            A( 1, 1) =  1.0;
+            A( 2, 1) = -1.0;
+            A( 2, 2) =  2.0;
+            A( 3, 2) = -2.0;
+            N1 = zeros(4, 1);
+            N1( 1, 1) = 2.0E-3;
+            """
+        )
+        cls._tmp = tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".m",
+            prefix="depmtx_optional_",
+            delete=False,
+        )
+        cls._tmp.write(content)
+        cls._tmp.flush()
+        cls._tmp.seek(0)
+
+        cls.reader = DepmtxReader(cls._tmp.name, cls.USE_SPARSE)
+        cls.reader.read()
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            cls._tmp.close()
+            os.remove(cls._tmp)
+        except Exception:
+            pass
+
+    def test_matrix_shape(self):
+        self.assertEqual(self.reader.depmtx.shape, (4, 4))
+
+    def test_vectors_and_flux_present(self):
+        # sizes align with declared zeros(4,1)
+        self.assertEqual(self.reader.n0.shape, (4,))
+        self.assertEqual(self.reader.n1.shape, (4,))
+        self.assertEqual(self.reader.zai.shape, (4,))
+        # optional flux captured
+        self.assertIsNotNone(self.reader.flux)
+
+    def test_values_subset(self):
+        # Quick spot-check of a few filled entries
+        A = (
+            self.reader.depmtx.toarray()
+            if hasattr(self.reader.depmtx, "toarray")
+            else self.reader.depmtx)
+        self.assertAlmostEqual(A[0, 0], 1.0)   # A(1,1)
+        self.assertAlmostEqual(A[1, 0], -1.0)  # A(2,1)
+        self.assertAlmostEqual(A[1, 1], 2.0)   # A(2,2)
+        self.assertAlmostEqual(A[2, 1], -2.0)  # A(3,2)
+
+        flux = self.reader.flux
+        self.assertAlmostEqual(flux, 1.000000008E+10)
+
+        zai = self.reader.zai
+        self.assertAlmostEqual(zai[0], 922350)  # ZAI( 1)
+
+    def test_sparse_indptr_invariants(self):
+        """Verify that trailing all-zero columns in a depmtx file are handled
+        correctly when constructing sparse CSC matrix.
+        """
+        if not self.USE_SPARSE:
+            self.skipTest("Dense run: indptr not present")
+        indptr = self.reader.depmtx.indptr
+        # len(indptr) == nCols + 1, even with trailing zero columns
+        self.assertEqual(indptr.shape[0], 5)
+        # columns 3 & 4 are empty -> pointer doesn't advance
+        self.assertEqual(indptr[2], indptr[3])
+        self.assertEqual(indptr[3], indptr[4])
+        # monotonic non-decreasing
+        self.assertTrue(np.all(indptr[:-1] <= indptr[1:]))
+
+
+class DenseOptionalPreambleTester(
+    SparseOptionalPreambleTester,
+    DenseTesterMixin,
+):
+    """Tests dense reader with optional flx & zeros preambles present."""
+    USE_SPARSE = False
+
+    def test_sparse_indptr_invariants(self):
+        # Dense depmtx is a numpy array; CSC indptr does not apply here.
+        pass
