@@ -602,9 +602,7 @@ class SensitivityReader(BaseReader):
         available = set(available)
         if available.issuperset(cleaned):
             return cleaned
-        missing = available.intersection(cleaned).symmetric_difference(
-            cleaned
-        )
+        missing = set(cleaned).difference(available)
         raise KeyError(
             "Could not find the following responses: {}".format(missing)
         )
