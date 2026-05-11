@@ -12,7 +12,7 @@ from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.utils import convertVariableName, str2vec
-from serpentTools.utils.mtDecoder import MTS_MAP, decodeMts
+from serpentTools.utils.mtDecoder import decodeMts
 from serpentTools.utils.zaiDecoder import decodeZai
 from serpentTools.parsers.base import BaseReader
 
@@ -583,6 +583,228 @@ class SensitivityReader(BaseReader):
             "{}".format(attrName, missing)
         )
 
+    @staticmethod
+    def _splitCovarianceZaimt(zaimt):
+        zaimt = zaimt.strip()
+        if len(zaimt) <= 5:
+            return zaimt, zaimt
+        return zaimt[:-5], zaimt[-5:]
+
+    @staticmethod
+    def _cleanCovarianceResp(resp, available):
+        if resp is None:
+            return list(available)
+        if isinstance(resp, str):
+            resp = [resp]
+        cleaned = [
+            convertVariableName(str(item).strip()) for item in resp
+        ]
+        available = set(available)
+        if available.issuperset(cleaned):
+            return cleaned
+        missing = available.intersection(cleaned).symmetric_difference(
+            cleaned
+        )
+        raise KeyError(
+            "Could not find the following responses: {}".format(missing)
+        )
+
+    def _getCovarianceResponseMap(self, data):
+        if not isinstance(data, str):
+            raise SerpentToolsException(
+                "Expected covariance data selector string."
+            )
+        dataKey = data.strip().lower()
+        if dataKey == "uncertainty":
+            return dataKey, self.covarianceUncertainty
+        if dataKey == "variance":
+            return dataKey, self.covarianceVariance
+        raise SerpentToolsException(
+            "Unknown covariance data selection {}. Expected "
+            "'uncertainty' or 'variance'.".format(data)
+        )
+
+    def _getCovarianceResponseItems(self, resp, responseMap):
+        return [
+            (name, responseMap[name])
+            for name in self._cleanCovarianceResp(resp, responseMap.keys())
+        ]
+
+    @staticmethod
+    def _getCovarianceLabelFmt(labelFmt, responseItems):
+        if labelFmt is not None:
+            return labelFmt
+        labelFmt = "{z1} {m1}, {z2} {m2}"
+        if len(responseItems) > 1:
+            labelFmt = "{r}: " + labelFmt
+        return labelFmt
+
+    @staticmethod
+    def _cleanCovarianceFilter(value, cleanMt=False):
+        if isinstance(value, (str, int)):
+            value = [value]
+        if value is None:
+            return None
+        if cleanMt:
+            return {
+                str(item).strip().lstrip("0") or "0"
+                for item in value
+            }
+        return {str(item).strip() for item in value}
+
+    @staticmethod
+    def _getCovarianceAxes(ax, figsize, dpi):
+        if ax is None:
+            if figsize is not None or dpi is not None:
+                _, ax = pyplot.subplots(figsize=figsize, dpi=dpi)
+            else:
+                ax = gca()
+        else:
+            if figsize is not None:
+                ax.figure.set_size_inches(figsize)
+            if dpi is not None:
+                ax.figure.set_dpi(dpi)
+        return ax
+
+    @staticmethod
+    def _covarianceEntryMatches(parsed, zaiFilter, mtFilter):
+        if not zaiFilter and not mtFilter:
+            return True
+        for zaiEntry, mtEntry, _ in parsed:
+            if zaiFilter and zaiEntry not in zaiFilter:
+                continue
+            if mtFilter and mtEntry not in mtFilter:
+                continue
+            return True
+        return False
+
+    def _formatCovarianceLabel(self, labelFmt, responseName, key, parsed):
+        zaiLabels = [
+            decodeZai(zaiEntry) for zaiEntry, _, _ in parsed
+        ]
+        entryLabels = [
+            "{}\n{}".format(zaiLabel, mtLabel)
+            for zaiLabel, (_, _, mtLabel) in zip(zaiLabels, parsed)
+        ]
+        if len(entryLabels) == 1:
+            entryLabels = [entryLabels[0], entryLabels[0]]
+            parsed = [parsed[0], parsed[0]]
+            zaiLabels = [zaiLabels[0], zaiLabels[0]]
+
+        return labelFmt.format(
+            r=responseName or "",
+            zaimt=key,
+            labels=entryLabels,
+            zais=[z for z, _, _ in parsed],
+            zaiLabels=zaiLabels,
+            mts=[m for _, m, _ in parsed],
+            mtLabels=[r for _, _, r in parsed],
+            z1=zaiLabels[0],
+            m1=parsed[0][2],
+            z2=zaiLabels[1],
+            m2=parsed[1][2],
+            z1Raw=parsed[0][0],
+            z2Raw=parsed[1][0],
+        )
+
+    def _getCovariancePlotData(
+        self, responseItems, zaiFilter, mtFilter, labelFmt, sigma
+    ):
+        values = []
+        errors = []
+        labels = []
+
+        for responseName, responseData in responseItems:
+            for key, (value, relUnc) in responseData.items():
+                if key == "total":
+                    if zaiFilter or mtFilter:
+                        continue
+                    respPrefix = (
+                        "{} ".format(responseName) if responseName else ""
+                    )
+                    label = "{}total".format(respPrefix).strip()
+                else:
+                    parsed = []
+                    for entry in key.split():
+                        zaiEntry, mtEntry = self._splitCovarianceZaimt(entry)
+                        mtClean = mtEntry.lstrip("0") or "0"
+                        parsed.append(
+                            (zaiEntry, mtClean, decodeMts(entry))
+                        )
+
+                    if not self._covarianceEntryMatches(
+                        parsed, zaiFilter, mtFilter
+                    ):
+                        continue
+
+                    label = self._formatCovarianceLabel(
+                        labelFmt, responseName, key, parsed
+                    )
+
+                values.append(value)
+                errors.append(
+                    fabs(value) * fabs(relUnc) * sigma if sigma else 0.0
+                )
+                labels.append(label)
+
+        return values, errors, labels
+
+    @staticmethod
+    def _drawCovarianceBars(ax, values, errors, labels, fixedAxis):
+        axisVals = list(range(len(values)))
+        if fixedAxis:
+            ax.barh(axisVals, values, xerr=errors)
+            ax.set_yticks(axisVals)
+            ax.set_yticklabels(labels)
+            ax.tick_params(axis="y", pad=10)
+        else:
+            ax.bar(axisVals, values, yerr=errors)
+            ax.set_xticks(axisVals)
+            ax.set_xticklabels(labels, rotation=60, ha="right")
+            ax.tick_params(axis="x", pad=10)
+
+    @staticmethod
+    def _getCovarianceValueLabel(dataKey):
+        if dataKey == "variance":
+            return "Variance"
+        if dataKey == "uncertainty":
+            return "Propagated Uncertainty"
+        return "Covariance Data"
+
+    def _formatCovarianceAxes(
+        self, ax, dataKey, fixedAxis, resp, title, logy,
+        xlabel, ylabel, legend, ncol
+    ):
+        valueLabel = self._getCovarianceValueLabel(dataKey)
+
+        if fixedAxis:
+            if xlabel is None:
+                xlabel = valueLabel
+            if ylabel is None:
+                ylabel = "ZAIMT"
+        else:
+            if xlabel is None:
+                xlabel = "ZAIMT"
+            if ylabel is None:
+                ylabel = valueLabel
+
+        if title is None and resp is None:
+            title = f"{ylabel} in response: All "
+        else:
+            title = f"{ylabel} in response: {resp}"
+
+        return formatPlot(
+            ax,
+            loglog=False,
+            logx=logy if fixedAxis else False,
+            logy=False if fixedAxis else logy,
+            legendcols=ncol,
+            legend=legend,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            title=title,
+        )
+
     @magicPlotDocDecorator
     def plotCovarianceData(
         self,
@@ -652,202 +874,29 @@ class SensitivityReader(BaseReader):
         {legend}
         {ncol}
         """
-
-        def _splitZaimt(zaimt):
-            zaimt = zaimt.strip()
-            if len(zaimt) <= 5:
-                return zaimt, zaimt
-            return zaimt[:-5], zaimt[-5:]
-
-        def _cleanResp(resp, available):
-            if resp is None:
-                return list(available)
-            if isinstance(resp, str):
-                resp = [resp]
-            cleaned = [
-                convertVariableName(str(item).strip()) for item in resp
-            ]
-            available = set(available)
-            if available.issuperset(cleaned):
-                return cleaned
-            missing = available.intersection(cleaned).symmetric_difference(
-                cleaned
-            )
-            raise KeyError(
-                "Could not find the following responses: {}".format(missing)
-            )
-
-        if not isinstance(data, str):
-            raise SerpentToolsException(
-                "Expected covariance data selector string."
-            )
-        dataKey = data.strip().lower()
-        if dataKey == "uncertainty":
-            responseMap = self.covarianceUncertainty
-        elif dataKey == "variance":
-            responseMap = self.covarianceVariance
-        else:
-            raise SerpentToolsException(
-                "Unknown covariance data selection {}. Expected "
-                "'uncertainty' or 'variance'.".format(data)
-            )
-        responseItems = [
-            (name, responseMap[name])
-            for name in _cleanResp(resp, responseMap.keys())
-        ]
-
-        if labelFmt is None:
-            labelFmt = "{z1} {m1}, {z2} {m2}"
-            if len(responseItems) > 1:
-                labelFmt = "{r}: " + labelFmt
-
-        if isinstance(zai, (str, int)):
-            zai = [zai]
-        if isinstance(mt, (str, int)):
-            mt = [mt]
-
-        zaiFilter = None
-        if zai is not None:
-            zaiFilter = {str(item).strip() for item in zai}
-
-        mtFilter = None
-        if mt is not None:
-            mtFilter = {str(item).strip().lstrip("0") or "0" for item in mt}
-
-        if ax is None:
-            if figsize is not None or dpi is not None:
-                _, ax = pyplot.subplots(figsize=figsize, dpi=dpi)
-            else:
-                ax = gca()
-        else:
-            if figsize is not None:
-                ax.figure.set_size_inches(figsize)
-            if dpi is not None:
-                ax.figure.set_dpi(dpi)
+        dataKey, responseMap = self._getCovarianceResponseMap(data)
+        responseItems = self._getCovarianceResponseItems(resp, responseMap)
+        labelFmt = self._getCovarianceLabelFmt(labelFmt, responseItems)
+        zaiFilter = self._cleanCovarianceFilter(zai)
+        mtFilter = self._cleanCovarianceFilter(mt, cleanMt=True)
+        ax = self._getCovarianceAxes(ax, figsize, dpi)
         sigma = max(int(sigma), 0)
 
-        values = []
-        errors = []
-        labels = []
-
-        for responseName, responseData in responseItems:
-            for key, (value, relUnc) in responseData.items():
-                if key == "total":
-                    if zaiFilter or mtFilter:
-                        continue
-                    respPrefix = (
-                        "{} ".format(responseName) if responseName else ""
-                    )
-                    label = "{}total".format(respPrefix).strip()
-                else:
-                    entries = key.split()
-                    parsed = []
-                    for entry in entries:
-                        zaiEntry, mtEntry = _splitZaimt(entry)
-                        mtClean = mtEntry.lstrip("0") or "0"
-                        parsed.append(
-                            (zaiEntry, mtClean, decodeMts(entry))
-                        )
-
-                    if zaiFilter or mtFilter:
-                        for zaiEntry, mtEntry, _ in parsed:
-                            if zaiFilter and zaiEntry not in zaiFilter:
-                                continue
-                            if mtFilter and mtEntry not in mtFilter:
-                                continue
-                            break
-                        else:
-                            continue
-
-                    zaiLabels = [
-                        decodeZai(zaiEntry) for zaiEntry, _, _ in parsed
-                    ]
-                    entryLabels = [
-                        "{}\n{}".format(zaiLabel, mtLabel)
-                        for zaiLabel, (_, _, mtLabel) in zip(
-                            zaiLabels, parsed
-                        )
-                    ]
-                    if len(entryLabels) == 1:
-                        entryLabels = [entryLabels[0], entryLabels[0]]
-                        parsed = [parsed[0], parsed[0]]
-                        zaiLabels = [zaiLabels[0], zaiLabels[0]]
-
-                    label = labelFmt.format(
-                        r=responseName or "",
-                        zaimt=key,
-                        labels=entryLabels,
-                        zais=[z for z, _, _ in parsed],
-                        zaiLabels=zaiLabels,
-                        mts=[m for _, m, _ in parsed],
-                        mtLabels=[r for _, _, r in parsed],
-                        z1=zaiLabels[0],
-                        m1=parsed[0][2],
-                        z2=zaiLabels[1],
-                        m2=parsed[1][2],
-                        z1Raw=parsed[0][0],
-                        z2Raw=parsed[1][0],
-                    )
-
-                values.append(value)
-                errors.append(
-                    fabs(value) * fabs(relUnc) * sigma if sigma else 0.0
-                )
-                labels.append(label)
-
+        values, errors, labels = self._getCovariancePlotData(
+            responseItems, zaiFilter, mtFilter, labelFmt, sigma
+        )
         if not labels:
             raise SerpentToolsException(
                 "No covariance data matched the provided filters."
             )
 
-        axisVals = list(range(len(values)))
-        errVals = errors if sigma else None
-        if fixedAxis:
-            ax.barh(axisVals, values, xerr=errVals)
-            ax.set_yticks(axisVals)
-            ax.set_yticklabels(labels)
-            ax.tick_params(axis="y", pad=10)
-        else:
-            ax.bar(axisVals, values, yerr=errVals)
-            ax.set_xticks(axisVals)
-            ax.set_xticklabels(labels, rotation=60, ha="right")
-            ax.tick_params(axis="x", pad=10)
-
-        if dataKey == "variance":
-            valueLabel = "Variance"
-        elif dataKey == "uncertainty":
-            valueLabel = "Propagated Uncertainty"
-        else:
-            valueLabel = "Covariance Data"
-
-        if fixedAxis:
-            if xlabel is None:
-                xlabel = valueLabel
-            if ylabel is None:
-                ylabel = "ZAIMT"
-        else:
-            if xlabel is None:
-                xlabel = "ZAIMT"
-            if ylabel is None:
-                ylabel = valueLabel
-
-        if title is None and resp is None:
-            title = f"{ylabel} in response: All "
-        else:
-            title = f"{ylabel} in response: {resp}"
-
-        ax = formatPlot(
-            ax,
-            loglog=False,
-            logx=logy if fixedAxis else False,
-            logy=False if fixedAxis else logy,
-            legendcols=ncol,
-            legend=legend,
-            xlabel=xlabel,
-            ylabel=ylabel,
-            title=title,
+        self._drawCovarianceBars(
+            ax, values, errors if sigma else None, labels, fixedAxis
         )
-        return ax
+        return self._formatCovarianceAxes(
+            ax, dataKey, fixedAxis, resp, title, logy,
+            xlabel, ylabel, legend, ncol
+        )
 
 
 def reshapePermuteSensMat(vec, newShape):
