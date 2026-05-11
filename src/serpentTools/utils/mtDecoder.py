@@ -85,7 +85,7 @@ MTS_MAP = {
     '1018': 'χ',  # Unofficial MT for total fission spectrum based on SCALE's convention
 }
 
-def decode_mts(zaimt):
+def decodeMts(zaimt):
     "Tiny helper function to decode the mt label from zaimt"
     zaimt = zaimt.strip()
     mt = zaimt[-5:].lstrip("0") or "0"

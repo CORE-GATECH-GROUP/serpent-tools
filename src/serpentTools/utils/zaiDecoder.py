@@ -138,17 +138,17 @@ def decodeZai(zai):
     """
     if zai is None:
         return ""
-    zai_str = "".join(ch for ch in str(zai).strip() if ch.isdigit())
-    if len(zai_str) < 4:
+    zaiStr = "".join(ch for ch in str(zai).strip() if ch.isdigit())
+    if len(zaiStr) < 4:
         return str(zai).strip()
 
-    if len(zai_str) >= 6:
-        z = int(zai_str[:-4])
-        a = int(zai_str[-4:-1])
-        isomer = int(zai_str[-1])
+    if len(zaiStr) >= 6:
+        z = int(zaiStr[:-4])
+        a = int(zaiStr[-4:-1])
+        isomer = int(zaiStr[-1])
     else:
-        z = int(zai_str[:-3])
-        a = int(zai_str[-3:])
+        z = int(zaiStr[:-3])
+        a = int(zaiStr[-3:])
         isomer = 0
 
     symbol = ZAI_MAP.get(z)

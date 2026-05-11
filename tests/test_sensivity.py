@@ -10,8 +10,8 @@ from numpy import array, inf
 from numpy.testing import assert_allclose, assert_array_equal
 from serpentTools.data import getFile
 from serpentTools.parsers.sensitivity import SensitivityReader
-from serpentTools.utils.zai_decoder import decodeZai
-from serpentTools.utils.mt_decoder import MTS_MAP
+from serpentTools.utils.zaiDecoder import decodeZai
+from serpentTools.utils.mtDecoder import MTS_MAP
 from matplotlib import pyplot
 
 from tests import (
@@ -125,7 +125,7 @@ class SensitivityTester(SensitivityTestHelper):
         compareDictOfArrays(expected, self.reader.sensitivities,
                             'Error in sensitivities at {key}', testCase=self)
 
-    def test_process_covariance_uncertainty_chunk(self):
+    def testProcessCovarianceUncertaintyChunk(self):
         """Verify covariance uncertainty chunk parsing."""
         reader = SensitivityReader(TEST_FILE)
         reader.covarianceZaimts = ["9223501018", "9223801018"]
@@ -138,7 +138,7 @@ class SensitivityTester(SensitivityTestHelper):
         assert_allclose(data["9223501018"], (2.0, 0.2))
         assert_allclose(data["9223801018"], (3.0, 0.3))
 
-    def test_process_covariance_variance_chunk(self):
+    def testProcessCovarianceVarianceChunk(self):
         """Verify covariance variance chunk parsing."""
         reader = SensitivityReader(TEST_FILE)
         reader.covarianceZaimts = ["9223501018", "9223801018"]
@@ -151,7 +151,7 @@ class SensitivityTester(SensitivityTestHelper):
         assert_allclose(data["9223501018"], (5.0, 0.5))
         assert_allclose(data["9223801018"], (6.0, 0.6))
 
-    def test_process_covariance_block_info_chunk(self):
+    def testProcessCovarianceBlockInfoChunk(self):
         """Verify covariance block info chunk parsing."""
         reader = SensitivityReader(TEST_FILE)
         chunk = [
@@ -161,7 +161,7 @@ class SensitivityTester(SensitivityTestHelper):
         self.assertListEqual(zaimts, ["9223501018 9223801018"])
         self.assertListEqual(reader.covarianceZaimts, ["9223501018 9223801018"])
 
-    def test_plot_covariance_data_labels(self):
+    def testPlotCovarianceDataLabels(self):
         """Verify covariance plot label formatting and ZAI/MT decoding."""
         reader = SensitivityReader(TEST_FILE)
         reader.covarianceUncertainty = {
@@ -177,12 +177,12 @@ class SensitivityTester(SensitivityTestHelper):
             data="uncertainty", resp="keff", sigma=0
         )
         labels = [tick.get_text() for tick in ax.get_yticklabels()]
-        mt_label = MTS_MAP["1018"]
+        mtLabel = MTS_MAP["1018"]
         expected = [
             "keff total",
-            "{0} {1}, {0} {1}".format(decodeZai("92235"), mt_label),
+            "{0} {1}, {0} {1}".format(decodeZai("92235"), mtLabel),
             "{0} {1}, {2} {1}".format(
-                decodeZai("92235"), mt_label, decodeZai("92238")
+                decodeZai("92235"), mtLabel, decodeZai("92238")
             ),
         ]
         self.assertListEqual(labels, expected)

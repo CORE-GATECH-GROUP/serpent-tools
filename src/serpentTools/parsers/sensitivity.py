@@ -12,8 +12,8 @@ from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.utils import convertVariableName, str2vec
-from serpentTools.utils.mt_decoder import MTS_MAP, decode_mts
-from serpentTools.utils.zai_decoder import decodeZai
+from serpentTools.utils.mtDecoder import MTS_MAP, decodeMts
+from serpentTools.utils.zaiDecoder import decodeZai
 from serpentTools.parsers.base import BaseReader
 
 
@@ -267,17 +267,17 @@ class SensitivityReader(BaseReader):
                 if "_COV_DATA_" in response:
                     response = response.split("_COV_DATA_", 1)[0]
                 response = convertVariableName(response)
-                resp_values = [float(un) for un in values.split()]
-                resp_data = target.setdefault(response, OrderedDict())
-                resp_data["total"] = (resp_values[0], resp_values[1])
+                respValues = [float(un) for un in values.split()]
+                respData = target.setdefault(response, OrderedDict())
+                respData["total"] = (respValues[0], respValues[1])
                 if not zaimts:
                     zaimts = list(self.covarianceZaimts)
                 for zaimt, pu, un in zip(
                     (str(z).strip() for z in zaimts),
-                    resp_values[2::2],
-                    resp_values[3::2],
+                    respValues[2::2],
+                    respValues[3::2],
                 ):
-                    resp_data[zaimt] = (pu, un)
+                    respData[zaimt] = (pu, un)
 
     def _processCovarianceUncertaintyChunk(self, chunk, zaimts):
         return self._processCovarianceChunk(chunk, zaimts, "uncertainty")
@@ -289,16 +289,16 @@ class SensitivityReader(BaseReader):
         for line in chunk:
             if "ZAIMTS" in line:
                 cleaned = self._cleanLine(line)
-                _, zaimts_str = cleaned.split("=")
-                block = " ".join(zaimts_str.split())
+                _, zaimtsStr = cleaned.split("=")
+                block = " ".join(zaimtsStr.split())
                 if not block:
                     continue
                 self.covarianceZaimts.append(block)
         return self.covarianceZaimts
 
     def _cleanLine(self, line):
-        removed_chars = "[];"
-        return line.translate(str.maketrans("", "", removed_chars)).strip()
+        removedChars = "[];"
+        return line.translate(str.maketrans("", "", removedChars)).strip()
 
     def _processSensChunk(self, chunk):
         varName = None
@@ -595,7 +595,7 @@ class SensitivityReader(BaseReader):
         figsize=None,
         dpi=None,
         labelFmt=None,
-        fixed_axis=True,
+        fixedAxis=True,
         title=None,
         logy=False,
         xlabel=None,
@@ -643,7 +643,7 @@ class SensitivityReader(BaseReader):
                 {labels} - preformatted "ZAI MT" labels list
                 {zaimt} - raw ZAIMT block string
 
-        fixed_axis : bool, optional
+        fixedAxis : bool, optional
             If ``True``, plot horizontal bars with labels on the y-axis.
         {title}
         {logy}
@@ -653,13 +653,13 @@ class SensitivityReader(BaseReader):
         {ncol}
         """
 
-        def _split_zaimt(zaimt):
+        def _splitZaimt(zaimt):
             zaimt = zaimt.strip()
             if len(zaimt) <= 5:
                 return zaimt, zaimt
             return zaimt[:-5], zaimt[-5:]
 
-        def _clean_resp(resp, available):
+        def _cleanResp(resp, available):
             if resp is None:
                 return list(available)
             if isinstance(resp, str):
@@ -681,24 +681,24 @@ class SensitivityReader(BaseReader):
             raise SerpentToolsException(
                 "Expected covariance data selector string."
             )
-        data_key = data.strip().lower()
-        if data_key == "uncertainty":
-            response_map = self.covarianceUncertainty
-        elif data_key == "variance":
-            response_map = self.covarianceVariance
+        dataKey = data.strip().lower()
+        if dataKey == "uncertainty":
+            responseMap = self.covarianceUncertainty
+        elif dataKey == "variance":
+            responseMap = self.covarianceVariance
         else:
             raise SerpentToolsException(
                 "Unknown covariance data selection {}. Expected "
                 "'uncertainty' or 'variance'.".format(data)
             )
-        response_items = [
-            (name, response_map[name])
-            for name in _clean_resp(resp, response_map.keys())
+        responseItems = [
+            (name, responseMap[name])
+            for name in _cleanResp(resp, responseMap.keys())
         ]
 
         if labelFmt is None:
             labelFmt = "{z1} {m1}, {z2} {m2}"
-            if len(response_items) > 1:
+            if len(responseItems) > 1:
                 labelFmt = "{r}: " + labelFmt
 
         if isinstance(zai, (str, int)):
@@ -706,13 +706,13 @@ class SensitivityReader(BaseReader):
         if isinstance(mt, (str, int)):
             mt = [mt]
 
-        zai_filter = None
+        zaiFilter = None
         if zai is not None:
-            zai_filter = {str(item).strip() for item in zai}
+            zaiFilter = {str(item).strip() for item in zai}
 
-        mt_filter = None
+        mtFilter = None
         if mt is not None:
-            mt_filter = {str(item).strip().lstrip("0") or "0" for item in mt}
+            mtFilter = {str(item).strip().lstrip("0") or "0" for item in mt}
 
         if ax is None:
             if figsize is not None or dpi is not None:
@@ -730,58 +730,60 @@ class SensitivityReader(BaseReader):
         errors = []
         labels = []
 
-        for response_name, response_data in response_items:
-            for key, (value, rel_unc) in response_data.items():
+        for responseName, responseData in responseItems:
+            for key, (value, relUnc) in responseData.items():
                 if key == "total":
-                    if zai_filter or mt_filter:
+                    if zaiFilter or mtFilter:
                         continue
-                    resp_prefix = "{} ".format(response_name) if response_name else ""
-                    label = "{}total".format(resp_prefix).strip()
+                    respPrefix = (
+                        "{} ".format(responseName) if responseName else ""
+                    )
+                    label = "{}total".format(respPrefix).strip()
                 else:
                     entries = key.split()
                     parsed = []
                     for entry in entries:
-                        zai_entry, mt_entry = _split_zaimt(entry)
-                        mt_clean = mt_entry.lstrip("0") or "0"
+                        zaiEntry, mtEntry = _splitZaimt(entry)
+                        mtClean = mtEntry.lstrip("0") or "0"
                         parsed.append(
-                            (zai_entry, mt_clean, decode_mts(entry))
+                            (zaiEntry, mtClean, decodeMts(entry))
                         )
 
-                    if zai_filter or mt_filter:
-                        for zai_entry, mt_entry, _ in parsed:
-                            if zai_filter and zai_entry not in zai_filter:
+                    if zaiFilter or mtFilter:
+                        for zaiEntry, mtEntry, _ in parsed:
+                            if zaiFilter and zaiEntry not in zaiFilter:
                                 continue
-                            if mt_filter and mt_entry not in mt_filter:
+                            if mtFilter and mtEntry not in mtFilter:
                                 continue
                             break
                         else:
                             continue
 
-                    zai_labels = [
-                        decodeZai(zai_entry) for zai_entry, _, _ in parsed
+                    zaiLabels = [
+                        decodeZai(zaiEntry) for zaiEntry, _, _ in parsed
                     ]
-                    entry_labels = [
-                        "{}\n{}".format(zai_label, mt_label)
-                        for zai_label, (_, _, mt_label) in zip(
-                            zai_labels, parsed
+                    entryLabels = [
+                        "{}\n{}".format(zaiLabel, mtLabel)
+                        for zaiLabel, (_, _, mtLabel) in zip(
+                            zaiLabels, parsed
                         )
                     ]
-                    if len(entry_labels) == 1:
-                        entry_labels = [entry_labels[0], entry_labels[0]]
+                    if len(entryLabels) == 1:
+                        entryLabels = [entryLabels[0], entryLabels[0]]
                         parsed = [parsed[0], parsed[0]]
-                        zai_labels = [zai_labels[0], zai_labels[0]]
+                        zaiLabels = [zaiLabels[0], zaiLabels[0]]
 
                     label = labelFmt.format(
-                        r=response_name or "",
+                        r=responseName or "",
                         zaimt=key,
-                        labels=entry_labels,
+                        labels=entryLabels,
                         zais=[z for z, _, _ in parsed],
-                        zaiLabels=zai_labels,
+                        zaiLabels=zaiLabels,
                         mts=[m for _, m, _ in parsed],
                         mtLabels=[r for _, _, r in parsed],
-                        z1=zai_labels[0],
+                        z1=zaiLabels[0],
                         m1=parsed[0][2],
-                        z2=zai_labels[1],
+                        z2=zaiLabels[1],
                         m2=parsed[1][2],
                         z1Raw=parsed[0][0],
                         z2Raw=parsed[1][0],
@@ -789,7 +791,7 @@ class SensitivityReader(BaseReader):
 
                 values.append(value)
                 errors.append(
-                    fabs(value) * fabs(rel_unc) * sigma if sigma else 0.0
+                    fabs(value) * fabs(relUnc) * sigma if sigma else 0.0
                 )
                 labels.append(label)
 
@@ -798,36 +800,36 @@ class SensitivityReader(BaseReader):
                 "No covariance data matched the provided filters."
             )
 
-        axis_vals = list(range(len(values)))
-        err_vals = errors if sigma else None
-        if fixed_axis:
-            ax.barh(axis_vals, values, xerr=err_vals)
-            ax.set_yticks(axis_vals)
+        axisVals = list(range(len(values)))
+        errVals = errors if sigma else None
+        if fixedAxis:
+            ax.barh(axisVals, values, xerr=errVals)
+            ax.set_yticks(axisVals)
             ax.set_yticklabels(labels)
             ax.tick_params(axis="y", pad=10)
         else:
-            ax.bar(axis_vals, values, yerr=err_vals)
-            ax.set_xticks(axis_vals)
+            ax.bar(axisVals, values, yerr=errVals)
+            ax.set_xticks(axisVals)
             ax.set_xticklabels(labels, rotation=60, ha="right")
             ax.tick_params(axis="x", pad=10)
 
-        if data_key == "variance":
-            value_label = "Variance"
-        elif data_key == "uncertainty":
-            value_label = "Propagated Uncertainty"
+        if dataKey == "variance":
+            valueLabel = "Variance"
+        elif dataKey == "uncertainty":
+            valueLabel = "Propagated Uncertainty"
         else:
-            value_label = "Covariance Data"
+            valueLabel = "Covariance Data"
 
-        if fixed_axis:
+        if fixedAxis:
             if xlabel is None:
-                xlabel = value_label
+                xlabel = valueLabel
             if ylabel is None:
                 ylabel = "ZAIMT"
         else:
             if xlabel is None:
                 xlabel = "ZAIMT"
             if ylabel is None:
-                ylabel = value_label
+                ylabel = valueLabel
 
         if title is None and resp is None:
             title = f"{ylabel} in response: All "
@@ -837,8 +839,8 @@ class SensitivityReader(BaseReader):
         ax = formatPlot(
             ax,
             loglog=False,
-            logx=logy if fixed_axis else False,
-            logy=False if fixed_axis else logy,
+            logx=logy if fixedAxis else False,
+            logy=False if fixedAxis else logy,
             legendcols=ncol,
             legend=legend,
             xlabel=xlabel,
