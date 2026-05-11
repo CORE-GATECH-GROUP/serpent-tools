@@ -692,7 +692,7 @@ class SensitivityReader(BaseReader):
         return labelFmt.format(
             r=responseName or "",
             zaimt=key,
-            labels=entryLabels,
+            entryLabels=entryLabels,
             zais=[z for z, _, _ in parsed],
             zaiLabels=zaiLabels,
             mts=[m for _, m, _ in parsed],
@@ -860,7 +860,7 @@ class SensitivityReader(BaseReader):
                 {zaiLabels} - decoded ZAI labels list
                 {mts} - MT list
                 {mtLabels} - MT labels list
-                {labels} - preformatted "ZAI MT" labels list
+                {entryLabels} - preformatted "ZAI MT" labels list
                 {zaimt} - raw ZAIMT block string
 
         fixedAxis : bool, optional
