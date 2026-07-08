@@ -2,8 +2,9 @@
 from collections import OrderedDict
 from numbers import Real
 import re
+import warnings
 
-from numpy import array, empty, asarray
+from numpy import array, empty, asarray, object_ as np_object
 from cycler import cycler
 from matplotlib import rcParams
 from matplotlib.pyplot import gca
@@ -155,18 +156,26 @@ class ListOfArrays(list):
     ----------
     A : numpy.ndarray
         Array where each row ``A[i]`` is the ``i``-th row or
-        sub-array that was appended
+        sub-array that was appended.  If rows have inconsistent shapes
+        (e.g. Serpent 2.2.3+ mixes vector and scalar ``BURN_STEP``
+        entries for burnup and decay steps), this returns an object array.
     """
 
     def __init__(self, values=None):
         super().__init__()
         self._shape = None
         self._dtype = None
+        self._ragged = False
         if values is not None:
             self.append(values)
 
     @property
     def A(self):
+        if self._ragged:
+            out = empty(len(self), dtype=np_object)
+            for i, v in enumerate(self):
+                out[i] = v
+            return out
         return array(self)
 
     def append(self, value):
@@ -177,18 +186,28 @@ class ListOfArrays(list):
         value : numpy.ndarray or array-like
             Some object that can be coerced to a numpy.ndarray.
             Must have same shape and data type (e.g. float) as
-            previously appended rows
+            previously appended rows.  If shapes disagree (e.g. Serpent
+            2.2.3+ ``BURN_STEP`` mixes a 3-element vector for burnup
+            steps with a scalar for decay steps), a ``UserWarning`` is
+            issued and the list switches to ragged (object) mode.
 
         """
         value = asarray(value)
         if not self:
             self._shape = value.shape
             self._dtype = value.dtype
-        elif self._shape != value.shape:
-            raise ValueError(
-                "Shapes do not agree: Current {} vs. incoming {}".format(
-                    self._shape, value.shape))
-        elif self._dtype != value.dtype:
+        elif not self._ragged and self._shape != value.shape:
+            warnings.warn(
+                "Shapes do not agree: Current {} vs. incoming {}. "
+                "This can occur when Serpent 2.2.3+ mixes vector and scalar "
+                "forms for a variable (e.g. BURN_STEP). "
+                "Switching to ragged (object) storage.".format(
+                    self._shape, value.shape),
+                UserWarning,
+                stacklevel=3,
+            )
+            self._ragged = True
+        elif not self._ragged and self._dtype != value.dtype:
             raise TypeError(
                 "Types do not agree: Current {} vs. incoming {}".format(
                     self._dtype, value.dtype))

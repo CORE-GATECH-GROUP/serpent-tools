@@ -123,3 +123,48 @@ def test_nowarns_220(fake220File: str, logInterceptor: LoggerMixin):
         rc["serpentVersion"] = "2.2.0"
         serpentTools.read(fake220File, "results")
     assert not logInterceptor.handler.logMessages
+
+
+# --- Tests for ListOfArrays ragged handling (issue #537) ---
+
+import warnings as _warnings
+import numpy as _np
+from serpentTools.parsers.results import ListOfArrays
+
+
+def test_list_of_arrays_consistent_shapes():
+    """Consistent shapes produce a stacked 2D numpy array."""
+    loa = ListOfArrays(_np.array([0.0, 1.0, 0.0]))
+    loa.append(_np.array([0.0, 2.0, 0.0]))
+    assert not loa._ragged
+    assert loa.A.shape == (2, 3)
+
+
+def test_list_of_arrays_ragged_warns_and_stores():
+    """Mixed shapes (e.g. Serpent 2.2.3 BURN_STEP) issue a UserWarning
+    and switch to object-dtype storage instead of raising ValueError."""
+    loa = ListOfArrays(_np.array([0.0, 1.0, 0.0]))  # (3,) burnup step
+    with _warnings.catch_warnings(record=True) as w:
+        _warnings.simplefilter("always")
+        loa.append(_np.array([19.0]))  # (1,) decay step
+    assert len(w) == 1
+    assert issubclass(w[0].category, UserWarning)
+    assert "Serpent 2.2.3+" in str(w[0].message)
+    assert loa._ragged
+    A = loa.A
+    assert A.dtype == object
+    assert A.shape == (2,)
+    assert _np.array_equal(A[0], _np.array([0.0, 1.0, 0.0]))
+    assert _np.array_equal(A[1], _np.array([19.0]))
+
+
+def test_list_of_arrays_ragged_no_extra_warning():
+    """Once in ragged mode, subsequent appends do not emit additional warnings."""
+    loa = ListOfArrays(_np.array([0.0, 1.0, 0.0]))
+    with _warnings.catch_warnings(record=True):
+        _warnings.simplefilter("always")
+        loa.append(_np.array([19.0]))  # triggers ragged mode
+    with _warnings.catch_warnings(record=True) as w:
+        _warnings.simplefilter("always")
+        loa.append(_np.array([1.0, 0.0, 0.0]))  # no extra warning
+    assert len(w) == 0
