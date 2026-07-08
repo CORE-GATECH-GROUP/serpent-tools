@@ -324,3 +324,30 @@ class SparseReadDepmtxFuncTester(ReadDepmtxFuncTesterBase, DenseTesterMixin):
 
 
 del DepmtxTestHelper, DepmtxReaderTesterBase, ReadDepmtxFuncTesterBase
+
+
+def test_depmtx_extra_header_lines(tmp_path):
+    """Serpent 2.2.3 with ``set depmtx 1`` emits extra scalar/declaration
+    lines (e.g. ``flx = 2;``, ``N0 = zeros(n, 1);``) immediately after the
+    time header and before the N0 isotope data.  The reader must skip these
+    and still parse the file correctly.  Regression test for issue #533.
+    """
+    ref_text = open(TEST_FILE).read()
+    # Insert extra lines after the first line (t = ...)
+    first_line, rest = ref_text.split('\n', 1)
+    extra = 'flx =  2;\nN0 = zeros(74, 1);\n'
+    modified_text = first_line + '\n' + extra + rest
+
+    modified_file = tmp_path / "depmtx_extra.m"
+    modified_file.write_text(modified_text)
+
+    reader_ref = DepmtxReader(TEST_FILE, sparse=False)
+    reader_ref.read()
+
+    reader_mod = DepmtxReader(str(modified_file), sparse=False)
+    reader_mod.read()
+
+    assert_array_equal(reader_mod.n0, reader_ref.n0)
+    assert_array_equal(reader_mod.n1, reader_ref.n1)
+    assert_array_equal(reader_mod.zai, reader_ref.zai)
+    assert reader_mod.deltaT == reader_ref.deltaT

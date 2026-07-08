@@ -94,7 +94,12 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
             self.deltaT = float(line.split()[-1][:-1])
 
             # process initial isotopics
+            # Serpent 2.2.3+ with ``set depmtx 1`` emits extra scalar lines
+            # (e.g. ``flx = 2;``, ``N0 = zeros(n, 1);``) between the time
+            # header and the first isotope entry. Advance past them.
             line = stream.readline()
+            while line and not NDENS_REGEX.search(line):
+                line = stream.readline()
             match = self._getMatch(line, NDENS_REGEX, 'n0 vector')
             line = _parseIsoBlock(stream, tempN0, match, line, NDENS_REGEX)
             numIso = len(tempN0)
