@@ -3,7 +3,7 @@ from collections import OrderedDict
 from numbers import Real
 import re
 
-from numpy import array, empty, asarray
+from numpy import array, empty, asarray, ndarray
 from cycler import cycler
 from matplotlib import rcParams
 from matplotlib.pyplot import gca
@@ -714,7 +714,13 @@ class ResultsReader(XSReader):
         for converter, keys in METADATA_CONV.items():
             for key in keys:
                 if key in origKeys:
-                    mdata[key] = converter(mdata[key])
+                    value = mdata[key]
+                    # Serpent scalar metadata is parsed into size-1 arrays.
+                    # NumPy 2.0 removed implicit scalar conversion of non
+                    # 0-d arrays, so unwrap size-1 arrays before converting.
+                    if isinstance(value, ndarray) and value.size == 1:
+                        value = value.item()
+                    mdata[key] = converter(value)
                     origKeys.remove(key)
 
     @magicPlotDocDecorator

@@ -124,12 +124,12 @@ class MicroXSReader(BaseReader):
         fissProd, indYield, cumYield = [], [], []
         currVar = FIRST_WORD_REGEX.search(chunk[0]).group()  # NFY_902270_1
         # Obtain the parent ID: AAZZZ0/1, e.g., 922350
-        parentFY = int(str2vec(currVar.split('_')[-2]))
+        parentFY = int(str2vec(currVar.split('_')[-2]).item())
         if 'E' in currVar.split('_')[-1]:  # e.g., NFY_902270_1E
             sclVal = SCALAR_REGEX.search(chunk[0])
             # energy must be stored on the reader
             self._energyFY = float(str2vec(
-                chunk[0][sclVal.span()[0] + 1:sclVal.span()[1] - 2]))
+                chunk[0][sclVal.span()[0] + 1:sclVal.span()[1] - 2]).item())
             return  # thermal/epi/fast
         for tline in chunk:
             if '[' in tline or ']' in tline:
@@ -245,8 +245,8 @@ class MicroXSReader(BaseReader):
         IndYield = self.nfy[(parent, energy)]['indYield']
         CumYield = self.nfy[(parent, energy)]['cumYield']
         if daughter in FP:
-            return (float(IndYield[FP == daughter]),
-                    float(CumYield[FP == daughter]))
+            return (float(IndYield[FP == daughter].item()),
+                    float(CumYield[FP == daughter].item()))
         raise SerpentToolsException(
             "There is no fission product {0} for parent {1} at energy {2} in "
             "{3}".format(daughter, parent, energy, self.filePath))
