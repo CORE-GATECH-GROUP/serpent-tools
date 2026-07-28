@@ -40,7 +40,16 @@ dependencies = [
 
 [project.optional-dependencies]
 extras = ["pandas>1", "scipy>1.0"]
-test = ["pytest>=8", "pytest-cov", "coverage"]
+test = [
+    "pytest>=8",
+    "pytest-cov",
+    "coverage",
+    # Pin matplotlib so image-comparison baselines stay in sync with the
+    # renderer. Baselines in tests/plots/result_images were generated with
+    # this exact version. Bump the pin and regenerate together
+    # (pytest tests/plots --update). See #541
+    "matplotlib==3.9.4",
+]
 ci = ["jupyter"]
 
 [tool.setuptools]
