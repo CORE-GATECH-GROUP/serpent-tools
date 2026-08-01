@@ -40,7 +40,8 @@ dependencies = [
 
 [project.optional-dependencies]
 extras = ["pandas>1", "scipy>1.0"]
-test = ["pytest>=8", "pytest-cov", "coverage"]
+# pin matplotlib so we have consistent images in testing
+test = ["pytest>=8", "pytest-cov", "coverage", "matplotlib~=3.10"]
 ci = ["jupyter"]
 
 [tool.setuptools]
