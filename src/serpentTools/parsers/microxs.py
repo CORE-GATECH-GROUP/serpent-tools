@@ -241,11 +241,11 @@ class MicroXSReader(BaseReader):
                                         "{1} in {2}".format(parent, energy,
                                                             self.filePath))
         FP = self.nfy[(parent, energy)]['fissProd']
-        IndYield = self.nfy[(parent, energy)]['indYield']
-        CumYield = self.nfy[(parent, energy)]['cumYield']
+        indYield = self.nfy[(parent, energy)]['indYield']
+        cumYield = self.nfy[(parent, energy)]['cumYield']
         if daughter in FP:
-            return (float(IndYield[FP == daughter]),
-                    float(CumYield[FP == daughter]))
+            return (float(indYield[FP == daughter].item()),
+                    float(cumYield[FP == daughter].item()))
         raise SerpentToolsException(
             "There is no fission product {0} for parent {1} at energy {2} in "
             "{3}".format(daughter, parent, energy, self.filePath))
