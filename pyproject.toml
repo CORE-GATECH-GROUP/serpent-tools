@@ -26,8 +26,8 @@ classifiers = [
 ]
 license = {file = "LICENSE"}
 dependencies = [
-    "numpy>=1.16.0",
-    "matplotlib>=2.2.3,!=3.3.4",
+    "numpy>=2,<3",
+    "matplotlib",
     "pyyaml>=5.1.1",
 ]
 
