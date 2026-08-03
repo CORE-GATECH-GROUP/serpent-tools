@@ -374,7 +374,7 @@ class SparseOptionalPreambleTester(
     def tearDownClass(cls):
         try:
             cls._tmp.close()
-            os.remove(cls._tmp)
+            os.remove(cls._tmp.name)
         except Exception:
             pass
 
@@ -407,8 +407,12 @@ class SparseOptionalPreambleTester(
         self.assertAlmostEqual(zai[0], 922350)  # ZAI( 1)
 
     def test_sparse_indptr_invariants(self):
-        """Verify that trailing all-zero columns in a depmtx file are handled
-        correctly when constructing sparse CSC matrix.
+        """Verify the CSC indptr does not advance for trailing zero columns
+
+        Columns 3 and 4 of this fixture never appear in the file's ``A``
+        matrix entries, so the ``indptr`` pointer for those columns must
+        stay flat (``indptr[2] == indptr[3] == indptr[4]``) rather than
+        advancing, while still reporting a length of ``nCols + 1``.
         """
         if not self.USE_SPARSE:
             self.skipTest("Dense run: indptr not present")
