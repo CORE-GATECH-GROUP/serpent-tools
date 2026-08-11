@@ -32,8 +32,8 @@ Bug Reports
 -----------
 
 The more information given, the quicker we can reproduce and hopefully
-resolve the issue. Please see the 
-`issue template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/issue_template.rst>`_ for a template that
+resolve the issue. Please see the
+`issue template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/main/.github/issue_template.rst>`_ for a template that
 should be used for reporting bugs.
 One of the developers will add a
 `bug label <https://github.com/CORE-GATECH-GROUP/serpent-tools/labels/bug>`_
@@ -56,8 +56,8 @@ and proceed accordingly.
 Pull Requests
 =============
 
-Pull requests are how we review, approve, and incorporate changes into
-the ``develop`` and ``master`` branches. If you have code you want to
+Pull requests are how we review, approve, and incorporate changes into the
+``main`` branch. If you have code you want to
 contribute, please look at the content in the ``Developer's Guide``
 section of the manual.
 
@@ -65,3 +65,21 @@ When your content is ready for the pull request, follow
 the 'pull request template <https://github.com/CORE-GATECH-GROUP/serpent-tools/blob/master/.github/pull_request_template.rst>'_ and make a request!
 Someone of the core development team will review the changes according
 to the criteria above and make changes and/or approve for merging!
+
+
+Generative AI
+=============
+
+It is the desire of this project to not include contributions drafted in whole or in part
+by "Generative AI" or "Large Language Models" or "Code Agents" or similar.
+Under the assumption PRs and Issues are created in good faith, the maintainers may ask for
+necessary context and information, perform code review and try to form a shared understanding of
+what is presented.
+Understanding that people are at various stages of their software development journey, have different
+communication preferences and skills, etc. That's perfectly good and fine.
+Please consider maintainer burden and the desire of this project prior to consulting these tools.
+
+However, this is not an opportunity to off-load thinking and development to the reviewer.
+Low-quality PRs and Issues that do not seem to be acting in good faith with the intent of this
+project may be closed.
+Spammers and frequent violators may be blocked or banned from the project.
