@@ -171,12 +171,7 @@ class ListOfArrays(list):
 
     @property
     def A(self):
-        if self._ragged:
-            out = empty(len(self), dtype=np_object)
-            for i, v in enumerate(self):
-                out[i] = v
-            return out
-        return array(self)
+        return array(self, dtype=self._dtype)
 
     def append(self, value):
         """Append a row into the final array
@@ -207,6 +202,7 @@ class ListOfArrays(list):
                 stacklevel=3,
             )
             self._ragged = True
+            self._dtype = np_object
         elif not self._ragged and self._dtype != value.dtype:
             raise TypeError(
                 "Types do not agree: Current {} vs. incoming {}".format(
