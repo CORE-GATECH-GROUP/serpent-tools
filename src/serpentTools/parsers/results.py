@@ -714,7 +714,7 @@ class ResultsReader(XSReader):
         for converter, keys in METADATA_CONV.items():
             for key in keys:
                 if key in origKeys:
-                    mdata[key] = converter(mdata[key])
+                    mdata[key] = converter(mdata[key].item())
                     origKeys.remove(key)
 
     @magicPlotDocDecorator
