@@ -1,5 +1,9 @@
 from unittest import TestCase
+import os
+import tempfile
+import textwrap
 
+import numpy as np
 from numpy import array, longdouble, subtract, matrix
 from numpy.testing import assert_array_equal
 
@@ -324,3 +328,111 @@ class SparseReadDepmtxFuncTester(ReadDepmtxFuncTesterBase, DenseTesterMixin):
 
 
 del DepmtxTestHelper, DepmtxReaderTesterBase, ReadDepmtxFuncTesterBase
+
+
+class SparseOptionalPreambleTester(
+    TestCase,
+    SparseTesterMixin,
+):
+    """Tests sparse reader with optional flx & zeros preambles present."""
+    USE_SPARSE = True
+
+    @classmethod
+    def setUpClass(cls):
+        # Small synthetic case: 4x4 with trailing all-zero cols (3 & 4)
+        content = textwrap.dedent(
+            """\
+            t = 4.320000000000000000000000000000E+04;
+            flx =  1.000000008E+10;
+            N0 = zeros(4, 1);
+            N0( 1, 1) = 1.0E-3;
+            ZAI = zeros(4, 1);
+            ZAI(  1) = 922350;
+            A = zeros(4, 4);
+            A( 1, 1) =  1.0;
+            A( 2, 1) = -1.0;
+            A( 2, 2) =  2.0;
+            A( 3, 2) = -2.0;
+            N1 = zeros(4, 1);
+            N1( 1, 1) = 2.0E-3;
+            """
+        )
+        cls._tmp = tempfile.NamedTemporaryFile(
+            mode="w",
+            suffix=".m",
+            prefix="depmtx_optional_",
+            delete=False,
+        )
+        cls._tmp.write(content)
+        cls._tmp.flush()
+        cls._tmp.seek(0)
+
+        cls.reader = DepmtxReader(cls._tmp.name, cls.USE_SPARSE)
+        cls.reader.read()
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            cls._tmp.close()
+            os.remove(cls._tmp.name)
+        except Exception:
+            pass
+
+    def test_matrix_shape(self):
+        self.assertEqual(self.reader.depmtx.shape, (4, 4))
+
+    def test_vectors_and_flux_present(self):
+        # sizes align with declared zeros(4,1)
+        self.assertEqual(self.reader.n0.shape, (4,))
+        self.assertEqual(self.reader.n1.shape, (4,))
+        self.assertEqual(self.reader.zai.shape, (4,))
+        # optional flux captured
+        self.assertIsNotNone(self.reader.flux)
+
+    def test_values_subset(self):
+        # Quick spot-check of a few filled entries
+        A = (
+            self.reader.depmtx.toarray()
+            if hasattr(self.reader.depmtx, "toarray")
+            else self.reader.depmtx)
+        self.assertAlmostEqual(A[0, 0], 1.0)   # A(1,1)
+        self.assertAlmostEqual(A[1, 0], -1.0)  # A(2,1)
+        self.assertAlmostEqual(A[1, 1], 2.0)   # A(2,2)
+        self.assertAlmostEqual(A[2, 1], -2.0)  # A(3,2)
+
+        flux = self.reader.flux
+        self.assertAlmostEqual(flux, 1.000000008E+10)
+
+        zai = self.reader.zai
+        self.assertAlmostEqual(zai[0], 922350)  # ZAI( 1)
+
+    def test_sparse_indptr_invariants(self):
+        """Verify the CSC indptr does not advance for trailing zero columns
+
+        Columns 3 and 4 of this fixture never appear in the file's ``A``
+        matrix entries, so the ``indptr`` pointer for those columns must
+        stay flat (``indptr[2] == indptr[3] == indptr[4]``) rather than
+        advancing, while still reporting a length of ``nCols + 1``.
+        """
+        if not self.USE_SPARSE:
+            self.skipTest("Dense run: indptr not present")
+        indptr = self.reader.depmtx.indptr
+        # len(indptr) == nCols + 1, even with trailing zero columns
+        self.assertEqual(indptr.shape[0], 5)
+        # columns 3 & 4 are empty -> pointer doesn't advance
+        self.assertEqual(indptr[2], indptr[3])
+        self.assertEqual(indptr[3], indptr[4])
+        # monotonic non-decreasing
+        self.assertTrue(np.all(indptr[:-1] <= indptr[1:]))
+
+
+class DenseOptionalPreambleTester(
+    SparseOptionalPreambleTester,
+    DenseTesterMixin,
+):
+    """Tests dense reader with optional flx & zeros preambles present."""
+    USE_SPARSE = False
+
+    def test_sparse_indptr_invariants(self):
+        # Dense depmtx is a numpy array; CSC indptr does not apply here.
+        pass
