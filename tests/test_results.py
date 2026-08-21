@@ -1,5 +1,6 @@
 import re
 import os
+import warnings
 from os.path import join as pjoin
 from tempfile import TemporaryDirectory
 from pathlib import Path
@@ -7,6 +8,7 @@ from pathlib import Path
 import numpy
 import pytest
 import serpentTools
+from serpentTools.parsers.results import ListOfArrays
 
 from . import LoggerMixin
 
@@ -123,3 +125,44 @@ def test_nowarns_220(fake220File: str, logInterceptor: LoggerMixin):
         rc["serpentVersion"] = "2.2.0"
         serpentTools.read(fake220File, "results")
     assert not logInterceptor.handler.logMessages
+
+
+# --- Tests for ListOfArrays ragged handling (issue #537) ---
+
+
+def test_list_of_arrays_consistent_shapes():
+    """Consistent shapes produce a stacked 2D numpy array."""
+    loa = ListOfArrays(numpy.array([0.0, 1.0, 0.0]))
+    loa.append(numpy.array([0.0, 2.0, 0.0]))
+    assert not loa._ragged
+    assert loa.A.shape == (2, 3)
+
+
+def test_list_of_arrays_ragged_warns_and_stores():
+    """Mixed shapes (e.g. Serpent 2.2.3 BURN_STEP) issue a UserWarning
+    and switch to object-dtype storage instead of raising ValueError."""
+    loa = ListOfArrays(numpy.array([0.0, 1.0, 0.0]))  # (3,) burnup step
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        loa.append(numpy.array([19.0]))  # (1,) decay step
+    assert len(w) == 1
+    assert issubclass(w[0].category, UserWarning)
+    assert "Serpent 2.2.3+" in str(w[0].message)
+    assert loa._ragged
+    A = loa.A
+    assert A.dtype == object
+    assert A.shape == (2,)
+    numpy.testing.assert_array_equal(A[0], numpy.array([0.0, 1.0, 0.0]))
+    numpy.testing.assert_array_equal(A[1], numpy.array([19.0]))
+
+
+def test_list_of_arrays_ragged_no_extra_warning():
+    """Once in ragged mode, later appends do not emit more warnings."""
+    loa = ListOfArrays(numpy.array([0.0, 1.0, 0.0]))
+    with warnings.catch_warnings(record=True):
+        warnings.simplefilter("always")
+        loa.append(numpy.array([19.0]))  # triggers ragged mode
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        loa.append(numpy.array([1.0, 0.0, 0.0]))  # no extra warning
+    assert len(w) == 0

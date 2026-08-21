@@ -1,9 +1,9 @@
-"""
+﻿"""
 Improved processing of depletion matrix files
 """
 import re
 
-from numpy import empty, empty_like, longdouble, zeros
+from numpy import empty_like, longdouble, zeros, concatenate, full
 
 from serpentTools.parsers.base import BaseReader, SparseReaderMixin
 from serpentTools.messages import SerpentToolsException
@@ -17,6 +17,19 @@ ZAI_REGEX = re.compile(r'ZAI\(\s*(\d+)\).*=\s+(-?\d+)')
 DEPMTX_REGEX = re.compile(r'A\(\s*(\d+),\s*(\d+)\)\s+=\s+([\dE\.\+-]+)')
 # matches row and column index, as well as value
 SIZE_REGEX = re.compile(r'A\s+=\s+zeros\((\d+),\s+(\d+)\)')
+# optional normalizing flux
+FLX_REGEX = re.compile(
+    r'flx\s*=\s*([\d\.E\+\-]+);?',
+    re.I
+)
+N_INIT_REGEX = re.compile(
+    r'N[01]\s*=\s*zeros\(\s*(\d+)\s*,\s*1\s*\)\s*;?',
+    re.I
+)
+ZAI_INIT_REGEX = re.compile(
+    r'ZAI\s*=\s*zeros\(\s*(\d+)\s*,\s*1\s*\)\s*;?',
+    re.I
+)
 
 
 DENS_PLOT_WHAT_VALS = [
@@ -54,12 +67,15 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
         :class:`numpy.ndarray`
     n1: :class:`numpy.ndarray`
         Vector for isotopics after depletion
+    flux: float
+        Normalization factor present when normalizing with power or flux
     """
 
     def __init__(self, filePath, sparse=None):
         BaseReader.__init__(self, filePath, 'depmtx')
         SparseReaderMixin.__init__(self, sparse)
         self.deltaT = None
+        self.flux = None
         self.n0 = None
         self.n1 = None
         self.zai = None
@@ -95,16 +111,30 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
 
             # process initial isotopics
             line = stream.readline()
+            flxMatch = FLX_REGEX.search(line)
+            if flxMatch:
+                self.flux = float(flxMatch.group(1))
+                line = stream.readline()
+            # Optional: "N0 = zeros(N, 1);" preamble
+            nDeclared = None
+            m0 = N_INIT_REGEX.search(line)
+            if m0:
+                nDeclared = int(m0.group(1))
+                line = stream.readline()
             match = self._getMatch(line, NDENS_REGEX, 'n0 vector')
             line = _parseIsoBlock(stream, tempN0, match, line, NDENS_REGEX)
-            numIso = len(tempN0)
-            self.n0 = empty(numIso, dtype=longdouble)
-            for index in range(numIso):
-                self.n0[index] = tempN0.pop(index)
+            numIso = nDeclared if nDeclared is not None else len(tempN0)
+            self.n0 = zeros(numIso, dtype=longdouble)
+            for index, val in sorted(tempN0.items()):
+                self.n0[index] = val
 
             self.n1 = empty_like(self.n0)
             self.zai = empty_like(self.n0, dtype=int)
 
+            # Optional: "ZAI = zeros(N, 1);" preamble
+            mZ = ZAI_INIT_REGEX.search(line)
+            if mZ:
+                line = stream.readline()
             match = self._getMatch(line, ZAI_REGEX, 'zai vector')
             line = _parseIsoBlock(stream, self.zai, match, line, ZAI_REGEX)
 
@@ -116,6 +146,10 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
             else:
                 line = self.__processDenseMatrix(stream, matrixSize)
 
+            # Optional: "N1 = zeros(N, 1);" preamble
+            m1 = N_INIT_REGEX.search(line)
+            if m1:
+                line = stream.readline()
             match = self._getMatch(line, NDENS_REGEX, 'n1 vector')
             _parseIsoBlock(stream, self.n1, match, line, NDENS_REGEX)
 
@@ -138,9 +172,28 @@ class DepmtxReader(BaseReader, SparseReaderMixin):
         cscProcessor = CSCStreamProcessor(
             stream, DEPMTX_REGEX, longdouble)
         line = cscProcessor.process()
+        # Pad column pointer if file omits trailing all-zero columns
+        _, nCols = matrixSize
+        indptr = cscProcessor.indptr
+        expected = nCols + 1
+        if indptr.shape[0] < expected:
+            pad = expected - indptr.shape[0]
+            indptr = concatenate(
+                [indptr,
+                 full(pad, indptr[-1],
+                      dtype=indptr.dtype)]
+            )
+        elif indptr.shape[0] > expected:
+            raise ValueError(
+                f"index pointer size ({indptr.shape[0]}) "
+                f"should be ({expected})"
+            )
+        data = cscProcessor.data
+        if data.ndim == 2:
+            data = data[:, 0]
         self.depmtx = csc_matrix(
-            (cscProcessor.data[:, 0], cscProcessor.indices,
-             cscProcessor.indptr), dtype=longdouble, shape=matrixSize)
+            (data, cscProcessor.indices, indptr),
+            dtype=longdouble, shape=matrixSize)
 
         return line
 
