@@ -27,20 +27,6 @@ jobs:
             dist/*whl
             dist/*tar.gz
 
-  upload_pypi:
-    name: Upload to pypi
-    needs: [build_pkg]
-    runs-on: ubuntu-latest
-    environment: pypi # important to align w/ trusted publishing
-    if: github.event_name == 'release' && github.event.action == 'published'
-    steps:
-      - uses: actions/download-artifact@v8
-        with:
-          pattern: st-pkg* # make sure this is synced with upload name
-          path: dist
-
-      - uses: pypa/gh-action-pypi-publish@release/v1
-
   update_release:
     name: Update release notes
     needs: [build_pkg]
