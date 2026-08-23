@@ -28,6 +28,7 @@ jobs:
             dist/*tar.gz
 
   upload_pypi:
+    name: Upload to pypi
     needs: [build_pkg]
     runs-on: ubuntu-latest
     environment: pypi # important to align w/ trusted publishing
@@ -37,6 +38,8 @@ jobs:
         with:
           pattern: st-pkg* # make sure this is synced with upload name
           path: dist
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
 
   update_release:
     needs: [build_pkg]
