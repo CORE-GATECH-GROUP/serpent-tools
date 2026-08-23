@@ -1,10 +1,6 @@
 name: Release
 
 on:
-  # empty to avoid triggering this **except** for releases
-  workflow_dispatch:
-  pull_request:
-  push:
   release:
     types:
       - published # any time a release or pre-release is created
