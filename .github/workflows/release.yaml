@@ -42,6 +42,7 @@ jobs:
       - uses: pypa/gh-action-pypi-publish@release/v1
 
   update_release:
+    name: Update release notes
     needs: [build_pkg]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
