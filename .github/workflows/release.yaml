@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  # empty to avoid triggering this **except** for releases
+  workflow_dispatch:
+  pull_request:
+  push:
+  release:
+    types:
+      - published # any time a release or pre-release is created
+
+jobs:
+  build_pkg:
+    name: Build wheels
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Build package
+        run: pipx run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: st-pkg # make sure this is synced with download pattern
+          # Grab wheel and tarball (sdist) from dist
+          path: |
+            dist/*whl
+            dist/*tar.gz
+
+  upload_pypi:
+    needs: [build_pkg]
+    runs-on: ubuntu-latest
+    environment: pypi # important to align w/ trusted publishing
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: st-pkg* # make sure this is synced with upload name
+          path: dist
+
+  update_release:
+    needs: [build_pkg]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: st-pkg* # make sure this is synced with upload name
+          path: dist
+      - name: add artifacts to release
+        # use a specific hash, to be updated periodically, since this is not a GitHub vendored action
+        uses: softprops/action-gh-release@e5ee6bc58a36b838b92fc1217f2e4b414b5abcc8
+        with:
+          generate_release_notes: true
+          append_body: true
+          files: |
+            dist/*
