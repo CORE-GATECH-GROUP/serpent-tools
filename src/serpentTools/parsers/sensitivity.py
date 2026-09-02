@@ -5,12 +5,15 @@ from collections import OrderedDict
 from itertools import product
 
 from numpy import transpose, hstack, fabs
+from matplotlib import pyplot
 from matplotlib.pyplot import gca
 
 from serpentTools.utils.plot import magicPlotDocDecorator, formatPlot
 from serpentTools.engines import KeywordParser
 from serpentTools.messages import warning, SerpentToolsException, critical
 from serpentTools.utils import convertVariableName, str2vec
+from serpentTools.utils.mtDecoder import decodeMts
+from serpentTools.utils.zaiDecoder import decodeZai
 from serpentTools.parsers.base import BaseReader
 
 
@@ -143,14 +146,26 @@ class SensitivityReader(BaseReader):
         self.lethargyWidths = None
         self.sensitivities = {}
         self.energyIntegratedSens = {}
+        self.covarianceUncertainty = {}
+        self.covarianceVariance = {}
+        self.covarianceZaimts = []
 
     def _read(self):
         keys = stops = ["%"]
         throughParams = False
+        zaimts = []
         with KeywordParser(self.filePath, keys, stops) as parser:
             for chunk in parser.yieldChunks():
+                chunk0 = chunk[0]
+                if "Information on covariance blocks" in chunk0:
+                    zaimts = self._processCovarianceBlockInfoChunk(chunk)
+                    continue
+                if "Uncertainty from nuclear data covariances" in chunk0:
+                    self._processCovarianceUncertaintyChunk(chunk, zaimts)
+                    continue
+                if "Variance from nuclear data covariances" in chunk0:
+                    self._processCovarianceVarianceChunk(chunk, zaimts)
                 if not throughParams:
-                    chunk0 = chunk[0]
                     if "Number" in chunk0:
                         self._processNumChunk(chunk)
                     elif "included" in chunk0:
@@ -232,10 +247,62 @@ class SensitivityReader(BaseReader):
         else:
             warning("Unanticipated energy setting {}".format(splitLine[0]))
 
+    def _processCovarianceChunk(self, chunk, zaimts, kind):
+        if kind == "uncertainty":
+            target = self.covarianceUncertainty
+            key = "UNCERTAINTY"
+        elif kind == "variance":
+            target = self.covarianceVariance
+            key = "VARIANCE"
+        else:
+            raise SerpentToolsException(
+                "Unknown covariance chunk type {}".format(kind)
+            )
+
+        for line in chunk:
+            if key in line:
+                cleaned = self._cleanLine(line)
+                block, values = cleaned.split("=", 1)
+                response = block.strip()
+                if "_COV_DATA_" in response:
+                    response = response.split("_COV_DATA_", 1)[0]
+                response = convertVariableName(response)
+                respValues = [float(un) for un in values.split()]
+                respData = target.setdefault(response, OrderedDict())
+                respData["total"] = (respValues[0], respValues[1])
+                if not zaimts:
+                    zaimts = list(self.covarianceZaimts)
+                for zaimt, pu, un in zip(
+                    (str(z).strip() for z in zaimts),
+                    respValues[2::2],
+                    respValues[3::2],
+                ):
+                    respData[zaimt] = (pu, un)
+
+    def _processCovarianceUncertaintyChunk(self, chunk, zaimts):
+        return self._processCovarianceChunk(chunk, zaimts, "uncertainty")
+
+    def _processCovarianceVarianceChunk(self, chunk, zaimts):
+        return self._processCovarianceChunk(chunk, zaimts, "variance")
+
+    def _processCovarianceBlockInfoChunk(self, chunk):
+        for line in chunk:
+            if "ZAIMTS" in line:
+                cleaned = self._cleanLine(line)
+                _, zaimtsStr = cleaned.split("=")
+                block = " ".join(zaimtsStr.split())
+                if not block:
+                    continue
+                self.covarianceZaimts.append(block)
+        return self.covarianceZaimts
+
+    def _cleanLine(self, line):
+        removedChars = "[];"
+        return line.translate(str.maketrans("", "", removedChars)).strip()
+
     def _processSensChunk(self, chunk):
         varName = None
         isEnergyIntegrated = False
-        varName = None
         for line in chunk:
             if line == "\n" or "%" in line[:5] or "];" == line[:2]:
                 continue
@@ -514,6 +581,319 @@ class SensitivityReader(BaseReader):
         raise KeyError(
             "Could not find the following {} perturbations: "
             "{}".format(attrName, missing)
+        )
+
+    @staticmethod
+    def _splitCovarianceZaimt(zaimt):
+        zaimt = zaimt.strip()
+        if len(zaimt) <= 5:
+            return zaimt, zaimt
+        return zaimt[:-5], zaimt[-5:]
+
+    @staticmethod
+    def _cleanCovarianceResp(resp, available):
+        if resp is None:
+            return list(available)
+        if isinstance(resp, str):
+            resp = [resp]
+        cleaned = [
+            convertVariableName(str(item).strip()) for item in resp
+        ]
+        available = set(available)
+        if available.issuperset(cleaned):
+            return cleaned
+        missing = set(cleaned).difference(available)
+        raise KeyError(
+            "Could not find the following responses: {}".format(missing)
+        )
+
+    def _getCovarianceResponseMap(self, data):
+        if not isinstance(data, str):
+            raise SerpentToolsException(
+                "Expected covariance data selector string."
+            )
+        dataKey = data.strip().lower()
+        if dataKey == "uncertainty":
+            return dataKey, self.covarianceUncertainty
+        if dataKey == "variance":
+            return dataKey, self.covarianceVariance
+        raise SerpentToolsException(
+            "Unknown covariance data selection {}. Expected "
+            "'uncertainty' or 'variance'.".format(data)
+        )
+
+    def _getCovarianceResponseItems(self, resp, responseMap):
+        return [
+            (name, responseMap[name])
+            for name in self._cleanCovarianceResp(resp, responseMap.keys())
+        ]
+
+    @staticmethod
+    def _getCovarianceLabelFmt(labelFmt, responseItems):
+        if labelFmt is not None:
+            return labelFmt
+        labelFmt = "{z1} {m1}, {z2} {m2}"
+        if len(responseItems) > 1:
+            labelFmt = "{r}: " + labelFmt
+        return labelFmt
+
+    @staticmethod
+    def _cleanCovarianceFilter(value, cleanMt=False):
+        if isinstance(value, (str, int)):
+            value = [value]
+        if value is None:
+            return None
+        if cleanMt:
+            return {
+                str(item).strip().lstrip("0") or "0"
+                for item in value
+            }
+        return {str(item).strip() for item in value}
+
+    @staticmethod
+    def _getCovarianceAxes(ax, figsize, dpi):
+        if ax is None:
+            if figsize is not None or dpi is not None:
+                _, ax = pyplot.subplots(figsize=figsize, dpi=dpi)
+            else:
+                ax = gca()
+        else:
+            if figsize is not None:
+                ax.figure.set_size_inches(figsize)
+            if dpi is not None:
+                ax.figure.set_dpi(dpi)
+        return ax
+
+    @staticmethod
+    def _covarianceEntryMatches(parsed, zaiFilter, mtFilter):
+        if not zaiFilter and not mtFilter:
+            return True
+        for zaiEntry, mtEntry, _ in parsed:
+            if zaiFilter and zaiEntry not in zaiFilter:
+                continue
+            if mtFilter and mtEntry not in mtFilter:
+                continue
+            return True
+        return False
+
+    def _formatCovarianceLabel(self, labelFmt, responseName, key, parsed):
+        zaiLabels = [
+            decodeZai(zaiEntry) for zaiEntry, _, _ in parsed
+        ]
+        entryLabels = [
+            "{}\n{}".format(zaiLabel, mtLabel)
+            for zaiLabel, (_, _, mtLabel) in zip(zaiLabels, parsed)
+        ]
+        if len(entryLabels) == 1:
+            entryLabels = [entryLabels[0], entryLabels[0]]
+            parsed = [parsed[0], parsed[0]]
+            zaiLabels = [zaiLabels[0], zaiLabels[0]]
+
+        return labelFmt.format(
+            r=responseName or "",
+            zaimt=key,
+            entryLabels=entryLabels,
+            zais=[z for z, _, _ in parsed],
+            zaiLabels=zaiLabels,
+            mts=[m for _, m, _ in parsed],
+            mtLabels=[r for _, _, r in parsed],
+            z1=zaiLabels[0],
+            m1=parsed[0][2],
+            z2=zaiLabels[1],
+            m2=parsed[1][2],
+            z1Raw=parsed[0][0],
+            z2Raw=parsed[1][0],
+        )
+
+    def _getCovariancePlotData(
+        self, responseItems, zaiFilter, mtFilter, labelFmt, sigma
+    ):
+        values = []
+        errors = []
+        labels = []
+
+        for responseName, responseData in responseItems:
+            for key, (value, relUnc) in responseData.items():
+                if key == "total":
+                    if zaiFilter or mtFilter:
+                        continue
+                    respPrefix = (
+                        "{} ".format(responseName) if responseName else ""
+                    )
+                    label = "{}total".format(respPrefix).strip()
+                else:
+                    parsed = []
+                    for entry in key.split():
+                        zaiEntry, mtEntry = self._splitCovarianceZaimt(entry)
+                        mtClean = mtEntry.lstrip("0") or "0"
+                        parsed.append(
+                            (zaiEntry, mtClean, decodeMts(entry))
+                        )
+
+                    if not self._covarianceEntryMatches(
+                        parsed, zaiFilter, mtFilter
+                    ):
+                        continue
+
+                    label = self._formatCovarianceLabel(
+                        labelFmt, responseName, key, parsed
+                    )
+
+                values.append(value)
+                errors.append(
+                    fabs(value) * fabs(relUnc) * sigma if sigma else 0.0
+                )
+                labels.append(label)
+
+        return values, errors, labels
+
+    @staticmethod
+    def _drawCovarianceBars(ax, values, errors, labels, fixedAxis):
+        axisVals = list(range(len(values)))
+        if fixedAxis:
+            ax.barh(axisVals, values, xerr=errors)
+            ax.set_yticks(axisVals)
+            ax.set_yticklabels(labels)
+            ax.tick_params(axis="y", pad=10)
+        else:
+            ax.bar(axisVals, values, yerr=errors)
+            ax.set_xticks(axisVals)
+            ax.set_xticklabels(labels, rotation=60, ha="right")
+            ax.tick_params(axis="x", pad=10)
+
+    @staticmethod
+    def _getCovarianceValueLabel(dataKey):
+        if dataKey == "variance":
+            return "Variance"
+        if dataKey == "uncertainty":
+            return "Propagated Uncertainty"
+        return "Covariance Data"
+
+    def _formatCovarianceAxes(
+        self, ax, dataKey, fixedAxis, resp, title, logy,
+        xlabel, ylabel, legend, ncol
+    ):
+        valueLabel = self._getCovarianceValueLabel(dataKey)
+
+        if fixedAxis:
+            if xlabel is None:
+                xlabel = valueLabel
+            if ylabel is None:
+                ylabel = "ZAIMT"
+        else:
+            if xlabel is None:
+                xlabel = "ZAIMT"
+            if ylabel is None:
+                ylabel = valueLabel
+
+        if title is None and resp is None:
+            title = f"{ylabel} in response: All "
+        else:
+            title = f"{ylabel} in response: {resp}"
+
+        return formatPlot(
+            ax,
+            loglog=False,
+            logx=logy if fixedAxis else False,
+            logy=False if fixedAxis else logy,
+            legendcols=ncol,
+            legend=legend,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            title=title,
+        )
+
+    @magicPlotDocDecorator
+    def plotCovarianceData(
+        self,
+        data="uncertainty",
+        resp=None,
+        zai=None,
+        mt=None,
+        sigma=3,
+        ax=None,
+        figsize=None,
+        dpi=None,
+        labelFmt=None,
+        fixedAxis=True,
+        title=None,
+        logy=False,
+        xlabel=None,
+        ylabel=None,
+        legend=None,
+        ncol=1,
+    ):
+        """
+        Plots covariance uncertainty and variance data.
+
+        Parameters
+        ----------
+        data : {"uncertainty", "variance"}
+            Selects the covariance dataset to use.
+        resp : None or str or iterable
+            Responses to include. Defaults to all responses in the
+            selected covariance dataset.
+        zai : None or str or int or iterable
+            Plot covariance data for these ZAIs. Passing ``None``
+            will plot all ZAIs.
+        mt : None or str or int or iterable
+            Plot covariance data for these MTs. Passing ``None``
+            will plot all MTs.
+        {sigma}
+        {ax}
+        figsize : tuple, optional
+            Figure size in inches (width, height) if ``ax`` is not provided.
+        dpi : int, optional
+            Dots per inch for the figure if ``ax`` is not provided.
+        labelFmt : None or str
+            Formattable string to be applied to the labels. The following
+            entries will be formatted for each bar::
+
+                {r} - response name
+                {z1} - ZAI label for entry 1
+                {m1} - MT label for entry 1
+                {z2} - ZAI label for entry 2
+                {m2} - MT label for entry 2
+                {z1Raw} - raw ZAI for entry 1
+                {z2Raw} - raw ZAI for entry 2
+                {zais} - raw ZAI list
+                {zaiLabels} - decoded ZAI labels list
+                {mts} - MT list
+                {mtLabels} - MT labels list
+                {entryLabels} - preformatted "ZAI MT" labels list
+                {zaimt} - raw ZAIMT block string
+
+        fixedAxis : bool, optional
+            If ``True``, plot horizontal bars with labels on the y-axis.
+        {title}
+        {logy}
+        {xlabel}
+        {ylabel}
+        {legend}
+        {ncol}
+        """
+        dataKey, responseMap = self._getCovarianceResponseMap(data)
+        responseItems = self._getCovarianceResponseItems(resp, responseMap)
+        labelFmt = self._getCovarianceLabelFmt(labelFmt, responseItems)
+        zaiFilter = self._cleanCovarianceFilter(zai)
+        mtFilter = self._cleanCovarianceFilter(mt, cleanMt=True)
+        ax = self._getCovarianceAxes(ax, figsize, dpi)
+        sigma = max(int(sigma), 0)
+
+        values, errors, labels = self._getCovariancePlotData(
+            responseItems, zaiFilter, mtFilter, labelFmt, sigma
+        )
+        if not labels:
+            raise SerpentToolsException(
+                "No covariance data matched the provided filters."
+            )
+
+        self._drawCovarianceBars(
+            ax, values, errors if sigma else None, labels, fixedAxis
+        )
+        return self._formatCovarianceAxes(
+            ax, dataKey, fixedAxis, resp, title, logy,
+            xlabel, ylabel, legend, ncol
         )
 
 

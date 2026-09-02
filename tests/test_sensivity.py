@@ -10,6 +10,9 @@ from numpy import array, inf
 from numpy.testing import assert_allclose, assert_array_equal
 from serpentTools.data import getFile
 from serpentTools.parsers.sensitivity import SensitivityReader
+from serpentTools.utils.zaiDecoder import decodeZai
+from serpentTools.utils.mtDecoder import MTS_MAP
+from matplotlib import pyplot
 
 from tests import (
     plotTest, getLegendTexts, MatlabTesterHelper, compareDictOfArrays,
@@ -121,6 +124,69 @@ class SensitivityTester(SensitivityTestHelper):
         }
         compareDictOfArrays(expected, self.reader.sensitivities,
                             'Error in sensitivities at {key}', testCase=self)
+
+    def testProcessCovarianceUncertaintyChunk(self):
+        """Verify covariance uncertainty chunk parsing."""
+        reader = SensitivityReader(TEST_FILE)
+        reader.covarianceZaimts = ["9223501018", "9223801018"]
+        chunk = [
+            "KEFF_COV_DATA_UNCERTAINTY = [ 1.0 0.1 2.0 0.2 3.0 0.3 ];"
+        ]
+        reader._processCovarianceUncertaintyChunk(chunk, [])
+        data = reader.covarianceUncertainty["keff"]
+        assert_allclose(data["total"], (1.0, 0.1))
+        assert_allclose(data["9223501018"], (2.0, 0.2))
+        assert_allclose(data["9223801018"], (3.0, 0.3))
+
+    def testProcessCovarianceVarianceChunk(self):
+        """Verify covariance variance chunk parsing."""
+        reader = SensitivityReader(TEST_FILE)
+        reader.covarianceZaimts = ["9223501018", "9223801018"]
+        chunk = [
+            "KEFF_COV_DATA_VARIANCE = [ 4.0 0.4 5.0 0.5 6.0 0.6 ];"
+        ]
+        reader._processCovarianceVarianceChunk(chunk, [])
+        data = reader.covarianceVariance["keff"]
+        assert_allclose(data["total"], (4.0, 0.4))
+        assert_allclose(data["9223501018"], (5.0, 0.5))
+        assert_allclose(data["9223801018"], (6.0, 0.6))
+
+    def testProcessCovarianceBlockInfoChunk(self):
+        """Verify covariance block info chunk parsing."""
+        reader = SensitivityReader(TEST_FILE)
+        chunk = [
+            "COV_BLOCK_1_ZAIMTS = [ 9223501018  9223801018 ];"
+        ]
+        zaimts = reader._processCovarianceBlockInfoChunk(chunk)
+        self.assertListEqual(zaimts, ["9223501018 9223801018"])
+        self.assertListEqual(reader.covarianceZaimts, ["9223501018 9223801018"])
+
+    def testPlotCovarianceDataLabels(self):
+        """Verify covariance plot label formatting and ZAI/MT decoding."""
+        reader = SensitivityReader(TEST_FILE)
+        reader.covarianceUncertainty = {
+            "keff": OrderedDict(
+                [
+                    ("total", (1.0, 0.1)),
+                    ("9223501018", (2.0, 0.2)),
+                    ("9223501018 9223801018", (3.0, 0.3)),
+                ]
+            )
+        }
+        ax = reader.plotCovarianceData(
+            data="uncertainty", resp="keff", sigma=0
+        )
+        labels = [tick.get_text() for tick in ax.get_yticklabels()]
+        mtLabel = MTS_MAP["1018"]
+        expected = [
+            "keff total",
+            "{0} {1}, {0} {1}".format(decodeZai("92235"), mtLabel),
+            "{0} {1}, {2} {1}".format(
+                decodeZai("92235"), mtLabel, decodeZai("92238")
+            ),
+        ]
+        self.assertListEqual(labels, expected)
+        pyplot.close(ax.figure)
 
     def test_integratedSensitivities(self):
         """Verify the energy integrated sensitivities are correct."""
